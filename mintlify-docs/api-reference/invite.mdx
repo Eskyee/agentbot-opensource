@@ -1,0 +1,204 @@
+---
+title: Invite API
+description: "Create, manage, and verify invite tokens for platform access"
+---
+
+# Invite API
+
+Create and verify invite tokens for gating access to the Agentbot platform.
+
+<Note>Invite tokens are 64-character hex strings generated from `crypto.randomBytes(32)`. The older 12-character code format is deprecated — see [legacy format](#legacy-invite-format) below.</Note>
+
+## Authentication
+
+| Endpoint | Auth required |
+|----------|---------------|
+| `POST /api/invite` | Session (any authenticated user) |
+| `POST /api/invites/verify` | None |
+| `GET /api/admin/invites` | Session (admin only) |
+| `POST /api/admin/invites` | Session (admin only) |
+
+## Create invite
+
+```http
+POST /api/invite
+```
+
+Creates an invite token linked to your account. Requires an authenticated session.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Display name for the invite recipient. Validated against injection patterns. |
+
+### Response
+
+```json
+{
+  "success": true,
+  "inviteUrl": "https://agentbot.sh/invite?token=abc123...&name=Alice",
+  "token": "a1b2c3d4...64 hex characters"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the invite was created |
+| `inviteUrl` | string | Full URL the recipient can use to accept the invite |
+| `token` | string | 64-character hex token |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Name is missing or contains invalid characters |
+| 401 | Not authenticated |
+| 404 | User not found |
+| 500 | Failed to create invite |
+
+## Verify invite
+
+```http
+POST /api/invites/verify
+```
+
+Verifies an invite token and returns invite details. No authentication required. Tokens must be in the 64-character hex format.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `token` | string | Yes | 64-character hex invite token |
+
+### Response (valid)
+
+```json
+{
+  "valid": true,
+  "plan": "solo"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `valid` | boolean | Whether the token is valid |
+| `plan` | string | Plan tier assigned to the invite. Currently always `"solo"`. |
+| `note` | string \| undefined | Present only when the invite was verified by token format alone (database model pending). Omitted when the invite was verified against the database. |
+
+<Note>The `email` field was removed from the verify response. The invite codes table does not store an email column. If you previously relied on this field, use a separate user lookup after verification.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Token is missing, not a string, or not in valid 64-character hex format |
+| 404 | Invite not found or expired |
+| 410 | Invite has already been used |
+| 500 | Verification failed |
+
+## List invites (admin)
+
+```http
+GET /api/admin/invites
+```
+
+Returns all invites with summary counts. Requires an authenticated session with an admin email address.
+
+### Response
+
+```json
+{
+  "invites": [
+    {
+      "code": "a1b2c3d4...64 hex characters",
+      "email": "invitee@example.com",
+      "createdAt": "2026-03-25T21:00:00.000Z",
+      "status": "active"
+    }
+  ],
+  "total": 1,
+  "active": 1
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `invites` | array | List of all invites |
+| `invites[].code` | string | 64-character hex invite token |
+| `invites[].email` | string | Email the invite was created for |
+| `invites[].createdAt` | string | ISO 8601 creation timestamp |
+| `invites[].usedAt` | string \| undefined | ISO 8601 timestamp when the invite was used |
+| `invites[].status` | string | One of `active`, `used`, or `expired` |
+| `invites[].userId` | string \| undefined | User ID of the person who redeemed the invite |
+| `total` | number | Total number of invites |
+| `active` | number | Number of currently active invites |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 403 | Not authorized (requires admin) |
+| 500 | Failed to retrieve invites |
+
+## Create invite (admin)
+
+```http
+POST /api/admin/invites
+```
+
+Creates an invite for a specific email address. Requires an authenticated session with an admin email address.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | Email address to associate with the invite |
+
+### Response
+
+```json
+{
+  "success": true,
+  "code": "a1b2c3d4...64 hex characters",
+  "email": "invitee@example.com",
+  "inviteUrl": "https://agentbot.sh/invite?token=a1b2c3d4..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the invite was created |
+| `code` | string | 64-character hex invite token |
+| `email` | string | Email the invite was created for |
+| `inviteUrl` | string | Full URL the recipient can use to accept the invite |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Email is missing |
+| 403 | Not authorized (requires admin) |
+| 500 | Failed to create invite |
+
+---
+
+## Legacy invite format
+
+<Warning>The previous invite system used 12-character hex codes with `POST /api/invite/generate` and `POST /api/invite/validate`. These endpoints are deprecated. Migrate to the new endpoints above.</Warning>
+
+### Deprecated: generate invite code
+
+```http
+POST /api/invite/generate
+```
+
+Previously generated a 12-character hex invite code. Replaced by `POST /api/invite` (session auth) and `POST /api/admin/invites` (admin session auth).
+
+### Deprecated: validate invite code
+
+```http
+POST /api/invite/validate
+```
+
+Previously validated and consumed a 12-character invite code. Replaced by `POST /api/invites/verify`, which accepts 64-character hex tokens and returns `valid` and `plan` fields.

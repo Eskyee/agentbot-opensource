@@ -1,0 +1,125 @@
+---
+title: Gamification API
+description: "Retrieve your gamification profile including badges, points, level, leaderboard rank, and login streak"
+---
+
+# Gamification API
+
+Retrieve your gamification profile, earned badges, points, level progression, and leaderboard position.
+
+## Get gamification profile
+
+```http
+GET /api/gamification/profile
+```
+
+Requires session authentication. Returns the authenticated user's badges, points, level, leaderboard rank, login streak, and available badges to earn. Each request automatically updates the user's daily login streak.
+
+### Response
+
+```json
+{
+  "badges": [
+    {
+      "id": "first_agent",
+      "name": "Agent Creator",
+      "description": "Create your first AI agent",
+      "icon": "🤖",
+      "category": "onboarding",
+      "points": 50,
+      "condition": "Create 1 agent"
+    }
+  ],
+  "points": 150,
+  "level": 2,
+  "title": "Beginner",
+  "nextLevel": 500,
+  "progress": 30,
+  "streak": 3,
+  "badgeAwarded": null,
+  "leaderboard": [
+    {
+      "userId": "user_abc",
+      "name": "Alice",
+      "points": 2500,
+      "level": 5,
+      "title": "Expert"
+    }
+  ],
+  "userRank": 4,
+  "availableBadges": [
+    {
+      "id": "message_100",
+      "name": "Century Club",
+      "description": "Send 100 messages through your agents",
+      "icon": "💬",
+      "category": "usage",
+      "points": 100,
+      "condition": "100 messages"
+    }
+  ]
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `badges` | array | Badges the user has earned |
+| `badges[].id` | string | Unique badge identifier |
+| `badges[].name` | string | Display name of the badge |
+| `badges[].description` | string | Description of how to earn the badge |
+| `badges[].icon` | string | Emoji icon for the badge |
+| `badges[].category` | string | Badge category: `onboarding`, `usage`, `social`, or `achievement` |
+| `badges[].points` | number | Points awarded when the badge is earned |
+| `badges[].condition` | string | Human-readable condition to earn the badge |
+| `points` | number | User's total accumulated points |
+| `level` | number | Current level (1–7) |
+| `title` | string | Level title: `Newcomer`, `Beginner`, `Intermediate`, `Advanced`, `Expert`, `Master`, or `Legend` |
+| `nextLevel` | number | Points threshold required to reach the next level |
+| `progress` | number | Percentage progress toward the next level (0–100) |
+| `streak` | number | Current consecutive daily login streak |
+| `badgeAwarded` | string \| null | Badge ID if a streak badge was just awarded on this request, or `null` |
+| `leaderboard` | array | Top 5 users by points |
+| `leaderboard[].userId` | string | User ID |
+| `leaderboard[].name` | string | User display name, or `Anonymous` if not set |
+| `leaderboard[].points` | number | User's total points |
+| `leaderboard[].level` | number | User's current level |
+| `leaderboard[].title` | string | User's level title |
+| `userRank` | number \| null | Authenticated user's rank on the leaderboard (1-indexed), or `null` if not in the top 10 |
+| `availableBadges` | array | Badges the user has not yet earned. Same shape as `badges`. |
+
+### Level thresholds
+
+| Level | Title | Points required |
+|-------|-------|-----------------|
+| 1 | Newcomer | 0 |
+| 2 | Beginner | 100 |
+| 3 | Intermediate | 500 |
+| 4 | Advanced | 1,000 |
+| 5 | Expert | 2,500 |
+| 6 | Master | 5,000 |
+| 7 | Legend | 10,000 |
+
+### Available badges
+
+| ID | Name | Category | Points | Condition |
+|----|------|----------|--------|-----------|
+| `onboarding_complete` | Getting Started | onboarding | 100 | Complete all onboarding steps |
+| `first_agent` | Agent Creator | onboarding | 50 | Create 1 agent |
+| `message_100` | Century Club | usage | 100 | Send 100 messages |
+| `message_1000` | Message Master | usage | 500 | Send 1,000 messages |
+| `agent_3` | Agent Army | usage | 150 | Create 3 agents |
+| `agent_10` | Agent Overlord | usage | 500 | Create 10 agents |
+| `first_referral` | Referrer | social | 100 | Refer 1 user |
+| `referral_5` | Influencer | social | 500 | Refer 5 users |
+| `login_streak_7` | Week Warrior | achievement | 200 | Login 7 days in a row |
+| `login_streak_30` | Monthly Master | achievement | 1,000 | Login 30 days in a row |
+| `early_adopter` | Early Adopter | achievement | 500 | Joined during beta |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to fetch profile |

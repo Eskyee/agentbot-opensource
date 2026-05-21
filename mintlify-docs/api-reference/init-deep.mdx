@@ -1,0 +1,146 @@
+---
+title: Init-deep
+description: "Generate and inspect hierarchical AGENTS.md context files across the project"
+---
+
+# Init-deep
+
+Generate scoped `AGENTS.md` files for key directories in the project. Each generated file describes the directory's purpose, key files, exports, conventions, and subdirectory links, giving AI agents focused context for the code they are working with.
+
+## Generate context files
+
+```http
+POST /api/init-deep
+```
+
+Traverse the project directory tree and generate `AGENTS.md` files for directories that need them.
+
+<Note>This endpoint requires session-based authentication through NextAuth.</Note>
+
+### Request body
+
+All fields are optional. An empty body or omitted `Content-Type` header is accepted.
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `path` | string | No | Project root | Root path to start generation from |
+| `force` | boolean | No | `false` | Overwrite existing `AGENTS.md` files |
+| `dryRun` | boolean | No | `false` | Preview results without writing any files |
+| `maxDepth` | number | No | `5` | Maximum directory depth to traverse |
+
+```bash
+curl -X POST https://agentbot.sh/api/init-deep \
+  -H "Content-Type: application/json" \
+  -d '{
+    "force": false,
+    "dryRun": true,
+    "maxDepth": 3
+  }'
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "summary": {
+    "total": 15,
+    "generated": 12,
+    "skipped": 2,
+    "errors": 1
+  },
+  "results": [
+    {
+      "path": "web/app/api",
+      "generated": true,
+      "skipped": false
+    },
+    {
+      "path": "web/app/lib",
+      "generated": false,
+      "skipped": true,
+      "error": "Already exists (use force: true to overwrite)"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the operation completed without a fatal error |
+| `summary.total` | number | Total directories evaluated |
+| `summary.generated` | number | Number of `AGENTS.md` files written |
+| `summary.skipped` | number | Number of directories skipped (file already exists) |
+| `summary.errors` | number | Number of directories where generation failed |
+| `results` | array | Per-directory results |
+| `results[].path` | string | Relative directory path |
+| `results[].generated` | boolean | Whether an `AGENTS.md` was written |
+| `results[].skipped` | boolean | Whether the directory was skipped |
+| `results[].error` | string | Error message if generation failed or was skipped |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized -- no valid session |
+| 500 | `Failed to generate AGENTS.md files` -- an unexpected error prevented the operation. The `detail` field contains the error message. |
+
+## Check generation status
+
+```http
+GET /api/init-deep
+```
+
+Check which priority directories already have an `AGENTS.md` file. This endpoint does not require authentication.
+
+### Query parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `path` | string | No | Project root | Root path to check |
+
+### Priority directories
+
+The endpoint checks these directories by default:
+
+- `web/app/api`
+- `web/app/lib`
+- `web/components`
+- `agentbot-backend/src`
+- `skills`
+
+### Response
+
+```json
+{
+  "rootPath": "/project",
+  "status": [
+    {
+      "directory": "web/app/api",
+      "hasAgentsMd": true,
+      "path": "/project/web/app/api"
+    },
+    {
+      "directory": "web/app/lib",
+      "hasAgentsMd": false,
+      "path": "/project/web/app/lib"
+    }
+  ],
+  "allGenerated": false
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rootPath` | string | Resolved root path used for the check |
+| `status` | array | Status of each priority directory |
+| `status[].directory` | string | Relative directory name |
+| `status[].hasAgentsMd` | boolean | Whether an `AGENTS.md` file exists |
+| `status[].path` | string | Absolute path to the directory |
+| `allGenerated` | boolean | `true` when every priority directory has an `AGENTS.md` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 500 | `Failed to check status` -- an unexpected error occurred |

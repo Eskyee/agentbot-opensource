@@ -1,288 +1,1403 @@
 'use client'
 
-import { useState } from 'react'
-import { Sparkles, Zap, Code, ExternalLink, Loader2, Rocket, Lightbulb } from 'lucide-react'
-import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  Archive,
+  Check,
+  ChevronDown,
+  Code2,
+  Columns3,
+  Copy,
+  Download,
+  ExternalLink,
+  FileText,
+  Globe2,
+  Loader2,
+  Maximize2,
+  Minus,
+  Monitor,
+  Plus,
+  RotateCw,
+  Send,
+  Smartphone,
+  Tablet,
+  Terminal,
+} from 'lucide-react'
+
+type PlaygroundFile = {
+  path: string
+  language: string
+  content: string
+}
+
+type PlaygroundGeneration = {
+  title: string
+  summary: string
+  previewHtml: string
+  files: PlaygroundFile[]
+  console: string[]
+}
+
+type PlaygroundProject = {
+  id: string
+  name: string
+  status: 'IDLE' | 'PUBLISHED' | 'ARCHIVED'
+  template: string
+  lastActive: string
+  publishedUrl?: string
+  deploymentProvider?: string
+  deploymentId?: string
+  deploymentState?: string
+  generation: PlaygroundGeneration | null
+}
+
+type PlaygroundResponse = {
+  provider: string
+  model: string
+  generation: PlaygroundGeneration
+}
+
+type PlaygroundProjectsResponse = {
+  projects: PlaygroundProject[]
+  storage: 'server'
+}
+
+const STORAGE_KEY = 'agentbot:openclaude-playground:projects:v1'
+
+const EXAMPLES = [
+  {
+    title: 'AI startup landing',
+    prompt:
+      'Build a landing page in src/App.tsx for an AI infrastructure startup called Nimbus. Hero with gradient backdrop, three feature cards, a pricing table with three tiers (Free / Pro / Enterprise), a testimonials row, and a footer. Dark theme with subtle gradients in src/index.css. Keep it semantic and accessible.',
+  },
+  {
+    title: 'Habit tracker',
+    prompt:
+      'Build a single-page habit tracker in src/App.tsx with daily check-ins for 5 sample habits, a 7-day streak visualization (colored squares), and a weekly stats panel. Persist state to localStorage. Use React hooks; style in src/index.css.',
+  },
+  {
+    title: 'Pipeline CRM',
+    prompt:
+      'Build a lightweight CRM dashboard in src/App.tsx with a 4-column Kanban pipeline (Lead -> Qualified -> Proposal -> Closed), drag-to-move cards using the HTML5 Drag and Drop API, an activity feed sidebar, and a search input that filters cards. Seed 8-10 realistic sample contacts.',
+  },
+  {
+    title: 'Designer portfolio',
+    prompt:
+      'Build a portfolio site in src/App.tsx for a product designer named Ava Chen. Hero, three case-study cards with hover states, a selected-work gallery (CSS grid), and a contact form that validates email format and shows inline errors. Sans-serif typography, warm neutrals.',
+  },
+]
+
+const VIEWPORTS = {
+  mobile: 'w-[390px]',
+  tablet: 'w-[820px]',
+  desktop: 'w-full',
+  fill: 'w-full',
+} as const
+
+type Viewport = keyof typeof VIEWPORTS
+type Pane = 'preview' | 'code'
+type View = 'builder' | 'apps' | 'projects' | 'publish'
+type ConsoleLevel = 'all' | 'error' | 'warn' | 'log'
+type ConsoleEntry = {
+  level: Exclude<ConsoleLevel, 'all'>
+  message: string
+}
+
+function createId(prefix = 'project') {
+  return `${prefix}-${Math.random().toString(16).slice(2, 10)}`
+}
+
+function createSessionId() {
+  const left = Math.random().toString(16).slice(2, 5).toUpperCase()
+  const right = Math.random().toString(16).slice(2, 6).toUpperCase()
+  return `${left}-${right}`
+}
+
+function defaultProjects(): PlaygroundProject[] {
+  return [
+    {
+      id: 'untitled-active',
+      name: 'untitled',
+      status: 'IDLE',
+      template: 'VITE-REACT-TS',
+      lastActive: '1h ago',
+      generation: null,
+    },
+    {
+      id: 'producercalc',
+      name: 'producercalc',
+      status: 'IDLE',
+      template: 'VITE-REACT-TS',
+      lastActive: '2h ago',
+      generation: null,
+    },
+    {
+      id: 'radio-basefm-9963',
+      name: 'radio-basefm-9963.gitlawb',
+      status: 'PUBLISHED',
+      template: 'VITE-REACT-TS',
+      lastActive: '1d ago',
+      publishedUrl: 'radio-basefm-9963.gitlawb.app/',
+      generation: null,
+    },
+    {
+      id: 'untitled-new',
+      name: 'untitled',
+      status: 'IDLE',
+      template: 'VITE-REACT-TS',
+      lastActive: 'never',
+      generation: null,
+    },
+  ]
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes}b`
+  return `${(bytes / 1024).toFixed(1)}kb`
+}
+
+function fileLabel(path: string) {
+  return path.split('/').pop()?.toUpperCase() || path.toUpperCase()
+}
+
+function buildConsoleEntries(generation: PlaygroundGeneration | null, error: string | null, isGenerating: boolean): ConsoleEntry[] {
+  const entries: ConsoleEntry[] = []
+
+  if (isGenerating) {
+    entries.push({ level: 'log', message: 'applying changes' })
+  }
+
+  if (error) {
+    entries.push({ level: 'error', message: error })
+  }
+
+  for (const line of generation?.console ?? []) {
+    const lower = line.toLowerCase()
+    const level: ConsoleEntry['level'] = lower.includes('error')
+      ? 'error'
+      : lower.includes('warn')
+        ? 'warn'
+        : 'log'
+    entries.push({ level, message: line })
+  }
+
+  return entries
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 48) || 'untitled'
+}
+
+const CRC_TABLE = Array.from({ length: 256 }, (_, index) => {
+  let value = index
+  for (let bit = 0; bit < 8; bit += 1) {
+    value = (value & 1) ? (0xedb88320 ^ (value >>> 1)) : (value >>> 1)
+  }
+  return value >>> 0
+})
+
+function crc32(bytes: Uint8Array) {
+  let crc = 0xffffffff
+  for (const byte of bytes) {
+    crc = CRC_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8)
+  }
+  return (crc ^ 0xffffffff) >>> 0
+}
+
+function writeUint16(target: number[], value: number) {
+  target.push(value & 0xff, (value >>> 8) & 0xff)
+}
+
+function writeUint32(target: number[], value: number) {
+  target.push(value & 0xff, (value >>> 8) & 0xff, (value >>> 16) & 0xff, (value >>> 24) & 0xff)
+}
+
+function createZip(files: PlaygroundFile[]) {
+  const encoder = new TextEncoder()
+  const chunks: Uint8Array[] = []
+  const centralDirectory: Uint8Array[] = []
+  let offset = 0
+
+  for (const file of files) {
+    const name = encoder.encode(file.path)
+    const data = encoder.encode(file.content)
+    const checksum = crc32(data)
+    const localHeader: number[] = []
+
+    writeUint32(localHeader, 0x04034b50)
+    writeUint16(localHeader, 20)
+    writeUint16(localHeader, 0)
+    writeUint16(localHeader, 0)
+    writeUint16(localHeader, 0)
+    writeUint16(localHeader, 0)
+    writeUint32(localHeader, checksum)
+    writeUint32(localHeader, data.length)
+    writeUint32(localHeader, data.length)
+    writeUint16(localHeader, name.length)
+    writeUint16(localHeader, 0)
+
+    const localChunk = new Uint8Array([...localHeader, ...name, ...data])
+    chunks.push(localChunk)
+
+    const centralHeader: number[] = []
+    writeUint32(centralHeader, 0x02014b50)
+    writeUint16(centralHeader, 20)
+    writeUint16(centralHeader, 20)
+    writeUint16(centralHeader, 0)
+    writeUint16(centralHeader, 0)
+    writeUint16(centralHeader, 0)
+    writeUint16(centralHeader, 0)
+    writeUint32(centralHeader, checksum)
+    writeUint32(centralHeader, data.length)
+    writeUint32(centralHeader, data.length)
+    writeUint16(centralHeader, name.length)
+    writeUint16(centralHeader, 0)
+    writeUint16(centralHeader, 0)
+    writeUint16(centralHeader, 0)
+    writeUint16(centralHeader, 0)
+    writeUint32(centralHeader, 0)
+    writeUint32(centralHeader, offset)
+    centralDirectory.push(new Uint8Array([...centralHeader, ...name]))
+
+    offset += localChunk.length
+  }
+
+  const centralDirectoryOffset = offset
+  for (const chunk of centralDirectory) {
+    chunks.push(chunk)
+    offset += chunk.length
+  }
+
+  const end: number[] = []
+  writeUint32(end, 0x06054b50)
+  writeUint16(end, 0)
+  writeUint16(end, 0)
+  writeUint16(end, files.length)
+  writeUint16(end, files.length)
+  writeUint32(end, offset - centralDirectoryOffset)
+  writeUint32(end, centralDirectoryOffset)
+  writeUint16(end, 0)
+  chunks.push(new Uint8Array(end))
+
+  return new Blob(chunks.map((chunk) => chunk.slice()) as BlobPart[], { type: 'application/zip' })
+}
+
+async function fetchServerProjects(): Promise<PlaygroundProject[] | null> {
+  const response = await fetch('/api/playground/projects', { cache: 'no-store' })
+  if (response.status === 401) return null
+  if (!response.ok) throw new Error('Failed to load server projects')
+
+  const data = await response.json() as PlaygroundProjectsResponse
+  return Array.isArray(data.projects) ? data.projects : []
+}
+
+async function persistServerProject(
+  project: PlaygroundProject,
+  extra: { prompt?: string; provider?: string; model?: string } = {},
+): Promise<PlaygroundProject | null> {
+  const response = await fetch(`/api/playground/projects/${encodeURIComponent(project.id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...project, ...extra }),
+  })
+
+  if (response.status === 401) return null
+  if (!response.ok) throw new Error('Failed to save playground project')
+
+  const data = await response.json() as { project?: PlaygroundProject }
+  return data.project ?? null
+}
 
 export default function PlaygroundPage() {
-  const [prompt, setPrompt] = useState('')
-  const [generating, setGenerating] = useState(false)
-  const [generatedCode, setGeneratedCode] = useState<string | null>(null)
+  const [prompt, setPrompt] = useState(EXAMPLES[0].prompt)
+  const [projects, setProjects] = useState<PlaygroundProject[]>(() => defaultProjects())
+  const [activeProjectId, setActiveProjectId] = useState('untitled-active')
+  const [provider, setProvider] = useState('openclaude')
+  const [model, setModel] = useState('xiaomi/mimo-v2.5-pro')
+  const [selectedFile, setSelectedFile] = useState('.gitignore')
+  const [pane, setPane] = useState<Pane>('preview')
+  const [viewport, setViewport] = useState<Viewport>('desktop')
+  const [view, setView] = useState<View>('builder')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [isRefreshingPublish, setIsRefreshingPublish] = useState(false)
+  const [isPushingGitlawb, setIsPushingGitlawb] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [publishError, setPublishError] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState('LOCAL')
+  const [hydrated, setHydrated] = useState(false)
+  const [storage, setStorage] = useState<'local' | 'server'>('local')
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) {
-      setError('Please describe what you want to build')
+  useEffect(() => {
+    setSessionId(createSessionId())
+
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY)
+      if (!saved) {
+        setHydrated(true)
+        return
+      }
+
+      const parsed = JSON.parse(saved) as { projects?: PlaygroundProject[]; activeProjectId?: string }
+      if (Array.isArray(parsed.projects) && parsed.projects.length > 0) {
+        setProjects(parsed.projects)
+        setActiveProjectId(parsed.activeProjectId || parsed.projects[0]?.id || 'untitled-active')
+      }
+    } catch {
+      window.localStorage.removeItem(STORAGE_KEY)
+    } finally {
+      setHydrated(true)
+    }
+
+    void fetchServerProjects()
+      .then((serverProjects) => {
+        if (!serverProjects || serverProjects.length === 0) return
+        setProjects(serverProjects)
+        setActiveProjectId((current) => (
+          serverProjects.some((project) => project.id === current)
+            ? current
+            : serverProjects[0]?.id ?? current
+        ))
+        setStorage('server')
+      })
+      .catch(() => {
+        setStorage('local')
+      })
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ projects, activeProjectId }))
+  }, [projects, activeProjectId, hydrated])
+
+  const activeProject = useMemo(
+    () => projects.find((project) => project.id === activeProjectId) ?? projects[0],
+    [projects, activeProjectId],
+  )
+  const generation = activeProject?.generation ?? null
+  const files = useMemo(() => generation?.files ?? [], [generation])
+  const activeFile = useMemo(
+    () => files.find((file) => file.path === selectedFile) ?? files[0],
+    [files, selectedFile],
+  )
+  const visibleProjects = projects.filter((project) => project.status !== 'ARCHIVED')
+  const publishedProjects = projects.filter((project) => project.status === 'PUBLISHED')
+  const breadcrumb = view === 'builder'
+    ? (activeProject?.name || generation?.title || 'untitled')
+    : view
+
+  if (!hydrated) {
+    return (
+      <main className="min-h-[calc(100vh-6rem)] bg-black text-white font-mono selection:bg-orange-500/30">
+        <div className="border-b border-zinc-900 bg-black">
+          <div className="h-12 px-4 flex items-center gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-widest">Playground</span>
+            <span className="text-zinc-700">/</span>
+            <span className="text-[11px] uppercase tracking-widest text-zinc-500">Booting</span>
+          </div>
+        </div>
+        <div className="min-h-[calc(100vh-9rem)] bg-black flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="mx-auto h-6 w-6 animate-spin text-orange-500" />
+            <div className="mt-4 text-[10px] uppercase tracking-widest text-zinc-500">Loading playground</div>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
+  function syncProject(project: PlaygroundProject, extra: { prompt?: string; provider?: string; model?: string } = {}) {
+    void persistServerProject(project, extra)
+      .then((serverProject) => {
+        if (!serverProject) return
+        setStorage('server')
+        setProjects((current) => current.map((item) => (
+          item.id === serverProject.id ? { ...item, ...serverProject } : item
+        )))
+      })
+      .catch(() => {
+        setStorage('local')
+      })
+  }
+
+  function updateActiveProject(
+    patch: Partial<PlaygroundProject>,
+    extra: { prompt?: string; provider?: string; model?: string } = {},
+  ) {
+    let nextProject: PlaygroundProject | null = null
+    setProjects((current) => current.map((project) => (
+      project.id === activeProjectId ? (nextProject = { ...project, ...patch }) : project
+    )))
+    if (nextProject) syncProject(nextProject, extra)
+  }
+
+  function newProject() {
+    const project: PlaygroundProject = {
+      id: createId(),
+      name: 'untitled',
+      status: 'IDLE',
+      template: 'VITE-REACT-TS',
+      lastActive: 'never',
+      generation: null,
+    }
+
+    setProjects((current) => [project, ...current])
+    setActiveProjectId(project.id)
+    setSelectedFile('.gitignore')
+    setPane('preview')
+    setView('builder')
+    setError(null)
+    syncProject(project, { prompt, provider, model })
+  }
+
+  function openProject(projectId: string) {
+    const project = projects.find((item) => item.id === projectId)
+    setActiveProjectId(projectId)
+    setSelectedFile(project?.generation?.files[0]?.path ?? '.gitignore')
+    setPane('preview')
+    setView('builder')
+  }
+
+  function renameProject(projectId: string) {
+    let renamedProject: PlaygroundProject | null = null
+    setProjects((current) => current.map((project) => {
+      if (project.id !== projectId) return project
+      const base = project.name === 'untitled' ? 'producercalc' : `${project.name}-copy`
+      renamedProject = { ...project, name: base.slice(0, 64), lastActive: 'now' }
+      return renamedProject
+    }))
+    if (renamedProject) syncProject(renamedProject, { prompt, provider, model })
+  }
+
+  function archiveProject(projectId: string) {
+    let archivedProject: PlaygroundProject | null = null
+    setProjects((current) => current.map((project) => {
+      if (project.id !== projectId) return project
+      archivedProject = { ...project, status: 'ARCHIVED' as const, lastActive: 'now' }
+      return archivedProject
+    }))
+    if (activeProjectId === projectId) {
+      const next = projects.find((project) => project.id !== projectId && project.status !== 'ARCHIVED')
+      if (next) setActiveProjectId(next.id)
+    }
+    if (archivedProject) syncProject(archivedProject, { prompt, provider, model })
+  }
+
+  function duplicateProject(projectId: string) {
+    const source = projects.find((project) => project.id === projectId)
+    if (!source) return
+
+    const project: PlaygroundProject = {
+      ...source,
+      id: createId('fork'),
+      name: `${source.name}-copy`.slice(0, 64),
+      status: 'IDLE',
+      publishedUrl: undefined,
+      deploymentProvider: undefined,
+      deploymentId: undefined,
+      deploymentState: undefined,
+      lastActive: 'now',
+    }
+
+    setProjects((current) => [project, ...current])
+    setActiveProjectId(project.id)
+    setSelectedFile(project.generation?.files[0]?.path ?? '.gitignore')
+    setPane('preview')
+    setView('builder')
+    syncProject(project, { prompt, provider, model })
+  }
+
+  function downloadProject(project = activeProject) {
+    const projectFiles = project?.generation?.files
+    if (!project || !projectFiles?.length) return
+
+    const blob = createZip(projectFiles)
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `${slugify(project.name)}.zip`
+    document.body.append(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  function localPublishPatch(project: PlaygroundProject) {
+    const slug = `${slugify(project.name === 'untitled' && project.generation?.title ? project.generation.title : project.name)}-${Math.random().toString(16).slice(2, 6)}`
+    return {
+      status: 'PUBLISHED' as const,
+      publishedUrl: `https://${slug}.gitlawb.app/`,
+      deploymentProvider: 'local-preview',
+      deploymentId: `local-${project.id}`,
+      deploymentState: 'LOCAL_PREVIEW',
+      lastActive: 'now',
+    }
+  }
+
+  async function publishProject() {
+    if (!activeProject) return
+    if (!activeProject.generation) {
+      setPublishError('Generate files before publishing this project.')
+      setView('publish')
       return
     }
 
-    setGenerating(true)
-    setError(null)
-    setGeneratedCode(null)
+    setIsPublishing(true)
+    setPublishError(null)
+    setView('publish')
 
     try {
-      // Simulate AI code generation - in real implementation, call an AI API
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Generate a simple HTML/JS app based on the prompt
-      const code = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${prompt.substring(0, 50)}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #0a0a0a;
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
-    .container {
-      max-width: 800px;
-      width: 100%;
-      text-align: center;
-    }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, #6366f1, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    p {
-      color: #9ca3af;
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-    }
-    .card {
-      background: #1a1a2e;
-      border: 1px solid #333;
-      border-radius: 1rem;
-      padding: 2rem;
-      margin: 1rem 0;
-    }
-    .app-name {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #fff;
-      margin-bottom: 1rem;
-    }
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      background: #6366f1;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      color: #fff;
-      margin-bottom: 1rem;
-    }
-    .description {
-      color: #9ca3af;
-      line-height: 1.6;
-    }
-    .placeholder {
-      color: #666;
-      font-style: italic;
-    }
-    .generated-at {
-      color: #4b5563;
-      font-size: 0.75rem;
-      margin-top: 2rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🎯 Your App: ${prompt.split(' ').slice(0, 3).join(' ')}</h1>
-    <div class="card">
-      <span class="badge">🚀 Built with Agentbot</span>
-      <div class="app-name">${prompt.substring(0, 50)}</div>
-      <p class="description">${prompt}</p>
-      <p class="placeholder">This is a demo app. Full code generation would create a complete ${prompt.split(' ')[0]} application.</p>
-    </div>
-    <p style="margin-top: 2rem; color: #6b7280;">
-      Want to build this for real? Visit 
-      <a href="https://agentbot.com" style="color: #6366f1;">agentbot.com</a> 
-      to deploy your app to the world!
-    </p>
-    <div class="generated-at">
-      Generated at ${new Date().toLocaleString()}
-    </div>
-  </div>
-</body>
-</html>`
+      const response = await fetch(`/api/playground/projects/${encodeURIComponent(activeProject.id)}/publish`, {
+        method: 'POST',
+      })
 
-      setGeneratedCode(code)
+      if (response.status === 401) {
+        updateActiveProject(localPublishPatch(activeProject), { prompt, provider, model })
+        return
+      }
+
+      const body = await response.json()
+      if (!response.ok) {
+        throw new Error(body?.error || 'Publish failed')
+      }
+
+      const published = body?.project as PlaygroundProject | undefined
+      if (published) {
+        setStorage('server')
+        setProjects((current) => current.map((project) => (
+          project.id === published.id ? { ...project, ...published } : project
+        )))
+      }
     } catch (err) {
-      setError('Failed to generate app. Please try again.')
+      setPublishError(err instanceof Error ? err.message : 'Publish failed')
+      updateActiveProject(localPublishPatch(activeProject), { prompt, provider, model })
     } finally {
-      setGenerating(false)
+      setIsPublishing(false)
+    }
+  }
+
+  async function refreshPublishedProject() {
+    if (!activeProject?.publishedUrl) return
+
+    setIsRefreshingPublish(true)
+    setPublishError(null)
+
+    try {
+      const response = await fetch(`/api/playground/projects/${encodeURIComponent(activeProject.id)}/publish`, {
+        method: 'GET',
+      })
+
+      if (response.status === 401) return
+
+      const body = await response.json()
+      if (!response.ok) {
+        throw new Error(body?.error || 'Failed to refresh deployment status')
+      }
+
+      const refreshed = body?.project as PlaygroundProject | undefined
+      if (refreshed) {
+        setStorage('server')
+        setProjects((current) => current.map((project) => (
+          project.id === refreshed.id ? { ...project, ...refreshed } : project
+        )))
+      }
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : 'Failed to refresh deployment status')
+    } finally {
+      setIsRefreshingPublish(false)
+    }
+  }
+
+  async function pushProjectToGitlawb() {
+    if (!activeProject) return
+    if (!activeProject.generation) {
+      setPublishError('Generate files before pushing this project to GitLawb.')
+      setView('publish')
+      return
+    }
+
+    setIsPushingGitlawb(true)
+    setPublishError(null)
+    setView('publish')
+
+    try {
+      const response = await fetch(`/api/playground/projects/${encodeURIComponent(activeProject.id)}/gitlawb`, {
+        method: 'POST',
+      })
+
+      const body = await response.json()
+      if (!response.ok) {
+        throw new Error(body?.error || 'GitLawb push failed')
+      }
+
+      const pushed = body?.project as PlaygroundProject | undefined
+      if (pushed) {
+        setStorage('server')
+        setProjects((current) => current.map((project) => (
+          project.id === pushed.id ? { ...project, ...pushed } : project
+        )))
+      }
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : 'GitLawb push failed')
+    } finally {
+      setIsPushingGitlawb(false)
+    }
+  }
+
+  async function submit(nextPrompt = prompt) {
+    const cleanPrompt = nextPrompt.trim()
+    if (!cleanPrompt || isGenerating || !activeProject) return
+
+    setPrompt(cleanPrompt)
+    setIsGenerating(true)
+    setError(null)
+    setPane('preview')
+    setView('builder')
+
+    try {
+      const response = await fetch('/api/playground/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: cleanPrompt, model }),
+      })
+      const body = await response.json()
+
+      if (!response.ok) {
+        throw new Error(body?.error || 'OpenClaude generation failed')
+      }
+
+      const data = body as PlaygroundResponse
+      const nextName = activeProject.name === 'untitled'
+        ? slugify(data.generation.title).replace(/-/g, ' ').slice(0, 42) || activeProject.name
+        : activeProject.name
+
+      setProvider(data.provider)
+      setModel(data.model)
+      updateActiveProject({
+        generation: data.generation,
+        name: nextName,
+        status: activeProject.status === 'PUBLISHED' ? 'PUBLISHED' : 'IDLE',
+        lastActive: 'now',
+      }, { prompt: cleanPrompt, provider: data.provider, model: data.model })
+      setSelectedFile(data.generation.files[0]?.path ?? '.gitignore')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'OpenClaude generation failed')
+    } finally {
+      setIsGenerating(false)
     }
   }
 
   return (
-    <main className="min-h-screen bg-black text-white font-mono">
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-900/30 border border-purple-500/30 rounded-full mb-6">
-            <Sparkles className="h-4 w-4 text-purple-400" />
-            <span className="text-purple-400 text-sm">AI-Powered</span>
+    <main className="min-h-[calc(100vh-6rem)] bg-black text-white font-mono selection:bg-orange-500/30">
+      <div className="border-b border-zinc-900 bg-black">
+        <div className="h-12 px-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setView('builder')}
+              className="text-[11px] font-bold uppercase tracking-widest hover:text-orange-500"
+            >
+              Playground
+            </button>
+            <div className="text-zinc-700">/</div>
+            <button className="inline-flex items-center gap-1 text-[11px] uppercase tracking-widest text-zinc-400 hover:text-white">
+              {breadcrumb}
+              <ChevronDown className="h-3 w-3" />
+            </button>
           </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase mb-4">
-            Build Anything
-          </h1>
-          
-          <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-            Describe what you want to build. Our AI will generate it instantly.
-          </p>
-        </div>
 
-        {/* Input Section */}
-        <div className="mb-8">
-          <div className="relative">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="e.g., Build me a dark-themed todo app with drag and drop, reminders, and categories..."
-              className="w-full h-48 bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-lg text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 resize-none"
-            />
-            <div className="absolute bottom-4 right-4 text-zinc-500 text-xs">
-              {prompt.length} characters
+          <div className="hidden lg:flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
+            <span className="inline-flex items-center gap-1 border border-orange-500/40 px-2 py-1 text-orange-500">
+              <Check className="h-3 w-3" />
+              Auto-approve on
+            </span>
+            <button type="button" onClick={() => setView('apps')} className="px-2 py-1 hover:text-white">Apps</button>
+            <button type="button" onClick={() => setView('projects')} className="px-2 py-1 hover:text-white">Projects</button>
+            <button type="button" onClick={() => setView('publish')} className="px-2 py-1 hover:text-white">Publish</button>
+            <button type="button" onClick={newProject} className="inline-flex items-center gap-1 border border-zinc-800 px-2 py-1 hover:text-white">
+              <Plus className="h-3 w-3" />
+              New project
+            </button>
+            <a href="/logout" className="px-2 py-1 hover:text-white">Sign out</a>
+          </div>
+        </div>
+      </div>
+
+      {view === 'projects' ? (
+        <ProjectsView
+          projects={visibleProjects}
+          onNewProject={newProject}
+          onOpen={openProject}
+          onRename={renameProject}
+          onDuplicate={duplicateProject}
+          onDownload={downloadProject}
+          onArchive={archiveProject}
+        />
+      ) : view === 'apps' ? (
+        <AppsView projects={publishedProjects} onOpen={openProject} onPublish={() => setView('publish')} onDownload={downloadProject} />
+      ) : view === 'publish' ? (
+        <PublishView
+          project={activeProject}
+          onPublish={publishProject}
+          onGitlawbPush={pushProjectToGitlawb}
+          onRefresh={refreshPublishedProject}
+          onOpen={() => setView('builder')}
+          isPublishing={isPublishing}
+          isPushingGitlawb={isPushingGitlawb}
+          isRefreshing={isRefreshingPublish}
+          publishError={publishError}
+        />
+      ) : (
+        <BuilderView
+          prompt={prompt}
+          setPrompt={setPrompt}
+          files={files}
+          generation={generation}
+          activeFile={activeFile}
+          selectedFile={selectedFile}
+          setSelectedFile={setSelectedFile}
+          pane={pane}
+          setPane={setPane}
+          viewport={viewport}
+          setViewport={setViewport}
+          isGenerating={isGenerating}
+          error={error}
+          sessionId={sessionId}
+          provider={provider}
+          model={model}
+          storage={storage}
+          submit={submit}
+          onDownload={() => downloadProject()}
+        />
+      )}
+    </main>
+  )
+}
+
+function BuilderView({
+  prompt,
+  setPrompt,
+  files,
+  generation,
+  activeFile,
+  selectedFile,
+  setSelectedFile,
+  pane,
+  setPane,
+  viewport,
+  setViewport,
+  isGenerating,
+  error,
+  sessionId,
+  provider,
+  model,
+  storage,
+  submit,
+  onDownload,
+}: {
+  prompt: string
+  setPrompt: (value: string) => void
+  files: PlaygroundFile[]
+  generation: PlaygroundGeneration | null
+  activeFile: PlaygroundFile | undefined
+  selectedFile: string
+  setSelectedFile: (path: string) => void
+  pane: Pane
+  setPane: (pane: Pane) => void
+  viewport: Viewport
+  setViewport: (viewport: Viewport) => void
+  isGenerating: boolean
+  error: string | null
+  sessionId: string
+  provider: string
+  model: string
+  storage: 'local' | 'server'
+  submit: (prompt?: string) => Promise<void>
+  onDownload: () => void
+}) {
+  const [consoleFilter, setConsoleFilter] = useState<ConsoleLevel>('all')
+  const [consoleCleared, setConsoleCleared] = useState(false)
+  const consoleEntries = useMemo(
+    () => buildConsoleEntries(generation, error, isGenerating),
+    [generation, error, isGenerating],
+  )
+  const visibleConsoleEntries = useMemo(() => {
+    if (consoleCleared) return []
+    if (consoleFilter === 'all') return consoleEntries
+    return consoleEntries.filter((entry) => entry.level === consoleFilter)
+  }, [consoleCleared, consoleEntries, consoleFilter])
+
+  useEffect(() => {
+    setConsoleCleared(false)
+  }, [generation, error, isGenerating])
+
+  return (
+    <div className="grid min-h-[calc(100vh-9rem)] lg:grid-cols-[440px_1fr]">
+      <aside className="border-b border-zinc-900 lg:border-b-0 lg:border-r">
+        <div className="h-full flex flex-col">
+          <div className="border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest">
+              <span className="text-white">Chat</span>
+              <span className="text-zinc-600">Idle</span>
             </div>
+            <span className="text-[10px] uppercase tracking-widest text-orange-500">OpenClaude</span>
           </div>
-        </div>
 
-        {/* Generate Button */}
-        <div className="flex justify-center mb-12">
-          <button
-            onClick={handleGenerate}
-            disabled={generating || !prompt.trim()}
-            className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-lg px-8 py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {generating ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Zap className="h-5 w-5" />
-                Generate App
-              </>
+          <div className="p-5 space-y-5 flex-1">
+            <div>
+              <h1 className="text-2xl font-bold uppercase tracking-tighter">What should we build?</h1>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                Describe an app. OpenClaude writes the files; the preview updates as it goes.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {EXAMPLES.map((example) => (
+                <button
+                  key={example.title}
+                  type="button"
+                  onClick={() => setPrompt(example.prompt)}
+                  className="w-full border border-zinc-900 bg-black p-3 text-left hover:border-zinc-700 transition-colors"
+                >
+                  <div className="text-[10px] uppercase tracking-widest text-white">{example.title}</div>
+                  <div className="mt-2 line-clamp-3 text-xs leading-relaxed text-zinc-500">{example.prompt}</div>
+                </button>
+              ))}
+            </div>
+
+            <div className="border border-zinc-800 bg-zinc-950">
+              <textarea
+                value={prompt}
+                onChange={(event) => setPrompt(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    void submit()
+                  }
+                }}
+                className="min-h-40 w-full resize-none bg-transparent p-4 text-sm leading-relaxed text-white placeholder:text-zinc-600 focus:outline-none"
+                placeholder="Describe the app you want OpenClaude to build..."
+              />
+              <div className="border-t border-zinc-900 px-3 py-2 flex items-center justify-between gap-2">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Enter send · Shift Enter newline</span>
+                <button
+                  type="button"
+                  onClick={() => void submit()}
+                  disabled={isGenerating || prompt.trim().length < 12}
+                  className="inline-flex h-8 items-center gap-2 bg-white px-3 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  Send
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="border border-red-900/70 bg-red-950/20 p-3 text-xs leading-relaxed text-red-400">
+                {error}
+              </div>
             )}
-          </button>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="text-center mb-8">
-            <p className="text-red-400">{error}</p>
-          </div>
-        )}
-
-        {/* Generated Code Preview */}
-        {generatedCode && (
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Generated Code</h2>
-              <button
-                onClick={() => navigator.clipboard.writeText(generatedCode)}
-                className="text-zinc-400 hover:text-white text-sm"
-              >
-                Copy Code
-              </button>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 overflow-x-auto">
-              <pre className="text-xs text-zinc-400 font-mono whitespace-pre-wrap">
-                {generatedCode.substring(0, 500)}...
-              </pre>
-            </div>
-          </div>
-        )}
-
-        {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-purple-900/30 rounded-lg">
-                <Lightbulb className="h-5 w-5 text-purple-400" />
-              </div>
-              <h3 className="font-bold">AI-Powered</h3>
-            </div>
-            <p className="text-zinc-400 text-sm">
-              Describe your app in plain English. Our AI understands and builds it.
-            </p>
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-red-900/30 rounded-lg">
-                <Code className="h-5 w-5 text-orange-500" />
-              </div>
-              <h3 className="font-bold">Instant Code</h3>
-            </div>
-            <p className="text-zinc-400 text-sm">
-              Get working code in seconds. Copy, modify, and deploy anywhere.
-            </p>
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-green-900/30 rounded-lg">
-                <Rocket className="h-5 w-5 text-green-400" />
-              </div>
-              <h3 className="font-bold">Deploy Ready</h3>
-            </div>
-            <p className="text-zinc-400 text-sm">
-              One-click deploy to Vercel, Netlify, or your own server.
-            </p>
+          <div className="border-t border-zinc-900 px-4 py-3 flex items-center justify-between text-[10px] uppercase tracking-widest text-zinc-600">
+            <span>Files {files.length}</span>
+            <span>Session {sessionId}</span>
           </div>
         </div>
+      </aside>
 
-        {/* Examples */}
-        <div className="mb-12">
-          <h2 className="text-xl font-bold mb-6">Try these prompts:</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              'Build a weather dashboard with current conditions',
-              'Create a task manager with drag and drop',
-              'Make a simple snake game',
-              'Build a markdown note-taking app',
-            ].map((example) => (
+      <section className="min-w-0 flex flex-col">
+        <div className="border-b border-zinc-900 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setPane('preview')}
+              className={`inline-flex h-8 items-center gap-2 border px-3 text-[10px] font-bold uppercase tracking-widest transition-colors ${pane === 'preview' ? 'border-white bg-white text-black' : 'border-zinc-800 text-zinc-400 hover:text-white'}`}
+            >
+              <Monitor className="h-3.5 w-3.5" />
+              Preview
+            </button>
+            <button
+              type="button"
+              onClick={() => setPane('code')}
+              className={`inline-flex h-8 items-center gap-2 border px-3 text-[10px] font-bold uppercase tracking-widest transition-colors ${pane === 'code' ? 'border-white bg-white text-black' : 'border-zinc-800 text-zinc-400 hover:text-white'}`}
+            >
+              <Code2 className="h-3.5 w-3.5" />
+              Code
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1">
+            {([
+              ['mobile', Smartphone],
+              ['tablet', Tablet],
+              ['desktop', Monitor],
+              ['fill', Maximize2],
+            ] as const).map(([key, Icon]) => (
               <button
-                key={example}
-                onClick={() => setPrompt(example)}
-                className="text-left p-4 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:border-purple-500 transition-colors"
+                key={key}
+                type="button"
+                onClick={() => setViewport(key)}
+                title={key}
+                className={`inline-flex h-8 w-8 items-center justify-center border transition-colors ${viewport === key ? 'border-orange-500 text-orange-500' : 'border-zinc-800 text-zinc-500 hover:text-white'}`}
               >
-                <span className="text-purple-400 text-sm">→</span>
-                <span className="text-zinc-300 ml-2">{example}</span>
+                <Icon className="h-3.5 w-3.5" />
               </button>
             ))}
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="text-center">
-          <p className="text-zinc-500 mb-4">
-            Want full deployment and hosting?
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300"
+        <div className="grid flex-1 min-h-[560px] xl:grid-cols-[1fr_280px]">
+          <div className="min-w-0 bg-zinc-950/50 p-4">
+            {isGenerating ? (
+              <div className="h-full min-h-[520px] border border-zinc-900 bg-black flex items-center justify-center">
+                <div className="text-center">
+                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-orange-500" />
+                  <div className="mt-4 text-[10px] uppercase tracking-widest text-zinc-500">Applying changes</div>
+                </div>
+              </div>
+            ) : pane === 'preview' ? (
+              <div className="h-full min-h-[520px] overflow-auto border border-zinc-900 bg-zinc-950 p-4">
+                <div className={`mx-auto h-full min-h-[488px] bg-white transition-all ${VIEWPORTS[viewport]}`}>
+                  {generation ? (
+                    <iframe
+                      title="OpenClaude playground preview"
+                      srcDoc={generation.previewHtml}
+                      sandbox="allow-scripts allow-forms"
+                      className="h-full min-h-[488px] w-full border-0 bg-white"
+                    />
+                  ) : (
+                    <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
+                      <div className="max-w-md text-center">
+                        <div className="text-[10px] uppercase tracking-widest text-orange-500">Booting sandbox</div>
+                        <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                          Send a prompt to generate files and update the preview.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="h-full min-h-[520px] overflow-hidden border border-zinc-900 bg-black">
+                <div className="border-b border-zinc-900 px-3 py-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
+                  <FileText className="h-3.5 w-3.5" />
+                  {activeFile?.path ?? 'No file selected'}
+                </div>
+                <pre className="h-[488px] overflow-auto p-4 text-xs leading-relaxed text-zinc-300">
+                  <code>{activeFile?.content ?? 'Generate a project to inspect code.'}</code>
+                </pre>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-zinc-900 xl:border-l xl:border-t-0">
+            <div className="border-b border-zinc-900 px-4 py-3 flex items-center justify-between text-[10px] uppercase tracking-widest text-zinc-500">
+              <span>Files {files.length}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  title="download zip"
+                  onClick={onDownload}
+                  disabled={files.length === 0}
+                  className="text-zinc-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                </button>
+                <button type="button" title="refresh" className="text-zinc-600 hover:text-white">
+                  <RotateCw className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-3 space-y-1">
+              {files.length === 0 ? (
+                <div className="px-2 py-8 text-center text-xs leading-relaxed text-zinc-600">
+                  Files appear after OpenClaude writes the project.
+                </div>
+              ) : files.map((file) => (
+                <button
+                  key={file.path}
+                  type="button"
+                  onClick={() => {
+                    setSelectedFile(file.path)
+                    setPane('code')
+                  }}
+                  className={`w-full flex items-center justify-between gap-2 px-2 py-2 text-left text-xs transition-colors ${selectedFile === file.path ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-950 hover:text-white'}`}
+                >
+                  <span className="min-w-0 flex items-center gap-2">
+                    <FileText className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{file.path}</span>
+                  </span>
+                  <span className="text-[10px] text-zinc-600">{formatBytes(file.content.length)}</span>
+                </button>
+              ))}
+            </div>
+
+            {activeFile && (
+              <>
+                <div className="border-y border-zinc-900 px-4 py-3 text-[10px] uppercase tracking-widest text-zinc-500">
+                  {fileLabel(activeFile.path)} · {activeFile.language}
+                </div>
+                <pre className="max-h-56 overflow-auto p-4 text-xs leading-relaxed text-zinc-400">
+                  <code>{activeFile.content}</code>
+                </pre>
+              </>
+            )}
+
+            <div className="border-y border-zinc-900 px-4 py-3 text-[10px] uppercase tracking-widest text-zinc-500">
+              Runtime
+            </div>
+            <div className="p-4 space-y-3 text-xs text-zinc-500">
+              <div className="flex items-center justify-between gap-4">
+                <span>Provider</span>
+                <span className="text-zinc-300">{provider}</span>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span>Model</span>
+                <span className="text-zinc-300">{model}</span>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span>Mode</span>
+                <span className="text-zinc-300">auto-approve</span>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span>Storage</span>
+                <span className="text-zinc-300">{storage}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-zinc-900">
+          <div className="px-4 py-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
+            <button
+              type="button"
+              title="collapse console"
+              className="inline-flex h-5 w-5 items-center justify-center border border-zinc-900 text-zinc-600 hover:text-white"
+            >
+              <Minus className="h-3 w-3" />
+            </button>
+            <Terminal className="h-3.5 w-3.5" />
+            <span>Console</span>
+            <div className="ml-auto flex items-center gap-1">
+              {(['all', 'error', 'warn', 'log'] as const).map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setConsoleFilter(level)}
+                  className={`px-2 py-1 transition-colors ${consoleFilter === level ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  {level}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setConsoleCleared(true)}
+                className="px-2 py-1 text-zinc-500 hover:text-white"
+              >
+                Clear
+              </button>
+              <Columns3 className="h-3.5 w-3.5 text-zinc-700" />
+            </div>
+          </div>
+          <div className="min-h-20 border-t border-zinc-900 bg-black px-4 py-3 font-mono text-xs text-zinc-500">
+            {visibleConsoleEntries.length === 0 ? (
+              <div className="leading-relaxed text-zinc-700">
+                no console output yet — the preview&apos;s logs and errors will show up here.
+              </div>
+            ) : visibleConsoleEntries.map((entry, index) => (
+              <div key={`${entry.level}-${entry.message}-${index}`} className="leading-relaxed">
+                <span className={entry.level === 'error' ? 'text-red-500' : entry.level === 'warn' ? 'text-yellow-500' : 'text-zinc-700'}>
+                  {entry.level === 'error' ? 'x' : entry.level === 'warn' ? '!' : '+'}
+                </span>{' '}
+                <span className={entry.level === 'error' ? 'text-red-400' : entry.level === 'warn' ? 'text-yellow-500' : 'text-zinc-500'}>
+                  {entry.message}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function ProjectsView({
+  projects,
+  onNewProject,
+  onOpen,
+  onRename,
+  onDuplicate,
+  onDownload,
+  onArchive,
+}: {
+  projects: PlaygroundProject[]
+  onNewProject: () => void
+  onOpen: (id: string) => void
+  onRename: (id: string) => void
+  onDuplicate: (id: string) => void
+  onDownload: (project: PlaygroundProject) => void
+  onArchive: (id: string) => void
+}) {
+  return (
+    <section className="max-w-5xl px-6 py-10">
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600">Playground / Projects</div>
+          <h1 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Your projects</h1>
+          <p className="mt-2 text-sm text-zinc-500">{projects.length} projects</p>
+        </div>
+        <button
+          type="button"
+          onClick={onNewProject}
+          className="inline-flex items-center gap-2 bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          New project
+        </button>
+      </div>
+
+      <div className="divide-y divide-zinc-900 border-y border-zinc-900">
+        {projects.map((project) => (
+          <div key={project.id} className="grid gap-4 py-5 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-bold tracking-tighter">{project.name}</h2>
+                <span className={project.status === 'PUBLISHED' ? 'text-[10px] uppercase tracking-widest text-green-500' : 'text-[10px] uppercase tracking-widest text-zinc-600'}>
+                  {project.status}
+                </span>
+              </div>
+              <p className="mt-2 text-xs uppercase tracking-widest text-zinc-600">
+                Template {project.template} · Last active {project.lastActive}
+                {project.publishedUrl ? ` · ${project.publishedUrl}` : ''}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-widest">
+              <button type="button" onClick={() => onOpen(project.id)} className="border border-zinc-800 px-3 py-2 text-zinc-300 hover:border-zinc-600 hover:text-white">
+                Open
+              </button>
+              <button type="button" onClick={() => onRename(project.id)} className="border border-zinc-800 px-3 py-2 text-zinc-500 hover:border-zinc-600 hover:text-white">
+                Rename
+              </button>
+              <button type="button" onClick={() => onDuplicate(project.id)} className="inline-flex items-center gap-2 border border-zinc-800 px-3 py-2 text-zinc-500 hover:border-zinc-600 hover:text-white">
+                <Copy className="h-3.5 w-3.5" />
+                Duplicate
+              </button>
+              <button
+                type="button"
+                onClick={() => onDownload(project)}
+                disabled={!project.generation}
+                className="inline-flex items-center gap-2 border border-zinc-800 px-3 py-2 text-zinc-500 hover:border-zinc-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Zip
+              </button>
+              <button type="button" onClick={() => onArchive(project.id)} className="inline-flex items-center gap-2 border border-zinc-800 px-3 py-2 text-zinc-500 hover:border-zinc-600 hover:text-white">
+                <Archive className="h-3.5 w-3.5" />
+                Archive
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function AppsView({
+  projects,
+  onOpen,
+  onPublish,
+  onDownload,
+}: {
+  projects: PlaygroundProject[]
+  onOpen: (id: string) => void
+  onPublish: () => void
+  onDownload: (project: PlaygroundProject) => void
+}) {
+  return (
+    <section className="max-w-5xl px-6 py-10">
+      <div className="mb-8">
+        <div className="text-[10px] uppercase tracking-widest text-zinc-600">Playground / Apps</div>
+        <h1 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Apps</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-500">
+          Published playground apps will show here. Open one to inspect files or publish the current project.
+        </p>
+      </div>
+
+      {projects.length === 0 ? (
+        <div className="border border-zinc-900 p-8">
+          <Globe2 className="h-5 w-5 text-orange-500" />
+          <h2 className="mt-5 text-xl font-bold uppercase tracking-tighter">No published apps yet</h2>
+          <p className="mt-2 text-sm text-zinc-500">Publish the current project to create the first app entry.</p>
+          <button
+            type="button"
+            onClick={onPublish}
+            className="mt-6 border border-zinc-800 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:border-zinc-600 hover:text-white"
           >
-            Go to Dashboard <ExternalLink className="h-4 w-4" />
-          </Link>
+            Go to publish
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-px bg-zinc-900 md:grid-cols-2">
+          {projects.map((project) => (
+            <div key={project.id} className="bg-black p-6">
+              <div className="text-[10px] uppercase tracking-widest text-green-500">Published</div>
+              <h2 className="mt-4 text-xl font-bold tracking-tighter">{project.name}</h2>
+              <p className="mt-2 text-xs uppercase tracking-widest text-zinc-600">{project.publishedUrl}</p>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-zinc-500">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-700">Provider</div>
+                  <div className="mt-1 text-zinc-300">{project.deploymentProvider ?? 'preview'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-700">State</div>
+                  <div className="mt-1 text-zinc-300">{project.deploymentState ?? 'published'}</div>
+                </div>
+              </div>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => onOpen(project.id)}
+                  className="inline-flex items-center gap-2 border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-widest text-zinc-300 hover:text-white"
+                >
+                  Open
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDownload(project)}
+                  disabled={!project.generation}
+                  className="inline-flex items-center gap-2 border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-widest text-zinc-300 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  Zip
+                  <Download className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function PublishView({
+  project,
+  onPublish,
+  onGitlawbPush,
+  onRefresh,
+  onOpen,
+  isPublishing,
+  isPushingGitlawb,
+  isRefreshing,
+  publishError,
+}: {
+  project: PlaygroundProject | undefined
+  onPublish: () => Promise<void>
+  onGitlawbPush: () => Promise<void>
+  onRefresh: () => Promise<void>
+  onOpen: () => void
+  isPublishing: boolean
+  isPushingGitlawb: boolean
+  isRefreshing: boolean
+  publishError: string | null
+}) {
+  const canPublish = Boolean(project?.generation)
+
+  return (
+    <section className="max-w-5xl px-6 py-10">
+      <div className="mb-8">
+        <div className="text-[10px] uppercase tracking-widest text-zinc-600">Playground / Publish</div>
+        <h1 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Publish project</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-500">
+          Publish the generated Vite app as a Vercel preview, or push the source to a GitLawb node as a real git repo.
+        </p>
+      </div>
+
+      <div className="grid gap-px bg-zinc-900 md:grid-cols-[1fr_320px]">
+        <div className="bg-black p-6">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600">Current project</div>
+          <h2 className="mt-4 text-2xl font-bold tracking-tighter">{project?.name ?? 'untitled'}</h2>
+          <p className="mt-3 text-sm text-zinc-500">
+            {project?.generation?.summary ?? 'Generate files before publishing this project.'}
+          </p>
+          {project?.publishedUrl && (
+            <a
+              href={project.publishedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-green-500 hover:text-green-400"
+            >
+              {project.publishedUrl}
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
+          {publishError && (
+            <p className="mt-4 text-xs leading-relaxed text-yellow-500">{publishError}</p>
+          )}
+        </div>
+        <div className="bg-black p-6">
+          <div className="space-y-3 text-xs text-zinc-500">
+            <div className="flex items-center justify-between">
+              <span>Status</span>
+              <span className="text-zinc-300">{project?.status ?? 'IDLE'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Template</span>
+              <span className="text-zinc-300">{project?.template ?? 'VITE-REACT-TS'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Files</span>
+              <span className="text-zinc-300">{project?.generation?.files.length ?? 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Target</span>
+              <span className="text-zinc-300">{project?.deploymentProvider ?? 'vercel-ready'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>State</span>
+              <span className="text-zinc-300">{project?.deploymentState ?? 'preview'}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void onPublish()}
+            disabled={!canPublish || isPublishing}
+            className="mt-6 w-full bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isPublishing ? 'Publishing' : 'Publish'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void onGitlawbPush()}
+            disabled={!canPublish || isPushingGitlawb}
+            className="mt-2 w-full border border-orange-500/50 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-400 hover:text-orange-300 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isPushingGitlawb ? 'Pushing to GitLawb' : 'Push to GitLawb node'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void onRefresh()}
+            disabled={!project?.publishedUrl || isRefreshing}
+            className="mt-2 w-full border border-zinc-800 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:border-zinc-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isRefreshing ? 'Refreshing' : 'Refresh status'}
+          </button>
+          <button
+            type="button"
+            onClick={onOpen}
+            className="mt-2 w-full border border-zinc-800 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:border-zinc-600 hover:text-white"
+          >
+            Open builder
+          </button>
         </div>
       </div>
-    </main>
+    </section>
   )
 }

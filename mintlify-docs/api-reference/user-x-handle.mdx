@@ -1,0 +1,98 @@
+---
+title: User X handle API
+description: "Save, retrieve, or clear the X (Twitter) handle on your user profile"
+---
+
+# User X handle API
+
+Manage the X (Twitter) handle linked to your account. Your agent uses this handle to mention you, credit content, and surface your posts.
+
+## Get X handle
+
+```http
+GET /api/user/x-handle
+```
+
+Returns the X handle currently saved on your profile. Requires session authentication.
+
+### Response
+
+```json
+{
+  "handle": "yourhandle"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `handle` | string \| null | The saved X handle (without the `@` prefix), or `null` if no handle is set |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+### Example
+
+```bash
+curl -X GET https://agentbot.sh/api/user/x-handle \
+  -H "Cookie: agentbot-session=YOUR_SESSION"
+```
+
+---
+
+## Update X handle
+
+```http
+PATCH /api/user/x-handle
+```
+
+Save or clear the X handle on your profile. Requires session authentication.
+
+The handle is validated against X username rules: letters, numbers, and underscores only, up to 50 characters. A leading `@` is automatically stripped before validation and storage.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `handle` | string \| null | Yes | X handle (without the `@` prefix). Pass `null` or an empty string to clear the handle. |
+
+### Response
+
+```json
+{
+  "ok": true,
+  "handle": "yourhandle"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ok` | boolean | Whether the update succeeded |
+| `handle` | string \| null | The saved handle, or `null` if the handle was cleared |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid X handle — must contain only letters, numbers, and underscores (1–50 characters) |
+| 401 | Unauthorized — no valid session |
+
+### Example
+
+```bash
+curl -X PATCH https://agentbot.sh/api/user/x-handle \
+  -H "Content-Type: application/json" \
+  -H "Cookie: agentbot-session=YOUR_SESSION" \
+  -d '{"handle": "yourhandle"}'
+```
+
+To clear:
+
+```bash
+curl -X PATCH https://agentbot.sh/api/user/x-handle \
+  -H "Content-Type: application/json" \
+  -H "Cookie: agentbot-session=YOUR_SESSION" \
+  -d '{"handle": null}'
+```

@@ -1,0 +1,893 @@
+---
+title: Wallet API
+description: "Manage wallets for on-chain transactions and payments"
+---
+
+# Wallet API
+
+Manage wallets for on-chain transactions and payments. Supports session-based wallets, Coinbase Developer Platform (CDP) wallets, and Base network balance queries.
+
+<Note>The platform uses Coinbase Smart Wallet as its only wallet connector on Base (`coinbaseWallet({ preference: 'smartWalletOnly' })`). Injected wallets such as MetaMask are not supported. All wallet interactions on the Base network require a Coinbase Smart Wallet.</Note>
+
+## Get wallet
+
+```http
+GET /api/wallet
+```
+
+Returns wallet information. Behavior depends on whether an `address` query parameter is provided and on your server configuration.
+
+### Base network balance query
+
+When the `address` query parameter is present, the endpoint queries the Base network for the wallet's native ETH balance and USDC token balance. The address must be a valid EVM address (0x-prefixed, 42 characters).
+
+```http
+GET /api/wallet?address=0xd8fd...db56f
+```
+
+#### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `address` | string | Yes | Valid hex-encoded wallet address (0x-prefixed, 42 characters). Invalid addresses return a `400` error. |
+
+#### Tracked assets
+
+The endpoint returns balances for the following assets on Base:
+
+| Asset | Type | Decimals | Description |
+|-------|------|----------|-------------|
+| ETH | Native | 18 | Native Ethereum balance on Base |
+| USDC | ERC-20 | 6 | USD Coin on Base |
+
+#### Response
+
+```json
+{
+  "address": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+  "chain": "Base",
+  "chainId": 8453,
+  "testnet": false,
+  "explorerUrl": "https://basescan.org/address/0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+  "nativeBalance": {
+    "address": "native",
+    "name": "Ethereum",
+    "symbol": "ETH",
+    "decimals": 18,
+    "balance": "0.05",
+    "balanceRaw": "50000000000000000",
+    "explorerUrl": "https://basescan.org/address/0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
+  },
+  "primaryToken": {
+    "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "name": "USD Coin",
+    "symbol": "USDC",
+    "decimals": 6,
+    "balance": "24.940000",
+    "balanceRaw": "24940000",
+    "explorerUrl": "https://basescan.org/address/0xd8fd0e1dce89beaab924ac68098ddb17613db56f#tokentxns"
+  },
+  "allTokens": [
+    {
+      "address": "native",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "decimals": 18,
+      "balance": "0.05",
+      "balanceRaw": "50000000000000000",
+      "explorerUrl": "https://basescan.org/address/0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
+    }
+  ],
+  "assets": [
+    {
+      "address": "native",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "decimals": 18,
+      "balance": "0.05",
+      "balanceRaw": "50000000000000000",
+      "explorerUrl": "https://basescan.org/address/0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
+    },
+    {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "decimals": 6,
+      "balance": "24.940000",
+      "balanceRaw": "24940000",
+      "explorerUrl": "https://basescan.org/address/0xd8fd0e1dce89beaab924ac68098ddb17613db56f#tokentxns"
+    }
+  ]
+}
+```
+
+#### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `address` | string | The queried wallet address |
+| `chain` | string | Network name (`Base`) |
+| `chainId` | number | Chain ID (`8453` for Base mainnet) |
+| `testnet` | boolean | Always `false` — the wallet API connects to Base mainnet |
+| `explorerUrl` | string | Basescan URL for the wallet address |
+| `nativeBalance` | object | Native ETH balance on Base |
+| `nativeBalance.address` | string | Always `"native"` |
+| `nativeBalance.name` | string | `"Ethereum"` |
+| `nativeBalance.symbol` | string | `"ETH"` |
+| `nativeBalance.decimals` | number | `18` |
+| `nativeBalance.balance` | string | Formatted ETH balance |
+| `nativeBalance.balanceRaw` | string | Raw balance in wei |
+| `nativeBalance.explorerUrl` | string | Basescan URL for the wallet address |
+| `primaryToken` | object | USDC token balance on Base |
+| `primaryToken.address` | string | USDC contract address on Base |
+| `primaryToken.name` | string | `"USD Coin"` |
+| `primaryToken.symbol` | string | `"USDC"` |
+| `primaryToken.decimals` | number | `6` |
+| `primaryToken.balance` | string | Formatted USDC balance |
+| `primaryToken.balanceRaw` | string | Raw balance in smallest unit |
+| `primaryToken.explorerUrl` | string | Basescan token transactions URL |
+| `allTokens` | array | Assets with a non-zero balance |
+| `allTokens[].address` | string | Token contract address or `"native"` for ETH |
+| `allTokens[].name` | string | Asset name |
+| `allTokens[].symbol` | string | Asset symbol |
+| `allTokens[].balance` | string | Formatted balance |
+| `allTokens[].balanceRaw` | string | Raw balance string |
+| `allTokens[].explorerUrl` | string | Basescan URL |
+| `assets` | array | All tracked assets (ETH and USDC), regardless of balance |
+
+<Warning>The wallet API has migrated from the Tempo network to Base. The previous Tempo-specific response fields (`totalUsd` and per-token `hasBalance`) have been removed. The response now includes `explorerUrl`, `nativeBalance`, and `assets` fields. The `primaryToken` now always refers to USDC on Base. Update any integrations that relied on the Tempo response shape.</Warning>
+
+<Note>The `allTokens` array only includes assets with a non-zero balance. The `assets` array always includes both ETH and USDC regardless of balance. The `nativeBalance` is always the first entry in the `assets` array, and `primaryToken` is always USDC (the second entry).</Note>
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Valid address parameter required. The `address` must be a valid EVM address (0x-prefixed, 42 characters). |
+| 500 | Failed to fetch wallet data from Base RPC |
+
+### CDP / session wallet query
+
+When no `address` parameter is provided, the endpoint returns CDP or session-based wallet information. When CDP is configured, returns CDP status without authentication. Otherwise, requires session authentication.
+
+#### Response (CDP configured)
+
+```json
+{
+  "agenticWallet": {
+    "status": "configured",
+    "projectId": "abc12345...",
+    "features": [
+      "create_wallet",
+      "get_balance",
+      "send_usdc",
+      "trade_tokens",
+      "x402_payments"
+    ]
+  },
+  "instructions": "CDP Agentic Wallet is configured. Use /api/wallet/cdp/* endpoints."
+}
+```
+
+#### Response (user wallet exists)
+
+```json
+{
+  "address": "0x...",
+  "balance": "0",
+  "network": "base-sepolia",
+  "hasWallet": true,
+  "createdAt": "2026-03-01T00:00:00Z"
+}
+```
+
+#### Response (no wallet)
+
+```json
+{
+  "address": null,
+  "balance": "0",
+  "network": "base-sepolia",
+  "hasWallet": false,
+  "message": "No wallet found. Create one to get started."
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized (no session and CDP not configured) |
+
+## Wallet actions
+
+```http
+POST /api/wallet
+```
+
+Requires session authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | One of: `create`, `get_seed`, `export_seed` |
+
+### Action: `create`
+
+Creates a new wallet for the authenticated user.
+
+```json
+{
+  "address": "0x...",
+  "network": "base-sepolia",
+  "message": "Wallet created successfully"
+}
+```
+
+Returns `400` if a wallet already exists.
+
+### Action: `get_seed`
+
+Returns wallet metadata. Private keys are stored encrypted server-side and are never exposed.
+
+```json
+{
+  "address": "0x...",
+  "network": "base-sepolia",
+  "createdAt": "2026-03-01T00:00:00Z",
+  "warning": "Private keys are stored encrypted server-side and never exposed."
+}
+```
+
+### Action: `export_seed`
+
+Seed export is disabled for security. Returns `403`.
+
+```json
+{
+  "error": "Seed export is disabled for security. Contact support if you need your private key."
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid action or wallet already exists |
+| 401 | Unauthorized |
+| 404 | No wallet found (for `get_seed`) |
+
+## Get wallet address
+
+```http
+GET /api/wallet/address
+```
+
+Returns the wallet address for the authenticated user. Prioritizes Base network wallets. When no managed wallet exists in the database, the endpoint falls back to the session-based Base wallet address (from Coinbase Smart Wallet sign-in).
+
+Requires session authentication.
+
+### Response (managed wallet)
+
+When a Base wallet is found in the database:
+
+```json
+{
+  "authenticated": true,
+  "address": "0x...",
+  "network": "base",
+  "type": "managed",
+  "source": "managed"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `authenticated` | boolean | Always `true` |
+| `address` | string | Wallet address |
+| `network` | string | Wallet network (one of `base`, `base-mainnet`, `base-sepolia`) |
+| `type` | string | Wallet type from the database |
+| `source` | string | `"managed"` — the address was resolved from the wallet database |
+
+### Response (session wallet)
+
+When no managed wallet exists but the user signed in with a Base wallet:
+
+```json
+{
+  "authenticated": true,
+  "address": "0x...",
+  "network": "base",
+  "type": "base-auth",
+  "source": "session"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `source` | string | `"session"` — the address was resolved from the authentication session |
+| `type` | string | `"base-auth"` — address derived from Base wallet sign-in |
+
+### Response (no wallet)
+
+When no wallet is linked:
+
+```json
+{
+  "authenticated": true,
+  "address": null,
+  "message": "No Base wallet linked. Sign in with Base to use send and receive."
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to fetch wallet address |
+
+## Create CDP wallet
+
+```http
+POST /api/wallet/create
+```
+
+Requires session authentication. Creates a new wallet using the Coinbase Developer Platform SDK.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | Email address for wallet registration |
+
+### Response
+
+```json
+{
+  "success": true,
+  "walletAddress": "0x...",
+  "walletId": "wallet_789",
+  "networks": ["base-sepolia", "base"]
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Email required |
+| 401 | Unauthorized — no valid session |
+| 500 | CDP not configured. Response includes a `setup` field with configuration instructions. Generic errors include a `details` field with the error message. |
+
+## CDP wallet status
+
+```http
+GET /api/wallet/cdp
+```
+
+Returns supported chain information for the CDP wallet.
+
+```json
+{
+  "status": "ok",
+  "type": "evm_wallet",
+  "supportedChains": ["base", "base-sepolia"]
+}
+```
+
+## Create CDP wallet client
+
+```http
+POST /api/wallet/cdp
+```
+
+Creates a viem wallet client on Base Sepolia.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `privateKey` | string | No | Private key (0x-prefixed). A new key is generated if omitted. |
+
+### Response
+
+```json
+{
+  "success": true,
+  "address": "0x...",
+  "network": "base-sepolia"
+}
+```
+
+## Wallet top-up
+
+Fund your wallet using a credit card via Stripe checkout. Choose from preset amounts and complete payment through Stripe's hosted checkout page. On successful payment, your wallet is credited automatically.
+
+### Create top-up checkout session
+
+```http
+GET /api/wallet/top-up
+```
+
+Creates a Stripe checkout session for the specified top-up amount. The caller identifies the wallet to credit by passing the wallet address as a query parameter.
+
+#### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `amount` | number | No | Amount in cents. One of `500`, `1000`, `2500`, or `5000`. Defaults to `1000` ($10). |
+| `address` | string | Yes | Hex-encoded wallet address (0x-prefixed, 42 characters). Identifies the wallet to credit. |
+
+#### Top-up options
+
+| Amount (cents) | Display | Description |
+|----------------|---------|-------------|
+| `500` | $5 | 5 agent calls |
+| `1000` | $10 | 10 agent calls |
+| `2500` | $25 | 25 agent calls |
+| `5000` | $50 | 50 agent calls |
+
+#### Response
+
+```json
+{
+  "url": "https://checkout.stripe.com/c/pay/...",
+  "sessionId": "cs_live_..."
+}
+```
+
+#### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | string | Stripe checkout URL. Redirect the user here to complete payment. |
+| `sessionId` | string | Stripe checkout session ID |
+
+On successful payment, the user is redirected to `/dashboard/wallet?top_up=success`. On cancellation, the user is redirected to `/dashboard/wallet?top_up=cancelled`.
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid amount. Must be one of: `500`, `1000`, `2500`, `5000`. |
+| 400 | Valid wallet address required. The `address` parameter must be a 42-character hex string starting with `0x`. |
+| 500 | Stripe not configured or checkout creation failed |
+
+#### Example
+
+```bash
+curl -X GET "https://agentbot.sh/api/wallet/top-up?amount=2500&address=0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
+```
+
+### Top-up webhook
+
+```http
+POST /api/wallet/top-up
+```
+
+Stripe webhook endpoint that processes `checkout.session.completed` events for wallet top-ups. When a payment completes, the webhook verifies the Stripe signature and logs the credit event.
+
+<Warning>Wallet crediting is not yet fully automated. The webhook records the payment event, but the actual balance update is applied when you next interact with your wallet. This is a known limitation pending indexer integration.</Warning>
+
+<Warning>This endpoint is called by Stripe, not by your application directly. You must configure the webhook URL in your Stripe dashboard to point to this endpoint. The request must include a valid `stripe-signature` header.</Warning>
+
+#### Headers
+
+| Header | Type | Required | Description |
+|--------|------|----------|-------------|
+| `stripe-signature` | string | Yes | Stripe webhook signature for event verification |
+
+#### Webhook behavior
+
+The webhook processes events where `metadata.type` equals `wallet_top_up`. On a matching `checkout.session.completed` event, it reads the following metadata fields from the checkout session:
+
+| Metadata field | Description |
+|----------------|-------------|
+| `type` | Must be `wallet_top_up` to trigger wallet credit |
+| `walletAddress` | The wallet address to credit |
+| `amountCents` | The top-up amount in cents |
+
+#### Response
+
+```json
+{
+  "received": true
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid Stripe signature |
+| 500 | Stripe not configured or webhook processing failed |
+
+## Transaction history
+
+```http
+GET /api/wallet/transactions
+```
+
+Returns recent wallet activity for an address on Base. The endpoint returns both USDC token transfers and recent native ETH transactions in a single merged timeline, sorted by timestamp (newest first).
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `address` | string | Yes | Valid hex-encoded wallet address (0x-prefixed, 42 characters). Invalid addresses return a `400` error. |
+| `limit` | number | No | Maximum number of transactions to return. Minimum `1`, maximum `25`. Defaults to `10`. |
+
+### Response
+
+```json
+{
+  "address": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+  "chain": "Base",
+  "chainId": 8453,
+  "currentBlock": "12345678",
+  "transactions": [
+    {
+      "hash": "0xabc123...",
+      "asset": "USDC",
+      "direction": "received",
+      "amount": "10.000000",
+      "amountRaw": "10000000",
+      "from": "0x1234...",
+      "to": "0xd8fd...",
+      "blockNumber": "12345670",
+      "timestamp": "2026-04-04T12:00:00.000Z",
+      "status": "confirmed",
+      "explorerUrl": "https://basescan.org/tx/0xabc123...",
+      "source": "token-log"
+    },
+    {
+      "hash": "0xdef456...",
+      "asset": "ETH",
+      "direction": "received",
+      "amount": "0.01",
+      "amountRaw": "10000000000000000",
+      "from": "0x5678...",
+      "to": "0xd8fd...",
+      "blockNumber": "12345665",
+      "timestamp": "2026-04-04T11:58:00.000Z",
+      "status": "confirmed",
+      "explorerUrl": "https://basescan.org/tx/0xdef456...",
+      "source": "recent-native-scan"
+    }
+  ],
+  "sources": {
+    "usdc": "token logs over last 50000 blocks",
+    "eth": "native scan over last 180 blocks"
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `address` | string | The queried wallet address |
+| `chain` | string | Network name (`Base`) |
+| `chainId` | number | Chain ID (`8453` for Base mainnet) |
+| `currentBlock` | string | Current block number on the chain |
+| `transactions` | array | Merged list of USDC and ETH transactions, sorted by timestamp (newest first) |
+| `transactions[].hash` | string | Transaction hash |
+| `transactions[].asset` | string | `"USDC"` or `"ETH"` |
+| `transactions[].direction` | string | `"sent"` or `"received"` relative to the queried address |
+| `transactions[].amount` | string | Formatted amount (6 decimal places for USDC, variable for ETH) |
+| `transactions[].amountRaw` | string | Raw amount in smallest unit (USDC uses 6 decimals, ETH uses 18 decimals in wei) |
+| `transactions[].from` | string | Sender address |
+| `transactions[].to` | string | Recipient address |
+| `transactions[].blockNumber` | string | Block number of the transaction |
+| `transactions[].timestamp` | string | ISO 8601 timestamp of the block |
+| `transactions[].status` | string | Always `"confirmed"` |
+| `transactions[].explorerUrl` | string | Basescan URL for the transaction |
+| `transactions[].source` | string | Data source: `"token-log"` for USDC ERC-20 transfer events, `"recent-native-scan"` for ETH transactions found by scanning recent blocks |
+| `sources` | object | Describes the scan window for each asset type |
+| `sources.usdc` | string | USDC token log scan window description |
+| `sources.eth` | string | ETH native scan window description |
+
+<Note>USDC transactions are retrieved from ERC-20 `Transfer` event logs over the most recent 50,000 blocks. ETH transactions are found by scanning the most recent 180 blocks for native value transfers involving the queried address. Older transactions outside these windows are not returned. For complete history, use the `explorerUrl` from the [wallet balance endpoint](#base-network-balance-query) to link users to Basescan.</Note>
+
+<Warning>The `indexedAsset` and `windowBlocks` top-level fields have been removed. Use the `sources` object to see scan window details. Each transaction now includes an `asset` field (`"USDC"` or `"ETH"`) and a `source` field indicating how it was discovered. The previous `symbol` field on transactions has been replaced by `asset`.</Warning>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Valid address parameter required. The `address` must be a valid EVM address (0x-prefixed, 42 characters). |
+| 500 | Failed to fetch transactions from Base RPC |
+
+## USDC transfer validation
+
+When transferring USDC through the wallet service, the following validation rules apply:
+
+- The transfer amount must be a positive finite number. Values such as `NaN`, `Infinity`, negative numbers, and zero are rejected.
+- Amounts are rounded to 6 decimal places (USDC precision). If the rounded value equals zero, the transfer is rejected.
+
+These checks run before any on-chain transaction is initiated.
+
+<Note>When payments are initiated through the [x402 pay action](/api-reference/x402#pay), additional protections apply: a per-payment maximum of $100, recipient address format validation (EVM or Solana), and audit logging of every payment attempt. See the [x402 gateway reference](/api-reference/x402) for details.</Note>
+
+## Sending USDC
+
+USDC sends from the wallet use a sponsored-first strategy. The wallet attempts a gas-sponsored send before falling back to a standard ERC-20 transfer, so users do not need ETH for gas when sponsorship is available.
+
+### Send flow
+
+1. **Sponsored send (preferred)** — The wallet first attempts a gas-sponsored USDC send using the Base paymaster. If the sponsored send succeeds, the resulting identifier is returned and the transaction status is polled for up to 30 seconds.
+2. **Standard send (fallback)** — If the sponsored send fails for any reason, the wallet falls back to a standard on-chain ERC-20 `transfer` call on the Base USDC contract. This path requires the sender to have ETH for gas.
+
+The send mode is determined automatically. You do not need to specify which path to use.
+
+### Send state
+
+After initiating a send, the wallet returns a state object with the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `mode` | string | `"sponsored"` if the gas-sponsored path succeeded, `"standard"` if it fell back to a direct ERC-20 transfer |
+| `status` | string | `"pending"`, `"completed"`, or `"failed"` |
+| `asset` | string | `"USDC"` or `"ETH"` |
+| `hash` | string | Transaction hash (for standard sends) or payment identifier (for sponsored sends) |
+| `message` | string | Human-readable status message |
+| `amount` | string | The amount sent |
+| `recipient` | string | The recipient address |
+
+<Warning>Sponsored send identifiers are not standard transaction hashes. Do not use them for on-chain receipt polling via RPC methods like `eth_getTransactionReceipt`. The wallet polls the sponsored payment status internally and updates the send state when the transaction confirms.</Warning>
+
+<Note>When sponsorship is available, no ETH balance is required to send USDC. The gas fee is covered by the platform paymaster. If sponsorship is unavailable, the wallet falls back to a standard send that requires ETH for gas.</Note>
+
+### Supported assets
+
+| Asset | Contract | Decimals | Send behavior |
+|-------|----------|----------|---------------|
+| USDC | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6 | Sponsored-first with standard fallback |
+| ETH | Native | 18 | Standard native transfer (no sponsorship) |
+
+## MPP payment sessions
+
+Payment sessions enable off-chain, per-call billing for agent requests. Instead of settling every call on-chain, you deposit funds into a session and sign lightweight vouchers that are batched and settled periodically.
+
+See [MPP payments — sessions](/payments/mpp#sessions) for the full protocol description.
+
+### List sessions
+
+```http
+GET /api/wallet/sessions?address=0x...
+```
+
+Returns all sessions (active and closed) for the given wallet address.
+
+#### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `address` | string | Yes | Hex-encoded wallet address (0x-prefixed) |
+
+#### Response
+
+```json
+{
+  "sessions": [
+    {
+      "id": "ses_a1b2c3d4e5f6...",
+      "userAddress": "0x...",
+      "deposit": "10.00",
+      "spent": "1.25",
+      "remaining": "8.75",
+      "vouchers": [],
+      "status": "active",
+      "createdAt": 1742472000000,
+      "lastSettledAt": 1742472000000
+    }
+  ]
+}
+```
+
+### Get session
+
+```http
+GET /api/wallet/sessions?sessionId=ses_...
+```
+
+Returns a single session by ID.
+
+#### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `sessionId` | string | Yes | Session ID (prefixed with `ses_`) |
+
+#### Response
+
+```json
+{
+  "session": {
+    "id": "ses_a1b2c3d4e5f6...",
+    "userAddress": "0x...",
+    "deposit": "10.00",
+    "spent": "1.25",
+    "remaining": "8.75",
+    "vouchers": [],
+    "status": "active",
+    "createdAt": 1742472000000,
+    "lastSettledAt": 1742472000000
+  }
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `address` or `sessionId` parameter |
+| 404 | Session not found |
+
+### Session fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique session ID (`ses_` prefix) |
+| `userAddress` | string | Wallet address that owns the session |
+| `deposit` | string | Total deposited amount in USD |
+| `spent` | string | Total spent via vouchers in USD |
+| `remaining` | string | Remaining balance in USD |
+| `vouchers` | array | Pending vouchers not yet settled on-chain. See [voucher object fields](#voucher-object-fields) below. |
+| `status` | string | One of `active`, `settling`, or `closed` |
+| `createdAt` | number | Unix timestamp (ms) when the session was created |
+| `lastSettledAt` | number | Unix timestamp (ms) of the last on-chain settlement |
+
+### Voucher object fields
+
+Each entry in the `vouchers` array has the following shape:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `plugin` | string | Plugin identifier that generated the voucher (e.g., `agent`, `generate-text`) |
+| `timestamp` | number | Unix timestamp (ms) when the voucher was created |
+| `amount` | string | Amount debited in USD |
+
+When a session has active vouchers, they appear in the wallet activity feed showing the plugin name, timestamp, and amount for each pending voucher.
+
+### Create session
+
+```http
+POST /api/wallet/sessions
+```
+
+Opens a new payment session. If the wallet already has an active session, the existing session is returned instead.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `address` | string | Yes | Hex-encoded wallet address (0x-prefixed) |
+| `deposit` | string | Yes | Deposit amount in USD (minimum `1.00`, maximum `100.00`) |
+
+#### Response (201 Created)
+
+```json
+{
+  "session": {
+    "id": "ses_a1b2c3d4e5f6...",
+    "userAddress": "0x...",
+    "deposit": "10.00",
+    "spent": "0.00",
+    "remaining": "10.00",
+    "vouchers": [],
+    "status": "active",
+    "createdAt": 1742472000000,
+    "lastSettledAt": 1742472000000
+  }
+}
+```
+
+#### Response (existing session)
+
+```json
+{
+  "session": { ... },
+  "note": "Active session already exists"
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `address` or `deposit`, deposit below minimum, or deposit above maximum |
+
+### Close session
+
+```http
+DELETE /api/wallet/sessions?sessionId=ses_...
+```
+
+Closes an active session. Any pending vouchers are settled on-chain first, and the remaining balance is returned to the user.
+
+#### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `sessionId` | string | Yes | Session ID to close |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "returned": "8.75"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the session was closed |
+| `returned` | string | Amount in USD returned to the user |
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `sessionId`, or session could not be closed |
+
+### Submit voucher
+
+```http
+POST /api/wallet/sessions/voucher
+```
+
+Submits a signed voucher to debit the session balance off-chain. This is the primary billing mechanism during an active session — each agent call produces one voucher.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sessionId` | string | Yes | Active session ID |
+| `userAddress` | string | Yes | Wallet address that owns the session (0x-prefixed) |
+| `plugin` | string | Yes | Plugin identifier (e.g., `agent`, `generate-text`, `tts`, `stt`) |
+| `signature` | string | Yes | User's hex-encoded signature (0x-prefixed) |
+| `nonce` | string | Yes | Unique nonce for this voucher |
+
+The voucher amount is determined automatically from the plugin's pricing. See [plugin pricing](/payments/mpp#plugin-pricing) for current rates.
+
+#### Response
+
+```json
+{
+  "success": true,
+  "session": {
+    "id": "ses_a1b2c3d4e5f6...",
+    "spent": "0.05",
+    "remaining": "9.95",
+    "pendingVouchers": 1
+  },
+  "voucher": {
+    "amount": "0.05",
+    "plugin": "agent",
+    "description": "Agent orchestrator request"
+  }
+}
+```
+
+#### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `session.id` | string | Session ID |
+| `session.spent` | string | Updated total spent in USD |
+| `session.remaining` | string | Updated remaining balance in USD |
+| `session.pendingVouchers` | number | Number of vouchers pending on-chain settlement |
+| `voucher.amount` | string | Amount debited for this call in USD |
+| `voucher.plugin` | string | Plugin that was called |
+| `voucher.description` | string | Human-readable description of the charge |
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing required fields, unknown plugin, session not found, session not active, address mismatch, or insufficient balance |
+| 500 | Internal error processing the voucher |

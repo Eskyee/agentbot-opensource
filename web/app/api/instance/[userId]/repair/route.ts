@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { controlsDisabledResponse, getOwnedOpenClawUser, OPENCLAW_CONTROLS_ENABLED } from '@/app/api/instance/_runtime'
 import { getRailwayEnvironmentId, railwayGql, resolveRailwayService, restartRailwayService } from '@/app/lib/railway-service'
 import { getAgentEnvVars } from '@/app/lib/railway-provision'
-import { prisma } from '@/app/lib/prisma'
+import { getOrCreateUserGatewayToken } from '@/app/lib/token-manager'
 
 /**
  * POST /api/instance/[userId]/repair
@@ -36,11 +36,12 @@ export async function POST(
     return NextResponse.json({ success: false, error: err.message }, { status: 503 })
   }
 
-  // Get user's unique token from database
-  const registration = await prisma.$queryRaw<{ gateway_token: string }[]>`
-    SELECT gateway_token FROM agent_registrations WHERE user_id = ${user.id} LIMIT 1
-  `
-  const userGatewayToken = registration[0]?.gateway_token || crypto.randomUUID()
+  // Get or create user's gateway token — persists to agent_registrations so COPY TOKEN works after repair
+  const tokenResult = await getOrCreateUserGatewayToken(user.id)
+  if (!tokenResult) {
+    return NextResponse.json({ success: false, error: 'Failed to resolve gateway token' }, { status: 500 })
+  }
+  const userGatewayToken = tokenResult.token
 
   try {
     const variables = getAgentEnvVars(user.id, user.plan || 'solo', userGatewayToken)

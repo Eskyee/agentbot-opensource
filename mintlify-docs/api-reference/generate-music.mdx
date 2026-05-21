@@ -1,0 +1,74 @@
+---
+title: Generate music
+description: "Generate AI-powered music from text prompts"
+---
+
+# Generate music
+
+Create AI-generated music tracks from text prompts. This endpoint accepts a prompt describing the desired music and returns the generation status.
+
+<Note>This endpoint requires session-based authentication. You must be signed in with a valid user account. All requests must include the `Content-Type: application/json` header.</Note>
+
+<Warning>Music generation can take up to 5 minutes per request (`maxDuration: 300`). This endpoint is not yet fully implemented — requests currently return a pending status while the backend integration is being finalized.</Warning>
+
+## Create music
+
+```http
+POST /api/generate-music
+```
+
+Submit a music generation request.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | No | Type of music to generate |
+| `prompt` | string | No | Text description of the desired music |
+| `duration` | number | No | Desired duration in seconds |
+| `provider` | string | No | AI provider to use for generation |
+
+### Example request
+
+```json
+{
+  "type": "background",
+  "prompt": "Upbeat electronic track with synth pads and a steady beat",
+  "duration": 60,
+  "provider": "lyria"
+}
+```
+
+### Response
+
+Returns the current status and the submitted configuration:
+
+```json
+{
+  "message": "Music generation API coming soon",
+  "status": "pending",
+  "config": {
+    "type": "background",
+    "prompt": "Upbeat electronic track with synth pads and a steady beat",
+    "duration": 60,
+    "provider": "lyria"
+  }
+}
+```
+
+The `status` field is `pending` while the backend integration is being completed. Once live, this endpoint will return a URL to the generated audio file.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — you must be signed in |
+| 500 | Music generation failed |
+
+#### Error response
+
+```json
+{
+  "error": "Failed to generate music"
+}
+```

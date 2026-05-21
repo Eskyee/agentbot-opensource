@@ -1,0 +1,71 @@
+---
+title: Fee payer API
+description: "Tempo gas sponsorship for user transactions"
+---
+
+# Fee payer API
+
+The fee payer endpoint sponsors transaction fees for users on the Tempo network. Users can send transactions without holding gas tokens — the platform pays fees from an operator wallet.
+
+This endpoint works with the [MPP payment flow](/payments/mpp) and the [Tempo wallet integration](/api-reference/wallet#tempo-balance-query).
+
+## Sponsor a transaction
+
+```http
+POST /api/fee-payer
+```
+
+Accepts a Tempo transaction and sponsors its gas fees. The request body is forwarded to the `Handler.feePayer` handler from `tempo.ts/server`.
+
+### Request
+
+The request body should be a JSON object containing the Tempo transaction to sponsor. The exact format is defined by the `tempo.ts` SDK.
+
+### Response
+
+On success, returns the result from the fee payer handler (format defined by `tempo.ts`).
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 503 | Fee payer not configured. The `TEMPO_FEE_PAYER_KEY` environment variable is not set. |
+
+## Check fee payer status
+
+```http
+GET /api/fee-payer
+```
+
+Returns the current status and network configuration of the fee payer.
+
+### Response
+
+```json
+{
+  "status": "ready",
+  "chain": "Tempo",
+  "chainId": 4217
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | `ready` when the fee payer is configured, `disabled` otherwise |
+| `chain` | string | Network name (`Tempo` or `Tempo Testnet`) |
+| `chainId` | number | Chain ID (`4217` for mainnet, `42431` for testnet) |
+
+<Note>The network is determined by the `TEMPO_TESTNET` environment variable. When set to `true`, the fee payer uses the Tempo testnet (chain ID `42431`).</Note>
+
+## How gas sponsorship works
+
+Tempo supports protocol-level gas sponsorship. When a user submits a transaction through this endpoint:
+
+1. The user signs their transaction normally.
+2. The transaction is sent to the fee payer endpoint.
+3. The operator wallet pays the gas fee on behalf of the user.
+4. The transaction is submitted to the Tempo network.
+
+This removes the need for users to hold native gas tokens and reduces friction for on-chain payments.

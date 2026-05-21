@@ -5,7 +5,7 @@
 import { SoulClient } from '@/lib/soul';
 import { DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config';
 
-// YOUR_SOUL_SERVICE is the live v9.3 queen; -7139 is the legacy stagnant one.
+// YOUR_SERVICE_NAME is the live v9.3 queen; -7139 is the legacy stagnant one.
 // Probe order: user's agent → env-configured default → live queen → legacy.
 export const BORG_0_URL = 'https://YOUR_SERVICE_URL';
 export const BORG_0_LEGACY_URL = 'https://YOUR_SERVICE_URL';

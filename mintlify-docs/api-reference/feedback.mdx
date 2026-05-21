@@ -1,0 +1,142 @@
+---
+title: Feedback API
+description: "Submit corrections and view feedback history for agent behavior"
+---
+
+# Feedback API
+
+Submit corrections to improve agent behavior over time. You describe what the agent did wrong and what it should do instead. The agent stores these corrections in memory and uses them to adjust future responses.
+
+Use feedback when your agent produces output that is technically correct but misses the mark on style, tone, length, or format. Over time, corrections accumulate and the agent adapts its behavior without you needing to rewrite its system prompt.
+
+<Note>All feedback endpoints require session authentication. Feedback entries are scoped to the authenticated user.</Note>
+
+## Submit feedback
+
+```http
+POST /api/feedback
+```
+
+Record a correction for agent behavior. You must provide both the original behavior you want to correct and the desired behavior.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `message` | string | Yes | What the agent did wrong |
+| `correction` | string | Yes | What the agent should do instead |
+| `category` | string | No | Feedback category. One of `tone`, `accuracy`, `format`, `behavior`, `general`. Defaults to `general`. |
+| `type` | string | No | Feedback type. Defaults to `correction`. |
+| `agentId` | string | No | ID of the agent being corrected. Defaults to `default`. |
+
+### Example request
+
+```bash
+curl -X POST https://agentbot.sh/api/feedback \
+  -H "Content-Type: application/json" \
+  -b "session=YOUR_SESSION_COOKIE" \
+  -d '{
+    "message": "The agent sent a tweet with 5 emojis and 3 hashtags",
+    "correction": "No emojis. No hashtags in body. Short punchy sentences. One idea per tweet.",
+    "category": "format",
+    "agentId": "agent_123"
+  }'
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Feedback recorded. Agent will learn from this correction.",
+  "feedback": {
+    "timestamp": "2026-04-10T00:00:00.000Z",
+    "type": "correction",
+    "original": "The agent sent a tweet with 5 emojis and 3 hashtags",
+    "correction": "No emojis. No hashtags in body. Short punchy sentences. One idea per tweet.",
+    "category": "format",
+    "userId": "user_abc",
+    "agentId": "agent_123"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the feedback was saved |
+| `message` | string | Confirmation message |
+| `feedback.timestamp` | string | ISO 8601 timestamp of when the feedback was recorded |
+| `feedback.type` | string | Feedback type |
+| `feedback.original` | string | The original agent behavior described |
+| `feedback.correction` | string | The desired behavior |
+| `feedback.category` | string | Feedback category |
+| `feedback.userId` | string | ID of the user who submitted the feedback |
+| `feedback.agentId` | string | ID of the agent being corrected |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `message` and `correction` are required |
+| 401 | Unauthorized |
+| 500 | Internal server error |
+
+## Get feedback history
+
+```http
+GET /api/feedback
+```
+
+Retrieve the most recent feedback entries for the authenticated user. Returns up to 50 entries, ordered by most recent first.
+
+### Example request
+
+```bash
+curl -X GET https://agentbot.sh/api/feedback \
+  -b "session=YOUR_SESSION_COOKIE"
+```
+
+### Response
+
+```json
+{
+  "feedbacks": [
+    {
+      "timestamp": "2026-04-10T00:00:00.000Z",
+      "type": "correction",
+      "original": "The agent sent a tweet with 5 emojis and 3 hashtags",
+      "correction": "No emojis. No hashtags in body. Short punchy sentences.",
+      "category": "format",
+      "userId": "user_abc",
+      "agentId": "agent_123"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `feedbacks` | array | List of feedback entries |
+| `feedbacks[].timestamp` | string | ISO 8601 timestamp |
+| `feedbacks[].type` | string | Feedback type |
+| `feedbacks[].original` | string | What the agent did wrong |
+| `feedbacks[].correction` | string | What the agent should do instead |
+| `feedbacks[].category` | string | One of `tone`, `accuracy`, `format`, `behavior`, `general` |
+| `feedbacks[].userId` | string | User who submitted the feedback |
+| `feedbacks[].agentId` | string | Agent the feedback applies to |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+
+## Categories
+
+| Category | Description |
+|----------|-------------|
+| `tone` | Too formal, too casual, wrong voice |
+| `accuracy` | Wrong facts, missing sources |
+| `format` | Wrong structure, too long, too short |
+| `behavior` | Did the wrong thing, missed context |
+| `general` | Other feedback |

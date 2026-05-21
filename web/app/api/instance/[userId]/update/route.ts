@@ -45,7 +45,11 @@ export async function POST(
       openclawVersion: DEFAULT_OPENCLAW_VERSION,
     })
   } catch (error) {
-    return NextResponse.json({ success: false, status: 'error' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to deploy new image'
+    return NextResponse.json(
+      { success: false, status: 'error', error: message, image: DEFAULT_OPENCLAW_IMAGE },
+      { status: 500 }
+    )
   }
 }
 

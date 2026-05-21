@@ -1,0 +1,399 @@
+---
+title: Mission control API
+description: "Monitor your agent fleet with real-time graphs, execution traces, cost attribution, and booking data"
+---
+
+# Mission control API
+
+Mission control provides a real-time view of your agent fleet. Use these endpoints to visualize agent relationships, trace execution activity, attribute costs per agent, and track talent bookings.
+
+<Note>All four mission control endpoints use session authentication. The web proxy resolves the user ID from the session automatically. Unauthenticated requests receive safe default responses (empty data with a `200` status) instead of an error.</Note>
+
+<Note>The fleet graph and cost endpoints have two response shapes: the web proxy enriches the data with soul instance details, plan information, and layout coordinates. The backend endpoints documented below return the raw database records. Integrations that call the backend directly should use the backend response shapes described in this section.</Note>
+
+## Fleet graph
+
+```http
+GET /api/mission-control/fleet/graph
+```
+
+Returns a constellation graph of your agent fleet as a set of nodes and edges. Each node represents an agent with a `role` and positional data for graph layout. Edges use `from`/`to` fields with a `strength` value indicating relationship weight.
+
+### Authentication
+
+Requires session authentication.
+
+### Response
+
+```json
+{
+  "nodes": [
+    {
+      "id": "borg-0",
+      "name": "borg-0",
+      "role": "orchestrator",
+      "status": "active",
+      "x": 400,
+      "y": 300,
+      "load": 72,
+      "memory": 58,
+      "fitness": 85,
+      "walletAddress": "0x1234...abcd",
+      "children": 2,
+      "endpoints": 3,
+      "cycles": 1042,
+      "uptime": 86400,
+      "version": "0.1.0",
+      "regime": "explore",
+      "freeEnergy": 0.34,
+      "url": "https://borg-0-production-7139.up.railway.app"
+    },
+    {
+      "id": "a1b2c3d4",
+      "name": "Clone-a1b2c3d4",
+      "role": "worker",
+      "status": "active",
+      "x": 200,
+      "y": 450,
+      "load": 0,
+      "memory": 0,
+      "fitness": 0,
+      "walletAddress": "0xabcd...1234",
+      "url": "https://clone-a1b2.example.com"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-borg-0-a1b2c3d4",
+      "from": "borg-0",
+      "to": "a1b2c3d4",
+      "strength": 0.6
+    }
+  ],
+  "timestamp": "2026-03-22T12:00:00.000Z",
+  "source": "soul",
+  "degraded": false,
+  "nodeCount": 1,
+  "stats": {
+    "totalAgents": 2,
+    "activeAgents": 2,
+    "idleAgents": 0,
+    "offlineAgents": 0
+  },
+  "serviceUrl": "https://borg-0-production-7139.up.railway.app",
+  "dashboardUrl": "https://soul-dashboard.example.com"
+}
+```
+
+When no souls are reachable, the response uses the degraded shape with minimal node data:
+
+```json
+{
+  "nodes": [
+    {
+      "id": "atlas",
+      "name": "Atlas",
+      "role": "orchestrator",
+      "status": "offline",
+      "x": 400,
+      "y": 300,
+      "load": 0,
+      "memory": 0
+    }
+  ],
+  "edges": [],
+  "timestamp": "2026-03-22T12:00:00.000Z",
+  "source": "degraded",
+  "degraded": true,
+  "detail": "No healthy soul host found",
+  "stats": {
+    "totalAgents": 1,
+    "activeAgents": 0,
+    "idleAgents": 0,
+    "offlineAgents": 1
+  },
+  "serviceUrl": "https://borg-0-production-7139.up.railway.app",
+  "dashboardUrl": "https://soul-dashboard.example.com"
+}
+```
+
+When the request is unauthenticated (no valid session), the endpoint returns a default response:
+
+```json
+{
+  "nodes": [
+    {
+      "id": "atlas",
+      "name": "Atlas",
+      "role": "orchestrator",
+      "status": "offline",
+      "x": 400,
+      "y": 300,
+      "load": 0,
+      "memory": 0
+    }
+  ],
+  "edges": [],
+  "timestamp": "2026-03-22T12:00:00.000Z",
+  "source": "unauthenticated",
+  "stats": {
+    "totalAgents": 1,
+    "activeAgents": 0,
+    "idleAgents": 0,
+    "offlineAgents": 1
+  },
+  "dashboardUrl": "https://soul-dashboard.example.com"
+}
+```
+
+### Node object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique agent identifier (designation or truncated instance ID for clones) |
+| `name` | string | Agent display name |
+| `role` | string | Agent role. One of `orchestrator`, `specialist`, or `worker` |
+| `status` | string | Current status. One of `active`, `idle`, or `offline` |
+| `x` | number | Horizontal position for graph layout |
+| `y` | number | Vertical position for graph layout |
+| `load` | number | Current load percentage (0–100). Derived from active plan progress |
+| `memory` | number | Memory usage percentage (0–100). Derived from cortex experience count |
+| `fitness` | number | Fitness score (0–100). Only present on live nodes |
+| `walletAddress` | string | On-chain wallet address of the agent. Present when available |
+| `children` | number | Number of child (clone) instances. Only present on parent nodes |
+| `endpoints` | number | Number of registered endpoints. Only present on parent nodes |
+| `cycles` | number | Total cognitive cycles completed. Only present on parent nodes |
+| `uptime` | number | Uptime in seconds. Only present on parent nodes |
+| `version` | string | Soul service version. Only present on parent nodes |
+| `regime` | string | Current free energy regime (for example `"explore"` or `"exploit"`). Only present on parent nodes |
+| `freeEnergy` | number | Current free energy value. Only present on parent nodes |
+| `url` | string | Soul instance URL. Present on both parent and clone nodes |
+
+<Note>The `type` field was renamed to `role` and now uses the values `orchestrator`, `specialist`, and `worker`. The `monitor` role is no longer returned by this endpoint.</Note>
+
+### Edge object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique edge identifier |
+| `from` | string | Source agent ID |
+| `to` | string | Target agent ID |
+| `strength` | number | Relationship weight between 0 and 1 |
+
+<Note>The `source` and `target` fields were renamed to `from` and `to`. The `type` field on edges was replaced by `strength`.</Note>
+
+### Response metadata
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `timestamp` | string | ISO 8601 timestamp of the response |
+| `source` | string | Data source. `"soul"` for live data from the primary host, `"soul-fallback"` when a fallback host served the data, `"degraded"` when no souls are reachable, `"unauthenticated"` when no valid session is present |
+| `degraded` | boolean | `true` when the primary soul host was unavailable. Omitted or `false` when the primary host responds normally. |
+| `detail` | string | Error message describing the failure. Only present when `degraded` is `true`. |
+| `nodeCount` | number | Number of live soul nodes fetched. Only present when `source` is `"soul"` or `"soul-fallback"` |
+| `stats` | object | Aggregate fleet statistics |
+| `stats.totalAgents` | number | Total number of nodes in the graph |
+| `stats.activeAgents` | number | Number of nodes with `active` status |
+| `stats.idleAgents` | number | Number of nodes with `idle` status |
+| `stats.offlineAgents` | number | Number of nodes with `offline` status |
+| `serviceUrl` | string | Soul service URL that served the request. Present when `source` is `"soul"`, `"soul-fallback"`, or `"degraded"`. |
+| `dashboardUrl` | string | Soul dashboard URL |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Fleet graph returned (check `source` and `degraded` for actual state) |
+
+The endpoint always returns HTTP `200`. Unauthenticated requests receive default empty data. When the soul service is unreachable, the response includes `degraded: true` with a `detail` message.
+
+## Execution traces
+
+```http
+GET /api/mission-control/fleet/traces
+```
+
+Returns up to 50 of the most recent execution traces for your agent fleet, sorted by recency. Traces are sourced from treasury transaction records categorized as `agent_message` or `ai_metric`. Each trace is a raw transaction row that includes the transaction type, description, amount, transaction hash, and status fields. Returns an empty array when no traces exist or when the request is unauthenticated.
+
+<Note>The web proxy transforms these raw traces into `AgentTask`-shaped objects with fields like `description`, `completedAt`, `tokensUsed`, and `costUSD`. The backend endpoint documented here returns the raw treasury transaction rows.</Note>
+
+### Authentication
+
+Requires session authentication.
+
+### Response
+
+```json
+[
+  {
+    "id": 42,
+    "user_id": 1,
+    "agent_id": 5,
+    "type": "coordination",
+    "category": "agent_message",
+    "action": "BOOKING_OFFER",
+    "description": "Booking offer sent to DJ Nova",
+    "amount_usdc": 0,
+    "tx_hash": null,
+    "status": "confirmed",
+    "metadata": {},
+    "created_at": "2026-03-22T12:00:00.000Z"
+  },
+  {
+    "id": 41,
+    "user_id": 1,
+    "agent_id": 5,
+    "type": "transfer",
+    "category": "ai_metric",
+    "action": null,
+    "description": "AI inference cost logged",
+    "amount_usdc": 0.003,
+    "tx_hash": "0xabc123...",
+    "status": "confirmed",
+    "metadata": {},
+    "created_at": "2026-03-22T11:59:56.000Z"
+  }
+]
+```
+
+### Trace object (treasury transaction row)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Transaction identifier |
+| `user_id` | number | Owner user identifier |
+| `agent_id` | number \| null | Agent identifier associated with the transaction |
+| `type` | string \| null | Transaction type (for example `transfer`, `coordination`, `orphan_wallet`) |
+| `category` | string | Transaction category. Traces are filtered to `agent_message` and `ai_metric` categories |
+| `action` | string \| null | Action label for the transaction |
+| `description` | string \| null | Human-readable description of the transaction |
+| `amount_usdc` | number | Amount in USDC. `0` for non-financial traces |
+| `tx_hash` | string \| null | On-chain transaction hash, when applicable |
+| `status` | string | Transaction status. One of `confirmed`, `pending`, `failed`, or `needs_reconciliation` |
+| `metadata` | object | Additional context as a JSON object |
+| `created_at` | string | ISO 8601 timestamp when the transaction was recorded |
+
+<Note>The response is capped at 50 traces, sorted from most recent to oldest.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Traces returned (empty array when no data is available or unauthenticated) |
+
+The endpoint always returns HTTP `200`. Unauthenticated requests receive an empty array `[]`.
+
+## Cost attribution
+
+```http
+GET /api/mission-control/fleet/costs
+```
+
+Returns a cost breakdown for your agent fleet, grouped by agent and spending category. The data is sourced from treasury transaction records.
+
+<Note>The web proxy enriches this data with subscription plan information, agent names, and computed fields like `monthlyCost`. The backend endpoint documented here returns the raw per-agent cost aggregation from treasury transactions.</Note>
+
+### Authentication
+
+Requires session authentication.
+
+### Response
+
+```json
+[
+  {
+    "agent_id": 5,
+    "total_spend": "12.50",
+    "category": "ai_metric"
+  },
+  {
+    "agent_id": 5,
+    "total_spend": "0.00",
+    "category": "agent_message"
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agent_id` | number \| null | Agent identifier. `null` for transactions not attributed to a specific agent |
+| `total_spend` | string | Total USDC amount spent in this category, as a numeric string |
+| `category` | string | Transaction category (for example `ai_metric`, `agent_message`, `general`) |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Cost data returned (empty array when unauthenticated or no transactions exist) |
+| 500 | Database query failed |
+
+The endpoint always returns HTTP `200` on success. Unauthenticated requests receive an empty array `[]`.
+
+## Talent bookings
+
+```http
+GET /api/mission-control/fleet/bookings
+```
+
+Returns talent booking records for your agent fleet. These bookings are created through the agent-to-agent negotiation service when agents negotiate performance bookings for events. Each booking links a talent agent to an event and tracks the negotiation lifecycle.
+
+<Note>The web proxy returns a simplified view of bookings (pending agent provisioning). The backend endpoint documented here returns the full booking records from the negotiation service, including talent details and offer amounts.</Note>
+
+### Authentication
+
+Requires session authentication.
+
+### Response
+
+```json
+[
+  {
+    "id": 1,
+    "agent_id": 5,
+    "event_id": 3,
+    "talent_agent_id": "agent_789",
+    "talent_name": "DJ Nova",
+    "status": "offered",
+    "proposed_price_usdc": null,
+    "offer_amount_usdc": 500.00,
+    "final_price_usdc": null,
+    "metadata": {
+      "talentName": "DJ Nova",
+      "amount": 500,
+      "genre": "house"
+    },
+    "created_at": "2026-04-01T12:00:00Z",
+    "updated_at": "2026-04-01T12:00:00Z",
+    "event_name": "Underground Rave"
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Booking identifier |
+| `agent_id` | number | Agent that owns the event |
+| `event_id` | number | Linked event identifier |
+| `talent_agent_id` | string \| null | Agent ID of the talent being booked (A2A identifier) |
+| `talent_name` | string \| null | Display name of the talent |
+| `status` | string | Booking status. One of `pending`, `offered`, `countered`, `accepted`, or `declined` |
+| `proposed_price_usdc` | number \| null | Originally proposed price in USDC |
+| `offer_amount_usdc` | number \| null | Current offer amount in USDC from the negotiation service |
+| `final_price_usdc` | number \| null | Agreed final price in USDC. Set when the booking is accepted |
+| `metadata` | object | Full offer payload from the negotiation. Contains the original booking message data |
+| `created_at` | string | ISO 8601 booking creation timestamp |
+| `updated_at` | string | ISO 8601 last update timestamp |
+| `event_name` | string | Name of the linked event |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Booking data returned (empty array when unauthenticated or no bookings exist) |
+| 500 | Database query failed |
+
+The endpoint always returns HTTP `200` on success. Unauthenticated requests receive an empty array `[]`.

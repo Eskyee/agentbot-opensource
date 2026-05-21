@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 interface StatusData {
   users: number | null
@@ -8,10 +9,15 @@ interface StatusData {
 }
 
 export function StatusBar() {
+  const pathname = usePathname()
   const [status, setStatus] = useState<StatusData>({ users: null, online: true })
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
   useEffect(() => {
+    if (pathname.startsWith('/playground')) {
+      return
+    }
+
     const fetchStatus = async () => {
       try {
         const res = await fetch('/api/health', { cache: 'no-store' })
@@ -29,7 +35,11 @@ export function StatusBar() {
     fetchStatus()
     const interval = setInterval(fetchStatus, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [pathname])
+
+  if (pathname.startsWith('/playground')) {
+    return null
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/90 backdrop-blur-md border-t border-zinc-800/50">

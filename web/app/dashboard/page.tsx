@@ -538,6 +538,8 @@ function DashboardContent() {
               if (token) {
                 navigator.clipboard.writeText(token)
                 toast.success('Token copied!')
+              } else {
+                toast.error('Token not available — try Agentbot Recovery to repair it')
               }
             }}
             onRefreshPairing={() => {

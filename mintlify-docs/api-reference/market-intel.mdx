@@ -1,0 +1,211 @@
+---
+title: Market intel API
+description: "Live competitive landscape and market signal data"
+---
+
+# Market intel API
+
+Retrieve real-time competitive landscape data, infrastructure health signals, and market opportunities.
+
+## Get market intelligence
+
+```http
+GET /api/market-intel
+```
+
+No authentication required. Returns live competitor status checks, market signals from internal infrastructure health APIs, and strategic opportunity analysis.
+
+<Note>Competitor status checks and infrastructure health probes each use a 5-second timeout. The total response time depends on how quickly external services respond.</Note>
+
+### Response
+
+```json
+{
+  "generatedAt": "2026-03-27T15:00:00.000Z",
+  "competitors": [
+    {
+      "name": "Relevance AI",
+      "url": "https://relevanceai.com",
+      "description": "No-code agent builder targeting enterprise teams",
+      "price": "$19–$599/mo",
+      "status": "up",
+      "responseMs": 342
+    }
+  ],
+  "signals": [
+    {
+      "id": "infra-1",
+      "text": "Agentbot infrastructure healthy — enabled provisioning, available Docker, railway provider",
+      "source": "Agentbot Health API",
+      "date": "2026-03-27",
+      "sentiment": "pos"
+    }
+  ],
+  "opportunities": [
+    {
+      "title": "DJ / Creative AI",
+      "gap": "No competitor owns the music-creator segment",
+      "action": "Double down on DJ Stream + $BASEFM ecosystem"
+    }
+  ]
+}
+```
+
+### Top-level fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `generatedAt` | string | ISO 8601 timestamp when the response was generated |
+| `competitors` | array | Live status of tracked competitor platforms |
+| `signals` | array | Market and infrastructure signals |
+| `opportunities` | array | Strategic opportunity analysis |
+
+### Competitor object
+
+Each entry in the `competitors` array contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Competitor platform name |
+| `url` | string | Competitor website URL |
+| `description` | string | Brief description of the competitor's offering |
+| `price` | string | Pricing summary |
+| `status` | string | Live availability: `up`, `down`, or `unknown` |
+| `responseMs` | number \| null | Response time in milliseconds, or `null` if the check failed |
+
+### Tracked competitors
+
+| Name | Description |
+|------|-------------|
+| Relevance AI | No-code agent builder targeting enterprise teams |
+| Lindy.ai | Personal AI assistant with workflow automation |
+| Beam.ai | Enterprise AI agent platform |
+| AgentGPT | Open-source autonomous agent runner |
+| Dust.tt | Enterprise AI workspace with custom assistants |
+| CrewAI | Multi-agent orchestration framework |
+| AutoGen (Microsoft) | Microsoft multi-agent conversation framework |
+
+### Signal object
+
+Each entry in the `signals` array contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique signal identifier |
+| `text` | string | Human-readable signal description |
+| `source` | string | Source of the signal (for example, `Agentbot Health API`, `x402 Gateway`, `Tempo x402 Soul`) |
+| `date` | string | Date of the signal in `YYYY-MM-DD` format |
+| `sentiment` | string | Signal sentiment: `pos`, `neg`, or `neutral` |
+
+### Infrastructure signals
+
+The endpoint probes the following internal services and includes their status as signals when available:
+
+| Signal ID | Source | Description |
+|-----------|--------|-------------|
+| `infra-1` | Agentbot Health API | Agentbot backend health including provisioning, Docker, and provider status |
+| `x402-1` | x402 Gateway | x402 payment gateway operational status |
+| `soul-1` | Tempo x402 Soul | Autonomous soul agent status including version and soul state |
+
+<Note>Infrastructure signals are only included when the corresponding service responds within the 5-second timeout. Missing signals indicate the service was unreachable.</Note>
+
+### Opportunity object
+
+Each entry in the `opportunities` array contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Opportunity area name |
+| `gap` | string | Identified market gap |
+| `action` | string | Recommended strategic action |
+
+### Example request
+
+```bash
+curl -X GET https://agentbot.sh/api/market-intel
+```
+
+### Example response
+
+```json
+{
+  "generatedAt": "2026-03-27T15:16:53.000Z",
+  "competitors": [
+    {
+      "name": "Relevance AI",
+      "url": "https://relevanceai.com",
+      "description": "No-code agent builder targeting enterprise teams",
+      "price": "$19–$599/mo",
+      "status": "up",
+      "responseMs": 342
+    },
+    {
+      "name": "Lindy.ai",
+      "url": "https://lindy.ai",
+      "description": "Personal AI assistant with workflow automation",
+      "price": "$29–$299/mo",
+      "status": "up",
+      "responseMs": 518
+    },
+    {
+      "name": "CrewAI",
+      "url": "https://crewai.com",
+      "description": "Multi-agent orchestration framework",
+      "price": "Free / Enterprise",
+      "status": "up",
+      "responseMs": 210
+    }
+  ],
+  "signals": [
+    {
+      "id": "infra-1",
+      "text": "Agentbot infrastructure healthy — enabled provisioning, available Docker, railway provider",
+      "source": "Agentbot Health API",
+      "date": "2026-03-27",
+      "sentiment": "pos"
+    },
+    {
+      "id": "x402-1",
+      "text": "x402 payment gateway operational — on-chain API monetization live on Base",
+      "source": "x402 Gateway",
+      "date": "2026-03-27",
+      "sentiment": "pos"
+    },
+    {
+      "id": "market-1",
+      "text": "AI agent market projected to reach $45B by 2028 — autonomous agent adoption accelerating across enterprises",
+      "source": "Gartner",
+      "date": "2026-03-12",
+      "sentiment": "pos"
+    }
+  ],
+  "opportunities": [
+    {
+      "title": "DJ / Creative AI",
+      "gap": "No competitor owns the music-creator segment",
+      "action": "Double down on DJ Stream + $BASEFM ecosystem"
+    },
+    {
+      "title": "Wallet-native Auth",
+      "gap": "Competitors rely on email auth only",
+      "action": "SIWE + Base smart wallet is a genuine moat"
+    },
+    {
+      "title": "UK Market Pricing",
+      "gap": "Most competitors price USD only — GBP adoption friction",
+      "action": "GBP pricing already live — lean into UK marketing"
+    },
+    {
+      "title": "x402 Payments",
+      "gap": "No competitor offers on-chain API payment settlement",
+      "action": "x402 gateway is a unique differentiator — expand ecosystem"
+    }
+  ]
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Market intelligence data returned successfully |

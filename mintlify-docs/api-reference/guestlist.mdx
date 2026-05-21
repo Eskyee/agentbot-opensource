@@ -1,0 +1,294 @@
+---
+title: Guestlist API
+description: "Event guestlist management with on-chain payment verification"
+---
+
+# Guestlist API
+
+Create events, manage guest lists, process RSVPs, handle check-ins, and sell tickets with optional on-chain payment verification on Base.
+
+<Note>Event data is stored in memory and does not persist across server restarts. Ticket purchases with a non-zero tier price are verified against the buyer's USDC balance on Base mainnet.</Note>
+
+## List events
+
+```http
+GET /api/guestlist
+```
+
+Returns all events.
+
+### Response
+
+```json
+{
+  "events": [
+    {
+      "id": "evt_abc123def",
+      "name": "baseFM Launch Party",
+      "date": "2026-04-15",
+      "venue": "The Warehouse",
+      "capacity": 200,
+      "guestlist": [],
+      "tiers": [
+        { "name": "general", "price": "0", "count": 150 },
+        { "name": "guestlist", "price": "0", "count": 50 }
+      ]
+    }
+  ]
+}
+```
+
+## Get event
+
+```http
+GET /api/guestlist?eventId=evt_abc123def
+```
+
+Returns a single event with its full guestlist.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `eventId` | string | Yes | Event identifier |
+
+### Response
+
+```json
+{
+  "id": "evt_abc123def",
+  "name": "baseFM Launch Party",
+  "date": "2026-04-15",
+  "venue": "The Warehouse",
+  "capacity": 200,
+  "guestlist": [
+    {
+      "id": "g_xyz789abc",
+      "name": "Alice",
+      "email": "alice@example.com",
+      "wallet": "0xabc...123",
+      "status": "confirmed",
+      "tier": "vip",
+      "timestamp": 1713139200000
+    }
+  ],
+  "tiers": [
+    { "name": "general", "price": "0", "count": 150 },
+    { "name": "guestlist", "price": "0", "count": 50 }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Event identifier |
+| `name` | string | Event name |
+| `date` | string | Event date |
+| `venue` | string | Event venue |
+| `capacity` | number | Maximum number of guests |
+| `guestlist` | array | List of guest objects |
+| `guestlist[].id` | string | Guest identifier |
+| `guestlist[].name` | string | Guest name |
+| `guestlist[].email` | string | Guest email (optional) |
+| `guestlist[].wallet` | string | Guest wallet address (optional) |
+| `guestlist[].status` | string | One of: `pending`, `confirmed`, `checked-in`, `cancelled` |
+| `guestlist[].tier` | string | One of: `vip`, `guestlist`, `general`, `press` |
+| `guestlist[].timestamp` | number | Unix timestamp (milliseconds) when the guest was added |
+| `guestlist[].checkedInAt` | number | Unix timestamp (milliseconds) when the guest checked in (only present after check-in) |
+| `tiers` | array | Available ticket tiers |
+| `tiers[].name` | string | Tier name |
+| `tiers[].price` | string | Tier price in token units (`0` for free) |
+| `tiers[].count` | number | Number of spots in this tier |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 404 | Event not found |
+
+## Create event
+
+```http
+POST /api/guestlist
+```
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `create-event` |
+| `name` | string | Yes | Event name |
+| `date` | string | Yes | Event date |
+| `venue` | string | Yes | Event venue |
+| `capacity` | number | No | Maximum guests (default: `200`) |
+| `tiers` | array | No | Ticket tiers. Defaults to general (150 spots) and guestlist (50 spots) tiers, both free. |
+
+```json
+{
+  "action": "create-event",
+  "name": "baseFM Launch Party",
+  "date": "2026-04-15",
+  "venue": "The Warehouse",
+  "capacity": 200,
+  "tiers": [
+    { "name": "general", "price": "0", "count": 150 },
+    { "name": "vip", "price": "10000000", "count": 50 }
+  ]
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "event": {
+    "id": "evt_abc123def",
+    "name": "baseFM Launch Party",
+    "date": "2026-04-15",
+    "venue": "The Warehouse",
+    "capacity": 200,
+    "guestlist": [],
+    "tiers": [
+      { "name": "general", "price": "0", "count": 150 },
+      { "name": "vip", "price": "10000000", "count": 50 }
+    ]
+  }
+}
+```
+
+## RSVP
+
+```http
+POST /api/guestlist
+```
+
+Adds a guest to an event's guestlist with `pending` status.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `rsvp` |
+| `eventId` | string | Yes | Event identifier |
+| `name` | string | Yes | Guest name |
+| `email` | string | No | Guest email |
+| `wallet` | string | No | Guest wallet address |
+| `tier` | string | No | Ticket tier (default: `general`). Options: `vip`, `guestlist`, `general`, `press` |
+
+### Response
+
+```json
+{
+  "success": true,
+  "guest": {
+    "id": "g_xyz789abc",
+    "name": "Alice",
+    "email": "alice@example.com",
+    "wallet": "0xabc...123",
+    "status": "pending",
+    "tier": "general",
+    "timestamp": 1713139200000
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Event full — the guestlist has reached the event capacity |
+| 404 | Event not found |
+
+## Check in
+
+```http
+POST /api/guestlist
+```
+
+Marks a guest as checked in. You can identify the guest by either `guestId` or `wallet`.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `check-in` |
+| `eventId` | string | Yes | Event identifier |
+| `guestId` | string | Conditional | Guest identifier (provide this or `wallet`) |
+| `wallet` | string | Conditional | Guest wallet address (provide this or `guestId`) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "guest": {
+    "id": "g_xyz789abc",
+    "name": "Alice",
+    "status": "checked-in",
+    "tier": "vip",
+    "timestamp": 1713139200000,
+    "checkedInAt": 1713225600000
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Already checked in |
+| 404 | Event not found |
+| 404 | Guest not found |
+
+## Buy ticket
+
+```http
+POST /api/guestlist
+```
+
+Purchases a ticket for an event. When the tier price is non-zero, the buyer's USDC balance on Base is verified before confirming.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `buy-ticket` |
+| `eventId` | string | Yes | Event identifier |
+| `name` | string | Yes | Buyer name |
+| `email` | string | No | Buyer email |
+| `wallet` | string | Yes | Buyer wallet address (used for on-chain payment verification) |
+| `tier` | string | Yes | Ticket tier to purchase |
+
+### Response
+
+```json
+{
+  "success": true,
+  "guest": {
+    "id": "g_xyz789abc",
+    "name": "Alice",
+    "wallet": "0xabc...123",
+    "status": "confirmed",
+    "tier": "vip",
+    "timestamp": 1713139200000
+  }
+}
+```
+
+<Note>Guests added via `buy-ticket` receive `confirmed` status immediately, unlike `rsvp` which creates guests with `pending` status.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid tier — the specified tier does not exist for this event |
+| 400 | Insufficient payment — the wallet's on-chain USDC balance is below the tier price |
+| 404 | Event not found |
+
+## Common errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid action |
+| 500 | Internal error |

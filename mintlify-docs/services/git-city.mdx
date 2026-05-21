@@ -1,0 +1,111 @@
+---
+title: "Git City Integration"
+description: "Analyze GitHub repositories with 3D city visualization and analytics"
+---
+
+# Git City Integration
+
+**Analyze any GitHub repository and visualize it as a 3D city.** Powered by git-city, the platform provides deep analytics on repositories, commits, contributors, and more.
+
+## Features
+
+### Repository Analysis
+- **Commits** — View total commit count and recent commit history
+- **Contributors** — Track unique contributors and their activity
+- **Stars & Forks** — Monitor repository popularity
+- **Topics & License** — Understand repository metadata
+
+### 3D Visualization
+- Repositories visualized as interactive 3D cities
+- Explore repositories visually in the dashboard
+
+### API Integration
+
+```typescript
+// Analyze a repository
+const response = await fetch('/api/git-city', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ url: 'https://github.com/owner/repo' })
+});
+
+const data = await response.json();
+// Returns: { repository, city, stats, commits }
+```
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/git-city?owner={owner}&repo={repo}` | Analyze a GitHub repository by owner and name |
+| GET | `/api/git-city?type=user&username={username}` | List a user's public repositories |
+| POST | `/api/git-city` | Analyze a GitHub repository by URL |
+
+### Request body (POST)
+
+```json
+{
+  "url": "https://github.com/owner/repo"
+}
+```
+
+### Response
+
+The branch defaults to `main` and automatically falls back to `master` if `main` is not found.
+
+```json
+{
+  "repository": {
+    "owner": "owner",
+    "repo": "repo",
+    "branch": "main",
+    "fullName": "owner/repo",
+    "url": "https://github.com/owner/repo"
+  },
+  "city": {
+    "blocks": [
+      {
+        "id": "block-2026-04-01",
+        "x": 0,
+        "z": 0,
+        "height": 2.5,
+        "color": "#10b981",
+        "type": "building",
+        "commitCount": 3,
+        "date": "2026-04-01"
+      }
+    ],
+    "dimensions": {
+      "width": 10,
+      "depth": 10,
+      "height": 5
+    }
+  },
+  "stats": {
+    "totalCommits": 150,
+    "uniqueContributors": 12,
+    "stars": 500,
+    "forks": 50,
+    "language": "TypeScript",
+    "watchers": 25,
+    "topics": ["ai", "agents", "autonomous"],
+    "license": "MIT",
+    "createdAt": "2024-01-15T00:00:00Z",
+    "updatedAt": "2026-04-07T00:00:00Z",
+    "description": "Autonomous AI agent platform"
+  },
+  "commits": [
+    {
+      "sha": "abc1234",
+      "message": "feat: add new feature",
+      "author": "username",
+      "date": "2026-04-07T12:00:00Z",
+      "url": "https://github.com/owner/repo/commit/abc1234..."
+    }
+  ]
+}
+```
+
+## Access
+
+Visit `/dashboard/git-city` on the platform to access the Git City analyzer. Enter any public GitHub repository URL to get detailed analytics and visualization.

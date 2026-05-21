@@ -1,0 +1,275 @@
+---
+title: Solana API
+description: "Look up Solana wallet balances and tokens, verify holder benefits, get live SOL price data, and manage custom RPC endpoints"
+---
+
+# Solana API
+
+Query Solana wallet balances and token holdings, verify Agentbot token holder benefits for baseFM, fetch live SOL market data, and save per-user RPC endpoint configurations.
+
+## Get SOL price
+
+```http
+GET /api/solana/price
+```
+
+Returns the current SOL price in USD along with 24-hour market data. Data is sourced from CoinGecko and cached for 60 seconds.
+
+### Response
+
+```json
+{
+  "price": 148.52,
+  "change24h": -2.34,
+  "marketCap": 72500000000,
+  "volume24h": 3200000000
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `price` | number \| null | Current SOL price in USD |
+| `change24h` | number \| null | 24-hour price change percentage |
+| `marketCap` | number \| null | Market capitalization in USD |
+| `volume24h` | number \| null | 24-hour trading volume in USD |
+
+<Note>Fields return `null` when CoinGecko does not include them in the response. Price data is cached and refreshed every 60 seconds.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 500 | Failed to fetch price data from CoinGecko |
+
+---
+
+## Look up wallet
+
+```http
+GET /api/solana/wallet
+```
+
+Returns the SOL balance, token holdings, and account metadata for a Solana address. Requires session authentication. The endpoint uses the user's saved RPC configuration (see [save RPC configuration](#save-rpc-configuration)) or falls back to the platform default.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `address` | string | Yes | Solana wallet address (base58-encoded, 32–44 characters). Invalid addresses return a `400` error. |
+| ~~`rpc`~~ | string | No | **Deprecated.** This parameter is no longer accepted. The endpoint now uses your saved RPC configuration or the platform default. Any value passed for `rpc` is ignored. |
+
+### Response
+
+```json
+{
+  "address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "solBalance": 1.5,
+  "tokens": [
+    {
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "symbol": "USDC",
+      "amount": 250.0,
+      "decimals": 6
+    },
+    {
+      "mint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+      "symbol": "JUP",
+      "amount": 100.0,
+      "decimals": 6
+    }
+  ],
+  "accountInfo": {
+    "isExecutable": false,
+    "owner": "11111111111111111111111111111111",
+    "rentEpoch": 18446744073709551615
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `address` | string | The queried wallet address |
+| `solBalance` | number | Native SOL balance (in SOL, not lamports) |
+| `tokens` | array | SPL token holdings with a non-zero balance, sorted by amount descending (max 20) |
+| `tokens[].mint` | string | Token mint address |
+| `tokens[].symbol` | string | Token symbol. Known tokens display their ticker (e.g. `USDC`, `JUP`); unknown tokens show a truncated mint address. |
+| `tokens[].amount` | number | Token balance in human-readable units |
+| `tokens[].decimals` | number | Token decimal precision |
+| `accountInfo` | object | On-chain account metadata |
+| `accountInfo.isExecutable` | boolean | Whether the account contains an executable program |
+| `accountInfo.owner` | string \| null | Program that owns this account |
+| `accountInfo.rentEpoch` | number \| null | Epoch at which rent was last collected |
+
+### Recognized tokens
+
+The following token mints are resolved to human-readable symbols automatically:
+
+| Symbol | Mint address | Decimals |
+|--------|-------------|----------|
+| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 |
+| USDT | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` | 6 |
+| WSOL | `So11111111111111111111111111111111111111112` | 9 |
+| JUP | `JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN` | 6 |
+| BONK | `DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263` | 5 |
+| WIF | `EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm` | 6 |
+| mSOL | `mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So` | 9 |
+| stSOL | `7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj` | 9 |
+
+Tokens not in this list display a truncated mint address as the symbol.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid Solana address. The `address` must be a base58-encoded string between 32 and 44 characters. |
+| 401 | Unauthorized — no valid session. This endpoint now requires authentication. |
+| 500 | Failed to fetch wallet data from the Solana RPC endpoint |
+
+---
+
+## Verify holder benefits
+
+```http
+GET /api/solana/verify
+```
+
+Checks the Agentbot token balance for a Solana wallet address and returns the holder's baseFM benefit tier. No authentication required.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `address` | string | Yes | Solana wallet address (base58-encoded, 32–44 characters). Invalid addresses return a `400` error. |
+
+### Response
+
+```json
+{
+  "address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "token": "9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump",
+  "balance": 15000,
+  "eligible": true,
+  "benefits": [
+    { "tier": "Holder", "perk": "Access to exclusive baseFM DJ streams" },
+    { "tier": "Builder", "perk": "Early access to new features + premium playlists" }
+  ],
+  "tiers": [
+    { "name": "Holder", "min": 1000, "credits": 50, "basefm": "Exclusive DJ streams" },
+    { "name": "Builder", "min": 10000, "credits": 100, "basefm": "Early features + premium playlists" },
+    { "name": "Whale", "min": 100000, "credits": 200, "basefm": "VIP chat + voting + revenue share" }
+  ]
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `address` | string | The queried wallet address |
+| `token` | string | Agentbot token mint address on Solana |
+| `balance` | number | Token balance in human-readable units |
+| `eligible` | boolean | `true` when balance is at least 1,000 tokens (Holder tier minimum) |
+| `benefits` | array | List of benefit tiers the wallet qualifies for based on its current balance |
+| `benefits[].tier` | string | Tier name (`Holder`, `Builder`, or `Whale`) |
+| `benefits[].perk` | string | Description of the perk granted by this tier |
+| `tiers` | array | All available benefit tiers regardless of the wallet's balance |
+| `tiers[].name` | string | Tier name |
+| `tiers[].min` | number | Minimum token balance required for this tier |
+| `tiers[].credits` | number | Number of platform credits granted at this tier |
+| `tiers[].basefm` | string | baseFM perk description for this tier |
+
+### Benefit tiers
+
+| Tier | Minimum balance | Credits | baseFM perk |
+|------|----------------|---------|-------------|
+| **Holder** | 1,000 | 50 | Access to exclusive baseFM DJ streams |
+| **Builder** | 10,000 | 100 | Early access to new features + premium playlists |
+| **Whale** | 100,000 | 200 | VIP community chat + voting rights + revenue share |
+
+<Note>A wallet qualifies for all tiers at or below its balance. For example, a wallet with 15,000 tokens qualifies for both Holder and Builder benefits. The `benefits` array only includes tiers the wallet meets; the `tiers` array always returns all three tiers.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid Solana address. The `address` must be a base58-encoded string between 32 and 44 characters. |
+| 502 | Failed to communicate with the Solana RPC endpoint |
+
+---
+
+## Get RPC configuration
+
+```http
+GET /api/solana/rpc-config
+```
+
+Returns the Solana RPC URL for the authenticated user, along with the default fallback URL and the configuration source. Requires session authentication.
+
+### Response
+
+```json
+{
+  "rpcUrl": "https://my-custom-rpc.example.com",
+  "defaultRpcUrl": "https://api.mainnet-beta.solana.com",
+  "source": "user"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rpcUrl` | string | The active RPC URL. Returns the user's saved custom URL if one exists, otherwise returns the platform default RPC URL. |
+| `defaultRpcUrl` | string | The platform default Solana RPC URL used as a fallback when no custom URL is configured. |
+| `source` | string | Indicates where the `rpcUrl` value comes from. Either `"user"` (a saved custom URL) or `"default"` (the platform fallback). |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+---
+
+## Save RPC configuration
+
+```http
+POST /api/solana/rpc-config
+```
+
+Saves or updates the custom Solana RPC URL for the authenticated user. Only HTTPS URLs are accepted. Requires session authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `rpcUrl` | string | Yes | A valid HTTPS URL for the custom Solana RPC endpoint |
+
+### Example request
+
+```json
+{
+  "rpcUrl": "https://my-custom-rpc.example.com"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "rpcUrl": "https://my-custom-rpc.example.com"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `rpcUrl`, value is not a string, URL is invalid, or URL does not use HTTPS |
+| 400 | RPC URL contains a placeholder value (e.g. a template URL that ends with an empty `api-key=` parameter or includes an example hostname). You must provide a complete provider URL. |
+| 401 | Unauthorized — no valid session |

@@ -1,0 +1,264 @@
+---
+title: Workflows API
+description: "Create, manage, and execute multi-step agent workflows"
+---
+
+# Workflows API
+
+Create, manage, and execute multi-step agent workflows.
+
+<Note>All workflow endpoints require session authentication. Workflows are scoped to the authenticated user — you can only access workflows that belong to your account.</Note>
+
+## List workflows
+
+```http
+GET /api/workflows
+```
+
+Returns all workflows owned by the authenticated user, ordered by most recently updated. Each workflow includes its associated nodes.
+
+### Response
+
+```json
+{
+  "workflows": [
+    {
+      "id": "wf_abc123",
+      "name": "Email Automation",
+      "description": null,
+      "enabled": true,
+      "createdAt": "2026-03-29T10:00:00Z",
+      "updatedAt": "2026-03-29T11:00:00Z",
+      "nodes": [
+        {
+          "id": "node_1",
+          "type": "trigger",
+          "config": "{\"label\":\"Trigger 1\"}",
+          "position": "{\"x\":40,\"y\":40}"
+        }
+      ]
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `workflows` | array | List of workflow objects owned by the authenticated user |
+| `workflows[].id` | string | Workflow identifier |
+| `workflows[].name` | string | Workflow name |
+| `workflows[].description` | string \| null | Optional workflow description |
+| `workflows[].enabled` | boolean | Whether the workflow is active |
+| `workflows[].createdAt` | string | ISO 8601 creation timestamp |
+| `workflows[].updatedAt` | string | ISO 8601 last update timestamp |
+| `workflows[].nodes` | array | List of workflow nodes |
+| `workflows[].nodes[].id` | string | Node identifier |
+| `workflows[].nodes[].type` | string | Node type (`trigger`, `action`, `condition`, or `output`) |
+| `workflows[].nodes[].config` | string | JSON-encoded node configuration including the node label |
+| `workflows[].nodes[].position` | string | JSON-encoded `{x, y}` coordinates for the node in the visual builder |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — returns `{ "workflows": [] }` instead of an error object |
+| 500 | Failed to load workflows |
+
+<Note>When the session is missing or invalid, this endpoint returns an empty `workflows` array with a `401` status instead of a standard error object.</Note>
+
+## Create workflow
+
+```http
+POST /api/workflows
+```
+
+Creates a new workflow with optional initial nodes. The workflow is enabled by default.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Workflow name |
+| `description` | string | No | Workflow description |
+| `nodes` | array | No | Initial nodes to create with the workflow |
+| `nodes[].type` | string | Yes | Node type. One of: `trigger`, `action`, `condition`, `output` |
+| `nodes[].config` | object | No | Node configuration (for example, `{ "label": "My Node" }`). Stored as a JSON string. Defaults to `{}`. |
+| `nodes[].position` | object | No | Node position (for example, `{ "x": 40, "y": 40 }`). Stored as a JSON string. Defaults to `{ "x": 0, "y": 0 }`. |
+
+### Response (201 Created)
+
+```json
+{
+  "workflow": {
+    "id": "wf_abc123",
+    "name": "Email Automation",
+    "description": null,
+    "enabled": true,
+    "createdAt": "2026-03-29T10:00:00Z",
+    "updatedAt": "2026-03-29T10:00:00Z",
+    "nodes": []
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Name required |
+| 401 | Unauthorized |
+| 500 | Failed to create workflow |
+
+## Get workflow
+
+```http
+GET /api/workflows/:workflowId
+```
+
+Returns a single workflow with its nodes ordered by creation time. Requires ownership.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `workflowId` | string | Workflow identifier |
+
+### Response
+
+```json
+{
+  "workflow": {
+    "id": "wf_abc123",
+    "name": "Email Automation",
+    "description": "Processes inbound emails",
+    "enabled": true,
+    "createdAt": "2026-03-29T10:00:00Z",
+    "updatedAt": "2026-03-29T11:00:00Z",
+    "nodes": [
+      {
+        "id": "node_1",
+        "type": "trigger",
+        "config": "{\"label\":\"Email Received\"}",
+        "position": "{\"x\":40,\"y\":40}",
+        "createdAt": "2026-03-29T10:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Workflow not found or not owned by user |
+| 500 | Internal server error |
+
+## Update workflow
+
+```http
+PUT /api/workflows/:workflowId
+```
+
+Updates a workflow's metadata and optionally replaces all nodes. Requires ownership. When `nodes` is provided, all existing nodes are deleted and replaced with the new set.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `workflowId` | string | Workflow identifier |
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | Updated workflow name |
+| `description` | string | No | Updated workflow description |
+| `enabled` | boolean | No | Enable or disable the workflow |
+| `nodes` | array | No | Complete replacement set of nodes. When provided, all existing nodes are deleted first. |
+| `nodes[].type` | string | Yes | Node type. One of: `trigger`, `action`, `condition`, `output` |
+| `nodes[].config` | object | No | Node configuration. Stored as a JSON string. Defaults to `{}`. |
+| `nodes[].position` | object | No | Node position. Stored as a JSON string. Defaults to `{ "x": 0, "y": 0 }`. |
+
+<Warning>Providing the `nodes` field replaces all existing nodes. To update workflow metadata without affecting nodes, omit the `nodes` field entirely.</Warning>
+
+### Response
+
+```json
+{
+  "workflow": {
+    "id": "wf_abc123",
+    "name": "Email Automation v2",
+    "description": "Updated workflow",
+    "enabled": true,
+    "createdAt": "2026-03-29T10:00:00Z",
+    "updatedAt": "2026-03-29T12:00:00Z",
+    "nodes": [
+      {
+        "id": "node_new_1",
+        "type": "trigger",
+        "config": "{\"label\":\"Trigger 1\"}",
+        "position": "{\"x\":40,\"y\":40}"
+      },
+      {
+        "id": "node_new_2",
+        "type": "action",
+        "config": "{\"label\":\"Action 1\"}",
+        "position": "{\"x\":240,\"y\":120}"
+      }
+    ]
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Workflow not found or not owned by user |
+| 500 | Internal server error |
+
+## Delete workflow
+
+```http
+DELETE /api/workflows/:workflowId
+```
+
+Permanently deletes a workflow and all its nodes. Requires ownership.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `workflowId` | string | Workflow identifier |
+
+### Response
+
+```json
+{
+  "deleted": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Workflow not found or not owned by user |
+| 500 | Internal server error |
+
+## Node types
+
+Workflows support four node types:
+
+| Type | Description |
+|------|-------------|
+| `trigger` | Entry point that starts the workflow |
+| `action` | Performs an operation such as an API call or message send |
+| `condition` | Evaluates a condition and branches the flow |
+| `output` | Produces a final result or side effect |
+
+Each node stores its configuration and visual position as JSON strings. The `config` object typically includes a `label` field used for display in the visual builder.

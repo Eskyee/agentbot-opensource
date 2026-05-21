@@ -1,0 +1,79 @@
+---
+title: "Architecture"
+description: "Platform architecture, security model, and deployment topology"
+---
+
+# Architecture
+
+## Overview
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    AGENTBOT PLATFORM                         │
+│                                                              │
+│  Next.js Frontend (Vercel)   Express Backend (Railway)       │
+│  ├── Dashboard + Blog        ├── Provisioning API            │
+│  ├── 120+ API Routes         ├── Container Manager           │
+│  ├── Skill Marketplace       ├── Agent-to-Agent Bus          │
+│  └── Solana/Bitcoin/Liquid   └── Orchestration Engine        │
+│                                                              │
+│  PostgreSQL (Prisma/Neon)    Redis (sessions, state)         │
+└──────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              ▼               ▼               ▼
+     ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+     │  OpenClaw   │  │  OpenClaw   │  │  OpenClaw   │
+     │  Container  │  │  Container  │  │  Container  │
+     │  Agent A    │  │  Agent B    │  │  Agent C    │
+     └─────────────┘  └─────────────┘  └─────────────┘
+```
+
+## Provisioning Flow
+
+1. **Auth check** — Session required; admins bypass subscription gate
+2. **Subscription check** — Active Stripe subscription or trial required
+3. **Workload gate** — Acquire deployment slot (prevents thundering herd)
+4. **Job enqueue** — POST to backend `/api/platform-jobs/provision`
+5. **Railway create** — Backend creates Railway service with plan resources
+6. **Env injection** — OpenClaw config, gateway tokens, DB URL injected
+7. **Health poll** — Wait for container to report healthy on port 18789
+8. **Prisma update** — Agent record created with serviceId and URL
+
+## Plan Resources
+
+| Plan | CPU | Memory | Max Agents | Description |
+|------|-----|--------|------------|-------------|
+| Solo | 1 vCPU (1000m) | 2 GB | 1 | Trial / light workloads only |
+| Collective | 2 vCPU (2000m) | 4 GB | 3 | Recommended production floor |
+| Label | 4 vCPU (4000m) | 8 GB | 10 | Heavy production + browser/tool work |
+| Network | 8 vCPU (8000m) | 16 GB | Unlimited | High-throughput production |
+
+<Note>The Solo tier (1 vCPU / 2 GB) is sufficient to boot and run light workloads but is not recommended for production. For serious production use, start with Collective (2 vCPU / 4 GB) or higher.</Note>
+
+## Security Model
+
+- **Bearer token auth** — `timingSafeEqual` on all backend routes, fail-closed
+- **SHA-256 hashed API keys** — Raw keys never stored or logged
+- **SSRF blocklist** — IPv4 private, IPv6 ULA, mapped IPv4, CGN ranges blocked
+- **Permission gates** — Safe / Dangerous / Destructive tiers with human approval
+- **BotID protection** — Anti-bot on registration
+- **AES-256-GCM** — Per-user secret encryption
+- **spawn() not exec()** — No shell injection vectors
+- **Ed25519** — Discord webhook signature verification
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16, React, Tailwind, shadcn/ui |
+| Backend | Express.js, TypeScript |
+| Database | PostgreSQL + Prisma ORM (Neon) |
+| Cache | Redis / Vercel KV |
+| Containers | Docker / Railway |
+| Proxy | Caddy (subdomain routing) |
+| Runtime | OpenClaw v2026.4.9 |
+| Payments | Stripe + Coinbase CDP (USDC on Base) |
+| AI | OpenRouter, MiMo-V2-Pro, Claude, GPT, Gemini |
+| Email | Resend |
+| Deployment | Vercel (web) + Railway (backend + agents) |

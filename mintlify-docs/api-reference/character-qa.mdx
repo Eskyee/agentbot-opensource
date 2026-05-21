@@ -1,0 +1,101 @@
+---
+title: Character QA API
+description: "Persona evaluation scoring, drift detection, and probe set management"
+---
+
+# Character QA API
+
+Evaluate your agent's persona consistency with scoring, drift detection, and configurable probe sets. These endpoints proxy requests to the agent's OpenClaw runtime.
+
+<Note>All character QA endpoints require an authenticated session. The proxy resolves your agent's URL from the database and forwards requests to the running instance. If no agent is deployed, the endpoint returns a `404` with `status: "no_agent"`.</Note>
+
+## Get evaluation results
+
+```http
+GET /api/openclaw/character-qa
+```
+
+Returns the agent's character evaluation history and current persona scores. Proxies to the agent's `GET /api/eval/character` endpoint.
+
+### Response
+
+```json
+{
+  "scores": {
+    "voice": 0.92,
+    "emotion": 0.87,
+    "knowledge": 0.95,
+    "refusal": 0.88
+  },
+  "driftDetected": false,
+  "history": [
+    {
+      "id": "eval_001",
+      "timestamp": "2026-04-09T10:00:00Z",
+      "probeSet": "default",
+      "dimensions": ["voice", "emotion", "knowledge", "refusal"],
+      "overallScore": 0.905,
+      "driftDetected": false
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `scores` | object | Current persona dimension scores (0–1 scale) |
+| `scores.voice` | number | How well the agent maintains its configured voice and tone |
+| `scores.emotion` | number | Emotional consistency and appropriate emotional responses |
+| `scores.knowledge` | number | Accuracy and consistency of knowledge domain responses |
+| `scores.refusal` | number | Appropriate handling of out-of-scope or harmful requests |
+| `driftDetected` | boolean | `true` when the agent's persona has drifted significantly from its baseline |
+| `history` | array | List of past evaluation runs |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | `Unauthorized` — no authenticated session |
+| 404 | `No agent deployed` — the user has no running agent instance |
+| 502 | `Agent unreachable` — the agent instance did not respond within 10 seconds |
+
+---
+
+## Run a character evaluation
+
+```http
+POST /api/openclaw/character-qa
+```
+
+Triggers a new persona evaluation run. Proxies to the agent's `POST /api/eval/character/run` endpoint.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `probeSet` | string | No | The probe set to use for evaluation. Defaults to `"default"`. |
+| `dimensions` | string[] | No | Which persona dimensions to evaluate. Defaults to `["voice", "emotion", "knowledge", "refusal"]`. |
+
+### Example
+
+```bash
+curl -X POST https://agentbot.sh/api/openclaw/character-qa \
+  -H "Content-Type: application/json" \
+  -d '{
+    "probeSet": "default",
+    "dimensions": ["voice", "emotion", "knowledge", "refusal"]
+  }'
+```
+
+### Response
+
+The response contains the evaluation results from the agent, matching the structure returned by `GET /api/openclaw/character-qa` with the addition of the newly completed run.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `Invalid request body` — the request body is not valid JSON |
+| 401 | `Unauthorized` — no authenticated session |
+| 404 | `No agent deployed` — the user has no running agent instance |
+| 502 | `Agent unreachable` — the agent instance did not respond within 15 seconds |

@@ -1,0 +1,223 @@
+---
+title: Config API
+description: "Read, update, and restore per-user agent configuration with versioned backups"
+---
+
+# Config API
+
+Manage per-user agent configuration with automatic versioned backups. Configuration is persisted in the database and survives server restarts. The system keeps the last 10 configuration backups and allows restoring to any previous version.
+
+<Note>
+All Config API endpoints require authentication. Include a valid session cookie or auth token with every request. Unauthenticated requests receive a `401 Unauthorized` response.
+</Note>
+
+## Get current configuration
+
+```http
+GET /api/config
+```
+
+Returns the authenticated user's current agent configuration and a list of available backups. If no custom configuration has been saved, the default configuration is returned.
+
+### Response
+
+```json
+{
+  "config": {
+    "logging": { "level": "info" },
+    "agents": {
+      "defaults": {
+        "model": "anthropic/claude-opus-4-5",
+        "workspace": "~/.openclaw/workspace"
+      }
+    },
+    "tools": {
+      "profile": "coding"
+    },
+    "gateway": {
+      "bind": "lan",
+      "auth": { "mode": "token" }
+    },
+    "channels": {
+      "whatsapp": { "allowFrom": [] },
+      "telegram": { "enabled": false },
+      "discord": { "enabled": false },
+      "webchat": { "enabled": true }
+    },
+    "session": {
+      "dmScope": "per-channel-peer",
+      "resetTriggers": ["/new", "/reset"]
+    },
+    "skills": {
+      "install": { "nodeManager": "npm" }
+    }
+  },
+  "backups": [
+    {
+      "id": "bkp_initial",
+      "timestamp": "2026-03-27T10:00:00Z"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `config` | object | The current agent configuration |
+| `config.logging.level` | string | Log level (e.g. `"info"`, `"debug"`, `"warn"`) |
+| `config.agents.defaults.model` | string | Default AI model identifier (e.g. `"anthropic/claude-opus-4-5"`) |
+| `config.agents.defaults.workspace` | string | Path to the agent's workspace directory |
+| `config.tools.profile` | string | Tool profile (`"coding"` for collective+ plans, `"messaging"` for solo) |
+| `config.gateway.bind` | string | Gateway bind address (e.g. `"lan"` for all interfaces) |
+| `config.gateway.auth.mode` | string | Gateway authentication mode (e.g. `"token"`) |
+| `config.channels` | object | Channel-specific settings |
+| `config.channels.whatsapp.allowFrom` | array | List of allowed WhatsApp sender identifiers. Empty array allows all senders. |
+| `config.channels.telegram.enabled` | boolean | Whether the Telegram channel is active |
+| `config.channels.discord.enabled` | boolean | Whether the Discord channel is active |
+| `config.channels.webchat.enabled` | boolean | Whether the webchat channel is active |
+| `config.session.dmScope` | string | Session scope for direct messages (e.g. `"per-channel-peer"`) |
+| `config.session.resetTriggers` | array | Commands that reset the session (e.g. `["/new", "/reset"]`) |
+| `config.skills.install.nodeManager` | string | Node package manager used for skill installation (e.g. `"npm"`) |
+| `backups` | array | List of available backups (id and timestamp only) |
+| `backups[].id` | string | Unique backup identifier |
+| `backups[].timestamp` | string | ISO 8601 timestamp when the backup was created |
+
+<Note>The provisioning template may set additional configuration fields (such as `heartbeat`, `cron`, `tools.exec`, and `tools.web`) depending on the agent's plan. The default configuration shown above is the fallback returned when no custom configuration has been saved.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | `Unauthorized` — no valid session |
+
+## Save configuration
+
+```http
+POST /api/config
+```
+
+Saves a new configuration for the authenticated user. The current configuration is automatically backed up before the new one is applied. The system retains the 10 most recent backups.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `config` | object | Yes | The new configuration object to save. Must be a valid JSON object. |
+
+### Response
+
+```json
+{
+  "success": true,
+  "config": { ... },
+  "backupId": "bkp_1711540800000",
+  "backups": [
+    { "id": "bkp_1711540800000", "timestamp": "2026-03-27T12:00:00Z" },
+    { "id": "bkp_initial", "timestamp": "2026-03-27T10:00:00Z" }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` when the configuration was saved |
+| `config` | object | The newly saved configuration |
+| `backupId` | string | Identifier of the backup created from the previous configuration |
+| `backups` | array | Updated list of available backups (id and timestamp only) |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `Invalid config object` — the `config` field is missing or is not an object |
+| 400 | `Config is not valid JSON` — the config object cannot be serialized as valid JSON |
+| 400 | `Invalid request body` — the request body is not valid JSON |
+| 401 | `Unauthorized` — no valid session |
+
+## Restore a backup
+
+```http
+PUT /api/config
+```
+
+Restores a previous configuration from a backup for the authenticated user. The current configuration is automatically backed up before the restore is applied.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `backupId` | string | Yes | The identifier of the backup to restore |
+
+### Response
+
+```json
+{
+  "success": true,
+  "config": { ... },
+  "restoredFrom": "bkp_initial",
+  "backups": [
+    { "id": "bkp_1711540800001", "timestamp": "2026-03-27T12:05:00Z" },
+    { "id": "bkp_initial", "timestamp": "2026-03-27T10:00:00Z" }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` when the configuration was restored |
+| `config` | object | The restored configuration |
+| `restoredFrom` | string | Identifier of the backup that was restored |
+| `backups` | array | Updated list of available backups (id and timestamp only) |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `Missing backupId` — the `backupId` field is missing from the request body |
+| 400 | `Invalid request body` — the request body is not valid JSON |
+| 401 | `Unauthorized` — no valid session |
+| 404 | `Backup not found` — no backup exists with the given identifier |
+
+### Example: save and restore
+
+```bash
+# Save a new configuration (requires authentication)
+curl -X POST https://agentbot.sh/api/config \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session=YOUR_SESSION_TOKEN" \
+  -d '{
+    "config": {
+      "logging": { "level": "debug" },
+      "agents": {
+        "defaults": {
+          "model": "anthropic/claude-opus-4-5",
+          "workspace": "~/.openclaw/workspace"
+        }
+      },
+      "tools": { "profile": "coding" },
+      "gateway": {
+        "bind": "lan",
+        "auth": { "mode": "token" }
+      },
+      "channels": {
+        "whatsapp": { "allowFrom": [] },
+        "telegram": { "enabled": true },
+        "discord": { "enabled": false },
+        "webchat": { "enabled": true }
+      },
+      "session": {
+        "dmScope": "per-channel-peer",
+        "resetTriggers": ["/new", "/reset"]
+      },
+      "skills": {
+        "install": { "nodeManager": "npm" }
+      }
+    }
+  }'
+
+# Restore from a backup (requires authentication)
+curl -X PUT https://agentbot.sh/api/config \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session=YOUR_SESSION_TOKEN" \
+  -d '{ "backupId": "bkp_initial" }'
+```

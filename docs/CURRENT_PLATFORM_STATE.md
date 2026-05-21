@@ -97,4 +97,4 @@ The following docs contain stale or mixed-era infra guidance and should be treat
 - Device auth is re-enabled and `dangerouslyAllowHostHeaderOriginFallback` is disabled to close the DNS-rebinding attack vector the previous config exposed.
 - The `gateway/openclaw.json` file is now written with `chmod 600` and the workspace directory uses `chmod 700` so the non-root `node` user is the only one who can read configuration or secrets.
 - A new readiness helper in `gateway/entrypoint.sh` waits for `${AGENTBOT_API_URL}/health` (configurable via `SERVICE_HEALTH_URL`) before launching `openclaw gateway`. Set `SKIP_SERVICE_READINESS=true` to skip the wait during emergency restarts.
-- The current managed runtime host is `https://YOUR_SERVICE_URL`. Prefer explicit environment overrides for control UI routing and avoid reintroducing old `YOUR_OPENCLAW_UI_SERVICE` defaults.
+- The current managed runtime host is `https://YOUR_SERVICE_URL`. Prefer explicit environment overrides for control UI routing and avoid reintroducing old `openclaw-gw-ui-production` defaults.

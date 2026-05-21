@@ -1,0 +1,227 @@
+---
+title: Hashline
+description: "Content-addressed file editing using line-level hashes to prevent stale-line errors"
+---
+
+# Hashline
+
+Read and edit files using content-addressed hashes instead of plain line numbers. Each line is identified by a combined `lineNumber#hash` reference, so edits fail predictably when the file has changed since you last read it.
+
+<Note>All endpoints require session-based authentication through NextAuth. File paths must resolve to a location within the project directory.</Note>
+
+## Read file with hashes
+
+```http
+GET /api/hashline?path=/src/index.ts
+```
+
+Returns every line of a file annotated with its content hash.
+
+### Query parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `path` | string | Yes | -- | Filesystem path to the file |
+| `format` | string | No | `json` | Response format: `json` or `cli` |
+
+### Response (JSON format)
+
+```json
+{
+  "path": "/src/index.ts",
+  "stats": {
+    "totalLines": 42,
+    "blankLines": 5,
+    "uniqueHashes": 38,
+    "hashCollisions": 2
+  },
+  "lines": [
+    {
+      "lineNumber": 1,
+      "hash": "A3",
+      "content": "import { x } from 'y'",
+      "isBlank": false
+    }
+  ],
+  "formatted": "   1#A3| import { x } from 'y'\n   2#B7| ..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `path` | string | The requested file path |
+| `stats.totalLines` | number | Total number of lines in the file |
+| `stats.blankLines` | number | Number of blank lines |
+| `stats.uniqueHashes` | number | Number of distinct hash values |
+| `stats.hashCollisions` | number | Number of lines that share a hash with another line |
+| `lines` | array | Array of line objects |
+| `lines[].lineNumber` | number | 1-indexed line number |
+| `lines[].hash` | string | Short content hash for this line |
+| `lines[].content` | string | Text content of the line |
+| `lines[].isBlank` | boolean | Whether the line is empty or whitespace-only |
+| `formatted` | string | Pre-formatted output with the pattern `lineNumber#hash| content` |
+
+### Response (CLI format)
+
+When `format=cli`, the response is plain text with `Content-Type: text/plain`. Each line is formatted as:
+
+```
+   1#A3| import { x } from 'y'
+   2#B7| const config = {}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `path parameter required` -- missing `path` query parameter |
+| 401 | Unauthorized -- no valid session |
+| 403 | `Invalid path: must be within project directory` -- path resolves outside the project root |
+| 500 | File read failure (for example, file does not exist) |
+
+## Apply an edit
+
+```http
+POST /api/hashline
+```
+
+Edit one or more lines by hash reference. If the hash no longer matches the current file content, the request fails with a `409` and suggests similar lines.
+
+### Request body (single edit)
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `path` | string | Yes | -- | File path to edit |
+| `hashRef` | string | Yes | -- | Hash reference in the format `lineNumber#hash` or `#hash` |
+| `newContent` | string | Yes | -- | Replacement content for the matched line |
+| `backup` | boolean | No | `true` | Create a timestamped backup before editing |
+
+```json
+{
+  "path": "/src/index.ts",
+  "hashRef": "12#A3",
+  "newContent": "import { z } from 'y'"
+}
+```
+
+### Request body (batch edit)
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `path` | string | Yes | -- | File path to edit |
+| `edits` | array | Yes | -- | Array of edit objects |
+| `edits[].hashRef` | string | Yes | -- | Hash reference for the line to edit |
+| `edits[].newContent` | string | Yes | -- | Replacement content |
+| `backup` | boolean | No | `true` | Create a timestamped backup before editing |
+
+```json
+{
+  "path": "/src/index.ts",
+  "edits": [
+    { "hashRef": "12#A3", "newContent": "import { z } from 'y'" },
+    { "hashRef": "15#B7", "newContent": "const x = 10" }
+  ]
+}
+```
+
+### Response (single edit)
+
+```json
+{
+  "success": true,
+  "path": "/src/index.ts",
+  "edit": {
+    "success": true,
+    "lineNumber": 12,
+    "oldContent": "import { x } from 'y'",
+    "newContent": "import { z } from 'y'"
+  }
+}
+```
+
+### Response (batch edit)
+
+```json
+{
+  "success": true,
+  "path": "/src/index.ts",
+  "results": [
+    { "success": true, "lineNumber": 12, "newContent": "import { z } from 'y'" },
+    { "success": true, "lineNumber": 15, "newContent": "const x = 10" }
+  ]
+}
+```
+
+The top-level `success` is `true` only when every edit in the batch succeeds.
+
+### Stale line recovery
+
+When a hash reference does not match any line in the current file, the API returns a `409` with suggestions:
+
+```json
+{
+  "error": "Line 12 hash A3 does not match current content",
+  "suggestion": "Similar lines found:",
+  "similarLines": [
+    { "lineNumber": 5, "hash": "B7", "content": "import { x } from 'z'" }
+  ]
+}
+```
+
+Up to 5 similar lines are returned. Re-read the file with `GET /api/hashline` and retry with an updated hash reference.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `path required` -- missing `path` in request body |
+| 400 | `hashRef and newContent required` -- single edit mode with missing fields |
+| 401 | Unauthorized -- no valid session |
+| 403 | `Invalid path: must be within project directory` -- path traversal attempt |
+| 409 | Stale line -- the hash reference does not match the current file. Response includes `similarLines` when available. |
+| 500 | Edit failed for a reason other than a stale reference |
+
+## Delete a backup
+
+```http
+DELETE /api/hashline?path=/src/index.ts.backup.1712000000
+```
+
+Remove a backup file created by a previous edit. Only files containing `.backup.` in their name can be deleted through this endpoint.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `path` | string | Yes | Path to the backup file. Must contain `.backup.` in the name. |
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Deleted: /src/index.ts.backup.1712000000"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `path parameter required` -- missing `path` query parameter |
+| 401 | Unauthorized -- no valid session |
+| 403 | `Can only delete .backup. files` -- path does not contain `.backup.` |
+| 403 | `Invalid path` -- path resolves outside the project directory |
+| 500 | Delete failed (for example, file does not exist) |
+
+## Hash reference format
+
+A hash reference combines a line number and a short content hash:
+
+```
+lineNumber#hash
+```
+
+For example, `12#A3` refers to line 12 with hash `A3`. You can also use `#A3` without the line number, though including the line number improves match accuracy when hashes collide.
+
+The hash is derived from the trimmed content of the line. Two lines with identical content after trimming share the same hash. The `stats.hashCollisions` field in the read response tells you how many lines share a hash.
