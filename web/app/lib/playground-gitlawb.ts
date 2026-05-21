@@ -39,7 +39,27 @@ function slugify(value: string) {
 }
 
 function normalizePem(value: string) {
-  return value.includes('\\n') ? value.replace(/\\n/g, '\n') : value
+  const trimmed = value.trim().replace(/^['"]|['"]$/g, '')
+  const unescaped = trimmed.includes('\\n') ? trimmed.replace(/\\n/g, '\n') : trimmed
+
+  if (unescaped.includes('-----BEGIN ')) {
+    return unescaped
+  }
+
+  try {
+    const decoded = Buffer.from(unescaped, 'base64').toString('utf8').trim()
+    if (decoded.includes('-----BEGIN ')) {
+      return decoded
+    }
+  } catch {
+    // Keep the original value so the caller can surface the key decode error.
+  }
+
+  return unescaped
+}
+
+function isPemDecoderError(error: unknown) {
+  return error instanceof Error && /DECODER routines|unsupported|PEM|asn1|bad decrypt/i.test(error.message)
 }
 
 async function run(command: string, args: string[], cwd: string, extraEnv: Record<string, string> = {}): Promise<CommandResult> {
@@ -75,9 +95,16 @@ async function loadGitlawbIdentity(): Promise<GitlawbIdentity> {
     throw new Error('GitLawb identity is not configured. Set GITLAWB_IDENTITY_PEM, GITLAWB_IDENTITY_FILE, or GITLAWB_IDENTITY_DIR.')
   }
 
-  const configuredDid = process.env.GITLAWB_DID?.trim()
-  const did = configuredDid?.startsWith('did:key:z') ? configuredDid : deriveDidFromPem(pem)
-  return { did, pem }
+  try {
+    const configuredDid = process.env.GITLAWB_DID?.trim()
+    const did = configuredDid?.startsWith('did:key:z') ? configuredDid : deriveDidFromPem(pem)
+    return { did, pem }
+  } catch (error) {
+    if (isPemDecoderError(error)) {
+      throw new Error('GitLawb identity key could not be decoded. Re-save GITLAWB_IDENTITY_PEM as a valid unencrypted PEM key, preserving BEGIN/END lines and newlines.')
+    }
+    throw error
+  }
 }
 
 function deriveDidFromPem(pem: string) {
@@ -103,7 +130,15 @@ function signGitlawbRequest(identity: GitlawbIdentity, method: string, pathAndQu
     `"content-digest": ${digest}`,
     `"@signature-params": ${signatureParams}`,
   ].join('\n')
-  const signature = sign(null, Buffer.from(signingString), createPrivateKey(identity.pem)).toString('base64')
+  let signature: string
+  try {
+    signature = sign(null, Buffer.from(signingString), createPrivateKey(identity.pem)).toString('base64')
+  } catch (error) {
+    if (isPemDecoderError(error)) {
+      throw new Error('GitLawb identity key could not sign the request. Re-save GITLAWB_IDENTITY_PEM as a valid unencrypted PEM key, preserving BEGIN/END lines and newlines.')
+    }
+    throw error
+  }
 
   return {
     'Content-Digest': digest,

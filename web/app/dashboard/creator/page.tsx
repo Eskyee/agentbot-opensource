@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   masterCreatorSystemPrompt,
   producerAgents,
@@ -27,6 +27,219 @@ type ArrangementResult = {
   fallbackReason?: string
 }
 
+type ArrangementSection = ArrangementResult['arrangement'][number]
+
+type AudioSketch = {
+  stop: () => void
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function makeNoiseBuffer(context: AudioContext, duration = 0.35) {
+  const buffer = context.createBuffer(1, Math.ceil(context.sampleRate * duration), context.sampleRate)
+  const channel = buffer.getChannelData(0)
+  for (let index = 0; index < channel.length; index += 1) {
+    channel[index] = Math.random() * 2 - 1
+  }
+  return buffer
+}
+
+function scheduleKick(context: AudioContext, destination: AudioNode, time: number, intensity: number) {
+  const osc = context.createOscillator()
+  const gain = context.createGain()
+  osc.type = 'sine'
+  osc.frequency.setValueAtTime(128, time)
+  osc.frequency.exponentialRampToValueAtTime(46, time + 0.13)
+  gain.gain.setValueAtTime(0.0001, time)
+  gain.gain.exponentialRampToValueAtTime(0.38 + intensity * 0.32, time + 0.012)
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.22)
+  osc.connect(gain)
+  gain.connect(destination)
+  osc.start(time)
+  osc.stop(time + 0.24)
+  return osc
+}
+
+function scheduleSnare(context: AudioContext, destination: AudioNode, noise: AudioBuffer, time: number, intensity: number) {
+  const source = context.createBufferSource()
+  const filter = context.createBiquadFilter()
+  const gain = context.createGain()
+  source.buffer = noise
+  filter.type = 'bandpass'
+  filter.frequency.setValueAtTime(1850 + intensity * 1300, time)
+  filter.Q.setValueAtTime(0.9, time)
+  gain.gain.setValueAtTime(0.0001, time)
+  gain.gain.exponentialRampToValueAtTime(0.18 + intensity * 0.22, time + 0.01)
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.16)
+  source.connect(filter)
+  filter.connect(gain)
+  gain.connect(destination)
+  source.start(time)
+  source.stop(time + 0.18)
+  return source
+}
+
+function scheduleHat(context: AudioContext, destination: AudioNode, noise: AudioBuffer, time: number, intensity: number) {
+  const source = context.createBufferSource()
+  const filter = context.createBiquadFilter()
+  const gain = context.createGain()
+  source.buffer = noise
+  filter.type = 'highpass'
+  filter.frequency.setValueAtTime(6200, time)
+  gain.gain.setValueAtTime(0.0001, time)
+  gain.gain.exponentialRampToValueAtTime(0.035 + intensity * 0.05, time + 0.004)
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.045)
+  source.connect(filter)
+  filter.connect(gain)
+  gain.connect(destination)
+  source.start(time)
+  source.stop(time + 0.055)
+  return source
+}
+
+function scheduleReese(
+  context: AudioContext,
+  destination: AudioNode,
+  time: number,
+  duration: number,
+  rootFrequency: number,
+  intensity: number,
+) {
+  const filter = context.createBiquadFilter()
+  const gain = context.createGain()
+  const left = context.createOscillator()
+  const right = context.createOscillator()
+  const lfo = context.createOscillator()
+  const lfoGain = context.createGain()
+
+  left.type = 'sawtooth'
+  right.type = 'sawtooth'
+  left.frequency.setValueAtTime(rootFrequency * 0.5, time)
+  right.frequency.setValueAtTime(rootFrequency * 0.5, time)
+  left.detune.setValueAtTime(-12 - intensity * 9, time)
+  right.detune.setValueAtTime(13 + intensity * 10, time)
+
+  filter.type = 'lowpass'
+  filter.frequency.setValueAtTime(170 + intensity * 280, time)
+  filter.frequency.linearRampToValueAtTime(300 + intensity * 850, time + duration * 0.7)
+  filter.Q.setValueAtTime(5 + intensity * 7, time)
+
+  gain.gain.setValueAtTime(0.0001, time)
+  gain.gain.exponentialRampToValueAtTime(0.08 + intensity * 0.18, time + 0.06)
+  gain.gain.setValueAtTime(0.08 + intensity * 0.18, time + Math.max(0.08, duration - 0.12))
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + duration)
+
+  lfo.type = 'sine'
+  lfo.frequency.setValueAtTime(0.8 + intensity * 3.5, time)
+  lfoGain.gain.setValueAtTime(18 + intensity * 56, time)
+  lfo.connect(lfoGain)
+  lfoGain.connect(filter.frequency)
+
+  left.connect(filter)
+  right.connect(filter)
+  filter.connect(gain)
+  gain.connect(destination)
+
+  left.start(time)
+  right.start(time)
+  lfo.start(time)
+  left.stop(time + duration)
+  right.stop(time + duration)
+  lfo.stop(time + duration)
+  return [left, right, lfo]
+}
+
+function scheduleFxSweep(context: AudioContext, destination: AudioNode, time: number, duration: number, intensity: number) {
+  const osc = context.createOscillator()
+  const gain = context.createGain()
+  const filter = context.createBiquadFilter()
+  osc.type = 'triangle'
+  osc.frequency.setValueAtTime(220 + intensity * 120, time)
+  osc.frequency.exponentialRampToValueAtTime(880 + intensity * 2400, time + duration)
+  filter.type = 'bandpass'
+  filter.frequency.setValueAtTime(500 + intensity * 500, time)
+  filter.frequency.exponentialRampToValueAtTime(1800 + intensity * 3600, time + duration)
+  filter.Q.setValueAtTime(9, time)
+  gain.gain.setValueAtTime(0.0001, time)
+  gain.gain.exponentialRampToValueAtTime(0.025 + intensity * 0.055, time + 0.08)
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + duration)
+  osc.connect(filter)
+  filter.connect(gain)
+  gain.connect(destination)
+  osc.start(time)
+  osc.stop(time + duration)
+  return osc
+}
+
+function startArrangementAudioSketch(arrangement: ArrangementResult, onEnded: () => void): AudioSketch {
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext
+  const context = new AudioContextCtor()
+  const master = context.createGain()
+  const compressor = context.createDynamicsCompressor()
+  const noise = makeNoiseBuffer(context)
+  const sources: AudioScheduledSourceNode[] = []
+  const beat = 60 / clamp(arrangement.bpm || 174, 80, 220)
+  const sectionBeats = 8
+  const sectionDuration = beat * sectionBeats
+  const notes = [55, 49, 58.27, 51.91, 61.74, 46.25, 65.41]
+
+  master.gain.setValueAtTime(0.82, context.currentTime)
+  compressor.threshold.setValueAtTime(-16, context.currentTime)
+  compressor.knee.setValueAtTime(12, context.currentTime)
+  compressor.ratio.setValueAtTime(8, context.currentTime)
+  compressor.attack.setValueAtTime(0.004, context.currentTime)
+  compressor.release.setValueAtTime(0.12, context.currentTime)
+  master.connect(compressor)
+  compressor.connect(context.destination)
+
+  const startAt = context.currentTime + 0.08
+  arrangement.arrangement.forEach((section: ArrangementSection, sectionIndex: number) => {
+    const sectionStart = startAt + sectionIndex * sectionDuration
+    const intensity = clamp(section.energy / 100, 0.1, 1)
+    const root = notes[sectionIndex % notes.length]
+    const isBreakdown = /breakdown|intro|exit/i.test(section.name)
+
+    sources.push(...scheduleReese(context, master, sectionStart, sectionDuration * 0.96, root, isBreakdown ? intensity * 0.45 : intensity))
+    sources.push(scheduleFxSweep(context, master, sectionStart + sectionDuration * 0.58, sectionDuration * 0.34, intensity))
+
+    for (let beatIndex = 0; beatIndex < sectionBeats; beatIndex += 0.5) {
+      const time = sectionStart + beatIndex * beat
+      const wholeBeat = Number.isInteger(beatIndex)
+      if (wholeBeat && beatIndex % 2 === 0) sources.push(scheduleKick(context, master, time, intensity))
+      if (wholeBeat && beatIndex % 2 === 1) sources.push(scheduleSnare(context, master, noise, time, intensity))
+      if (!isBreakdown || beatIndex % 1 === 0) sources.push(scheduleHat(context, master, noise, time, intensity))
+    }
+  })
+
+  const totalDuration = arrangement.arrangement.length * sectionDuration + 0.4
+  const endTimer = window.setTimeout(() => {
+    void context.close().catch(() => undefined)
+    onEnded()
+  }, totalDuration * 1000)
+
+  return {
+    stop: () => {
+      window.clearTimeout(endTimer)
+      sources.forEach((source) => {
+        try {
+          source.stop()
+        } catch {
+          // The source may already have ended.
+        }
+      })
+      void context.close().catch(() => undefined)
+    },
+  }
+}
+
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext
+  }
+}
+
 export default function CreatorDashboardPage() {
   const [category, setCategory] = useState('All')
   const [selectedPromptId, setSelectedPromptId] = useState(toolkitPrompts[0].id)
@@ -36,8 +249,10 @@ export default function CreatorDashboardPage() {
   const [arrangement, setArrangement] = useState<ArrangementResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
   const [publishResult, setPublishResult] = useState<{ webUrl: string; remoteUrl: string } | null>(null)
   const [error, setError] = useState('')
+  const audioSketchRef = useRef<AudioSketch | null>(null)
 
   const prompts = useMemo(
     () => category === 'All' ? toolkitPrompts : toolkitPrompts.filter((prompt) => prompt.category === category),
@@ -46,6 +261,31 @@ export default function CreatorDashboardPage() {
   const selectedPrompt = toolkitPrompts.find((prompt) => prompt.id === selectedPromptId) || toolkitPrompts[0]
   const selectedAgent = producerAgents.find((agent) => agent.id === selectedAgentId) || producerAgents[0]
   const combinedPrompt = `${selectedAgent.systemPrompt}\n\nCreator task:\n${selectedPrompt.prompt}`
+
+  useEffect(() => () => {
+    audioSketchRef.current?.stop()
+  }, [])
+
+  function stopAudioSketch() {
+    audioSketchRef.current?.stop()
+    audioSketchRef.current = null
+    setIsPlaying(false)
+  }
+
+  async function playAudioSketch() {
+    if (!arrangement) return
+    stopAudioSketch()
+    setError('')
+    try {
+      audioSketchRef.current = startArrangementAudioSketch(arrangement, () => {
+        audioSketchRef.current = null
+        setIsPlaying(false)
+      })
+      setIsPlaying(true)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Audio preview failed')
+    }
+  }
 
   async function runArrangementAgent() {
     setIsRunning(true)
@@ -64,6 +304,7 @@ export default function CreatorDashboardPage() {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Arrangement Agent failed')
+      stopAudioSketch()
       setArrangement(data)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Arrangement Agent failed')
@@ -204,6 +445,14 @@ export default function CreatorDashboardPage() {
                     >
                       {isPublishing ? 'Publishing...' : 'Publish to GitLawb'}
                     </button>
+                    <button
+                      type="button"
+                      onClick={isPlaying ? stopAudioSketch : playAudioSketch}
+                      disabled={!arrangement}
+                      className="border border-lime-300/60 px-4 py-3 text-xs font-black uppercase tracking-widest text-lime-200 transition-colors hover:border-white hover:text-white disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-700"
+                    >
+                      {isPlaying ? 'Stop Audio Sketch' : 'Play Audio Sketch'}
+                    </button>
                   </div>
                   {error ? (
                     <p className="mt-4 border border-red-500/30 bg-red-950/20 p-3 text-xs leading-5 text-red-200">{error}</p>
@@ -238,6 +487,7 @@ export default function CreatorDashboardPage() {
                           <span>{arrangement.genre}</span>
                           <span>{arrangement.bpm} BPM</span>
                           <span>{arrangement.mood}</span>
+                          {isPlaying ? <span className="text-lime-300">audio sketch live</span> : null}
                           {arrangement.provider ? <span>{arrangement.provider}</span> : null}
                           {arrangement.fallback ? <span className="text-amber-300">fallback</span> : null}
                         </div>
