@@ -46,7 +46,15 @@ git clone --depth=1 --branch "$BRANCH" "$PUBLIC_URL" "$TEMP_DIR" 2>/dev/null \
 info "Syncing files..."
 rsync -a --delete \
   --exclude='.git' \
+  --exclude='.agents/' \
   --exclude='.claude/' \
+  --exclude='.codex/' \
+  --exclude='.factory/' \
+  --exclude='.kiro/' \
+  --exclude='.mux/' \
+  --exclude='.omx/' \
+  --exclude='.trae/' \
+  --exclude='.turbo/' \
   --exclude='node_modules' \
   --exclude='.next' \
   --include='.env.example' \
@@ -94,7 +102,7 @@ remove_internal 'CODE_REVIEW.md'
 remove_internal '*.docx'
 remove_internal 'dashboard.html'
 remove_internal 'CLAUDE.md'
-rm -rf "$TEMP_DIR/memory" "$TEMP_DIR/.claire" 2>/dev/null || true
+rm -rf "$TEMP_DIR/memory" "$TEMP_DIR/.claire" "$TEMP_DIR/.agents" "$TEMP_DIR/.codex" "$TEMP_DIR/.factory" "$TEMP_DIR/.kiro" "$TEMP_DIR/.mux" "$TEMP_DIR/.omx" "$TEMP_DIR/.trae" "$TEMP_DIR/.turbo" 2>/dev/null || true
 
 # ── 4. Strip secrets globally ────────────────────────────────────────────────
 info "Stripping secrets..."
