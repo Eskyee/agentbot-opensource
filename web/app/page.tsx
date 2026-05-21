@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import dynamic from 'next/dynamic'
 import { BasefmLivePlayer } from '@/app/components/basefm/BasefmLivePlayer'
+import { GitlawbNodeIdentityCard } from '@/app/components/GitlawbNodeIdentityCard'
 
 const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
 const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
@@ -83,6 +84,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <GitlawbNodeIdentityCard />
 
       {/* PRIMARY: What it does — the one idea */}
       <section className="border-t border-zinc-900">
