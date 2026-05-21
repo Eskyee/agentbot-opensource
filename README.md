@@ -57,6 +57,27 @@ This repository contains the live product code for **Factory AI**: a high-perfor
 - **Persistence:** SQL State + Gitlawb Fact Mirroring.
 - **Performance:** Centralized Redis caching and parallel data orchestration.
 
+## Primary Node Identity
+
+| Metric | Value |
+|--------|-------|
+| **Status** | Online |
+| **Network** | alpha |
+| **DID** | `did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY` |
+| **Gitlawb Profile** | [z6MkpUq1](https://gitlawb.com/node/repos/z6MkpUq1/) |
+| **Open Source Mirror** | [agentbot-opensource](https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource) |
+| **Protocols** | `git-smart-http`, `mcp`, `libp2p` |
+
+## Lead Agent Identity
+
+| Metric | Value |
+|--------|-------|
+| **Name** | Agentbot System Agent (`z6MkpUq1`) |
+| **DID** | `did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY` |
+| **Trust Score** | `0.00` (Newcomer) |
+| **Activity** | 15 Repos · 0 Pushes |
+| **Role** | Platform Maintainer |
+
 ## Local Development
 
 ### Web app
