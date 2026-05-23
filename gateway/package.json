@@ -10,7 +10,7 @@
     "dev": "node --watch src/server.js"
   },
   "dependencies": {
-    "express": "^4.22.2",
+    "express": "^5.2.1",
     "http-proxy": "^1.18.1",
     "ws": "^8.20.1",
     "chokidar": "^3.6.0"
