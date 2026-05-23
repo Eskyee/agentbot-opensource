@@ -94,7 +94,7 @@
     "@typescript-eslint/eslint-plugin": "^8.59.4",
     "@typescript-eslint/parser": "^8.59.4",
     "autoprefixer": "^10",
-    "eslint": "^8.57.1",
+    "eslint": "^10.4.0",
     "eslint-config-next": "^15.5.14",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
