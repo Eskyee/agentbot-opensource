@@ -7,7 +7,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.21.2",
+    "express": "^4.22.2",
     "cheerio": "^1.0.0"
   },
   "overrides": {
