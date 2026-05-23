@@ -1,0 +1,51 @@
+---
+title: "Quickstart"
+description: "Deploy your first Agentbot agent in under 60 seconds"
+---
+
+## Deploy Your First Agent
+
+### Hosted Platform (fastest)
+
+1. Sign up at [agentbot.sh](https://agentbot.sh)
+2. Start your 7-day free trial (no card required)
+3. Add your AI API key (OpenRouter recommended)
+4. Click **Deploy Agent**
+
+### GitHub Codespaces
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Eskyee/agentbot-opensource?quickstart=1)
+
+```bash
+cp .env.example .env
+npm install
+npm run dev
+```
+
+### Local Setup
+
+```bash
+git clone https://github.com/Eskyee/agentbot-opensource.git
+cd agentbot-opensource
+cp .env.example .env
+docker-compose up -d
+npm install && npm run dev
+```
+
+Backend: `cd agentbot-backend && npm install && npm run dev`
+
+## Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| DATABASE_URL | PostgreSQL connection string | Yes |
+| NEXTAUTH_SECRET | `openssl rand -base64 32` | Yes |
+| REDIS_URL | `redis://localhost:6379` | Yes |
+| OPENROUTER_API_KEY | AI provider key | Yes |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Skills" icon="puzzle-piece" href="/skills">Browse 45+ skills</Card>
+  <Card title="Architecture" icon="sitemap" href="/architecture">Platform design</Card>
+</CardGroup>

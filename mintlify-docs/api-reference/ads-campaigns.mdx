@@ -1,0 +1,289 @@
+---
+title: Ads campaigns API
+description: "Submit, manage, and approve advertising campaigns on baseFM"
+---
+
+# Ads campaigns API
+
+Submit advertising campaigns with Stripe-powered checkout, manage campaign lifecycle (approve, reject, complete), and request Mux upload URLs for ad creative. Campaigns are billed via Stripe checkout and broadcast on baseFM according to their slot schedule.
+
+## Submit a campaign
+
+```http
+POST /api/ads/campaigns
+```
+
+Submits a new advertising campaign and returns a Stripe checkout URL for payment. No authentication is required — advertisers do not need an Agentbot account. If the caller is an authenticated subscriber on a qualifying plan, a 50% discount is applied automatically.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `advertiserName` | string | Yes | Name of the advertiser |
+| `advertiserEmail` | string | Yes | Contact email (must contain `@`) |
+| `advertiserUrl` | string | No | Advertiser website URL |
+| `contactHandle` | string | No | Social or messaging handle for contact |
+| `title` | string | Yes | Campaign title |
+| `description` | string | No | Campaign description |
+| `category` | string | No | Content category. One of: `ai-tech`, `dj`, `music`, `events`, `promoter`, `underground`, `x-creator`, `general`. Defaults to `general`. |
+| `slotType` | string | No | Ad slot type. One of: `spot`, `feature`, `campaign`. Defaults to `spot`. See [slot types](#slot-types) below. |
+
+### Slot types
+
+| Slot | Label | Description | Broadcasts | Base price (GBP) |
+|------|-------|-------------|------------|-----------------|
+| `spot` | 30-Second Spot | 30-second audio ad — 5 scheduled broadcasts over 1 week on baseFM | 5 | £49 |
+| `feature` | 60-Second Feature | 60-second audio ad — 15 scheduled broadcasts over 2 weeks on baseFM | 15 | £119 |
+| `campaign` | 4-Week Campaign | 60-second audio ad — 40 scheduled broadcasts over 4 weeks across baseFM and Agentbot | 40 | £299 |
+
+<Note>Authenticated subscribers on `solo`, `collective`, `label`, or `network` plans with an active or trialing subscription receive a 50% discount on the base price.</Note>
+
+### Response
+
+```json
+{
+  "campaignId": "clxyz123abc",
+  "checkoutUrl": "https://checkout.stripe.com/c/pay/cs_live_...",
+  "slot": {
+    "type": "spot",
+    "label": "30-Second Spot",
+    "description": "30-second audio ad — 5 scheduled broadcasts over 1 week on baseFM",
+    "broadcasts": 5,
+    "pence": 4900,
+    "envPriceId": "AD_PRICE_SPOT"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `campaignId` | string | Unique campaign identifier |
+| `checkoutUrl` | string | Stripe checkout session URL. Redirect the advertiser here to complete payment. |
+| `slot.type` | string | Selected slot type |
+| `slot.label` | string | Slot display name |
+| `slot.description` | string | Slot description |
+| `slot.broadcasts` | number | Number of scheduled broadcasts included |
+| `slot.pence` | number | Slot base price in GBP pence (before any subscriber discount) |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `Advertiser name required` — missing `advertiserName` |
+| 400 | `Valid email required` — missing or invalid `advertiserEmail` |
+| 400 | `Campaign title required` — missing `title` |
+| 500 | `Payments not configured` — Stripe is not configured on the platform |
+
+### Example
+
+```bash
+curl -X POST https://agentbot.sh/api/ads/campaigns \
+  -H "Content-Type: application/json" \
+  -d '{
+    "advertiserName": "Acme Records",
+    "advertiserEmail": "ads@acme.com",
+    "title": "Summer Festival Promo",
+    "category": "events",
+    "slotType": "feature"
+  }'
+```
+
+---
+
+## List campaigns
+
+```http
+GET /api/ads/campaigns
+```
+
+Returns all campaigns, ordered by creation date (newest first). Requires admin session authentication.
+
+### Response
+
+```json
+{
+  "campaigns": [
+    {
+      "id": "clxyz123abc",
+      "advertiser_name": "Acme Records",
+      "advertiser_email": "ads@acme.com",
+      "title": "Summer Festival Promo",
+      "status": "paid",
+      "slot_type": "feature",
+      "scheduled_slots": 15,
+      "broadcasts_done": 0,
+      "amount_pence": 11900,
+      "category": "events",
+      "created_at": "2026-04-12T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Campaign statuses
+
+| Status | Description |
+|--------|-------------|
+| `pending_payment` | Campaign submitted, awaiting Stripe checkout completion |
+| `paid` | Payment confirmed via Stripe webhook |
+| `approved` | Admin approved the campaign for broadcast |
+| `rejected` | Admin rejected the campaign |
+| `live` | Currently broadcasting |
+| `complete` | All broadcasts finished or manually completed |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 403 | `Admin only` — requires admin session |
+
+---
+
+## Update a campaign
+
+```http
+PATCH /api/ads/campaigns/:id
+```
+
+Performs an action on a campaign. The `action` field in the request body determines the operation. Some actions are admin-only, while `request_upload` is available to advertisers after payment.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Campaign identifier |
+
+### Actions
+
+#### `request_upload`
+
+Generates a Mux direct upload URL for the ad creative. Available to any caller after the campaign has been paid or approved. Each campaign can only have one upload.
+
+**Request body:**
+
+```json
+{
+  "action": "request_upload"
+}
+```
+
+**Response:**
+
+```json
+{
+  "uploadUrl": "https://storage.googleapis.com/video-storage-us-east1-uploads/...",
+  "uploadId": "upload_abc123"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `uploadUrl` | string | Pre-signed URL for direct file upload. The client `PUT`s the media file to this URL. |
+| `uploadId` | string | Mux upload identifier |
+
+**Errors:**
+
+| Code | Description |
+|------|-------------|
+| 402 | `Payment required before uploading` — campaign status is not `paid` or `approved` |
+| 404 | `Not found` — campaign does not exist |
+| 409 | `Upload already created` — a Mux upload URL was already generated for this campaign |
+| 500 | `Mux not configured` — Mux credentials are missing |
+| 502 | `Failed to create upload` — Mux API error |
+
+#### `approve` (admin only)
+
+Approves a campaign for broadcast scheduling.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `approve` |
+| `startsAt` | string | No | ISO 8601 start date. Defaults to 24 hours from now. |
+| `notes` | string | No | Admin notes |
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "status": "approved",
+  "startsAt": "2026-04-13T10:00:00.000Z",
+  "endsAt": "2026-04-27T10:00:00.000Z"
+}
+```
+
+The `endsAt` date is calculated based on the slot type: 7 days for `spot`, 14 days for `feature`, and 28 days for `campaign`.
+
+#### `reject` (admin only)
+
+Rejects a campaign.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `reject` |
+| `notes` | string | No | Rejection reason |
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "status": "rejected"
+}
+```
+
+#### `complete` (admin only)
+
+Marks a campaign as complete.
+
+**Request body:**
+
+```json
+{
+  "action": "complete"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "status": "complete"
+}
+```
+
+### Errors (all admin actions)
+
+| Code | Description |
+|------|-------------|
+| 400 | `Unknown action: <action>` — unrecognized action value |
+| 403 | `Admin only` — requires admin session |
+| 404 | `Not found` — campaign does not exist |
+
+### Example
+
+Request an upload URL after payment:
+
+```bash
+curl -X PATCH https://agentbot.sh/api/ads/campaigns/clxyz123abc \
+  -H "Content-Type: application/json" \
+  -d '{ "action": "request_upload" }'
+```
+
+Approve a campaign as admin:
+
+```bash
+curl -X PATCH https://agentbot.sh/api/ads/campaigns/clxyz123abc \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{
+    "action": "approve",
+    "startsAt": "2026-04-15T09:00:00.000Z",
+    "notes": "Approved for baseFM morning slot"
+  }'
+```

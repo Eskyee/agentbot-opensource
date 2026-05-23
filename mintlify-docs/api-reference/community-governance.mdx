@@ -1,0 +1,117 @@
+---
+title: Community Governance API
+description: "Create governance proposals and vote on community decisions"
+---
+
+# Community Governance API
+
+Admin-only proposal creation and community voting for claimed token holders. Governance proposals are surfaced in the [community program](/api-reference/community-program) response.
+
+## Create proposal
+
+```http
+POST /api/community/governance
+```
+
+Creates a new governance proposal. Requires admin session authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `title` | string | Yes | Proposal title (max 120 characters) |
+| `summary` | string | Yes | Short summary (max 280 characters) |
+| `details` | string | No | Extended description (max 4000 characters) |
+| `endsAt` | string | No | ISO 8601 end date. Omit for open-ended proposals. |
+
+### Example request
+
+```json
+{
+  "title": "Expand baseFM access to Holder tier",
+  "summary": "Should all claimed holders get baseFM streaming, not just Builder and Whale?",
+  "details": "Currently only Builder and Whale tiers unlock the baseFM guest pass...",
+  "endsAt": "2026-04-20T00:00:00.000Z"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "proposal": {
+    "id": "cgp_a1b2c3d4-...",
+    "slug": "expand-basefm-access-to-holder-tier-abc123"
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` when the proposal was created |
+| `proposal.id` | string | Unique proposal identifier (prefixed with `cgp_`) |
+| `proposal.slug` | string | URL-safe slug derived from the title |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing required `title` or `summary` |
+| 403 | Forbidden — admin session required |
+
+---
+
+## Vote on proposal
+
+```http
+POST /api/community/governance/{proposalId}/vote
+```
+
+Submits or updates a vote on an active governance proposal. Requires session authentication and a claimed holder status.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `proposalId` | string | The proposal identifier to vote on |
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `choice` | string | Yes | Vote choice: `yes`, `no`, or `abstain` |
+
+### Example request
+
+```json
+{
+  "choice": "yes"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Voting rules
+
+- Only users who have claimed community rewards can vote.
+- Voting power is determined by the voter's tier: Whale (10), Builder (3), Holder (1).
+- Submitting a new vote on the same proposal replaces the previous vote.
+- Only proposals with `active` status accept votes.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing or invalid `choice`. Must be `yes`, `no`, or `abstain`. |
+| 401 | Unauthorized — no valid session |
+| 403 | Claimed holder status required to vote |
+| 404 | Proposal not found or not open for voting |

@@ -1,0 +1,104 @@
+---
+title: Generate video
+description: "Generate AI-powered videos from prompts, screenshots, and structured content"
+---
+
+# Generate video
+
+Create AI-generated videos for demos, marketing, tutorials, and screenshot animations. Videos are uploaded to cloud storage and returned as public URLs.
+
+<Note>This endpoint requires session-based authentication. You must be signed in with a valid user account. All requests must include the `Content-Type: application/json` header.</Note>
+
+<Warning>Video generation can take up to 5 minutes per request (`maxDuration: 300`). Plan for long response times when integrating this endpoint.</Warning>
+
+## Create a video
+
+```http
+POST /api/generate-video
+```
+
+Generate a video based on the specified type and parameters.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | Video type. One of `demo`, `marketing`, `screenshot`, or `tutorial`. |
+| `agentName` | string | When `type` is `demo` | Name of the agent to feature in the demo video |
+| `agentDescription` | string | When `type` is `demo` | Description of the agent's capabilities |
+| `productName` | string | When `type` is `marketing` | Name of the product to promote |
+| `features` | array | When `type` is `marketing` | List of product features to highlight |
+| `imageUrl` | string | When `type` is `screenshot` | URL of the screenshot image to animate |
+| `description` | string | When `type` is `screenshot` | Description of the animation to apply |
+| `topic` | string | When `type` is `tutorial` | Tutorial topic |
+| `steps` | array | When `type` is `tutorial` | Ordered list of tutorial steps |
+
+### Example requests
+
+#### Demo video
+
+```json
+{
+  "type": "demo",
+  "agentName": "SupportBot",
+  "agentDescription": "An AI agent that handles customer support tickets"
+}
+```
+
+#### Marketing video
+
+```json
+{
+  "type": "marketing",
+  "productName": "Agentbot",
+  "features": ["AI-powered agents", "Multi-channel support", "Onchain payments"]
+}
+```
+
+#### Screenshot animation
+
+```json
+{
+  "type": "screenshot",
+  "imageUrl": "https://example.com/dashboard.png",
+  "description": "Zoom into the analytics panel and highlight key metrics"
+}
+```
+
+#### Tutorial video
+
+```json
+{
+  "type": "tutorial",
+  "topic": "Setting up your first agent",
+  "steps": ["Create an account", "Configure your agent", "Connect a channel", "Go live"]
+}
+```
+
+### Response
+
+Returns the public URL of the generated video:
+
+```json
+{
+  "url": "https://public.blob.vercel-storage.com/videos/1712345678901.mp4"
+}
+```
+
+The video is returned as an MP4 file hosted on cloud storage with public access.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid video type. Must be `demo`, `marketing`, `screenshot`, or `tutorial`. |
+| 401 | Unauthorized — you must be signed in |
+| 500 | Video generation or upload failed |
+
+#### Error response
+
+```json
+{
+  "error": "Invalid video type"
+}
+```

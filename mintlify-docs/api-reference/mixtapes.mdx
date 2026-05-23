@@ -1,0 +1,189 @@
+---
+title: Mixtapes API
+description: "Upload and manage DJ mix sets on baseFM via Mux direct uploads"
+---
+
+# Mixtapes API
+
+Upload DJ mix sets for scheduled broadcast on baseFM. Mix uploads use Mux direct uploads — the client receives a pre-signed URL and uploads the audio file directly to Mux. Requires a Collective plan or higher with an active subscription.
+
+## Upload a mix
+
+```http
+POST /api/basefm/mixtapes
+```
+
+Creates a Mux direct upload URL for a new DJ mix set. Requires session authentication and a qualifying subscription plan.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `title` | string | Yes | Mix title |
+| `artistName` | string | No | Artist or DJ name. Defaults to `Unknown Artist` in Mux metadata. |
+| `scheduledAt` | string | No | ISO 8601 timestamp for when the mix should be broadcast. When omitted, the mix is uploaded but not automatically scheduled. |
+
+### Response
+
+```json
+{
+  "success": true,
+  "mixtape": {
+    "id": "clxyz456def",
+    "title": "Late Night Techno Vol. 3",
+    "artistName": "DJ Rave",
+    "status": "pending",
+    "scheduledAt": "2026-04-15T22:00:00.000Z"
+  },
+  "upload": {
+    "id": "upload_abc123",
+    "url": "https://storage.googleapis.com/video-storage-us-east1-uploads/...",
+    "timeout": 3600
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `mixtape.id` | string | Mixtape record identifier |
+| `mixtape.title` | string | Mix title |
+| `mixtape.artistName` | string \| null | Artist name |
+| `mixtape.status` | string | Initial status — always `pending` after creation |
+| `mixtape.scheduledAt` | string \| null | ISO 8601 broadcast time, or `null` if not scheduled |
+| `upload.id` | string | Mux upload identifier |
+| `upload.url` | string | Pre-signed URL for direct file upload. The client `PUT`s the audio file to this URL. |
+| `upload.timeout` | number | Upload window in seconds (3600 = 1 hour) |
+
+### Mixtape statuses
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Upload created, waiting for file upload to complete |
+| `ready` | Mux asset is ready (set via webhook) |
+| `scheduled` | Mix is scheduled for broadcast |
+| `broadcasting` | Currently being broadcast on baseFM |
+| `complete` | Broadcast finished |
+
+### Required plans
+
+Mix uploads require one of the following plans with an `active` or `trialing` subscription status:
+
+- `collective`
+- `label`
+- `network`
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `Mix title is required` |
+| 401 | `Unauthorized` — no valid session |
+| 403 | `Mix uploads require a Collective plan or higher` — the user's plan does not qualify. The response includes `requiredPlans`. |
+| 404 | `User not found` |
+| 500 | `Mux not configured` — Mux credentials are missing |
+| 502 | `Failed to create upload — try again` — Mux API error |
+
+### Example
+
+```bash
+curl -X POST https://agentbot.sh/api/basefm/mixtapes \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{
+    "title": "Late Night Techno Vol. 3",
+    "artistName": "DJ Rave",
+    "scheduledAt": "2026-04-15T22:00:00.000Z"
+  }'
+```
+
+---
+
+## List mixtapes
+
+```http
+GET /api/basefm/mixtapes
+```
+
+Returns the authenticated user's mixtapes, ordered by creation date (newest first). Returns up to 50 records.
+
+### Response
+
+```json
+{
+  "mixtapes": [
+    {
+      "id": "clxyz456def",
+      "title": "Late Night Techno Vol. 3",
+      "artist_name": "DJ Rave",
+      "status": "scheduled",
+      "playback_id": "xYz789",
+      "scheduled_at": "2026-04-15T22:00:00.000Z",
+      "broadcast_at": null,
+      "ended_at": null,
+      "duration_secs": 3600,
+      "created_at": "2026-04-12T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Mixtape identifier |
+| `title` | string | Mix title |
+| `artist_name` | string \| null | Artist name |
+| `status` | string | Current status (see [statuses](#mixtape-statuses)) |
+| `playback_id` | string \| null | Mux playback ID, available after the asset is ready |
+| `scheduled_at` | string \| null | Scheduled broadcast time |
+| `broadcast_at` | string \| null | Actual broadcast start time |
+| `ended_at` | string \| null | Broadcast end time |
+| `duration_secs` | number \| null | Mix duration in seconds |
+| `created_at` | string | Record creation timestamp |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | `Unauthorized` — no valid session |
+
+### Example
+
+```bash
+curl -X GET https://agentbot.sh/api/basefm/mixtapes \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION"
+```
+
+---
+
+## Update a mixtape (internal)
+
+```http
+PATCH /api/basefm/mixtapes
+```
+
+Updates a mixtape record, typically called by the Mux webhook handler when an upload completes and the asset becomes ready. Matches records by Mux upload ID.
+
+<Note>This endpoint is intended for internal platform use. It is called automatically by the Mux webhook handler when upload assets are processed.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `uploadId` | string | Yes | Mux upload ID used to match the mixtape record |
+| `assetId` | string | No | Mux asset ID |
+| `playbackId` | string | No | Mux playback ID |
+| `status` | string | No | New status value |
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `uploadId required` |

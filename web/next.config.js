@@ -2,6 +2,10 @@ const path = require('path');
 const { withWorkflow } = require('workflow/next');
 const { withSentryConfig } = require('@sentry/nextjs');
 
+const shouldUploadSentrySourcemaps =
+  process.env.VERCEL_ENV === 'production' &&
+  (!process.env.VERCEL_GIT_COMMIT_REF || process.env.VERCEL_GIT_COMMIT_REF === 'main');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -29,9 +33,11 @@ const nextConfig = {
     ],
   },
   output: 'standalone',
-  outputFileTracingRoot: path.join(__dirname),
+  outputFileTracingRoot: path.join(__dirname, '..'),
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
-  turbopack: {},
+  turbopack: {
+    root: path.join(__dirname, '..'),
+  },
   webpack: (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
@@ -145,13 +151,17 @@ const nextConfig = {
 module.exports = withSentryConfig(withWorkflow(nextConfig), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-  authToken: process.env.SENTRY_AUTH_TOKEN,
+  authToken: shouldUploadSentrySourcemaps ? process.env.SENTRY_AUTH_TOKEN : undefined,
 
   silent: !process.env.CI,
-  widenClientFileUpload: true,
+  widenClientFileUpload: shouldUploadSentrySourcemaps,
+  sourcemaps: {
+    disable: !shouldUploadSentrySourcemaps,
+  },
   tunnelRoute: '/monitoring',
   disableLogger: true,
   automaticVercelMonitors: true,
+  telemetry: false,
 
   // Don't fail the build if sourcemap upload fails — the SDK still works
   // without uploaded sourcemaps, you just see minified stack traces.

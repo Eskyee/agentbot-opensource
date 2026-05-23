@@ -1,0 +1,93 @@
+---
+title: Liquid network
+description: "Query the status of the Elements Liquid sidechain node including block height, sync progress, and pruning state"
+---
+
+# Liquid network
+
+The Liquid network endpoint exposes read-only status information from the platform's pruned Elements (Liquid) node. Use it to check whether the node is reachable, how many blocks it has validated, and whether it is fully synced.
+
+<Info>This endpoint queries an Elements Core node running the Liquid sidechain. The node operates in **pruned** mode to minimize disk usage.</Info>
+
+## Get Liquid node status
+
+```http
+GET /api/bitcoin/liquid
+```
+
+Returns the current status of the Liquid sidechain node, including block height, sync progress, best block hash, and pruning state.
+
+### Response
+
+```json
+{
+  "status": "connected",
+  "chain": "liquidv1",
+  "blocks": 3210456,
+  "headers": 3210456,
+  "bestBlockHash": "a1b2c3d4e5f6...",
+  "pruned": true,
+  "sizeOnDisk": 1073741824,
+  "verificationProgress": 0.9999,
+  "isSynched": true
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | Connection state of the Liquid node. Either `"connected"` or `"unreachable"`. |
+| `chain` | string | The chain identifier reported by the node. Defaults to `"liquidv1"`. |
+| `blocks` | number | Number of fully validated blocks on the Liquid chain. Returns `0` if the node is unreachable. |
+| `headers` | number | Number of block headers received. Returns `0` if the node is unreachable. |
+| `bestBlockHash` | string \| null | Hash of the most recent validated block. Returns `null` if the node is unreachable. |
+| `pruned` | boolean | Whether the node is running in pruned mode. Defaults to `true`. |
+| `sizeOnDisk` | number | Size of the blockchain data on disk in bytes. Returns `0` if the node is unreachable. |
+| `verificationProgress` | number | Fraction of the chain that has been verified, where `1.0` means fully synced. Returns `0` if the node is unreachable. |
+| `isSynched` | boolean | Whether the node considers itself fully synced. `true` when `verificationProgress` exceeds `0.99` and the node is reachable. |
+
+### Status values
+
+| Value | Meaning |
+|-------|---------|
+| `connected` | The Liquid node responded to RPC calls successfully |
+| `unreachable` | The node did not respond within the 10-second timeout or returned an error |
+
+<Note>When the node is unreachable, numeric fields default to `0`, `bestBlockHash` defaults to `null`, `chain` defaults to `"liquidv1"`, and `pruned` defaults to `true`.</Note>
+
+### Example request
+
+```bash
+curl https://your-domain.com/api/bitcoin/liquid
+```
+
+### Example response (connected)
+
+```json
+{
+  "status": "connected",
+  "chain": "liquidv1",
+  "blocks": 3210456,
+  "headers": 3210456,
+  "bestBlockHash": "b6f7e8d9c0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6",
+  "pruned": true,
+  "sizeOnDisk": 1073741824,
+  "verificationProgress": 0.9999,
+  "isSynched": true
+}
+```
+
+### Example response (unreachable)
+
+```json
+{
+  "status": "unreachable",
+  "chain": "liquidv1",
+  "blocks": 0,
+  "headers": 0,
+  "bestBlockHash": null,
+  "pruned": true,
+  "sizeOnDisk": 0,
+  "verificationProgress": 0,
+  "isSynched": false
+}
+```

@@ -1,0 +1,146 @@
+---
+title: "Base FM Integration"
+description: "Live video and audio streaming on the onchain radio station"
+---
+
+# Base FM Integration
+
+**Live video and audio streaming on the onchain radio station.** Check who's live, verify DJ access with $BASEFM tokens, and spin up Mux-powered video + audio streams with 2-hour sessions.
+
+## Overview
+
+Base FM is the world's first onchain radio station, broadcasting from Base. Agentbot integrates directly with Base FM via Mux live video and audio streaming and onchain token gating using the $BASEFM token, enabling your agents to manage DJ sessions (up to 2 hours each), verify access, and route listeners to live streams.
+
+## How it works
+
+```
+DJ Wallet → Verify $BASEFM Balance or Community Pass → Provision Mux Stream → Go Live on Base FM
+                 (1,250,000+ BASEFM or Builder/Whale claim)         (RTMP key)
+```
+
+## Features
+
+### Check Live DJs
+
+Query which DJs are currently streaming on Base FM:
+
+```javascript
+const djs = await getLiveDJs();
+// Returns: [{ name, wallet, genre, listeners, playbackId }]
+```
+
+### Verify DJ access (token gating)
+
+Access to DJ streaming is granted if either condition is met:
+
+- The wallet holds at least **1,250,000 BASEFM** on the Base network, or
+- The caller has a **community guest pass** (Builder or Whale tier claimed holders via the [community program](/api-reference/community-program))
+
+```javascript
+const result = await verifyDJ("0xabc...");
+// Returns: { wallet: "0xabc...", balance: "7500000000000000000000", hasAccess: true }
+```
+
+**$BASEFM Token:** `0x9a4376bab717ac0a3901eeed8308a420c59c0ba3` (Base network)
+
+### Create stream (verified DJs only)
+
+Provision a new Mux video + audio stream for a verified DJ. Each session lasts up to **2 hours**. The response includes HLS and web playback URLs for listeners.
+
+```javascript
+const stream = await createStream("0xabc", "DJ Snake");
+// Returns: { streamKey, playbackId, rtmpUrl, streamType: "video+audio" }
+```
+
+The response also includes a `playback` object with direct playback URLs:
+
+| Field | Example |
+|-------|---------|
+| `playback.hls` | `https://stream.mux.com/{playbackId}.m3u8` |
+| `playback.web` | `https://stream.mux.com/{playbackId}.html` |
+
+### Go live via OBS
+
+Once your stream is provisioned, configure OBS with the recommended video and audio settings:
+
+| Setting | Value |
+|---------|-------|
+| **Server** | `rtmp://global-live.mux.com:5222/app` |
+| **Stream Key** | `[from createStream response]` |
+| **Video resolution** | 1280x720 (720p) or 1920x1080 (1080p) |
+| **Video bitrate** | 2500–4500 kbps |
+| **Video encoder** | H.264 |
+| **Frame rate** | 30 fps |
+| **Keyframe interval** | 2 seconds |
+| **Audio bitrate** | 256–320 kbps |
+| **Audio encoder** | AAC, 44.1 kHz, Stereo |
+
+Then start streaming — listeners auto-tune via Base FM.
+
+### Go live via agent (autonomous DJ)
+
+Agents running in a managed runtime with `ffmpeg` available can broadcast autonomously using the pre-built ffmpeg command returned by `POST /api/basefm/streams`. The response includes an `ffmpeg` object with a ready-to-run command that uses the default baseFM artwork image and generates silent audio — no external media source is required. To use a different visual, swap the image URL in the command.
+
+You can check whether `ffmpeg` is available in the runtime using the [instance details endpoint](/api-reference/agents#get-instance-details) (`ffmpegAvailable` field) or the [gateway status endpoint](/api-reference/gateway#gateway-status) (`runtime.ffmpeg.available` field).
+
+The baseFM DJ Streaming skill is automatically installed on agents provisioned through the managed runtime. It provides tools for creating streams, fetching live DJs, and generating ffmpeg broadcaster commands.
+
+### Session management
+
+Each DJ session has a **2-hour maximum duration**. You can check remaining time or end a session early via the [streaming API](/api-reference/streaming#check-session-status). Sessions that exceed the time limit are automatically ended.
+
+### Replay archive
+
+By default, ending a session deletes all Mux replay assets to prevent unintended storage costs. To preserve a replay for later playback, pass `archive: true` when [ending the session](/api-reference/streaming#end-session). Archive retention is opt-in, requires the owning Agentbot account, and charges credits based on configured archive pricing. If archive pricing is not configured or the account has insufficient credits, the request is rejected and no assets are deleted.
+
+## Pricing
+
+| Tier | Access |
+|------|--------|
+| **Free (BASEFM)** | Hold 1,250,000+ $BASEFM tokens on Base |
+| **Free (Community)** | Builder or Whale tier claimed holder via the community program |
+| **Paid** | £10/month for non-BASEFM holders (covers Mux costs) |
+
+## Solana holder benefits
+
+Agentbot token holders on Solana unlock additional baseFM perks based on their balance. Use the [verify holder benefits](/api-reference/solana#verify-holder-benefits) endpoint to check eligibility.
+
+| Tier | Minimum balance | baseFM perk |
+|------|----------------|-------------|
+| **Holder** | 1,000 tokens | Access to exclusive baseFM DJ streams |
+| **Builder** | 10,000 tokens | Early access to new features + premium playlists |
+| **Whale** | 100,000 tokens | VIP community chat + voting rights + revenue share |
+
+**Agentbot token mint:** `9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump` (Solana)
+
+## DJ identity linking
+
+You can link your Base wallet address to your Agentbot account to connect your baseFM DJ profile. Once linked, your dashboard shows your DJ name, avatar, follower count, show history, listener stats, and tip totals pulled from baseFM. Your agent can then broadcast on your behalf and appear in the baseFM schedule under your identity.
+
+Use the [baseFM identity API](/api-reference/basefm-identity) to save your wallet and retrieve your DJ stats programmatically.
+
+## Use cases
+
+- **Live video + audio DJ sessions** — Verified agents host video and audio shows on Base FM (up to 2 hours per session)
+- **Autonomous agent broadcasting** — Agents with `ffmpeg` available in the managed runtime can broadcast autonomously using the pre-built ffmpeg command from the streaming API
+- **BASEFM token gating** — Holders with 1,250,000+ $BASEFM can stream
+- **Solana holder benefits** — Agentbot token holders on Solana unlock exclusive streams, early features, and VIP access based on balance tier
+- **Community guest pass** — Builder and Whale tier community members can stream without the full BASEFM threshold
+- **Listener routing** — Fans tune in via HLS or web player with automatic playback
+- **Real-time notifications** — "DJ Snake just went live on Base FM" via Telegram
+
+## Requirements
+
+| Tier | Check Live DJs | Verify Access | Create Stream |
+|------|----------------|---------------|---------------|
+| Solo | ✅ | ✅ | ❌ |
+| Collective | ✅ | ✅ | ❌ |
+| Label | ✅ | ✅ | ✅ |
+| Network | ✅ | ✅ | ✅ |
+
+## Integration Points
+
+- **$BASEFM Token:** `0x9a4376bab717ac0a3901eeed8308a420c59c0ba3`
+- **Base FM API:** `https://api.basefm.space`
+- **Mux:** [mux.com/docs](https://mux.com/docs)
+- **Base FM:** [basefm.space](https://basefm.space)

@@ -1,0 +1,86 @@
+
+description: "Connect your agent to WhatsApp"
+
+# WhatsApp Integration
+
+Connect your Agentbot agent to WhatsApp Business.
+
+## Setup
+
+### Step 1: Meta Developer Portal
+
+1. Go to [Meta Developer Portal](https://developers.facebook.com/)
+2. Create a new app (type: Business)
+3. Add **WhatsApp** product
+
+### Step 2: Get Credentials
+
+1. Go to WhatsApp → API Setup
+2. Note these credentials:
+   - Phone Number ID
+   - Access Token
+   - Business Account ID
+
+### Step 3: Connect to Agentbot
+
+1. Go to **Settings → Integrations → WhatsApp**
+2. Enter:
+   - Phone Number ID
+   - Access Token
+3. Click **Connect**
+
+### Step 4: Verify Webhook
+
+Meta will verify your webhook. Agentbot handles this automatically.
+
+## Features
+
+| Feature | Status |
+|---------|--------|
+| Text Messages | ✅ |
+| Images | ✅ |
+| Documents | ✅ |
+| Audio | ✅ |
+| Video | ✅ |
+| Location | ✅ |
+| Interactive Buttons | ✅ |
+
+## Business Hours
+
+Set business hours in **Settings → Integrations → WhatsApp**:
+
+```json
+{
+  "timezone": "America/New_York",
+  "hours": {
+    "monday": {"open": "09:00", "close": "17:00"},
+    "tuesday": {"open": "09:00", "close": "17:00"},
+    // ...
+  }
+}
+```
+
+## Templates
+
+WhatsApp requires templates for outbound messages. Create in Meta Business Manager.
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion icon="error" title="Messages not delivering">
+
+- Verify phone number is verified
+- Check template approval status
+- Ensure access token is valid
+
+</Accordion>
+
+<Accordion icon="error" title="Webhook errors">
+
+- Verify webhook URL is accessible
+- Check webhook verification token
+
+</Accordion>
+
+</AccordionGroup>

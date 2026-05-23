@@ -1,0 +1,172 @@
+---
+title: Community Program API
+description: "Retrieve community program status including perks, founding badge, and governance eligibility"
+---
+
+# Community Program API
+
+Returns the full community program state for the authenticated user, including reward status, unlocked perks, founding badge, and governance eligibility.
+
+## Get community program
+
+```http
+GET /api/community/program
+```
+
+Requires session authentication. Returns the community program data for the current user. If the user has claimed token rewards, the response includes their founding badge, unlocked perks, and governance voting power.
+
+### Response
+
+```json
+{
+  "rewards": {
+    "connected": true,
+    "walletAddress": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+    "claimed": true,
+    "currentTier": {
+      "id": "builder",
+      "label": "Builder",
+      "credits": 100,
+      "minBalance": 10000
+    },
+    "balanceUi": 15000,
+    "creditsClaimed": 100,
+    "claimedAt": "2026-04-10T12:00:00.000Z",
+    "availability": "live",
+    "detail": null
+  },
+  "perks": [
+    {
+      "key": "credits",
+      "title": "Free Agent Credits",
+      "detail": "100 Agentbot credits are active on your account.",
+      "unlocked": true
+    },
+    {
+      "key": "basefm-pass",
+      "title": "baseFM Guest Pass",
+      "detail": "Builder and Whale holders can create a baseFM DJ stream without holding the full BASEFM threshold.",
+      "unlocked": true
+    },
+    {
+      "key": "governance",
+      "title": "Governance Rights",
+      "detail": "Your community vote is active with 3x voting power.",
+      "unlocked": true
+    },
+    {
+      "key": "airdrop",
+      "title": "Airdrop Ready",
+      "detail": "Your claimed wallet is included in export-ready holder snapshots for future reward operations.",
+      "unlocked": true
+    }
+  ],
+  "foundingBadge": {
+    "key": "founding-community",
+    "title": "Founding Community",
+    "detail": "Builder claim verified on Agentbot.",
+    "walletAddress": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+    "createdAt": "2026-04-10T12:00:00.000Z"
+  },
+  "governance": {
+    "eligible": true,
+    "votingPower": 3,
+    "proposals": [
+      {
+        "id": "cgp_a1b2c3d4-...",
+        "slug": "first-community-vote-abc123",
+        "title": "First community vote",
+        "summary": "Should Agentbot expand baseFM access to Holder tier?",
+        "details": null,
+        "status": "active",
+        "startsAt": "2026-04-10T10:00:00.000Z",
+        "endsAt": null,
+        "totals": {
+          "yes": 16,
+          "no": 3,
+          "abstain": 1
+        },
+        "userVote": {
+          "choice": "yes",
+          "votingPower": 3
+        }
+      }
+    ]
+  },
+  "admin": false
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rewards` | object | Current community reward status for the user |
+| `rewards.connected` | boolean | Whether a wallet is connected |
+| `rewards.walletAddress` | string \| null | Connected Solana wallet address |
+| `rewards.claimed` | boolean | Whether the user has claimed community rewards |
+| `rewards.currentTier` | object \| null | Tier details based on token balance |
+| `rewards.currentTier.id` | string | Tier identifier (`whale`, `builder`, or `holder`) |
+| `rewards.currentTier.label` | string | Display name for the tier |
+| `rewards.currentTier.credits` | number | Credits granted at this tier |
+| `rewards.currentTier.minBalance` | number | Minimum token balance for this tier |
+| `rewards.balanceUi` | number | Human-readable token balance |
+| `rewards.creditsClaimed` | number | Number of credits claimed |
+| `rewards.claimedAt` | string \| null | ISO 8601 timestamp of the claim |
+| `rewards.availability` | string | Service availability: `live` or `degraded` |
+| `rewards.detail` | string \| null | Additional status information when degraded |
+| `perks` | array | List of community perks and their unlock status |
+| `perks[].key` | string | Perk identifier (`credits`, `basefm-pass`, `governance`, `airdrop`) |
+| `perks[].title` | string | Display title |
+| `perks[].detail` | string | Description of the perk and its current status |
+| `perks[].unlocked` | boolean | Whether the perk is active for the user |
+| `foundingBadge` | object \| null | Founding Community badge, or `null` if not earned |
+| `foundingBadge.key` | string | Badge identifier (`founding-community`) |
+| `foundingBadge.title` | string | Badge display title |
+| `foundingBadge.detail` | string \| null | Badge description |
+| `foundingBadge.walletAddress` | string \| null | Wallet address associated with the badge |
+| `foundingBadge.createdAt` | string | ISO 8601 timestamp of badge creation |
+| `governance` | object | Governance participation details |
+| `governance.eligible` | boolean | Whether the user can vote (requires a claim) |
+| `governance.votingPower` | number | Voting weight: 10 for Whale, 3 for Builder, 1 for Holder, 0 if unclaimed |
+| `governance.proposals` | array | Recent governance proposals (up to 12) |
+| `governance.proposals[].id` | string | Proposal identifier |
+| `governance.proposals[].slug` | string | URL-safe slug |
+| `governance.proposals[].title` | string | Proposal title |
+| `governance.proposals[].summary` | string | Short summary |
+| `governance.proposals[].details` | string \| null | Extended description |
+| `governance.proposals[].status` | string | `active` or `closed` |
+| `governance.proposals[].startsAt` | string | ISO 8601 start timestamp |
+| `governance.proposals[].endsAt` | string \| null | ISO 8601 end timestamp, or `null` for open-ended |
+| `governance.proposals[].totals` | object | Aggregated vote totals |
+| `governance.proposals[].totals.yes` | number | Total weighted yes votes |
+| `governance.proposals[].totals.no` | number | Total weighted no votes |
+| `governance.proposals[].totals.abstain` | number | Total weighted abstain votes |
+| `governance.proposals[].userVote` | object \| null | The current user's vote on this proposal, or `null` |
+| `governance.proposals[].userVote.choice` | string | `yes`, `no`, or `abstain` |
+| `governance.proposals[].userVote.votingPower` | number | Voting weight used |
+| `admin` | boolean | Whether the current user has admin privileges |
+
+### Perk unlock rules
+
+| Perk | Unlock condition |
+|------|-----------------|
+| `credits` | Any tier claim |
+| `basefm-pass` | Builder or Whale tier claim |
+| `governance` | Any tier claim |
+| `airdrop` | Any tier claim |
+
+### Voting power by tier
+
+| Tier | Voting power |
+|------|-------------|
+| Whale | 10 |
+| Builder | 3 |
+| Holder | 1 |
+| Unclaimed | 0 |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |

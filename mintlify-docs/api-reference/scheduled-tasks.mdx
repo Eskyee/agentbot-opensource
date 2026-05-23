@@ -1,0 +1,190 @@
+---
+title: Scheduled tasks API
+description: "Create and manage cron-scheduled tasks that prompt your agents on a schedule"
+---
+
+# Scheduled tasks API
+
+Schedule recurring prompts for your agents using cron expressions. You can create, update, list, and delete scheduled tasks through these endpoints.
+
+<Note>Scheduled tasks are processed by an inline scheduler that runs inside the API process. The scheduler polls for pending tasks every 30 seconds and executes up to 10 tasks per cycle. Each task is dispatched as an HTTP request to the target agent with a 30-second timeout.</Note>
+
+<Note>All scheduled task endpoints require session authentication. Tasks are scoped to the authenticated user — you can only manage tasks for agents you own.</Note>
+
+## List scheduled tasks
+
+```http
+GET /api/scheduled-tasks
+```
+
+Returns all scheduled tasks for the authenticated user, sorted by creation date (newest first).
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `agentId` | string | No | Filter tasks by agent ID |
+
+### Response
+
+```json
+{
+  "tasks": [
+    {
+      "id": "task_abc123",
+      "name": "Daily check-in",
+      "description": "Morning status update",
+      "cronSchedule": "0 9 * * *",
+      "prompt": "Give me a morning briefing on today's schedule and priorities.",
+      "enabled": true,
+      "lastRun": "2026-03-22T09:00:00Z",
+      "nextRun": "2026-03-23T09:00:00Z",
+      "agentId": "agent_456",
+      "createdAt": "2026-03-15T12:00:00Z",
+      "updatedAt": "2026-03-22T09:00:00Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+### Task object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique task identifier |
+| `name` | string | Task name |
+| `description` | string \| null | Optional task description |
+| `cronSchedule` | string | Cron expression (5 or 6 fields) |
+| `prompt` | string | The prompt sent to the agent on each run |
+| `enabled` | boolean | Whether the task is active |
+| `lastRun` | string \| null | ISO 8601 timestamp of the last execution |
+| `nextRun` | string \| null | ISO 8601 timestamp of the next scheduled execution |
+| `agentId` | string | ID of the agent this task targets |
+| `createdAt` | string | ISO 8601 creation timestamp |
+| `updatedAt` | string | ISO 8601 last-updated timestamp |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to list tasks |
+
+## Create a scheduled task
+
+```http
+POST /api/scheduled-tasks
+```
+
+Creates a new scheduled task for one of your agents. The cron schedule is validated to ensure it contains 5 or 6 fields.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Task name |
+| `cronSchedule` | string | Yes | Cron expression with 5 or 6 fields (for example, `"0 9 * * *"` for daily at 9 AM) |
+| `prompt` | string | Yes | The prompt to send to the agent on each run |
+| `agentId` | string | Yes | ID of the agent to target. Must belong to you. |
+| `description` | string | No | Optional description |
+| `enabled` | boolean | No | Whether the task starts active. Defaults to `true`. |
+
+### Example request
+
+```json
+{
+  "name": "Weekly fan report",
+  "cronSchedule": "0 10 * * 1",
+  "prompt": "Generate a weekly fan engagement report with streaming stats and growth trends.",
+  "agentId": "agent_456",
+  "description": "Runs every Monday at 10 AM"
+}
+```
+
+### Response (201 Created)
+
+Returns the created task object.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing required fields (`name`, `cronSchedule`, `prompt`, and `agentId` are required) |
+| 400 | Invalid cron schedule (expected 5–6 fields) |
+| 401 | Unauthorized — no valid session |
+| 404 | Agent not found or does not belong to you |
+| 500 | Task creation failed |
+
+## Update a scheduled task
+
+```http
+PUT /api/scheduled-tasks
+```
+
+Updates an existing scheduled task. Only the fields you include in the request body are changed.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `taskId` | string | Yes | ID of the task to update |
+| `name` | string | No | Updated task name |
+| `description` | string | No | Updated description |
+| `cronSchedule` | string | No | Updated cron expression |
+| `prompt` | string | No | Updated prompt |
+| `enabled` | boolean | No | Enable or disable the task |
+
+### Example request
+
+```json
+{
+  "taskId": "task_abc123",
+  "enabled": false
+}
+```
+
+### Response
+
+Returns the updated task object.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `taskId` is required |
+| 401 | Unauthorized — no valid session |
+| 404 | Task not found or does not belong to you |
+| 500 | Task update failed |
+
+## Delete a scheduled task
+
+```http
+DELETE /api/scheduled-tasks
+```
+
+Permanently deletes a scheduled task.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `taskId` | string | Yes | ID of the task to delete |
+
+### Response
+
+```json
+{
+  "success": true,
+  "taskId": "task_abc123"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `taskId` is required |
+| 401 | Unauthorized — no valid session |
+| 404 | Task not found or does not belong to you |
+| 500 | Task deletion failed |

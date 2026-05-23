@@ -1,0 +1,158 @@
+---
+title: Wristband API
+description: "NFT wristband system for on-chain access verification on Base"
+---
+
+# Wristband API
+
+Query wristband NFT contract status, verify holder ownership, and retrieve token metadata. Wristbands are ERC-721 tokens on the Base network that grant access to premium features including HD live streams and token-gated channels.
+
+<Note>These endpoints do not require authentication. The wristband contract address is configured via the `WRISTBAND_CONTRACT_ADDRESS` environment variable. When the contract is not configured, endpoints return a `not_configured` status instead of an error.</Note>
+
+## Get contract info
+
+```http
+GET /api/wristband
+```
+
+Returns the wristband contract status and minting details.
+
+### Response (configured)
+
+```json
+{
+  "status": "available",
+  "contract": "0x1234...abcd",
+  "network": "base",
+  "chainId": 8453,
+  "mintPrice": "0.001 ETH",
+  "maxSupply": 10000,
+  "opensea": "https://opensea.io/collection/wristband",
+  "basescan": "https://basescan.org/address/0x1234...abcd"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | `available` when the contract is deployed, `not_configured` otherwise |
+| `contract` | string | Contract address on Base |
+| `network` | string | Network name (`base`) |
+| `chainId` | number | Chain ID (`8453`) |
+| `mintPrice` | string | Current mint price |
+| `maxSupply` | number | Maximum number of wristbands that can be minted |
+| `opensea` | string | OpenSea collection URL |
+| `basescan` | string | Basescan contract URL |
+
+### Response (not configured)
+
+```json
+{
+  "status": "not_configured",
+  "message": "Wristband contract not deployed yet",
+  "comingSoon": true
+}
+```
+
+## Verify holder
+
+```http
+GET /api/wristband/verify
+```
+
+Checks whether a wallet address holds a wristband NFT by calling the `balanceOf` function on the contract.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `address` | string | Yes | Wallet address to check (hex format with `0x` prefix) |
+
+### Response
+
+```json
+{
+  "hasWristband": true,
+  "address": "0xabc...123",
+  "contract": "0x1234...abcd"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `hasWristband` | boolean | `true` if the wallet holds at least one wristband token |
+| `address` | string | The wallet address that was checked |
+| `contract` | string | The wristband contract address |
+
+When the contract is not configured:
+
+```json
+{
+  "hasWristband": false,
+  "error": "Contract not configured"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `Address required` — the `address` query parameter is missing |
+
+<Note>On-chain read errors (for example, RPC failures) return a `200` response with `hasWristband: false` and an `error` field describing the failure, rather than an HTTP error status.</Note>
+
+## Get token metadata
+
+```http
+GET /api/wristband/metadata/:tokenId
+```
+
+Returns ERC-721 compatible metadata for a specific wristband token. This endpoint is designed to be used as the `tokenURI` base for the NFT contract.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `tokenId` | string | Numeric token ID |
+
+### Response
+
+```json
+{
+  "name": "Digital Wristband #1",
+  "description": "Onchain access to baseFM underground radio. Grants lifetime access to HD live streams, token-gated channels, and exclusive artist drops.",
+  "image": "https://agentbot.sh/wristband-nft.png",
+  "external_url": "https://agentbot.sh/wristband",
+  "attributes": [
+    {
+      "trait_type": "Edition",
+      "value": "Founding Member"
+    },
+    {
+      "trait_type": "Network",
+      "value": "Base"
+    },
+    {
+      "trait_type": "Access Level",
+      "value": "Premium"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Token name including the token ID |
+| `description` | string | Token description |
+| `image` | string | URL to the token image |
+| `external_url` | string | URL to the wristband page |
+| `attributes` | array | ERC-721 metadata attributes |
+| `attributes[].trait_type` | string | Attribute category |
+| `attributes[].value` | string | Attribute value. Token #1 receives `Founding Member` as its edition; all others receive `Edition {id}`. |
+
+<Note>Metadata responses are cached for one hour via the `Cache-Control: public, max-age=3600` header.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `Invalid token ID` — the `tokenId` path parameter is not a valid number |

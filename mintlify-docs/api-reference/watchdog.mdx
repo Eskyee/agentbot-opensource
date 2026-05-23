@@ -1,0 +1,107 @@
+---
+title: Watchdog API
+description: "Health monitoring, crash detection, auto-repair, and notifications for agent gateways"
+---
+
+# Watchdog API
+
+The watchdog monitors agent gateway processes for health and automatically recovers from failures. It detects crash loops, performs auto-repair, and sends notifications via Telegram and Discord.
+
+## How It Works
+
+```
+Gateway running
+      │
+      ▼
+Health check every 2 min
+      │
+      ├── Healthy → continue monitoring
+      │
+      └── Unhealthy
+           │
+           ├── First failure → mark degraded
+           ├── Retry every 5 sec
+           ├── 3 failures → trigger repair
+           │
+           ▼
+      Auto-repair
+           │
+           ├── Kill gateway process
+           ├── Wait 5 seconds
+           ├── Restart gateway
+           ├── Verify health
+           │
+           ├── Success → resume normal monitoring
+           └── Failure → retry (max 2 attempts)
+                              │
+                              └── Crash loop detected → notify + stop
+```
+
+## Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `WATCHDOG_CHECK_INTERVAL` | `120` | Health check interval in seconds |
+| `WATCHDOG_DEGRADED_CHECK_INTERVAL` | `5` | Retry interval when degraded (seconds) |
+| `WATCHDOG_MAX_REPAIR_ATTEMPTS` | `2` | Max auto-repair attempts before crash-loop |
+| `WATCHDOG_CRASH_LOOP_WINDOW` | `300` | Window for crash-loop detection (seconds) |
+| `WATCHDOG_CRASH_LOOP_THRESHOLD` | `3` | Crashes in window to trigger crash-loop |
+| `WATCHDOG_AUTO_REPAIR` | `true` | Enable/disable auto-repair |
+| `TELEGRAM_BOT_TOKEN` | — | Telegram bot token for notifications |
+| `TELEGRAM_ADMIN_CHAT_ID` | — | Chat ID for Telegram notifications |
+| `DISCORD_WEBHOOK_URL` | — | Discord webhook URL for notifications |
+
+## Lifecycle States
+
+| State | Description |
+|-------|-------------|
+| `stopped` | Gateway is not running |
+| `starting` | Gateway process started, waiting for health check |
+| `running` | Gateway is healthy |
+| `degraded` | Health check failed, retrying |
+| `crash_loop` | Too many crashes, auto-repair exhausted |
+| `repairing` | Auto-repair in progress |
+
+## Notifications
+
+The watchdog sends notifications for:
+
+- **Crash detected** — Gateway process exited unexpectedly
+- **Crash loop** — 3+ crashes in 5-minute window
+- **Auto-repair started** — Attempting to restart the gateway
+- **Auto-repair succeeded** — Gateway is healthy again
+- **Auto-repair failed** — Could not recover, needs manual intervention
+
+### Telegram Format
+
+```
+🐺 Agentbot Watchdog
+🔴 Crash loop detected - View logs
+Trigger: `crash_loop`
+Attempt count: 3
+```
+
+### Discord Format
+
+Embedded message with color coding:
+- 🔴 Red: crashes, failures
+- 🟡 Yellow: repairing, degraded
+- 🟢 Green: recovered, healthy
+
+## Test Script
+
+Test the watchdog by injecting an invalid config:
+
+```bash
+#!/bin/bash
+CONTAINER_NAME="agentbot-<userId>"
+docker exec "$CONTAINER_NAME" node -e "
+  const fs = require('fs');
+  const cfg = JSON.parse(fs.readFileSync('/data/.openclaw/openclaw.json'));
+  cfg.hooks = cfg.hooks || {};
+  cfg.hooks.transformDir = '/tmp/does-not-exist';
+  fs.writeFileSync('/data/.openclaw/openclaw.json', JSON.stringify(cfg, null, 2));
+"
+```
+
+The watchdog should detect the gateway failure and auto-repair within 2 health check cycles.

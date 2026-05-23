@@ -335,7 +335,9 @@ export async function createContainer(
       trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
       controlUi: {
         allowedOrigins: CONTROL_UI_ALLOWED_ORIGINS,
-        dangerouslyDisableDeviceAuth: false,
+        // Auto-pair: token auth is sufficient. OpenClaw 2026.4+ requires this
+        // to be true or every browser session is blocked with "device pairing required".
+        dangerouslyDisableDeviceAuth: true,
         dangerouslyAllowHostHeaderOriginFallback: false,
       },
       http: { endpoints: { chatCompletions: { enabled: true } } },

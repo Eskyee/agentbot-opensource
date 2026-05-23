@@ -1,0 +1,216 @@
+---
+title: "AI Models & Pricing"
+description: "Available AI models on Agentbot with transparent pricing. BYOK — pay providers directly, zero markup."
+---
+
+<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeigkpl3kax3x5wpx4xyyfldhyq6hqcwlihz5ku4cxc4ltufow4osyi" alt="Agentbot models" height="360" style={{borderRadius: '12px', width: '100%', objectFit: 'cover', marginBottom: '24px'}} />
+
+## Default model: MiMo-V2-Pro
+
+**MiMo-V2-Pro** is Xiaomi's flagship AI model and the default model for all new Agentbot container configurations.
+
+- **Top-ranked in programming benchmarks** — Excellent for agent and coding tasks
+- **1M context length** — Large context window for complex workflows
+- **Cost-effective** — Strong performance at competitive pricing
+- **Stable** — Proven reliability on OpenRouter infrastructure
+
+### MiMo-V2-Pro pricing
+
+| Tier | Input | Output |
+|------|-------|--------|
+| Standard | $1/M | $3/M |
+
+### Specs
+
+| Spec | Value |
+|------|-------|
+| Total Context | 1M tokens |
+| Provider | Xiaomi (via OpenRouter) |
+| Model ID | `openrouter/xiaomi/mimo-v2-pro` |
+
+<Note>Gemini Flash 1.5 was the previous default model. Existing agents provisioned with Gemini Flash 1.5 continue to use it unless you change the model in your agent settings. New agents are provisioned with MiMo-V2-Pro.</Note>
+
+---
+
+## Supported Models
+
+Agentbot supports 300+ models via OpenRouter. BYOK (Bring Your Own Key) — you pay providers directly with zero markup.
+
+### Recommended Models
+
+| Model | Input | Output | Best For |
+|-------|-------|--------|----------|
+| **MiMo-V2-Pro** | $1/M | $3/M | Default — agents, coding, long context |
+| Claude Sonnet 4 | $3/M | $15/M | Complex reasoning, analysis |
+| GPT-4o | $2.5/M | $10/M | General purpose, vision |
+| Gemini 2.5 Flash | $0.15/M | $0.60/M | Fast, cost-effective |
+| Gemini Flash 1.5 | $0.075/M | $0.30/M | Fast, cost-effective |
+| DeepSeek R1 | $0.55/M | $2.19/M | Reasoning, math |
+| Solana Agent Kit | Via OpenRouter | Via OpenRouter | DeFi, NFTs, token operations (60+ Solana actions via MCP) |
+
+### Free Models
+
+| Model | Cost | Notes |
+|-------|------|-------|
+| Gemini 2.0 Flash | Free | 150 RPM limit |
+| Gemma 3N | Free | Good for testing |
+
+### Full Pricing Table
+
+| Model | Input (per 1K tokens) | Output (per 1K tokens) |
+|-------|----------------------|------------------------|
+| Gemini 2.0 Flash | Free | Free |
+| Groq Llama 3 | £0.0002 | £0.0002 |
+| Gemini 1.5 Flash | £0.0001 | £0.0005 |
+| MiMo-V2-Pro | $1/M | $3/M |
+| GPT-4o Mini | £0.0003 | £0.0012 |
+| Claude 3 Haiku | £0.0002 | £0.0010 |
+| GPT-4o | £0.0022 | £0.0088 |
+| Claude Sonnet 4 | $3/M | $15/M |
+| DeepSeek R1 | $0.55/M | $2.19/M |
+
+---
+
+## Token quotas
+
+Each plan includes a monthly token allowance. Agentbot tracks your cumulative token usage for the current calendar month and rejects requests that would exceed your plan limit. The quota resets automatically at the start of each month.
+
+| Plan | Monthly token limit |
+|------|---------------------|
+| Solo | 2,000,000 |
+| Collective | 6,000,000 |
+| Label | 20,000,000 |
+| Network | Unlimited |
+
+When you exceed your quota, chat completion requests return a `429` status with the `QUOTA_EXCEEDED` error code:
+
+```json
+{
+  "error": "Monthly token quota exceeded for plan \"solo\". Used 2,000,000 of 2,000,000 tokens. Quota resets at the start of next month.",
+  "code": "QUOTA_EXCEEDED"
+}
+```
+
+To continue using AI features before the month resets, upgrade to a higher plan from the billing page.
+
+You can check your current quota usage from the [dashboard cost API](/api-reference/dashboard#dashboard-cost). The response includes a `quota` object with `usedTokens`, `percent`, and an `overageWarning` flag that turns `true` at 80% usage.
+
+<Note>If Agentbot cannot reach the usage database, quota enforcement fails open — your request proceeds without a usage check. This ensures temporary infrastructure issues do not block your agents.</Note>
+
+---
+
+## Plan model access
+
+The public plans unlock different model sets:
+
+| Plan | Models Available |
+|------|-----------------|
+| Solo (£29) | MiMo-V2-Pro, Claude Sonnet 4 |
+| Collective (£69) | + Gemini 2.5 Flash |
+| Label (£149) | + DeepSeek R1, Solana Agent Kit |
+
+<Note>Custom and white-label deployments can unlock broader model access by arrangement, but the public self-serve plans are Solo, Collective, and Label.</Note>
+
+---
+
+## Solana Agent Kit
+
+The **Solana Agent Kit** model provides 60+ on-chain Solana actions through MCP (Model Context Protocol). It is available on the **Label plan**.
+
+### Capabilities
+
+- **DeFi** — Token swaps, liquidity provisioning, yield farming
+- **NFTs** — Minting, listing, and managing NFT collections
+- **Token operations** — Token creation, transfers, and balance queries
+- **On-chain data** — Market data, transaction history, wallet lookups
+
+### Specs
+
+| Spec | Value |
+|------|-------|
+| Model ID | `openrouter/solana/solana-agent-kit` |
+| Provider | Solana (via OpenRouter) |
+| Required Plan | Label |
+| Actions | 60+ Solana on-chain actions |
+
+### Configuration
+
+```json
+{
+  "models": {
+    "default": "openrouter/solana/solana-agent-kit"
+  }
+}
+```
+
+<Note>The Solana Agent Kit requires a Label plan. If you are on a Solo or Collective plan, upgrade to Label to access this model.</Note>
+
+---
+
+## BYOK (Bring Your Own Key)
+
+Agentbot is BYOK — you connect your own API keys from AI providers. We charge zero markup on model usage.
+
+### Supported Providers
+
+- **OpenRouter** — 300+ models, one key
+- **Anthropic** — Direct Claude access
+- **OpenAI** — Direct GPT access
+- **Google** — Direct Gemini access
+- **Ollama** — Local models, free
+
+### Getting an OpenRouter Key
+
+1. Go to [openrouter.ai](https://openrouter.ai)
+2. Create an account
+3. Go to Keys → Create Key
+4. Add credits (minimum $5)
+5. Copy key to Agentbot dashboard
+
+### Key Security
+
+- API keys are encrypted at rest
+- Never shared with third parties
+- Can be rotated at any time
+- Deleted on account removal
+
+---
+
+## Model Selection
+
+### From Dashboard
+
+1. Go to Settings → Models
+2. Select your preferred model
+3. Your agent uses it for all new conversations
+
+### From Config
+
+```json
+{
+  "models": {
+    "default": "openrouter/xiaomi/mimo-v2-pro",
+    "fallbacks": ["openrouter/anthropic/claude-sonnet-4", "openrouter/google/gemini-2.5-flash"]
+  }
+}
+```
+
+### Per-Conversation
+
+Override the default model for specific conversations via the chat interface.
+
+---
+
+## FAQ
+
+**Q: Why MiMo-V2-Pro as default?**
+A: Top-ranked in programming benchmarks with a 1M context window — ideal for agent and coding tasks at a competitive price point via OpenRouter.
+
+**Q: Can I use a different default?**
+A: Yes — change it in Settings → Models anytime.
+
+**Q: Do you mark up model prices?**
+A: No. Zero markup. You pay providers directly at their rates.
+
+**Q: What if my model goes down?**
+A: Fallback models automatically kick in. Configure fallbacks in your agent settings.

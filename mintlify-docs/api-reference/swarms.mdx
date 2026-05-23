@@ -1,0 +1,105 @@
+---
+title: Swarms API
+description: "Create and manage agent swarms for coordinated multi-agent workflows"
+---
+
+# Swarms API
+
+<Warning>The Swarms API is not live on Agentbot. This page is kept as an internal roadmap/spec reference and is intentionally not linked from the main docs navigation.</Warning>
+
+Swarms let you group multiple agents into a coordinated unit. Use swarms to orchestrate multi-agent workflows where agents collaborate on tasks.
+
+<Note>All swarm endpoints require session authentication and are scoped to the authenticated user's data through [row-level security](/security#row-level-security).</Note>
+
+## List swarms
+
+```http
+GET /api/swarms
+```
+
+Returns all swarms owned by the authenticated user, ordered by creation date (newest first).
+
+### Response
+
+```json
+{
+  "swarms": [
+    {
+      "id": "swarm_abc123",
+      "name": "Production Fleet",
+      "description": "Main production agent swarm",
+      "agents": ["agent_1", "agent_2", "agent_3"],
+      "enabled": true,
+      "createdAt": "2026-03-21T12:00:00.000Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+### Swarm object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique swarm identifier |
+| `name` | string | Swarm display name |
+| `description` | string \| null | Optional description of the swarm |
+| `agents` | string[] | Array of agent IDs that belong to this swarm |
+| `enabled` | boolean | Whether the swarm is currently active |
+| `createdAt` | string | ISO 8601 creation timestamp |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 500 | Failed to fetch swarms |
+
+## Create swarm
+
+```http
+POST /api/swarms
+```
+
+Creates a new agent swarm. The swarm is enabled by default.
+
+### Request body
+
+```json
+{
+  "name": "Production Fleet",
+  "description": "Main production agent swarm",
+  "agents": ["agent_1", "agent_2", "agent_3"],
+  "config": {}
+}
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `name` | string | Yes | Swarm name. Must be between 1 and 100 characters |
+| `description` | string | No | Optional description |
+| `agents` | string[] | No | Array of agent IDs to include in the swarm. Defaults to an empty array |
+| `config` | object | No | Optional configuration object |
+
+### Response
+
+Returns `201 Created` with the new swarm object:
+
+```json
+{
+  "id": "swarm_abc123",
+  "name": "Production Fleet",
+  "description": "Main production agent swarm",
+  "agents": ["agent_1", "agent_2", "agent_3"],
+  "enabled": true,
+  "createdAt": "2026-03-21T12:00:00.000Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Name is required or exceeds 100 characters |
+| 401 | Unauthorized |
+| 500 | Failed to create swarm |

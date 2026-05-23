@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import dynamic from 'next/dynamic'
 import { BasefmLivePlayer } from '@/app/components/basefm/BasefmLivePlayer'
+import { GitlawbNodeIdentityCard } from '@/app/components/GitlawbNodeIdentityCard'
 
 const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
 const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
@@ -49,14 +50,13 @@ export default async function Home() {
           </div>
 
           <h1 className="text-[2.5rem] sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter uppercase leading-[0.9]">
-            Deploy an<br />
-            <span className="text-zinc-700">Autonomous X Team.</span>
+            Deploy AI workers.<br />
+            <span className="text-zinc-700">Build underground systems.</span>
           </h1>
 
           <p className="text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed mt-6 sm:mt-8">
-            Agentbot gives you private-cloud social agents for X: monitor mentions,
-            draft replies and threads, detect opportunities, and route actions
-            through approvals. Run it with us, or fork the open-source starter.
+            Agentbot is a focused control plane for playground apps, creator agents, OpenGateway keys,
+            and GitLawb-backed autonomous projects.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-8 sm:mt-10">
@@ -84,6 +84,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <GitlawbNodeIdentityCard />
 
       {/* PRIMARY: What it does — the one idea */}
       <section className="border-t border-zinc-900">
@@ -202,46 +204,41 @@ export default async function Home() {
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
           <div className="max-w-2xl mb-10 sm:mb-16">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Explore More</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Core Surface</div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
-              More Features<br />
-              <span className="text-zinc-700">Already Live.</span>
+              Deploy AI workers.<br />
+              <span className="text-zinc-700">Build underground systems.</span>
             </h2>
             <p className="text-zinc-500 text-sm max-w-xl leading-relaxed mt-6">
-              These pages already exist in the app. They were easy to miss because they were not surfaced prominently from the landing page.
+              Agentbot is tighter now: one playground, one creator toolkit, one gateway, one dashboard.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
             {[
               {
-                href: '/capabilities',
-                label: 'Capabilities',
-                body: 'The platform feature overview with the major product surfaces in one place.',
-              },
-              {
-                href: '/solana',
-                label: 'Solana',
-                body: 'Solana agent workflows, integrations, and MCP tool coverage.',
-              },
-              {
                 href: '/playground',
                 label: 'Playground',
-                body: 'App-generation sandbox for testing the product direction quickly.',
+                body: 'Generate, preview, publish, and push app projects to GitLawb.',
               },
               {
-                href: '/open-learning',
-                label: 'Open Learning',
-                body: 'Public learning and contribution path for developers entering the ecosystem.',
+                href: '/creator-toolkit',
+                label: 'Creator Toolkit',
+                body: 'Underground producer agents, prompts, soundpack structure, and launch assets.',
               },
               {
-                href: '/buddies',
-                label: 'Buddies',
-                body: 'The agent-pet experience with progression, persistence, and community framing.',
+                href: '/opengateway',
+                label: 'OpenGateway',
+                body: 'OpenAI-compatible inference keys for Agentbot and OpenClaude deployments.',
               },
               {
-                href: '/showcase',
-                label: 'Showcase',
-                body: 'Public discovery layer for agents, examples, and social proof.',
+                href: '/pricing',
+                label: 'Pricing',
+                body: 'Pick the managed runtime tier that fits your team or creator system.',
+              },
+              {
+                href: '/dashboard',
+                label: 'Dashboard',
+                body: 'Run deployments, creator packages, projects, and gateway activity in one place.',
               },
             ].map((item) => (
               <Link key={item.href} href={item.href} className="bg-black p-6 sm:p-8 hover:bg-zinc-950 transition-colors">
@@ -599,14 +596,14 @@ export default async function Home() {
       {/* Explore links */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Explore</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Start</div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {[
-              { href: '/use-cases', label: 'Use Cases' },
-              { href: '/capabilities', label: 'Capabilities' },
-              { href: '/demo', label: 'Demo' },
-              { href: '/marketplace', label: 'Marketplace' },
-              { href: '/open-learning', label: 'Open Learning' },
+              { href: '/playground', label: 'Playground' },
+              { href: '/creator-toolkit', label: 'Creator Toolkit' },
+              { href: '/opengateway', label: 'OpenGateway' },
+              { href: '/pricing', label: 'Pricing' },
+              { href: '/dashboard', label: 'Dashboard' },
             ].map((link) => (
               <Link
                 key={link.href}

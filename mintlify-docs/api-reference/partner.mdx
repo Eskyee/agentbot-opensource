@@ -1,0 +1,116 @@
+---
+title: Partner API
+description: "Submit partner inquiries with fast-track approval for enterprise applicants"
+---
+
+# Partner API
+
+Submit a partner inquiry to join the Agentbot partner program. Enterprise and AI provider applicants with a company name are automatically fast-tracked for 24-hour approval.
+
+## Authentication
+
+| Endpoint | Auth required |
+|----------|---------------|
+| `POST /api/partner` | None |
+
+<Note>This endpoint is rate-limited by client IP address. Excessive requests return a `429` status.</Note>
+
+## Submit partner inquiry
+
+```http
+POST /api/partner
+```
+
+Submits a partner program inquiry. When the partner type is `enterprise` or `ai_provider` and a company name is provided, the inquiry is flagged for fast-track review with a 24-hour response commitment.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Full name of the applicant |
+| `email` | string | Yes | Contact email address |
+| `company` | string | No | Company or organization name. Required for fast-track eligibility. |
+| `website` | string | No | Company website URL |
+| `type` | string | No | Partner category. One of `general`, `ai_provider`, `integration`, `reseller`, `content`, `infrastructure`, or `enterprise`. Defaults to `general` when omitted. |
+| `message` | string | Yes | Details about the partnership inquiry |
+
+### Example request (fast-track)
+
+```json
+{
+  "name": "Alex Chen",
+  "email": "alex@acme-ai.com",
+  "company": "Acme AI",
+  "website": "https://acme-ai.com",
+  "type": "ai_provider",
+  "message": "We'd like to integrate our language models with Agentbot for on-demand inference."
+}
+```
+
+### Example request (standard)
+
+```json
+{
+  "name": "Jordan Lee",
+  "email": "jordan@example.com",
+  "type": "content",
+  "message": "Interested in creating developer tutorials for the Agentbot platform."
+}
+```
+
+### Fast-track eligibility
+
+An inquiry qualifies for fast-track processing when both conditions are met:
+
+1. The `type` is `enterprise` or `ai_provider`
+2. A `company` name is provided
+
+Fast-tracked inquiries receive a guaranteed response within 24 hours.
+
+### Response
+
+```json
+{
+  "success": true,
+  "fastTrack": true,
+  "message": "Fast track enabled - we will respond within 24 hours"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the inquiry was submitted |
+| `fastTrack` | boolean | Whether the inquiry qualifies for fast-track review |
+| `message` | string | Confirmation message. Includes the 24-hour response commitment when `fastTrack` is `true`. |
+
+### Response (standard review)
+
+When the inquiry does not qualify for fast-track processing, the response indicates standard review:
+
+```json
+{
+  "success": true,
+  "fastTrack": false,
+  "message": "We will be in touch soon"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `name`, `email`, or `message` is missing |
+| 429 | Rate limit exceeded |
+| 500 | Failed to send message |
+
+### Partner types
+
+| Type | Description |
+|------|-------------|
+| `general` | General partnership inquiry |
+| `ai_provider` | AI model or service provider (fast-track eligible) |
+| `integration` | Tool or API integration partner |
+| `reseller` | Reseller or agency partner |
+| `content` | Content creator or developer advocate |
+| `infrastructure` | Infrastructure or hosting partner |
+| `enterprise` | Enterprise partner (fast-track eligible) |

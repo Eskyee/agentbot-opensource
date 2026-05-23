@@ -1,0 +1,184 @@
+---
+title: MCP skills API
+description: "Activate and deactivate skill-embedded MCP (Model Context Protocol) servers"
+---
+
+# MCP skills API
+
+Manage skill-embedded MCP servers that provide additional tools to agents. Each skill can bundle its own MCP server with a set of tools. Activate a skill's MCP server on demand and deactivate it when no longer needed.
+
+<Note>All MCP skill endpoints require session-based authentication through NextAuth. Idle MCP servers are automatically cleaned up.</Note>
+
+## Activate a skill MCP
+
+```http
+POST /api/mcp/:skillId
+```
+
+Starts the MCP server bundled with the specified skill. Returns the server metadata including its name, version, available tools, and activation timestamp.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `skillId` | string | Yes | Identifier of the skill whose MCP server to activate |
+
+### Built-in skills
+
+The following skills ship with built-in MCP servers:
+
+| Skill ID | Description |
+|----------|-------------|
+| `websearch` | Web search tool server |
+| `context7` | Context retrieval and semantic search |
+| `grep_app` | Code search using grep patterns |
+
+### Response
+
+```json
+{
+  "success": true,
+  "skillId": "websearch",
+  "mcp": {
+    "name": "websearch-mcp",
+    "version": "1.0.0",
+    "tools": ["web_search", "web_fetch"],
+    "startedAt": "2026-04-04T12:00:00.000Z"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether activation succeeded |
+| `skillId` | string | The skill that was activated |
+| `mcp.name` | string | MCP server name from the skill configuration |
+| `mcp.version` | string | MCP server version |
+| `mcp.tools` | string[] | List of tool names provided by this MCP server |
+| `mcp.startedAt` | string | ISO 8601 timestamp of when the server was started |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized -- no valid session |
+| 500 | Failed to activate MCP. The error message describes the failure (for example, skill not found or server failed to start). |
+
+## Deactivate a skill MCP
+
+```http
+DELETE /api/mcp/:skillId
+```
+
+Stops the MCP server for the specified skill and frees its resources.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `skillId` | string | Yes | Identifier of the skill whose MCP server to deactivate |
+
+### Response
+
+```json
+{
+  "success": true,
+  "skillId": "websearch",
+  "message": "MCP deactivated"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether deactivation succeeded |
+| `skillId` | string | The skill that was deactivated |
+| `message` | string | Confirmation message |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized -- no valid session |
+| 500 | Failed to deactivate MCP. The error message describes the failure. |
+
+## Call an MCP tool
+
+```http
+POST /api/mcp/:skillId/call/:toolName
+```
+
+Invokes a specific tool on an active MCP server. The skill's MCP server must be activated before calling its tools.
+
+Requires session authentication.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `skillId` | string | Yes | Identifier of the skill whose MCP server to call |
+| `toolName` | string | Yes | Name of the tool to invoke |
+
+### Request body
+
+The request body should be a JSON object containing the tool parameters. You can either pass parameters directly as the body or wrap them in a `parameters` key:
+
+```json
+{
+  "parameters": {
+    "query": "search term"
+  }
+}
+```
+
+Or directly:
+
+```json
+{
+  "query": "search term"
+}
+```
+
+An empty body or no body is allowed for tools that take no parameters.
+
+### Response (200)
+
+```json
+{
+  "skillId": "websearch",
+  "toolName": "web_search",
+  "success": true,
+  "result": {}
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `skillId` | string | The skill that was called |
+| `toolName` | string | The tool that was invoked |
+| `success` | boolean | Whether the tool call succeeded |
+| `result` | any | Tool-specific result data |
+
+### Response (400)
+
+When the tool call fails (for example, invalid parameters):
+
+```json
+{
+  "skillId": "websearch",
+  "toolName": "web_search",
+  "success": false,
+  "error": "Invalid parameters"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 400 | Tool call failed. The response includes `success: false` and an error message. |
+| 500 | Failed to call MCP tool. The error message describes the failure. |
+
+## Automatic idle cleanup
+
+MCP servers that remain idle are automatically deactivated to free resources. You do not need to manually deactivate servers that are no longer in use, though explicit deactivation is recommended when you know a skill's tools are no longer needed.

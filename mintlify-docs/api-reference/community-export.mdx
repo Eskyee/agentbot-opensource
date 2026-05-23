@@ -1,0 +1,76 @@
+---
+title: Community Export API
+description: "Export community holder data for admin operations such as airdrops and snapshots"
+---
+
+# Community Export API
+
+Admin-only endpoint that exports all claimed community holders with their tier, credit, and badge information. Designed for downstream operations such as airdrop snapshots and analytics.
+
+## Export community data
+
+```http
+GET /api/community/export
+```
+
+Requires admin session authentication. Returns all claimed holders with their wallet addresses, tiers, credit amounts, and badge titles.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `format` | string | No | Response format: `json` (default) or `csv` |
+
+### JSON response
+
+```json
+{
+  "exportedAt": "2026-04-10T12:00:00.000Z",
+  "count": 42,
+  "rows": [
+    {
+      "userId": "user_abc123",
+      "walletAddress": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+      "tier": "builder",
+      "credits": 100,
+      "claimedAt": "2026-04-10T12:00:00.000Z",
+      "badgeTitle": "Founding Community"
+    }
+  ]
+}
+```
+
+### JSON response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `exportedAt` | string | ISO 8601 timestamp of when the export was generated |
+| `count` | number | Total number of rows in the export |
+| `rows` | array | List of claimed holder records |
+| `rows[].userId` | string | User identifier |
+| `rows[].walletAddress` | string | Solana wallet address that made the claim |
+| `rows[].tier` | string | Tier at time of claim (`whale`, `builder`, or `holder`) |
+| `rows[].credits` | number | Credits granted |
+| `rows[].claimedAt` | string | ISO 8601 timestamp of the claim |
+| `rows[].badgeTitle` | string \| null | Founding badge title, or `null` if no badge |
+
+### CSV response
+
+When `format=csv` is passed, the response is returned as a downloadable CSV file with the following columns:
+
+| Column | Description |
+|--------|-------------|
+| `user_id` | User identifier |
+| `wallet_address` | Solana wallet address |
+| `tier` | Claim tier |
+| `credits` | Credits granted |
+| `claimed_at` | ISO 8601 timestamp |
+| `badge_title` | Founding badge title |
+
+The response includes `Content-Disposition: attachment; filename="agentbot-community-export.csv"` to trigger a file download.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 403 | Forbidden — admin session required |

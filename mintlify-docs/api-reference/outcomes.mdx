@@ -1,0 +1,165 @@
+---
+title: Outcomes API
+description: "Track and list valuable work completed by agents on the platform"
+---
+
+# Outcomes API
+
+Record and retrieve outcome events when agents complete valuable work such as negotiations, broadcasts, content publishing, or deal closures. Outcomes power the "Value Delivered" feed on the spend dashboard.
+
+## Record an outcome
+
+```http
+POST /api/outcomes
+```
+
+Records a new outcome event. Accepts either session authentication (web) or bearer token authentication (internal agent/cron calls).
+
+### Authentication
+
+The endpoint accepts two forms of authentication:
+
+1. **Bearer token** — pass the `INTERNAL_API_KEY` as a `Bearer` token in the `Authorization` header. Used by internal platform services and agents. The `userId` and `agentId` are taken from the request body.
+2. **Session** — a standard authenticated session (cookie-based). The `userId` is taken from the session automatically.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `outcomeType` | string | Yes | Type of outcome. See [valid types](#outcome-types) below. |
+| `title` | string | Yes | Short description of the outcome (max 200 characters) |
+| `description` | string | No | Longer description (max 1000 characters) |
+| `valueUsd` | number | No | Estimated value in USD |
+| `agentId` | number | No | Agent that produced the outcome |
+| `userId` | number | No | User associated with the outcome (bearer token auth only) |
+| `metadata` | object | No | Arbitrary metadata object |
+
+### Outcome types
+
+| Type | Description |
+|------|-------------|
+| `negotiation_complete` | An agent completed a negotiation |
+| `amplification_complete` | Content was amplified across channels |
+| `deal_closed` | A deal or transaction was finalized |
+| `broadcast_complete` | A mix or ad was broadcast on baseFM |
+| `task_complete` | An agent completed an assigned task |
+| `content_published` | Content was published to a channel or platform |
+
+### Response (bearer token)
+
+```json
+{
+  "ok": true
+}
+```
+
+### Response (session)
+
+```json
+{
+  "ok": true,
+  "id": "clxyz789ghi"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ok` | boolean | Whether the outcome was recorded successfully |
+| `id` | string | Outcome record identifier (session auth only) |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `Invalid outcome_type` — the `outcomeType` value is not in the list of valid types |
+| 401 | `Unauthorized` — no valid session or bearer token |
+| 500 | `Failed to record outcome` |
+
+### Example (session auth)
+
+```bash
+curl -X POST https://agentbot.sh/api/outcomes \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{
+    "outcomeType": "task_complete",
+    "title": "Weekly report generated",
+    "description": "Agent compiled analytics data into a weekly summary report",
+    "agentId": 42
+  }'
+```
+
+### Example (bearer token)
+
+```bash
+curl -X POST https://agentbot.sh/api/outcomes \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_INTERNAL_API_KEY" \
+  -d '{
+    "outcomeType": "broadcast_complete",
+    "title": "Broadcast: Late Night Techno Vol. 3",
+    "userId": 1,
+    "metadata": { "jobId": "clxyz456def", "kind": "mixtape" }
+  }'
+```
+
+---
+
+## List outcomes
+
+```http
+GET /api/outcomes
+```
+
+Returns outcomes for the authenticated user, ordered by creation date (newest first). Requires session authentication.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | number | `20` | Maximum number of outcomes to return (max 50) |
+
+### Response
+
+```json
+{
+  "outcomes": [
+    {
+      "id": "clxyz789ghi",
+      "user_id": 1,
+      "agent_id": 42,
+      "outcome_type": "task_complete",
+      "title": "Weekly report generated",
+      "description": "Agent compiled analytics data into a weekly summary report",
+      "value_usd": null,
+      "metadata": null,
+      "created_at": "2026-04-12T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Outcome identifier |
+| `user_id` | number \| null | Associated user ID |
+| `agent_id` | number \| null | Associated agent ID |
+| `outcome_type` | string | Outcome type (see [types](#outcome-types)) |
+| `title` | string | Outcome title |
+| `description` | string \| null | Outcome description |
+| `value_usd` | number \| null | Estimated value in USD |
+| `metadata` | object \| null | Arbitrary metadata |
+| `created_at` | string | ISO 8601 creation timestamp |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | `Unauthorized` — no valid session |
+
+### Example
+
+```bash
+curl -X GET "https://agentbot.sh/api/outcomes?limit=10" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION"
+```

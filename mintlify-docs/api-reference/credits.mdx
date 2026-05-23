@@ -1,0 +1,175 @@
+---
+title: Credits API
+description: "Check your credit balance and use credits for free AI chat completions"
+---
+
+# Credits API
+
+Check your credit balance and spend credits on AI chat completions through the credits gateway.
+
+## Credits gateway
+
+```http
+POST /api/v1/credits
+```
+
+Send an AI chat completion request using your credits. Each call costs 1 credit, debited from your referral credits balance. If the upstream AI gateway is unavailable or returns an error, the credit is automatically refunded.
+
+Only free-tier models are available through this endpoint:
+
+- `openrouter/xiaomi/mimo-v2-pro` (default)
+- `openrouter/google/gemini-2.0-flash-001`
+- `openrouter/openai/gpt-4o-mini`
+
+If you request a model not in this list, the gateway falls back to `openrouter/xiaomi/mimo-v2-pro`.
+
+### Request body
+
+The request body follows the [OpenAI chat completions format](https://platform.openai.com/docs/api-reference/chat). You can include any standard chat completion parameters.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messages` | array | Yes | Array of message objects with `role` and `content` |
+| `model` | string | No | One of the allowed models listed above. Defaults to `openrouter/xiaomi/mimo-v2-pro` if omitted or not in the allowed list. |
+| `stream` | boolean | No | Set to `true` to receive a streaming response (SSE) |
+
+```json
+{
+  "messages": [
+    { "role": "user", "content": "Explain quantum computing in one paragraph" }
+  ],
+  "model": "openrouter/xiaomi/mimo-v2-pro"
+}
+```
+
+### Response
+
+On success, the response contains the AI completion along with a `_credits` object showing the cost and remaining balance.
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "Quantum computing uses qubits..."
+      }
+    }
+  ],
+  "_credits": {
+    "cost": 1,
+    "remaining": 49
+  }
+}
+```
+
+The response also includes an `X-Credits-Remaining` header with your updated balance.
+
+When `stream` is `true`, the response is a server-sent event stream with `Content-Type: text/event-stream`. The `X-Credits-Remaining` header is still included.
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `_credits.cost` | number | Credits consumed by this call (always `1`) |
+| `_credits.remaining` | number | Credits remaining after this call |
+
+### Response headers
+
+| Header | Description |
+|--------|-------------|
+| `X-Credits-Remaining` | Updated credit balance after the call |
+| `X-Credits-Refunded` | Set to `1` when the credit was refunded due to an upstream gateway error. Only present on error responses where a refund occurred. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 402 | Insufficient credits. The response includes `error: "insufficient_credits"` and your current `credits` balance. |
+| 404 | User not found |
+| 4xx/5xx | Upstream gateway error. When the AI gateway returns a non-success status, the credit is automatically refunded. The upstream response body and status code are forwarded to the caller. The `X-Credits-Refunded: 1` and `X-Credits-Remaining` headers are included. |
+| 502 | AI gateway unavailable (connection failure). The credit is automatically refunded. |
+| 500 | Internal server error. If a credit was already debited, it is refunded on a best-effort basis. |
+
+<Warning>Credits are debited before the AI call is made to prevent double-spend. If the call fails for any reason — connection error, upstream 4xx/5xx, or internal error — credits are refunded automatically. Check the `X-Credits-Refunded` header to determine whether a refund occurred.</Warning>
+
+---
+
+## Check balance (v1)
+
+```http
+GET /api/v1/credits
+```
+
+Returns your current credit balance, plan, cost per call, and the list of models available through the credits gateway.
+
+### Response
+
+```json
+{
+  "credits": 50,
+  "plan": "solo",
+  "costPerCall": 1,
+  "allowedModels": [
+    "openrouter/xiaomi/mimo-v2-pro",
+    "openrouter/google/gemini-2.0-flash-001",
+    "openrouter/openai/gpt-4o-mini"
+  ]
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `credits` | number | Available credits balance |
+| `plan` | string | Current subscription plan (e.g. `free`, `solo`, `collective`, `label`, `network`) |
+| `costPerCall` | number | Credits consumed per gateway call (currently `1`) |
+| `allowedModels` | string[] | Models available through the credits gateway |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+---
+
+## Get credit balance
+
+```http
+GET /api/credits
+```
+
+Returns the authenticated user's credit balance, referral code, referral count, and current plan. Requires session authentication.
+
+### Response
+
+```json
+{
+  "credits": 50,
+  "referralCode": "abc123",
+  "referralCount": 3,
+  "plan": "solo"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `credits` | number | Total available credits (includes referral credits and claimed credits) |
+| `referralCode` | string \| null | Your referral code, or `null` if not set |
+| `referralCount` | number | Number of successful referrals |
+| `plan` | string | Current subscription plan (e.g. `free`, `solo`, `collective`, `label`, `network`) |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Internal server error. Returns `{ "credits": 0 }` as a fallback. |
+
+<Note>Credits from token holder claims (see [Claim API](/api-reference/claim)) are added to the same `credits` balance returned by these endpoints. Use the [Referrals API](/api-reference/referrals) for a detailed breakdown of referral-specific statistics.</Note>

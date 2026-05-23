@@ -1,0 +1,96 @@
+---
+title: "Skills"
+description: "50+ installable agent capabilities"
+---
+
+# Skill Marketplace
+
+Skills are modular capabilities you install onto your agents. Each skill runs inside the agent's OpenClaw container and can be hot-loaded without restart.
+
+## Categories
+
+### Channels
+| Skill | Description |
+|-------|-------------|
+| Telegram | Bot commands, messages, groups |
+| Discord | Slash commands, embeds, voice channels |
+| WhatsApp | Message templates, media, status updates |
+| WhatsApp Business | Automated replies, labels, catalogs |
+| Slack | Post to channels, create threads, slash commands |
+
+### Music & Creative
+| Skill | Description |
+|-------|-------------|
+| Royalty Tracker | Track streaming royalties across platforms in USDC |
+| Demo Submitter | Submit demos to Base FM for airplay |
+| Visual Synthesizer | Generate release artwork via Stable Diffusion XL |
+| Track Archaeologist | Deep catalog digging via BlockDB similarity search |
+| Setlist Oracle | BPM, key, energy curves for perfect DJ sets |
+| Music Generator | Create music with Google Lyria or MiniMax |
+| Video Generator | AI video via xAI Grokin, Runway, or Wan |
+
+### Events
+| Skill | Description |
+|-------|-------------|
+| Guestlist Manager | RSVPs, check-ins, capacity limits |
+| Event Ticketing | USDC ticket sales via x402 protocol |
+| Event Scheduler | Cross-platform scheduling with recurring support |
+| Venue Finder | Worldwide venue search with capacity/price filters |
+| Festival Finder | Global festival discovery with lineup comparison |
+
+### Finance
+| Skill | Description |
+|-------|-------------|
+| USDC Payments | Accept payments on Base, generate payment links |
+| Instant Split | Revenue splitting in USDC |
+| Booking Settlement | Booking payments processing |
+| Community Treasury | Multi-sig treasury management |
+| Invoice Generator | Create and send USDC invoices |
+
+### Development & Infrastructure
+| Skill | Description |
+|-------|-------------|
+| Chat SDK | Multi-platform bot SDK for Slack, Teams, Discord, Google Chat, GitHub, and Linear |
+| Sentry CLI | Production error monitoring, log streaming, and distributed tracing via Sentry |
+| Docker Containers | Best practices for building agent containers with isolation, health checks, and resource limits |
+| Stateful Agents | Persistent state management, real-time coordination, and Drizzle ORM migrations |
+| Deploy CLI | CLI reference for agent provisioning, secrets management, and log streaming |
+| Code Review | Review agent code against production best practices with anti-pattern detection |
+
+### Productivity
+| Skill | Description |
+|-------|-------------|
+| Google Calendar | Schedule events, manage availability, set reminders |
+| Email | Send/receive emails with newsletter support |
+| Browser Automation | Browse websites, fill forms, scrape data |
+| File Manager | Upload, download, organize files |
+| Webhooks | Connect to any API with HTTP requests |
+
+## Installing Skills
+
+### Via Dashboard
+Navigate to **Dashboard > Skills** and click **Install** on any skill.
+
+### Via API
+```bash
+POST /api/skills
+{
+  "skillId": "skill_id",
+  "agentId": "agent_id"
+}
+```
+
+### Creating Custom Skills
+```bash
+POST /api/skills/create
+{
+  "name": "My Custom Skill",
+  "description": "What it does",
+  "category": "custom",
+  "code": "// skill implementation"
+}
+```
+
+## Skill Deployment
+
+When installed, skills are deployed to the agent's OpenClaw gateway on port 18789. If the gateway is temporarily unreachable, the skill is saved to the database and syncs automatically on next container restart.

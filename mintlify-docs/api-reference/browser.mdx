@@ -1,0 +1,280 @@
+---
+title: Browser automation API
+description: "Automate web browsing tasks including navigation, screenshots, content extraction, form filling, and multi-step workflows"
+---
+
+# Browser automation API
+
+<Note>This feature is in **beta**. All actions are executed against a real headless Chrome instance via a Playwright backend. Requests have a 60-second timeout.</Note>
+
+The browser automation API lets your agents interact with web pages programmatically. You can navigate to URLs, capture screenshots, extract page content, fill forms, and chain multiple actions into automated workflows. Actions are proxied to a Playwright backend service running headless Chrome.
+
+## Authentication
+
+All endpoints require a valid session. Requests without an authenticated session receive a `401` response.
+
+## Get service info
+
+```http
+GET /api/browser
+```
+
+Returns the current status of the browser automation service, including the API version and a list of supported capabilities.
+
+### Response
+
+```json
+{
+  "service": "Browser Automation API",
+  "version": "0.1.0-beta",
+  "status": "beta",
+  "capabilities": [
+    "navigate — Go to a URL",
+    "screenshot — Capture page screenshot",
+    "click — Click an element",
+    "type — Type text into a field",
+    "extract — Extract content from a page",
+    "fill-form — Fill and submit forms",
+    "automate — Multi-step browser workflows"
+  ],
+  "note": "Browser automation is in beta. Requires Playwright instance for full functionality."
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `service` | string | Service name |
+| `version` | string | Current API version |
+| `status` | string | Release status (`beta`) |
+| `capabilities` | array | List of supported actions with short descriptions |
+| `note` | string | Additional information about the beta status |
+
+## Perform a browser action
+
+```http
+POST /api/browser
+```
+
+Executes a browser automation action. The `action` field determines which operation runs and which additional parameters are required.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | The action to perform. One of: `navigate`, `screenshot`, `click`, `type`, `extract`, `fill-form`, `automate`. |
+| `url` | string | Conditional | Target URL. Required for `navigate`, `screenshot`, `extract`, and `fill-form`. |
+| `selector` | string | No | CSS selector for targeting a specific element. Used by `extract` (defaults to `body`). |
+| `text` | string | No | Text input. Used by `type`. |
+| `steps` | array | Conditional | Array of step objects defining a sequence of actions. Required for `fill-form` and `automate`. |
+
+### Actions
+
+#### navigate
+
+Go to a URL and return the result.
+
+```bash
+curl -X POST /api/browser \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "navigate",
+    "url": "https://example.com"
+  }'
+```
+
+**Required parameters:** `url`
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "action": "navigate",
+  "url": "https://example.com",
+  "message": "Navigated to https://example.com"
+}
+```
+
+#### screenshot
+
+Capture a screenshot of a page.
+
+```bash
+curl -X POST /api/browser \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "screenshot",
+    "url": "https://example.com"
+  }'
+```
+
+**Required parameters:** `url`
+
+**Response:**
+
+The response contains the screenshot data from the Playwright backend. Screenshots are captured in full-page mode by default.
+
+```json
+{
+  "success": true,
+  "action": "screenshot",
+  "url": "https://example.com",
+  "screenshot": "<base64-encoded image data>"
+}
+```
+
+#### click
+
+Click an element on the page.
+
+```bash
+curl -X POST /api/browser \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "click",
+    "url": "https://example.com",
+    "selector": "#submit-button"
+  }'
+```
+
+#### type
+
+Type text into a form field.
+
+```bash
+curl -X POST /api/browser \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "type",
+    "url": "https://example.com",
+    "selector": "#search-input",
+    "text": "hello world"
+  }'
+```
+
+#### extract
+
+Extract content from a page using an optional CSS selector.
+
+```bash
+curl -X POST /api/browser \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "extract",
+    "url": "https://example.com",
+    "selector": "article"
+  }'
+```
+
+**Required parameters:** `url`
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "action": "extract",
+  "url": "https://example.com",
+  "selector": "article",
+  "content": "<extracted text content>"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `selector` | string | The CSS selector used for extraction. Defaults to `body` if not provided. |
+
+#### fill-form
+
+Automate form filling on a target page.
+
+```bash
+curl -X POST /api/browser \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "fill-form",
+    "url": "https://example.com/signup",
+    "steps": [
+      { "selector": "#name", "value": "Agent" },
+      { "selector": "#email", "value": "agent@example.com" },
+      { "selector": "#submit", "action": "click" }
+    ]
+  }'
+```
+
+**Required parameters:** `url`, `steps`
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "action": "fill-form",
+  "url": "https://example.com/signup",
+  "steps": [
+    { "selector": "#name", "value": "Agent" },
+    { "selector": "#email", "value": "agent@example.com" },
+    { "selector": "#submit", "action": "click" }
+  ],
+  "message": "Form filled on https://example.com/signup"
+}
+```
+
+#### automate
+
+Run a multi-step browser workflow.
+
+```bash
+curl -X POST /api/browser \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "automate",
+    "steps": [
+      { "action": "navigate", "url": "https://example.com" },
+      { "action": "click", "selector": "#login" },
+      { "action": "type", "selector": "#email", "text": "user@example.com" },
+      { "action": "screenshot" }
+    ]
+  }'
+```
+
+**Required parameters:** `steps` (must be an array)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "action": "automate",
+  "steps": [
+    { "action": "navigate", "url": "https://example.com" },
+    { "action": "click", "selector": "#login" },
+    { "action": "type", "selector": "#email", "text": "user@example.com" },
+    { "action": "screenshot" }
+  ],
+  "message": "Automation workflow completed with 4 steps"
+}
+```
+
+### Common response fields
+
+All action responses include these fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` when the action completed successfully |
+| `action` | string | The action that was performed |
+| `message` | string | Human-readable summary of the result |
+
+Additional fields vary by action (for example, `screenshot` returns a `screenshot` field with base64-encoded image data, and `extract` returns a `content` field).
+
+### Errors
+
+| Code | Body | Description |
+|------|------|-------------|
+| 400 | `{ "error": "Invalid action. Must be one of: navigate, screenshot, click, type, extract, fill-form, automate" }` | Invalid or missing `action` parameter |
+| 400 | `{ "error": "Invalid request body" }` | The request body could not be parsed as JSON |
+| 401 | `{ "error": "Unauthorized" }` | No authenticated session |
+| 502 | `{ "error": "<message>", "service": "playwright-backend" }` | The Playwright backend is unreachable or returned an error. The `service` field identifies the failing upstream service. |

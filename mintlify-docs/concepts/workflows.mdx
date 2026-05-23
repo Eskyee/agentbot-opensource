@@ -1,0 +1,176 @@
+
+description: "Build complex agent behaviors with workflows"
+
+# Workflows
+
+Workflows let you define complex, multi-step agent behaviors using a visual builder.
+
+## Overview
+
+Workflows are composed of:
+
+- **Triggers** - What starts the workflow
+- **Steps** - Individual actions
+- **Conditions** - Branching logic
+- **Actions** - API calls, messages, etc.
+
+## Creating a Workflow
+
+1. Go to **Dashboard → Workflows**
+2. Click **New Workflow**
+3. Add triggers and steps
+4. Connect them in the visual builder
+5. Save and activate
+
+## Trigger Types
+
+| Trigger | Description |
+|---------|-------------|
+| Message | User sends a message |
+| Schedule | Cron-based scheduling |
+| Webhook | HTTP request trigger |
+| Event | Agent lifecycle events |
+
+## Step Types
+
+<AccordionGroup>
+
+<Accordion icon="robot" title="AI Step">
+
+Call an AI model with custom prompt.
+
+```json
+{
+  "type": "ai",
+  "model": "claude-3-opus",
+  "prompt": "Summarize this: {{input}}",
+  "output": "summary"
+}
+```
+
+</Accordion>
+
+<Accordion icon="webhook" title="HTTP Request">
+
+Make API calls to external services.
+
+```json
+{
+  "type": "http",
+  "method": "POST",
+  "url": "https://api.example.com/data",
+  "headers": {
+    "Authorization": "Bearer {{api_key}}"
+  },
+  "body": {
+    "message": "{{user_message}}"
+  }
+}
+```
+
+</Accordion>
+
+<Accordion icon="discord" title="Send Message">
+
+Send a message to a platform.
+
+```json
+{
+  "type": "message",
+  "platform": "telegram",
+  "chat_id": "{{user_id}}",
+  "text": "Hello! {{user_name}}"
+}
+```
+
+</Accordion>
+
+<Accordion icon="branch" title="Condition">
+
+Branch based on conditions.
+
+```json
+{
+  "type": "condition",
+  "expression": "{{sentiment}} == 'positive'",
+  "true": "step_positive",
+  "false": "step_negative"
+}
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+## Example: Customer Support Flow
+
+```json
+{
+  "name": "Customer Support",
+  "trigger": {
+    "type": "message",
+    "platform": "telegram"
+  },
+  "steps": [
+    {
+      "id": "classify",
+      "type": "ai",
+      "prompt": "Classify this message: {{message}}",
+      "output": "category"
+    },
+    {
+      "id": "check_knowledge",
+      "type": "condition",
+      "expression": "{{category}} in ['billing', 'technical', 'general']"
+    },
+    {
+      "id": "respond",
+      "type": "ai",
+      "prompt": "Generate a helpful response for: {{message}}"
+    }
+  ]
+}
+```
+
+## Variables
+
+Access data throughout your workflow:
+
+```javascript
+// User data
+{{user.id}}
+{{user.name}}
+{{user.email}}
+
+// Message data
+{{message.text}}
+{{message.platform}}
+
+// Previous step outputs
+{{summarize.output}}
+{{classify.category}}
+
+// Environment
+{{env.API_KEY}}
+```
+
+## Scheduling
+
+Run workflows on a schedule:
+
+```json
+{
+  "trigger": {
+    "type": "schedule",
+    "cron": "0 9 * * *",  // Daily at 9 AM
+    "timezone": "UTC"
+  }
+}
+```
+
+## Best Practices
+
+1. **Keep it simple** - Break complex flows into sub-workflows
+2. **Add error handling** - Use try/catch steps
+3. **Test thoroughly** - Use the test button before activating
+4. **Monitor logs** - Check workflow execution logs

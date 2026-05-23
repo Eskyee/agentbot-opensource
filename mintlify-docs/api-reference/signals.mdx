@@ -1,0 +1,115 @@
+---
+title: Signals API
+description: "Real-time AI and agent industry signals aggregated from Hacker News and Reddit"
+---
+
+# Signals API
+
+Retrieve real-time signals about AI and agent-related discussions from public sources. The endpoint aggregates and filters content from Hacker News and Reddit, scoring each result by relevance to AI and agent topics.
+
+## Get signals
+
+```http
+GET /api/signals
+```
+
+No authentication required. Returns a deduplicated, relevance-scored list of signals from Hacker News and Reddit.
+
+The endpoint fetches data from both sources concurrently and applies keyword-based filtering to surface AI and agent-related content. Results are deduplicated by content similarity and sorted by upvote count.
+
+### Sources
+
+| Source | Description |
+|--------|-------------|
+| Hacker News | Top 30 stories filtered for AI/agent keywords |
+| Reddit | Hot posts from `artificial`, `LocalLLaMA`, `MachineLearning`, `singularity`, and `OpenAI` subreddits (up to 8 posts per subreddit) |
+
+### Keyword filtering
+
+Signals are included only when their title or body matches at least one keyword from the relevance set. The following keywords are used for filtering and relevance scoring:
+
+**Hacker News keywords:** `ai`, `agent`, `llm`, `gpt`, `claude`, `openai`, `anthropic`, `model`, `chatbot`, `automation`, `autonomous`, `mcp`, `langchain`, `tool`, `api`
+
+**Reddit keywords:** `ai agent`, `llm`, `gpt`, `claude`, `autonomous`, `agent framework`, `mcp`, `tool use`, `ai assistant`, `langchain`, `openai`, `anthropic`, `memory`, `rag`, `embedding`
+
+### Relevance scoring
+
+Each signal is assigned a relevance level based on keyword match count and engagement:
+
+| Relevance | Condition |
+|-----------|-----------|
+| `high` | Two or more keyword matches, or upvotes exceed the engagement threshold (300 for Hacker News, 500 for Reddit) |
+| `medium` | Exactly one keyword match |
+| `low` | Matched but below medium threshold |
+
+### Response
+
+```json
+{
+  "generatedAt": "2026-03-27T15:19:00.000Z",
+  "sources": ["hacker-news", "reddit"],
+  "total": 15,
+  "signals": [
+    {
+      "id": "hn-12345678",
+      "platform": "hacker-news",
+      "author": "username",
+      "content": "Show HN: An open-source agent framework for autonomous AI workflows",
+      "url": "https://news.ycombinator.com/item?id=12345678",
+      "upvotes": 482,
+      "comments": 137,
+      "date": "2026-03-27",
+      "relevance": "high",
+      "tags": ["agent", "ai", "autonomous"]
+    },
+    {
+      "id": "reddit-abc123",
+      "platform": "reddit",
+      "author": "u/example_user",
+      "content": "New LLM benchmarks show significant improvements in tool use capabilities",
+      "url": "https://reddit.com/r/LocalLLaMA/comments/abc123/new_llm_benchmarks/",
+      "upvotes": 312,
+      "comments": 89,
+      "date": "2026-03-27",
+      "relevance": "high",
+      "tags": ["llm", "tool use"]
+    }
+  ]
+}
+```
+
+### Top-level fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `generatedAt` | string | ISO 8601 timestamp when the response was generated |
+| `sources` | array of strings | Data sources included in the response. Currently `["hacker-news", "reddit"]`. |
+| `total` | number | Total number of signals returned |
+| `signals` | array | List of signal objects, sorted by upvotes descending. Maximum 20 items. |
+
+### Signal object fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique signal identifier. Prefixed with the platform name (for example, `hn-12345678` or `reddit-abc123`). |
+| `platform` | string | Source platform. One of `reddit`, `twitter`, `hacker-news`, or `discord`. Currently only `reddit` and `hacker-news` return results. |
+| `author` | string | Author name. Reddit authors are prefixed with `u/`. |
+| `content` | string | Signal title, optionally followed by a truncated body excerpt (up to 150–200 characters). |
+| `url` | string | Direct URL to the original post |
+| `upvotes` | number | Upvote or point count from the source platform |
+| `comments` | number | Comment count from the source platform |
+| `date` | string | Publication date in `YYYY-MM-DD` format |
+| `relevance` | string | Relevance score. One of `high`, `medium`, or `low`. |
+| `tags` | array of strings | Matched keywords from the relevance filter. Maximum 3 tags per signal. |
+
+### Deduplication
+
+Signals are deduplicated by comparing the first 80 characters of their content (case-insensitive). When two signals have the same content prefix, the first one encountered is kept.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Signals retrieved successfully. The `signals` array may be empty if no matching content was found. |
+
+<Note>When an individual source fails to respond (for example, due to a timeout), the endpoint returns results from the remaining sources without error. Each source request has an 8-second timeout.</Note>

@@ -7,6 +7,7 @@
     "gateway"
   ],
   "scripts": {
+    "demo": "npm --workspace @agentbot/web run demo",
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
@@ -14,8 +15,8 @@
     "clean": "turbo run clean"
   },
   "devDependencies": {
-    "bs58": "^6.0.0",
-    "turbo": "^2.9.14"
+    "turbo": "^2.9.14",
+    "bs58": "^6.0.0"
   },
   "packageManager": "npm@10.8.2",
   "overrides": {
@@ -29,13 +30,13 @@
     "postcss": "^8.5.10",
     "next-auth": "4.24.12",
     "elliptic": "6.6.1",
-    "ws": "^8.20.1",
+    "ws": "8.18.0",
     "picomatch": "^4.0.2",
-    "brace-expansion": "^5.0.6",
+    "brace-expansion": "^5.0.5",
     "handlebars": "^4.7.9",
     "@openzeppelin/contracts": "4.9.6",
     "undici": "^7.24.5",
-    "devalue": "^5.8.1",
+    "devalue": "^5.6.4",
     "bs58": "^6.0.0",
     "rpc-websockets": {
       "uuid": "^9.0.1"
@@ -51,27 +52,6 @@
     },
     "@aws-sdk/xml-builder": {
       "fast-xml-parser": "^5.7.0"
-    },
-    "ip-address": "^10.2.0",
-    "fast-uri": "^3.1.2",
-    "fast-xml-builder": "^1.2.0",
-    "@workflow/core": {
-      "devalue": "5.8.1"
-    },
-    "next": {
-      "postcss": "8.5.10"
-    },
-    "@modelcontextprotocol/sdk": {
-      "express-rate-limit": "^8.5.2"
-    },
-    "ethers": {
-      "ws": "^8.20.1"
-    },
-    "viem": {
-      "ws": "^8.20.1"
-    },
-    "engine.io-client": {
-      "ws": "^8.20.1"
     }
   }
 }

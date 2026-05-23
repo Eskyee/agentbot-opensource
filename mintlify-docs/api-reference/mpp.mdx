@@ -1,0 +1,251 @@
+---
+title: Machine-payable protocol API
+description: "Manage agent wallets and make x402-style payments on behalf of agents"
+---
+
+# Machine-payable protocol API
+
+Create and manage ECDSA wallets for agents to make autonomous payments using the x402 machine-payable protocol. Agents can hold USDC balances and make HTTP requests that include automatic payment negotiation.
+
+<Note>All MPP endpoints require session authentication. Wallet private keys are stored server-side and cannot be retrieved after creation.</Note>
+
+## List wallets
+
+```http
+GET /api/agent/mpp?action=list-wallets
+```
+
+Returns all registered agent wallets.
+
+### Response
+
+```json
+{
+  "wallets": [
+    {
+      "agentId": "agent_123",
+      "companyId": "company_456",
+      "address": "0xabc...123"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `wallets` | array | List of registered agent wallets |
+| `wallets[].agentId` | string | Agent identifier |
+| `wallets[].companyId` | string | Company identifier |
+| `wallets[].address` | string | Wallet address (hex format) |
+
+## Get wallet
+
+```http
+GET /api/agent/mpp?action=get-wallet&agentId=agent_123
+```
+
+Returns the wallet address for a specific agent.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `action` | string | Yes | Must be `get-wallet` |
+| `agentId` | string | Yes | Agent identifier |
+
+### Response
+
+```json
+{
+  "agentId": "agent_123",
+  "address": "0xabc...123"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 404 | Wallet not found for the specified agent |
+
+## Get balance
+
+```http
+GET /api/agent/mpp?action=get-balance&agentId=agent_123
+```
+
+Returns the USDC balance for an agent's wallet.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `action` | string | Yes | Must be `get-balance` |
+| `agentId` | string | Yes | Agent identifier |
+
+### Response
+
+```json
+{
+  "agentId": "agent_123",
+  "balance": "10.50"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 500 | Failed to fetch balance (for example, RPC error) |
+
+## List endpoints
+
+```http
+GET /api/agent/mpp
+```
+
+When no `action` parameter is provided, returns the list of available endpoints.
+
+```json
+{
+  "endpoints": {
+    "GET /api/agent/mpp?action=list-wallets": "List all agent wallets",
+    "GET /api/agent/mpp?action=get-wallet&agentId=xxx": "Get wallet for specific agent",
+    "GET /api/agent/mpp?action=get-balance&agentId=xxx": "Get USDC balance",
+    "POST /api/agent/mpp": "Create or manage wallet"
+  }
+}
+```
+
+## Create wallet
+
+```http
+POST /api/agent/mpp
+```
+
+Creates a new ECDSA wallet for an agent. The private key is stored server-side and cannot be retrieved.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `create-wallet` |
+| `agentId` | string | Yes | Agent identifier |
+| `companyId` | string | Yes | Company identifier |
+
+```json
+{
+  "action": "create-wallet",
+  "agentId": "agent_123",
+  "companyId": "company_456"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "agentId": "agent_123",
+  "companyId": "company_456",
+  "address": "0xabc...123",
+  "message": "Wallet created. Private key stored server-side — it cannot be recovered!"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId and companyId required` |
+
+## Register wallet
+
+```http
+POST /api/agent/mpp
+```
+
+Registers an existing wallet for an agent by providing its private key.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `register-wallet` |
+| `agentId` | string | Yes | Agent identifier |
+| `companyId` | string | Yes | Company identifier |
+| `privateKey` | string | Yes | Wallet private key (hex format) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "agentId": "agent_123",
+  "companyId": "company_456",
+  "address": "0xabc...123"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId, companyId, and privateKey required` |
+
+## Make payment
+
+```http
+POST /api/agent/mpp
+```
+
+Makes an HTTP request on behalf of an agent with automatic x402 payment negotiation. When the target URL returns a `402 Payment Required` response, the agent's wallet is used to authorize the payment.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `make-payment` |
+| `agentId` | string | Yes | Agent identifier (must have a registered wallet) |
+| `url` | string | Yes | Target URL to request |
+| `method` | string | No | HTTP method (default: `GET`) |
+| `headers` | object | No | Additional request headers |
+| `body` | object | No | Request body (JSON-serialized automatically) |
+
+```json
+{
+  "action": "make-payment",
+  "agentId": "agent_123",
+  "url": "https://api.example.com/paid-resource",
+  "method": "GET"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "result": {}
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `result` | any | The response from the target URL after payment negotiation |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `url required` |
+| 400 | `Invalid action` |
+| 402 | Payment failed (for example, insufficient balance or payment negotiation error) |
+| 500 | Internal error |
+
+## Common errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — session authentication required |
+| 500 | Internal error |

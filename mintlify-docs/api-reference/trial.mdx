@@ -1,0 +1,88 @@
+---
+title: Trial API
+description: "Check free trial status for the authenticated user"
+---
+
+# Trial API
+
+Check the free trial status for the authenticated user. New accounts receive a 7-day free trial automatically on sign-up.
+
+## Get trial status
+
+```http
+GET /api/trial
+```
+
+Returns the current trial state for the authenticated user. When no session is present, returns `{ trial: false }` without an error.
+
+### Response (active trial)
+
+When the user has an active trial that has not expired:
+
+```json
+{
+  "trial": true,
+  "expired": false,
+  "daysLeft": 5,
+  "endsAt": "2026-04-09T01:24:53.000Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `trial` | boolean | Whether the user is on a trial |
+| `expired` | boolean | Whether the trial period has ended |
+| `daysLeft` | number | Number of days remaining in the trial (minimum `0`) |
+| `endsAt` | string | ISO 8601 timestamp of when the trial ends |
+
+### Response (expired trial)
+
+When the trial period has ended and the user has not upgraded:
+
+```json
+{
+  "trial": true,
+  "expired": true,
+  "daysLeft": 0,
+  "endsAt": "2026-04-02T01:24:53.000Z"
+}
+```
+
+### Response (paid user)
+
+When the user has an active subscription or a non-free plan:
+
+```json
+{
+  "trial": false,
+  "plan": "solo"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `trial` | boolean | Always `false` for paid users |
+| `plan` | string | Current subscription plan |
+
+### Response (no trial)
+
+When the user has no trial configured (legacy accounts or accounts without a trial end date):
+
+```json
+{
+  "trial": false,
+  "plan": "free"
+}
+```
+
+### Response (unauthenticated)
+
+When no valid session is present:
+
+```json
+{
+  "trial": false
+}
+```
+
+<Note>This endpoint does not return a `401` error for unauthenticated requests. It returns `{ trial: false }` instead, allowing the client to render a default state without handling authentication errors.</Note>

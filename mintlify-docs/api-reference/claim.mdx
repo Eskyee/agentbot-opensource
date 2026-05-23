@@ -1,0 +1,201 @@
+---
+title: Claim API
+description: "Claim free agent credits by verifying Solana Agentbot token holdings with wallet signature"
+---
+
+# Claim API
+
+Verify your Solana Agentbot token balance and claim free agent credits. Token holders are assigned to a tier based on their balance, and credits are granted once per wallet. Claims require a cryptographic wallet signature to prove ownership.
+
+## Check eligibility
+
+```http
+GET /api/claim
+```
+
+Checks whether a Solana address is eligible to claim credits without actually claiming. Returns the current token balance, matching tier, and whether the wallet has already claimed. Optionally returns a one-time nonce for use in the claim request.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `address` | string | Yes | Solana wallet address (base58-encoded, 32–44 characters) |
+| `nonce` | string | No | Set to `1` to receive a one-time nonce for signing the claim message |
+
+### Example request
+
+```bash
+curl "https://agentbot.sh/api/claim?address=7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU&nonce=1"
+```
+
+### Response
+
+```json
+{
+  "address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "eligible": true,
+  "alreadyClaimed": false,
+  "claim": null,
+  "balance": {
+    "raw": "15000000000",
+    "ui": 15000
+  },
+  "tier": {
+    "id": "builder",
+    "label": "Builder",
+    "credits": 100,
+    "minBalance": 10000
+  },
+  "nonce": "a1b2c3d4e5f6..."
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `address` | string | The queried Solana wallet address |
+| `eligible` | boolean | `true` if the wallet qualifies for a tier and has not already claimed |
+| `alreadyClaimed` | boolean | `true` if this wallet has already claimed credits |
+| `claim` | object \| null | The existing claim record if already claimed, or `null` |
+| `balance` | object | Token balance for the address |
+| `balance.raw` | string | Raw token balance (as a string to preserve precision) |
+| `balance.ui` | number | Human-readable token balance |
+| `tier` | object \| null | Matching tier details, or `null` if balance is below the minimum threshold |
+| `tier.id` | string | Tier identifier (e.g. `whale`, `builder`, `holder`) |
+| `tier.label` | string | Tier display name |
+| `tier.credits` | number | Credits that would be granted at this tier |
+| `tier.minBalance` | number | Minimum token balance required for this tier |
+| `nonce` | string \| null | One-time nonce for signing, returned only when `nonce=1` is passed |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing or invalid `address` query parameter |
+| 502 | Live Solana balance lookup is temporarily unavailable. Returned when the Solana RPC endpoint is unreachable or returns an error. |
+
+---
+
+## Claim credits
+
+```http
+POST /api/claim
+```
+
+Verifies wallet ownership via a signed message, checks the caller's Solana token balance, and grants credits based on the matching tier. Each wallet can claim once. If no authenticated session exists, an account is created automatically from the wallet address.
+
+A successful claim also grants a **Founding Community** badge and enrolls the wallet in the community program. Builder and Whale tier holders unlock additional perks such as governance voting rights and a baseFM guest pass. See the [community program API](/api-reference/community-program) for details.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `address` | string | Yes | Solana wallet address (base58-encoded, 32–44 characters) |
+| `message` | string | Yes | The message that was signed by the wallet |
+| `signature` | string | Yes | Base64-encoded wallet signature of the message |
+| `nonce` | string | Yes | One-time nonce obtained from the `GET /api/claim` endpoint |
+
+### Example request
+
+```json
+{
+  "address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "message": "Claim Agentbot rewards for 7xKXtg...",
+  "signature": "base64-encoded-signature...",
+  "nonce": "a1b2c3d4e5f6..."
+}
+```
+
+### Credit tiers
+
+Credits are determined by your Agentbot token balance at the time of the claim:
+
+| Tier | Minimum balance | Credits granted |
+|------|----------------|----------------|
+| Whale | 100,000 | 200 |
+| Builder | 10,000 | 100 |
+| Holder | 1,000 | 50 |
+
+The first matching tier is used (highest balance threshold first).
+
+### Response
+
+```json
+{
+  "success": true,
+  "walletAddress": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "tier": "Builder",
+  "creditsGranted": 100,
+  "balance": {
+    "raw": "15000000000",
+    "ui": 15000
+  },
+  "claim": {
+    "id": "cc_a1b2c3d4-...",
+    "walletAddress": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+    "tier": "builder",
+    "credits": 100
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` when credits were granted |
+| `walletAddress` | string | The wallet address that claimed |
+| `tier` | string | The tier label assigned to the wallet |
+| `creditsGranted` | number | Number of credits granted |
+| `balance` | object | Token balance at time of claim |
+| `balance.raw` | string | Raw token balance (as a string to preserve precision) |
+| `balance.ui` | number | Human-readable token balance |
+| `claim` | object | The created claim record |
+| `claim.id` | string | Unique claim identifier (prefixed with `cc_`) |
+| `claim.walletAddress` | string | The wallet address associated with the claim |
+| `claim.tier` | string | Tier identifier (e.g. `whale`, `builder`, `holder`) |
+| `claim.credits` | number | Number of credits granted for this claim |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing required fields (`address`, `message`, `signature`, `nonce`) or invalid Solana address format |
+| 401 | Invalid or expired nonce, or invalid wallet signature |
+| 403 | Wallet balance does not meet the minimum threshold for any tier |
+| 409 | Wallet has already claimed. Response includes the existing `claim` record. |
+| 500 | Unable to resolve user for claim, or unable to record claim |
+| 502 | Live Solana balance lookup is temporarily unavailable. Returned when the Solana RPC endpoint is unreachable or returns an error. |
+
+### Error response (already claimed)
+
+```json
+{
+  "error": "Wallet already claimed",
+  "claim": {
+    "id": "cc_a1b2c3d4-...",
+    "user_id": "user_abc123",
+    "wallet_address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+    "tier": "builder",
+    "credits": 100,
+    "created_at": "2026-04-10T12:00:00.000Z"
+  }
+}
+```
+
+### Error response (not eligible)
+
+```json
+{
+  "error": "Wallet is not eligible for rewards",
+  "balance": {
+    "raw": "500000000",
+    "ui": 500
+  }
+}
+```
+
+<Note>
+Claims require a wallet signature to prove ownership. Use a Solana wallet (e.g. Phantom, Solflare) to sign the claim message. The nonce is single-use and must be obtained from the `GET` endpoint before submitting the claim.
+</Note>

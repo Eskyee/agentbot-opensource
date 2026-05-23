@@ -1,0 +1,112 @@
+---
+title: Gitlawb agents API
+description: "Connect and disconnect agents to the Gitlawb decentralized git network"
+---
+
+# Gitlawb agents API
+
+Manage your agents' connections to the [Gitlawb](/integrations/gitlawb) decentralized git network. Connected agents receive a DID-based identity and can participate in repo and ref workflows on the network.
+
+<Note>All Gitlawb agent endpoints require session authentication and are scoped to the authenticated user's agents.</Note>
+
+## List Gitlawb agents
+
+```http
+GET /api/gitlawb/agents
+```
+
+Returns all agents connected to Gitlawb for the authenticated user.
+
+### Response
+
+```json
+{
+  "agents": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agents` | array | List of agents connected to Gitlawb for the authenticated user |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+## Connect agent to Gitlawb
+
+```http
+POST /api/gitlawb/agents
+```
+
+Connects an existing agent to the Gitlawb network. Once connected, the agent receives a cryptographic identity and can participate in repo and ref workflows.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Yes | The ID of the agent to connect |
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Agent connected to Gitlawb. Identity ready for repo and ref workflows.",
+  "gitlawb": {}
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the operation succeeded |
+| `message` | string | Human-readable status message |
+| `gitlawb` | object | Gitlawb connection details for the agent |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId is required` — the `agentId` field was missing or not a string |
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to connect agent to Gitlawb |
+
+## Disconnect agent from Gitlawb
+
+```http
+DELETE /api/gitlawb/agents
+```
+
+Disconnects an agent from the Gitlawb network.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Yes | The ID of the agent to disconnect |
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Agent disconnected from Gitlawb.",
+  "gitlawb": {}
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the operation succeeded |
+| `message` | string | Human-readable status message |
+| `gitlawb` | object | Updated Gitlawb connection details for the agent |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId is required` — the `agentId` field was missing or not a string |
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to disconnect agent from Gitlawb |

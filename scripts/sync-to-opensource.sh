@@ -46,18 +46,28 @@ git clone --depth=1 --branch "$BRANCH" "$PUBLIC_URL" "$TEMP_DIR" 2>/dev/null \
 info "Syncing files..."
 rsync -a --delete \
   --exclude='.git' \
+  --exclude='.agents/' \
   --exclude='.claude/' \
-  --exclude='.playwright-mcp/' \
   --exclude='.codex/' \
-  --exclude='.deepsec/' \
+  --exclude='.factory/' \
+  --exclude='.kiro/' \
+  --exclude='.mux/' \
   --exclude='.omx/' \
+  --exclude='.trae/' \
   --exclude='.turbo/' \
   --exclude='node_modules' \
   --exclude='.next' \
+  --include='.env.example' \
+  --include='**/.env.example' \
   --exclude='.env' \
   --exclude='.env.local' \
+  --exclude='.env.*' \
+  --exclude='**/.env' \
+  --exclude='**/.env.*' \
   --exclude='.env.*.local' \
   --exclude='*.log' \
+  --exclude='.vercel/' \
+  --exclude='**/.vercel/' \
   --exclude='web/.github/' \
   --exclude='x402-tempo/' \
   \
@@ -92,9 +102,7 @@ remove_internal 'CODE_REVIEW.md'
 remove_internal '*.docx'
 remove_internal 'dashboard.html'
 remove_internal 'CLAUDE.md'
-rm -rf "$TEMP_DIR/memory" "$TEMP_DIR/.claire" "$TEMP_DIR/.claude" \
-  "$TEMP_DIR/.playwright-mcp" "$TEMP_DIR/.codex" "$TEMP_DIR/.deepsec" \
-  "$TEMP_DIR/.omx" "$TEMP_DIR/.turbo" 2>/dev/null || true
+rm -rf "$TEMP_DIR/memory" "$TEMP_DIR/.claire" "$TEMP_DIR/.agents" "$TEMP_DIR/.codex" "$TEMP_DIR/.factory" "$TEMP_DIR/.kiro" "$TEMP_DIR/.mux" "$TEMP_DIR/.omx" "$TEMP_DIR/.trae" "$TEMP_DIR/.turbo" 2>/dev/null || true
 
 # ── 4. Strip secrets globally ────────────────────────────────────────────────
 info "Stripping secrets..."
@@ -106,9 +114,8 @@ strip_all() {
   local dir="${3:-$TEMP_DIR}"
   find "$dir" -type f \
     \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \
-       -o -name "*.json" \
        -o -name "*.sh" -o -name "*.yml" -o -name "*.yaml" \
-       -o -name "*.md" -o -name ".env.example" \) \
+       -o -name "*.json" -o -name "*.md" -o -name ".env.example" \) \
     ! -path "*/node_modules/*" ! -path "*/.next/*" ! -path "*/.git/*" \
     -exec sed -i '' -e "s|$pattern|$replacement|g" {} \; 2>/dev/null || true
 }
@@ -123,11 +130,8 @@ strip_all 'djescaba@icloud\.com'               'YOUR_ADMIN_EMAIL_5'
 # Private infrastructure URLs — strip ALL *YOUR_SERVICE_URL hostnames
 strip_all 'https://[a-zA-Z0-9_-]*\.up\.railway\.app' 'https://YOUR_SERVICE_URL'
 strip_all '[a-zA-Z0-9_-]*\.up\.railway\.app'          'YOUR_SERVICE_URL'
-strip_all 'YOUR_BACKEND_SERVICE'                  'YOUR_BACKEND_SERVICE'
-strip_all 'borg-[0-9][0-9]*-production-[0-9][0-9]*'   'YOUR_SOUL_SERVICE'
-strip_all 'borg-[0-9][0-9]*-production'               'YOUR_SOUL_SERVICE'
-strip_all 'YOUR_X402_SERVICE'                   'YOUR_X402_SERVICE'
-strip_all 'YOUR_OPENCLAW_UI_SERVICE'                 'YOUR_OPENCLAW_UI_SERVICE'
+strip_all 'borg-[0-9][0-9]*-production-[0-9][0-9]*'  'YOUR_SERVICE_NAME'
+strip_all 'borg-[0-9][0-9]*-production'              'YOUR_SERVICE_NAME'
 
 # Telegram bot tokens (real tokens match \d{8,}:AA[A-Za-z0-9_-]{30,})
 strip_all '[0-9]\{8,\}:AA[A-Za-z0-9_-]\{30,\}' 'YOUR_TELEGRAM_BOT_TOKEN'

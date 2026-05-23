@@ -1,0 +1,184 @@
+---
+title: baseFM identity API
+description: "Link a Base wallet to your baseFM DJ profile and retrieve DJ stats"
+---
+
+# baseFM identity API
+
+Link your Base wallet address to connect your baseFM DJ identity. Once linked, you can retrieve your DJ profile, listener stats, show history, and tip totals from baseFM.
+
+## Get linked wallet
+
+```http
+GET /api/user/basefm-wallet
+```
+
+Returns the Base wallet address currently linked to your account. Requires session authentication.
+
+### Response
+
+```json
+{
+  "wallet": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `wallet` | string \| null | The linked Base wallet address, or `null` if no wallet is linked |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+### Example
+
+```bash
+curl -X GET https://agentbot.sh/api/user/basefm-wallet \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION"
+```
+
+---
+
+## Update linked wallet
+
+```http
+PATCH /api/user/basefm-wallet
+```
+
+Save or clear the Base wallet address linked to your baseFM DJ identity. Requires session authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `wallet` | string \| null | Yes | A valid Base wallet address (`0x`-prefixed, 40 hex characters). Pass `null` or an empty string to unlink the wallet. |
+
+### Response
+
+```json
+{
+  "ok": true,
+  "wallet": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ok` | boolean | Whether the update succeeded |
+| `wallet` | string \| null | The saved wallet address, or `null` if the wallet was unlinked |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid Base wallet address — the value must match `0x` followed by 40 hexadecimal characters |
+| 401 | Unauthorized — no valid session |
+
+### Example
+
+```bash
+curl -X PATCH https://agentbot.sh/api/user/basefm-wallet \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{"wallet": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f"}'
+```
+
+To unlink:
+
+```bash
+curl -X PATCH https://agentbot.sh/api/user/basefm-wallet \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{"wallet": null}'
+```
+
+---
+
+## Get DJ stats
+
+```http
+GET /api/basefm/dj-stats
+```
+
+Fetches your baseFM DJ profile and aggregated stats using the linked wallet address. Requires session authentication and a linked Base wallet.
+
+### Response (wallet linked, baseFM reachable)
+
+```json
+{
+  "linked": true,
+  "wallet": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+  "dj": {
+    "name": "DJ Rave",
+    "slug": "dj-rave",
+    "avatar": "https://basefm.space/avatars/dj-rave.png",
+    "followers": 142,
+    "genres": ["Techno", "House"]
+  },
+  "stats": {
+    "totalShows": 23,
+    "totalListeners": 8401,
+    "totalTipsUsdc": 54.25,
+    "isLive": false
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `linked` | boolean | Whether a Base wallet is linked to the account |
+| `wallet` | string | The linked Base wallet address |
+| `dj` | object \| null | DJ profile from baseFM. `null` if no DJ profile exists for this wallet. |
+| `dj.name` | string \| null | DJ display name |
+| `dj.slug` | string \| null | URL slug for the DJ profile on baseFM |
+| `dj.avatar` | string \| null | Avatar image URL |
+| `dj.followers` | number | Follower count |
+| `dj.genres` | string[] | List of genres associated with the DJ |
+| `stats` | object \| null | Aggregated show statistics. `null` if baseFM is unreachable. |
+| `stats.totalShows` | number | Total number of completed and active shows |
+| `stats.totalListeners` | number | Cumulative listener count across all shows |
+| `stats.totalTipsUsdc` | number | Total tips received in USDC (rounded to 2 decimal places) |
+| `stats.isLive` | boolean | Whether the DJ currently has an active live stream |
+| `error` | string | Present when baseFM could not be reached. The `linked` and `wallet` fields are still returned. |
+
+### Response (no wallet linked)
+
+```json
+{
+  "linked": false
+}
+```
+
+When no wallet is linked, the response contains only `linked: false`. Link a wallet using the [update linked wallet](#update-linked-wallet) endpoint first.
+
+### Response (baseFM unreachable)
+
+```json
+{
+  "linked": true,
+  "wallet": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+  "dj": null,
+  "stats": null,
+  "error": "baseFM unreachable"
+}
+```
+
+When baseFM cannot be reached within the 6-second timeout, the `dj` and `stats` fields are `null` and an `error` message is included.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+### Example
+
+```bash
+curl -X GET https://agentbot.sh/api/basefm/dj-stats \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION"
+```
