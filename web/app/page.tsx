@@ -129,10 +129,6 @@ export default async function Home() {
         <div className="hidden lg:block absolute top-0 right-0 w-[55%] h-full">
           <HeroSphere />
         </div>
-        <div className="relative z-20 mb-10 lg:absolute lg:right-6 lg:top-20 lg:mb-0 lg:w-[380px]">
-          <LeadAgentIdentityCard identity={leadIdentity} />
-        </div>
-
         <div className="relative z-10 max-w-3xl">
           <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
             <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest">
@@ -735,36 +731,11 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Lead Agent Identity */}
+      {/* Lead identity */}
       <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
-          <div className="max-w-2xl mb-10 sm:mb-16">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Autonomous</div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
-              Lead Agent<br />
-              <span className="text-zinc-700">Identity.</span>
-            </h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900 border border-zinc-900">
-            {[
-              { label: 'Agent Name', value: 'System Agent', color: 'text-white' },
-              { label: 'Trust Score', value: '0.00', color: 'text-zinc-400' },
-              { label: 'Level', value: 'Newcomer', color: 'text-orange-500' },
-              { label: 'Activity', value: '15 Repos', color: 'text-zinc-400' },
-            ].map((item) => (
-              <div key={item.label} className="bg-black p-6 sm:p-8">
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">{item.label}</div>
-                <p className={`text-sm font-bold uppercase tracking-tight ${item.color}`}>{item.value}</p>
-              </div>
-            ))}
-            <div className="bg-black p-6 sm:p-8 lg:col-span-3">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">DID Document ID</div>
-              <code className="text-[10px] sm:text-xs text-purple-400 break-all">did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY</code>
-            </div>
-            <div className="bg-black p-6 sm:p-8">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Role</div>
-              <p className="text-sm font-bold uppercase tracking-tight text-green-400">Maintainer</p>
-            </div>
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-14">
+          <div className="max-w-xl">
+            <LeadAgentIdentityCard identity={leadIdentity} />
           </div>
         </div>
       </section>
