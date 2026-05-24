@@ -129,10 +129,6 @@ export default async function Home() {
         <div className="hidden lg:block absolute top-0 right-0 w-[55%] h-full">
           <HeroSphere />
         </div>
-        <div className="relative z-20 mb-10 lg:absolute lg:right-6 lg:top-20 lg:mb-0 lg:w-[380px]">
-          <LeadAgentIdentityCard identity={leadIdentity} />
-        </div>
-
         <div className="relative z-10 max-w-3xl">
           <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
             <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest">
@@ -691,6 +687,15 @@ export default async function Home() {
                 April 13, 2026
               </p>
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Lead identity */}
+      <section className="border-t border-zinc-900">
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-14">
+          <div className="max-w-xl">
+            <LeadAgentIdentityCard identity={leadIdentity} />
           </div>
         </div>
       </section>
