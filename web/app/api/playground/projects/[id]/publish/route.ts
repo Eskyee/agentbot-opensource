@@ -18,15 +18,7 @@ type RouteContext = {
 }
 
 function unauthorized() {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 48) || 'untitled'
+  return NextResponse.json({ error: 'Sign in to publish playground projects.' }, { status: 401 })
 }
 
 export async function POST(_req: Request, { params }: RouteContext) {
@@ -56,20 +48,19 @@ export async function POST(_req: Request, { params }: RouteContext) {
       return NextResponse.json({ error: 'Generate files before publishing this project.' }, { status: 400 })
     }
 
-    const now = new Date()
-    const deployment = isVercelPlaygroundConfigured()
-      ? await deployPlaygroundToVercel({
-          projectId: project.id,
-          projectName: project.name,
-          generation,
-        })
-      : {
-          id: `local-${project.id}`,
-          url: `https://${slugify(project.name)}-${Math.random().toString(16).slice(2, 6)}.gitlawb.app/`,
-          state: 'LOCAL_PREVIEW',
-          provider: 'local-preview' as const,
-        }
+    if (!isVercelPlaygroundConfigured()) {
+      return NextResponse.json(
+        { error: 'Vercel publishing is not configured. Add VERCEL_TOKEN and project/team settings before publishing.' },
+        { status: 503 },
+      )
+    }
 
+    const now = new Date()
+    const deployment = await deployPlaygroundToVercel({
+      projectId: project.id,
+      projectName: project.name,
+      generation,
+    })
     const updated = await prisma.playgroundProject.update({
       where: { id: project.id },
       data: {

@@ -436,9 +436,10 @@ export default function PlaygroundPage() {
   }
 
   function newProject() {
+    const name = window.prompt('Project name', 'untitled')?.trim().slice(0, 64) || 'untitled'
     const project: PlaygroundProject = {
       id: createId(),
-      name: 'untitled',
+      name,
       status: 'IDLE',
       template: 'VITE-REACT-TS',
       lastActive: 'never',
@@ -466,8 +467,9 @@ export default function PlaygroundPage() {
     let renamedProject: PlaygroundProject | null = null
     setProjects((current) => current.map((project) => {
       if (project.id !== projectId) return project
-      const base = project.name === 'untitled' ? 'producercalc' : `${project.name}-copy`
-      renamedProject = { ...project, name: base.slice(0, 64), lastActive: 'now' }
+      const nextName = window.prompt('Project name', project.name)?.trim().slice(0, 64)
+      if (!nextName) return project
+      renamedProject = { ...project, name: nextName, lastActive: 'now' }
       return renamedProject
     }))
     if (renamedProject) syncProject(renamedProject, { prompt, provider, model })
@@ -526,18 +528,6 @@ export default function PlaygroundPage() {
     URL.revokeObjectURL(url)
   }
 
-  function localPublishPatch(project: PlaygroundProject) {
-    const slug = `${slugify(project.name === 'untitled' && project.generation?.title ? project.generation.title : project.name)}-${Math.random().toString(16).slice(2, 6)}`
-    return {
-      status: 'PUBLISHED' as const,
-      publishedUrl: `https://${slug}.gitlawb.app/`,
-      deploymentProvider: 'local-preview',
-      deploymentId: `local-${project.id}`,
-      deploymentState: 'LOCAL_PREVIEW',
-      lastActive: 'now',
-    }
-  }
-
   async function publishProject() {
     if (!activeProject) return
     if (!activeProject.generation) {
@@ -556,7 +546,7 @@ export default function PlaygroundPage() {
       })
 
       if (response.status === 401) {
-        updateActiveProject(localPublishPatch(activeProject), { prompt, provider, model })
+        setPublishError('Sign in to publish this project to Vercel. Your files are still saved locally in this browser.')
         return
       }
 
@@ -574,7 +564,6 @@ export default function PlaygroundPage() {
       }
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : 'Publish failed')
-      updateActiveProject(localPublishPatch(activeProject), { prompt, provider, model })
     } finally {
       setIsPublishing(false)
     }
@@ -630,6 +619,9 @@ export default function PlaygroundPage() {
       })
 
       const body = await response.json()
+      if (response.status === 401) {
+        throw new Error('Sign in to push this project to GitLawb. Your files are still saved locally in this browser.')
+      }
       if (!response.ok) {
         throw new Error(body?.error || 'GitLawb push failed')
       }
@@ -704,7 +696,12 @@ export default function PlaygroundPage() {
               Playground
             </button>
             <div className="text-zinc-700">/</div>
-            <button className="inline-flex items-center gap-1 text-[11px] uppercase tracking-widest text-zinc-400 hover:text-white">
+            <button
+              type="button"
+              onClick={() => activeProject ? renameProject(activeProject.id) : undefined}
+              className="inline-flex items-center gap-1 text-[11px] uppercase tracking-widest text-zinc-400 hover:text-white"
+              title="Rename project"
+            >
               {breadcrumb}
               <ChevronDown className="h-3 w-3" />
             </button>
@@ -821,6 +818,7 @@ function BuilderView({
 }) {
   const [consoleFilter, setConsoleFilter] = useState<ConsoleLevel>('all')
   const [consoleCleared, setConsoleCleared] = useState(false)
+  const [consoleCollapsed, setConsoleCollapsed] = useState(false)
   const consoleEntries = useMemo(
     () => buildConsoleEntries(generation, error, isGenerating),
     [generation, error, isGenerating],
@@ -1008,7 +1006,13 @@ function BuilderView({
                 >
                   <Download className="h-3.5 w-3.5" />
                 </button>
-                <button type="button" title="refresh" className="text-zinc-600 hover:text-white">
+                <button
+                  type="button"
+                  title="refresh files"
+                  onClick={() => setSelectedFile(files[0]?.path ?? '.gitignore')}
+                  disabled={files.length === 0}
+                  className="text-zinc-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                >
                   <RotateCw className="h-3.5 w-3.5" />
                 </button>
               </div>
@@ -1076,10 +1080,11 @@ function BuilderView({
           <div className="px-4 py-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
             <button
               type="button"
-              title="collapse console"
+              title={consoleCollapsed ? 'expand console' : 'collapse console'}
+              onClick={() => setConsoleCollapsed((value) => !value)}
               className="inline-flex h-5 w-5 items-center justify-center border border-zinc-900 text-zinc-600 hover:text-white"
             >
-              <Minus className="h-3 w-3" />
+              {consoleCollapsed ? <Plus className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
             </button>
             <Terminal className="h-3.5 w-3.5" />
             <span>Console</span>
@@ -1089,7 +1094,8 @@ function BuilderView({
                   key={level}
                   type="button"
                   onClick={() => setConsoleFilter(level)}
-                  className={`px-2 py-1 transition-colors ${consoleFilter === level ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
+                  disabled={consoleCollapsed}
+                  className={`px-2 py-1 transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${consoleFilter === level ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}
                 >
                   {level}
                 </button>
@@ -1097,29 +1103,32 @@ function BuilderView({
               <button
                 type="button"
                 onClick={() => setConsoleCleared(true)}
-                className="px-2 py-1 text-zinc-500 hover:text-white"
+                disabled={consoleCollapsed}
+                className="px-2 py-1 text-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
               >
                 Clear
               </button>
               <Columns3 className="h-3.5 w-3.5 text-zinc-700" />
             </div>
           </div>
-          <div className="min-h-20 border-t border-zinc-900 bg-black px-4 py-3 font-mono text-xs text-zinc-500">
-            {visibleConsoleEntries.length === 0 ? (
-              <div className="leading-relaxed text-zinc-700">
-                no console output yet — the preview&apos;s logs and errors will show up here.
-              </div>
-            ) : visibleConsoleEntries.map((entry, index) => (
-              <div key={`${entry.level}-${entry.message}-${index}`} className="leading-relaxed">
-                <span className={entry.level === 'error' ? 'text-red-500' : entry.level === 'warn' ? 'text-yellow-500' : 'text-zinc-700'}>
-                  {entry.level === 'error' ? 'x' : entry.level === 'warn' ? '!' : '+'}
-                </span>{' '}
-                <span className={entry.level === 'error' ? 'text-red-400' : entry.level === 'warn' ? 'text-yellow-500' : 'text-zinc-500'}>
-                  {entry.message}
-                </span>
-              </div>
-            ))}
-          </div>
+          {!consoleCollapsed ? (
+            <div className="min-h-20 border-t border-zinc-900 bg-black px-4 py-3 font-mono text-xs text-zinc-500">
+              {visibleConsoleEntries.length === 0 ? (
+                <div className="leading-relaxed text-zinc-700">
+                  no console output yet — the preview&apos;s logs and errors will show up here.
+                </div>
+              ) : visibleConsoleEntries.map((entry, index) => (
+                <div key={`${entry.level}-${entry.message}-${index}`} className="leading-relaxed">
+                  <span className={entry.level === 'error' ? 'text-red-500' : entry.level === 'warn' ? 'text-yellow-500' : 'text-zinc-700'}>
+                    {entry.level === 'error' ? 'x' : entry.level === 'warn' ? '!' : '+'}
+                  </span>{' '}
+                  <span className={entry.level === 'error' ? 'text-red-400' : entry.level === 'warn' ? 'text-yellow-500' : 'text-zinc-500'}>
+                    {entry.message}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

@@ -246,7 +246,7 @@ export default async function AgentbotGitlawbTerminalPage() {
           <div className="border border-zinc-900 bg-zinc-950/30 p-4">
             <div className="mb-3 text-[10px] uppercase tracking-widest text-zinc-600">OpenGateway</div>
             <code className="block break-all border border-zinc-900 bg-black p-3 text-xs text-zinc-300">
-              https://opengateway.gitlawb.com/v1
+              https://agentbot.sh/v1
             </code>
             <div className="mt-4 grid gap-px bg-zinc-900 sm:grid-cols-2">
               <StatCard label="active keys" value={data.terminal.activeKeys} />

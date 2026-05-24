@@ -14,7 +14,7 @@ type RouteContext = {
 }
 
 function unauthorized() {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return NextResponse.json({ error: 'Sign in to push playground projects to GitLawb.' }, { status: 401 })
 }
 
 export async function POST(_req: Request, { params }: RouteContext) {
