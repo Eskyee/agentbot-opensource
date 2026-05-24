@@ -82,6 +82,7 @@ playwright-report/
 playwright-results/
 
 # AI tool directories (symlinks, not project content)
+.codex/
 .factory/
 .kiro/
 .mux/

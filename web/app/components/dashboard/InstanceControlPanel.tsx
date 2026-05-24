@@ -8,6 +8,7 @@ import {
   Copy,
   ExternalLink,
   Loader2,
+  Music2,
   Power,
   RefreshCw,
   ShieldCheck,
@@ -43,10 +44,6 @@ interface InstanceControlPanelProps {
     lastSeenAt?: string | null
     gatewayProcessStatus?: string | null
     subscriptionStatus?: string | null
-    restartCount?: number
-    lastExitCode?: number | null
-    lastExitAt?: string | null
-    lastDeployAt?: string | null
   }
   stats: {
     health?: string | null
@@ -68,6 +65,22 @@ interface InstanceControlPanelProps {
   onAction: (action: RuntimeAction) => void
   skillsManagerUrl: string
   configManagerUrl: string
+  communityRewards: {
+    connected: boolean
+    walletAddress: string | null
+    claimed: boolean
+    currentTier: {
+      id: string
+      label: string
+      credits: number
+      minBalance: number
+    } | null
+    balanceUi: number | null
+    creditsClaimed: number
+    claimedAt?: string | null
+    availability?: 'live' | 'degraded'
+    detail?: string | null
+  } | null
 }
 
 interface TrialStatus {
@@ -248,10 +261,21 @@ export function InstanceControlPanel({
   onAction,
   skillsManagerUrl,
   configManagerUrl,
-  // communityRewards removed
+  communityRewards,
 }: InstanceControlPanelProps) {
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null)
-
+  const [basefmActionLoading, setBasefmActionLoading] = useState(false)
+  const [basefmLaunch, setBasefmLaunch] = useState<null | {
+    name: string
+    wallet: string
+    fullRtmpUrl: string
+    playbackId: string | null
+    ffmpeg?: {
+      command: string
+      inputHint?: string
+    } | null
+  }>(null)
+  const [basefmError, setBasefmError] = useState('')
 
   useEffect(() => {
     fetch('/api/trial')
@@ -261,10 +285,54 @@ export function InstanceControlPanel({
   }, [])
 
   const instanceName = formatInstanceName(instance)
-  const isRunning = instance.status === 'running'
+  // When server probe returns 'unknown' but live healthz/readyz checks pass, infer 'healthy'
+  const effectiveStatus = (instance.status === 'unknown' || !instance.status)
+    ? (instance.probeChecks?.find(c => c.path === '/healthz')?.ok ? 'healthy' : (instance.status || 'unknown'))
+    : instance.status
+  const isRunning = effectiveStatus === 'running'
   const lifecycleTelemetry = stats?.telemetry?.lifecycleMetricsAvailable ?? false
   const runtimeHealth = stats?.health === 'healthy' ? 'healthy' : stats?.health || 'checking'
   const managedSpecs = getManagedSpecs(instance.plan, instance.subscriptionStatus)
+  const canLaunchBasefm = Boolean(communityRewards?.claimed && communityRewards?.walletAddress)
+
+  const createBasefmStream = async () => {
+    if (!communityRewards?.walletAddress) {
+      setBasefmError('Claim your Agentbot token perks first so the control panel has a verified wallet to use.')
+      return
+    }
+
+    setBasefmActionLoading(true)
+    setBasefmError('')
+
+    try {
+      const res = await fetch('/api/basefm/streams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          wallet: communityRewards.walletAddress,
+          name: `${instanceName} Live`,
+        }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create baseFM stream')
+      }
+
+      setBasefmLaunch({
+        name: data.stream?.name || `${instanceName} Live`,
+        wallet: data.stream?.wallet || communityRewards.walletAddress,
+        fullRtmpUrl: data.stream?.fullRtmpUrl,
+        playbackId: data.stream?.playbackId || null,
+        ffmpeg: data.ffmpeg || null,
+      })
+    } catch (error) {
+      setBasefmError(error instanceof Error ? error.message : 'Failed to create baseFM stream')
+    } finally {
+      setBasefmActionLoading(false)
+    }
+  }
+
   const quickLinks = [
     { label: 'Open Agentbot', href: instance.controlUiUrl || instance.url, external: true },
     { label: 'Skills Manager', href: skillsManagerUrl, external: true },
@@ -277,6 +345,71 @@ export function InstanceControlPanel({
 
   return (
     <section className="rounded-[28px] border border-zinc-800 bg-zinc-900/70">
+      <div className="border-b border-zinc-800 bg-[radial-gradient(circle_at_top_left,_rgba(232,93,38,0.18),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.14),_transparent_32%),linear-gradient(180deg,_rgba(24,24,27,0.92),_rgba(9,9,11,0.96))] px-5 py-5 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Agentbot Runtime</p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{instanceName}</h2>
+              <StatusBadge status={effectiveStatus} size="md" />
+              <span className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-300">
+                <StatusDot status={runtimeHealth === 'healthy' ? 'running' : 'starting'} />
+                {runtimeHealth}
+              </span>
+            </div>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
+              Clean controls for your Agentbot instance, with the runtime actions and machine facts in one place.
+            </p>
+          </div>
+
+          <a
+            href={instance.controlUiUrl || instance.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-zinc-200"
+          >
+            Open
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+            {managedSpecs.cpuRam}
+          </span>
+          <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+            {managedSpecs.storage}
+          </span>
+          {managedSpecs.note ? (
+            <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+              {managedSpecs.note}
+            </span>
+          ) : null}
+          <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+            {formatSubscriptionLabel(instance.subscriptionStatus, instance.plan)}
+          </span>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            href="/expert-setup"
+            className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+          >
+            Book setup
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+          <Link
+            href="/billing"
+            className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+          >
+            {trialStatus?.trial && !trialStatus.expired
+              ? `Trial ends ${formatDate(trialStatus.endsAt)}`
+              : 'Manage billing'}
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+
       <div className="space-y-6 px-5 py-5 sm:px-6 lg:px-8">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
           <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-4 sm:p-5">
@@ -361,6 +494,17 @@ export function InstanceControlPanel({
                 onClick={() => onAction('repair')}
               />
               <ActionButton
+                label="Create baseFM Stream"
+                detail={canLaunchBasefm
+                  ? 'Use your claimed Agentbot token wallet to mint RTMP credentials and an ffmpeg broadcaster command.'
+                  : 'Claim Agentbot token perks first, then launch a baseFM stream in one click.'}
+                icon={Music2}
+                tone="primary"
+                loading={basefmActionLoading}
+                disabled={basefmActionLoading}
+                onClick={createBasefmStream}
+              />
+              <ActionButton
                 label={isRunning ? 'Stop Machine' : 'Standby'}
                 detail={isRunning ? 'Take this instance offline until restarted.' : 'This instance is already offline.'}
                 icon={Power}
@@ -420,38 +564,75 @@ export function InstanceControlPanel({
               </div>
             </div>
 
+            {basefmError ? (
+              <div className="mt-4 rounded-2xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-red-200">
+                {basefmError}
+              </div>
+            ) : null}
+
+            {!canLaunchBasefm ? (
+              <div className="mt-4 rounded-2xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-orange-500">
+                Agentbot token perks work like the baseFM token here. Claim your Solana Agentbot holder status, then this panel can launch a stream with that verified wallet.
+              </div>
+            ) : null}
+
+            {basefmLaunch ? (
+              <div className="mt-4 rounded-[24px] border border-zinc-800 bg-black p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">baseFM Broadcast Ready</p>
+                    <p className="mt-2 text-sm font-bold uppercase tracking-[0.14em] text-white">{basefmLaunch.name}</p>
+                  </div>
+                  <Link
+                    href="/basefm/live"
+                    className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+                  >
+                    Play Live
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Wallet</p>
+                    <p className="mt-2 break-all text-xs text-zinc-300">{basefmLaunch.wallet}</p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Playback</p>
+                    <p className="mt-2 break-all text-xs text-zinc-300">{basefmLaunch.playbackId || 'Pending'}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">RTMP Target</p>
+                  <code className="mt-2 block break-all text-xs text-zinc-300">{basefmLaunch.fullRtmpUrl}</code>
+                </div>
+
+                {basefmLaunch.ffmpeg?.command ? (
+                  <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">ffmpeg Broadcaster Path</p>
+                    <code className="mt-2 block whitespace-pre-wrap break-all text-xs text-zinc-300">
+                      {basefmLaunch.ffmpeg.command}
+                    </code>
+                    {basefmLaunch.ffmpeg.inputHint ? (
+                      <p className="mt-2 text-xs text-zinc-500">{basefmLaunch.ffmpeg.inputHint}</p>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-              <SummaryCard label="State" value={instance.status || 'unknown'} detail={runtimeHealth} />
+              <SummaryCard label="State" value={effectiveStatus} detail={runtimeHealth} />
               <SummaryCard
                 label="Uptime"
                 value={lifecycleTelemetry && stats?.uptime ? stats.uptime : 'Live checks only'}
                 detail="Detailed lifecycle telemetry is not exposed yet"
               />
-              <SummaryCard
-                label="Restarts"
-                value={typeof instance.restartCount === 'number' ? String(instance.restartCount) : '—'}
-                detail={
-                  instance.restartCount !== undefined && instance.restartCount > 0
-                    ? `${instance.restartCount} deployment failures recorded`
-                    : instance.restartCount === 0
-                      ? 'No crashes recorded'
-                      : 'Deployment history unavailable'
-                }
-              />
-              <SummaryCard
-                label="Last Exit"
-                value={instance.lastExitCode != null ? `Code ${instance.lastExitCode}` : '—'}
-                detail={
-                  instance.lastExitAt
-                    ? `${new Date(instance.lastExitAt).toLocaleDateString()} · ${instance.lastExitCode === 137 ? 'OOM/SIGKILL' : 'Process exit'}`
-                    : instance.restartCount === 0
-                      ? 'Clean history'
-                      : 'Not available'
-                }
-              />
+              <SummaryCard label="Restarts" value="—" detail="Not exposed by the runtime API yet" />
+              <SummaryCard label="Last Exit" value="—" detail="Not exposed by the runtime API yet" />
               <SummaryCard label="Provisioned" value={formatRelativeTime(instance.provisionedAt)} detail={instance.subdomain} />
               <SummaryCard label="Version" value={instance.openclawVersion || 'unknown'} detail={instance.userId} />
               <SummaryCard
@@ -459,12 +640,16 @@ export function InstanceControlPanel({
                 value={
                   instance.ffmpegAvailable
                     ? 'Ready'
-                    : 'Unavailable'
+                    : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
+                      ? 'Not Installed'
+                      : 'Unknown'
                 }
                 detail={
                   instance.ffmpegAvailable
-                    ? (instance.ffmpegVersion || 'Included in standard image')
-                    : 'FFmpeg not detected — check runtime logs'
+                    ? (instance.ffmpegVersion || 'Installed')
+                    : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
+                      ? 'Upgrade your runtime to install — needed for baseFM broadcasting'
+                      : 'Status unavailable — runtime not fully reachable'
                 }
               />
             </div>

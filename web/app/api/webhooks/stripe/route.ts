@@ -6,11 +6,12 @@ import { prisma } from '@/app/lib/prisma'
 import { alertStripeFailure, sendAlert } from '@/app/lib/alerts'
 import { sendPaymentReceiptEmail } from '@/app/lib/email'
 import { signedFetch } from '@/app/lib/backend-client'
+import { isStaticBuildPhase } from '@/app/lib/build-phase'
 
 // Fail closed: guard at module load
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
-if (!webhookSecret) {
+if (!webhookSecret && !isStaticBuildPhase()) {
   console.error('[SECURITY] STRIPE_WEBHOOK_SECRET not configured — Stripe webhooks will be rejected')
 }
 

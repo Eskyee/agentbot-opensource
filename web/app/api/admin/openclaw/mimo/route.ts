@@ -125,6 +125,10 @@ function buildMimoOpenClawConfig(apiKey: string, gatewayToken: string, runtimeUr
       trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
       controlUi: {
         allowedOrigins,
+        // Auto-pair: skip per-device pairing flow. Token auth still required.
+        // Without this, OpenClaw 2026.4+ blocks every browser session with "device pairing required"
+        // and there's no public approval endpoint exposed to bypass it.
+        dangerouslyDisableDeviceAuth: true,
       },
     },
     plugins: {
@@ -143,6 +147,21 @@ function buildMimoOpenClawConfig(apiKey: string, gatewayToken: string, runtimeUr
       lastTouchedVersion: '2026.4.26',
       lastTouchedAt: new Date().toISOString(),
     },
+  }
+}
+
+/**
+ * Last-line defense: refuse to push any OpenClaw config that would leave users
+ * locked out by OpenClaw 2026.4+ device pairing. Throws if the invariant is violated.
+ */
+function assertGatewayInvariants(config: ReturnType<typeof buildMimoOpenClawConfig>): void {
+  if (config.gateway?.controlUi?.dangerouslyDisableDeviceAuth !== true) {
+    throw new Error(
+      'gateway.controlUi.dangerouslyDisableDeviceAuth must be true — OpenClaw 2026.4+ blocks every browser session with "device pairing required" without it'
+    )
+  }
+  if (!config.gateway?.auth?.token) {
+    throw new Error('gateway.auth.token must be set — refusing to push config with empty token')
   }
 }
 
@@ -295,6 +314,15 @@ export async function POST(request: Request) {
     : null
   const gatewayToken = requestedGatewayToken || registration[0]?.gateway_token || crypto.randomUUID()
   const openclawConfig = buildMimoOpenClawConfig(apiKey, gatewayToken, runtimeUrl)
+  try {
+    assertGatewayInvariants(openclawConfig)
+  } catch (invariantError) {
+    return errorResponse(
+      'config_invariant_violated',
+      invariantError instanceof Error ? invariantError.message : 'Config invariant check failed',
+      500
+    )
+  }
 
   const variables = {
     ...getAgentEnvVars(ownerUser?.id || session.user.id, ownerUser?.plan || 'solo', gatewayToken),

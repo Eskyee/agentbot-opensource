@@ -13,7 +13,9 @@ import { useCustomSession } from '@/app/lib/useCustomSession'
 import { SidebarContext } from './sidebar-context'
 import { DashboardDataProvider } from './DashboardDataProvider'
 
-const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'))
+const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'), {
+  ssr: false,
+})
 
 export default function DashboardLayout({
   children,

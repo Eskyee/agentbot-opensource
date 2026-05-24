@@ -12,7 +12,6 @@ import { prisma } from './prisma'
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from './openclaw-config'
 import { readSharedGatewayToken } from './gateway-token'
 
-const GATEWAY_TOKEN = readSharedGatewayToken()
 const GATEWAY_URL = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
 
 interface ToolRequest {
@@ -39,7 +38,7 @@ export async function invokeGatewayTool(
   userId?: string
 ): Promise<ToolResponse> {
   let url = GATEWAY_URL
-  let token = GATEWAY_TOKEN
+  let token = readSharedGatewayToken()
 
   // If userId provided, look up their specific gateway
   if (userId) {

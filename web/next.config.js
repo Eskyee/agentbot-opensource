@@ -44,6 +44,13 @@ const nextConfig = {
       ...(config.resolve.alias || {}),
       '@react-native-async-storage/async-storage': false,
     };
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      {
+        module: /ox[\\/]_esm[\\/]tempo[\\/]internal[\\/]virtualMasterPool\.js/,
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
+    ];
     return config;
   },
   async redirects() {
@@ -157,10 +164,20 @@ module.exports = withSentryConfig(withWorkflow(nextConfig), {
   widenClientFileUpload: shouldUploadSentrySourcemaps,
   sourcemaps: {
     disable: !shouldUploadSentrySourcemaps,
+    assets: [
+      '.next/**/*.js.map',
+      '.next/**/*.mjs.map',
+      '.next/**/*.cjs.map',
+      '.next/**/*.css.map',
+    ],
   },
   tunnelRoute: '/monitoring',
-  disableLogger: true,
-  automaticVercelMonitors: true,
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+    automaticVercelMonitors: true,
+  },
   telemetry: false,
 
   // Don't fail the build if sourcemap upload fails — the SDK still works

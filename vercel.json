@@ -14,7 +14,7 @@
   "regions": ["iad1", "lhr1"],
   "functionFailoverRegions": ["sfo1"],
   "fluid": true,
-  "installCommand": "npm install --include=dev",
+  "installCommand": "npm install --include=dev --legacy-peer-deps",
   "buildCommand": "NEXT_PUBLIC_DEMO_MODE=true npm run build",
   "outputDirectory": ".next",
   "ignoreCommand": "git diff --name-only HEAD~1 | grep -qvE '^docs/|^\\.github/|^README\\.md$|^LICENSE$' && exit 1 || exit 0",

@@ -1,3 +1,5 @@
+import { isStaticBuildPhase } from './build-phase'
+
 export interface SupportAlertPayload {
   title: string
   message: string
@@ -8,6 +10,8 @@ export async function sendSupportAlert(payload: SupportAlertPayload) {
   const webhookUrl = process.env.SUPPORT_WEBHOOK_URL
 
   if (!webhookUrl) {
+    if (isStaticBuildPhase()) return
+
     console.warn('[SupportAlert] SUPPORT_WEBHOOK_URL not configured.', payload)
     return
   }

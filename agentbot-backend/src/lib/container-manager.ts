@@ -154,6 +154,10 @@ export interface ContainerResult {
   startedAt?: string;
   serviceId?: string;
   url?: string;
+  restartCount?: number;
+  lastExitCode?: number | null;
+  lastExitAt?: string | null;
+  lastDeployAt?: string | null;
   /** Auto-connect Control UI URL with token embedded in fragment (never sent to server) */
   controlUiUrl?: string;
 }
@@ -335,7 +339,9 @@ export async function createContainer(
       trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
       controlUi: {
         allowedOrigins: CONTROL_UI_ALLOWED_ORIGINS,
-        dangerouslyDisableDeviceAuth: false,
+        // Auto-pair: token auth is sufficient. OpenClaw 2026.4+ requires this
+        // to be true or every browser session is blocked with "device pairing required".
+        dangerouslyDisableDeviceAuth: true,
         dangerouslyAllowHostHeaderOriginFallback: false,
       },
       http: { endpoints: { chatCompletions: { enabled: true } } },
@@ -551,7 +557,12 @@ export async function getContainerStatus(userId: string): Promise<ContainerResul
         serviceInstances: {
           edges: Array<{
             node: {
-              latestDeployment: { id: string; status: string; url?: string } | null;
+              latestDeployment: { id: string; status: string; url?: string; createdAt?: string } | null;
+              deployments?: {
+                edges: Array<{
+                  node: { id: string; status: string; createdAt: string };
+                }>;
+              };
             };
           }>;
         };

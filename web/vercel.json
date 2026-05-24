@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.com/vercel.json",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install --include=dev",
+  "installCommand": "npm install --include=dev --legacy-peer-deps",
   "framework": "nextjs",
   "regions": ["lhr1", "iad1"],
   "rewrites": [],
