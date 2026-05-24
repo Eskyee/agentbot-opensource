@@ -164,6 +164,8 @@ function buildConsoleEntries(generation: PlaygroundGeneration | null, error: str
   const entries: ConsoleEntry[] = []
 
   if (isGenerating) {
+    entries.push({ level: 'log', message: 'booting sandbox' })
+    entries.push({ level: 'log', message: 'spinning up session machine' })
     entries.push({ level: 'log', message: 'applying changes' })
   }
 
@@ -401,9 +403,12 @@ export default function PlaygroundPage() {
           </div>
         </div>
         <div className="min-h-[calc(100vh-9rem)] bg-black flex items-center justify-center">
-          <div className="text-center">
+          <div className="max-w-md px-6 text-center">
             <Loader2 className="mx-auto h-6 w-6 animate-spin text-orange-500" />
-            <div className="mt-4 text-[10px] uppercase tracking-widest text-zinc-500">Loading playground</div>
+            <div className="mt-4 text-[10px] uppercase tracking-widest text-orange-500">Booting sandbox</div>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-500">
+              Spinning up a Fly machine for your session - takes a few seconds on first run.
+            </p>
           </div>
         </div>
       </main>
@@ -840,7 +845,9 @@ function BuilderView({
           <div className="border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest">
               <span className="text-white">Chat</span>
-              <span className="text-zinc-600">Idle</span>
+              <span className={isGenerating ? 'text-orange-500' : 'text-zinc-600'}>
+                {isGenerating ? 'Building' : 'Idle'}
+              </span>
             </div>
             <span className="text-[10px] uppercase tracking-widest text-orange-500">OpenClaude</span>
           </div>
@@ -953,9 +960,27 @@ function BuilderView({
           <div className="min-w-0 bg-zinc-950/50 p-4">
             {isGenerating ? (
               <div className="h-full min-h-[520px] border border-zinc-900 bg-black flex items-center justify-center">
-                <div className="text-center">
+                <div className="max-w-md px-6 text-center">
                   <Loader2 className="mx-auto h-6 w-6 animate-spin text-orange-500" />
-                  <div className="mt-4 text-[10px] uppercase tracking-widest text-zinc-500">Applying changes</div>
+                  <div className="mt-4 text-[10px] uppercase tracking-widest text-orange-500">Applying changes</div>
+                  <h2 className="mt-3 text-2xl font-bold uppercase tracking-tighter">Building app</h2>
+                  <p className="mt-3 text-sm leading-relaxed text-zinc-500">
+                    OpenClaude is editing files; the preview updates as changes land.
+                  </p>
+                  <div className="mt-6 grid gap-2 border border-zinc-900 bg-zinc-950/70 p-4 text-left text-[10px] uppercase tracking-widest text-zinc-600">
+                    <div className="flex items-center justify-between gap-4">
+                      <span>Sandbox</span>
+                      <span className="text-orange-500">Booting</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span>Files</span>
+                      <span className="text-zinc-400">Writing</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span>Preview</span>
+                      <span className="text-zinc-400">Refreshing</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : pane === 'preview' ? (
@@ -971,10 +996,18 @@ function BuilderView({
                   ) : (
                     <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
                       <div className="max-w-md text-center">
-                        <div className="text-[10px] uppercase tracking-widest text-orange-500">Booting sandbox</div>
+                        <div className="text-[10px] uppercase tracking-widest text-orange-500">Playground</div>
+                        <h2 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Your app starts here.</h2>
                         <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-                          Send a prompt to generate files and update the preview.
+                          Tell the assistant what you want to build. It will edit the files in this project and the
+                          preview will update automatically.
                         </p>
+                        <div className="mt-6 border border-zinc-900 bg-zinc-950/80 p-4 text-left">
+                          <div className="text-[10px] uppercase tracking-widest text-zinc-300">Booting sandbox</div>
+                          <p className="mt-2 text-xs leading-relaxed text-zinc-600">
+                            Spinning up a Fly machine for your session - takes a few seconds on first run.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
