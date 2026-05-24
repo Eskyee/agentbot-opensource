@@ -5,9 +5,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 import { redis } from './redis'
 import { verifyCSRFToken, getCSRFTokenFromHeader } from './csrf'
+import { isStaticBuildPhase } from './build-phase'
 
 // Redis rate limiting check
-if (redis) {
+if (redis && !isStaticBuildPhase()) {
   console.log('[SECURITY] Redis rate limiting active')
 }
 
