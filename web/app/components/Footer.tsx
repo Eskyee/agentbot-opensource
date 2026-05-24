@@ -20,6 +20,7 @@ const COLUMNS = [
     links: [
       { href: '/documentation', label: 'Docs' },
       { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },
+      { href: 'https://release.bar/eskyee',                              label: 'Release Bar', external: true },
     ],
   },
   {
