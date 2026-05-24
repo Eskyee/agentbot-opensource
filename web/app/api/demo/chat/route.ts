@@ -127,7 +127,9 @@ Be helpful, concise, and demonstrate agent capabilities.`
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': APP_URL,
-        'X-Title': 'Agentbot Demo'
+        'X-Title': 'Agentbot Demo',
+        'X-OpenRouter-Title': 'Agentbot Demo',
+        'X-OpenRouter-Categories': 'cli-agent,cloud-agent'
       },
       body: JSON.stringify({
         model: modelId,

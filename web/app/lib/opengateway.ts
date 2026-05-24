@@ -133,12 +133,20 @@ export function resolveGatewayUpstream(): UpstreamConfig | null {
 }
 
 export function gatewayUpstreamHeaders(upstream: UpstreamConfig, title = 'Agentbot OpenGateway') {
-  return {
+  const referer = process.env.NEXTAUTH_URL || 'https://agentbot.sh'
+  const headers: Record<string, string> = {
     Authorization: `Bearer ${upstream.apiKey}`,
     'Content-Type': 'application/json',
-    'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://127.0.0.1:3007',
+    'HTTP-Referer': referer,
     'X-Title': title,
   }
+
+  if (upstream.provider === 'openrouter') {
+    headers['X-OpenRouter-Title'] = title
+    headers['X-OpenRouter-Categories'] = 'cli-agent,cloud-agent'
+  }
+
+  return headers
 }
 
 export function shouldTryNextGatewayUpstream(status: number): boolean {
