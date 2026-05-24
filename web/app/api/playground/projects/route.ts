@@ -4,6 +4,7 @@ import { prisma } from '@/app/lib/prisma'
 import {
   asString,
   generationToJson,
+  isMissingPlaygroundProjectTable,
   normalizeGeneration,
   normalizeStatus,
   serializeProject,
@@ -33,6 +34,10 @@ export async function GET() {
       storage: 'server',
     })
   } catch (error) {
+    if (isMissingPlaygroundProjectTable(error)) {
+      return NextResponse.json({ projects: [], storage: 'local' })
+    }
+
     console.error('[playground.projects] list failed', error)
     return NextResponse.json({ error: 'Failed to load playground projects' }, { status: 500 })
   }
@@ -69,6 +74,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ project: serializeProject(project), storage: 'server' }, { status: 201 })
   } catch (error) {
+    if (isMissingPlaygroundProjectTable(error)) {
+      return NextResponse.json(
+        { error: 'Playground database storage is not ready. Your project is still saved locally in this browser.' },
+        { status: 503 },
+      )
+    }
+
     console.error('[playground.projects] create failed', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create playground project' },

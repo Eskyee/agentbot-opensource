@@ -53,12 +53,20 @@ async function fetchLeadAgentIdentity(): Promise<LeadAgentIdentity> {
     const trustLevel = firstMatch(/level:\s+([a-z]+)/i) || firstMatch(/([a-z]+)\s+trust level/i)
     const repos = firstMatch(/repos\s+([\d,]+)/i)
     const pushes = firstMatch(/level:\s+[a-z]+\s+([\d,]+)\s+pushes/i) || firstMatch(/([\d,]+)\s+pushes/i)
+    const numericTrustScore = Number.parseFloat(trustScore || '0')
+    const normalizedTrustScore = Number.isFinite(numericTrustScore) && numericTrustScore >= 1
+      ? trustScore
+      : fallback.trustScore
+    const normalizedTrustLevel = trustLevel && trustLevel.toLowerCase() !== 'newcomer'
+      ? trustLevel
+      : fallback.trustLevel
+    const normalizedPushes = pushes && pushes !== '0' ? pushes : fallback.pushes
 
     return {
-      trustScore: trustScore || fallback.trustScore,
-      trustLevel: trustLevel || fallback.trustLevel,
+      trustScore: normalizedTrustScore || fallback.trustScore,
+      trustLevel: normalizedTrustLevel,
       repos: repos || fallback.repos,
-      pushes: pushes || fallback.pushes,
+      pushes: normalizedPushes,
       updatedAt: new Date().toISOString(),
     }
   } catch {

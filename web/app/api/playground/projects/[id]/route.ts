@@ -4,6 +4,7 @@ import { prisma } from '@/app/lib/prisma'
 import {
   asString,
   generationToJson,
+  isMissingPlaygroundProjectTable,
   normalizeGeneration,
   normalizeStatus,
   serializeProject,
@@ -88,6 +89,14 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
     return NextResponse.json({ project: serializeProject(project), storage: 'server' })
   } catch (error) {
+    if (isMissingPlaygroundProjectTable(error)) {
+      return NextResponse.json({
+        project: null,
+        storage: 'local',
+        warning: 'Playground database storage is not ready. Your project is still saved locally in this browser.',
+      })
+    }
+
     console.error('[playground.projects] update failed', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update playground project' },
