@@ -691,6 +691,46 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Primary Node Identity */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+          <div className="max-w-2xl mb-10 sm:mb-16">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Network</div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
+              Primary Node<br />
+              <span className="text-zinc-700">Identity.</span>
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900 border border-zinc-900">
+            {[
+              { label: 'Status', value: 'Online', color: 'text-green-400' },
+              { label: 'Network', value: 'alpha', color: 'text-white' },
+              { label: 'Protocols', value: 'git-smart-http, mcp, libp2p', color: 'text-zinc-400' },
+            ].map((item) => (
+              <div key={item.label} className="bg-black p-6 sm:p-8">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">{item.label}</div>
+                <p className={`text-sm font-bold uppercase tracking-tight ${item.color}`}>{item.value}</p>
+              </div>
+            ))}
+            <div className="bg-black p-6 sm:p-8 lg:col-span-2">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">DID</div>
+              <code className="text-[10px] sm:text-xs text-purple-400 break-all">did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY</code>
+            </div>
+            <div className="bg-black p-6 sm:p-8">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Links</div>
+              <div className="flex flex-col gap-2">
+                <a href="https://gitlawb.com/node/repos/z6MkpUq1/" target="_blank" rel="noopener noreferrer" className="text-xs text-orange-500 hover:text-white transition-colors">
+                  Gitlawb Profile ↗
+                </a>
+                <a href="https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-xs text-orange-500 hover:text-white transition-colors">
+                  Gitlawb Repo ↗
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Lead identity */}
       <section className="border-t border-zinc-900">
         <div className="mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-14">

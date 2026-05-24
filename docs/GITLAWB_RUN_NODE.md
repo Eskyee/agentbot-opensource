@@ -80,6 +80,14 @@ When gitlawb releases the full node server:
 
 ## Network Stats (Live)
 
+### Primary Node Identity
+- **Status**: Online
+- **Network**: alpha
+- **DID**: `did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY`
+- **Gitlawb Profile**: [z6MkpUq1](https://gitlawb.com/node/repos/z6MkpUq1/)
+- **Open Source Mirror**: [agentbot-opensource](https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource)
+- **Protocols**: `git-smart-http`, `mcp`, `libp2p`
+
 As of today:
 - **Nodes**: 3 (node.gitlawb.com, node2.gitlawb.com, node3.gitlawb.com)
 - **Repos**: 1647+
