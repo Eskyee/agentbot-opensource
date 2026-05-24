@@ -1,16 +1,107 @@
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-import dynamic from 'next/dynamic'
+import nextDynamic from 'next/dynamic'
 import { BasefmLivePlayer } from '@/app/components/basefm/BasefmLivePlayer'
 import { GitlawbNodeIdentityCard } from '@/app/components/GitlawbNodeIdentityCard'
 
-const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
-const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
-const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
-const CapabilitiesTicker = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.CapabilitiesTicker })))
+const HeroSphere = nextDynamic(() => import('@/app/components/HeroSphereClient'))
+const HeroImage = nextDynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
+const DashboardPreview = nextDynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
+const CapabilitiesTicker = nextDynamic(() => import('@/app/components/landing').then(m => ({ default: m.CapabilitiesTicker })))
+
+export const dynamic = 'force-dynamic'
+
+const AGENTBOT_DID = 'did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY'
+
+type LeadAgentIdentity = {
+  trustScore: string
+  trustLevel: string
+  repos: string
+  pushes: string
+  updatedAt: string
+}
+
+async function fetchLeadAgentIdentity(): Promise<LeadAgentIdentity> {
+  const fallback = {
+    trustScore: '1.00',
+    trustLevel: 'maintainer',
+    repos: '16',
+    pushes: '91',
+    updatedAt: 'live fallback',
+  }
+
+  try {
+    const response = await fetch('https://gitlawb.com/z6MkpUq1', {
+      cache: 'no-store',
+      headers: { 'user-agent': 'AgentbotHome/1.0 (+https://agentbot.sh)' },
+    })
+    if (!response.ok) return fallback
+
+    const html = await response.text()
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim()
+    const firstMatch = (pattern: RegExp) => text.match(pattern)?.[1]?.trim() || null
+    const trustScore = firstMatch(/trust score\s+([\d.]+)/i)
+    const trustLevel = firstMatch(/level:\s+([a-z]+)/i) || firstMatch(/([a-z]+)\s+trust level/i)
+    const repos = firstMatch(/repos\s+([\d,]+)/i)
+    const pushes = firstMatch(/level:\s+[a-z]+\s+([\d,]+)\s+pushes/i) || firstMatch(/([\d,]+)\s+pushes/i)
+
+    return {
+      trustScore: trustScore || fallback.trustScore,
+      trustLevel: trustLevel || fallback.trustLevel,
+      repos: repos || fallback.repos,
+      pushes: pushes || fallback.pushes,
+      updatedAt: new Date().toISOString(),
+    }
+  } catch {
+    return fallback
+  }
+}
+
+function LeadAgentIdentityCard({ identity }: { identity: LeadAgentIdentity }) {
+  return (
+    <aside className="border border-zinc-900 bg-black/85 p-5 backdrop-blur">
+      <div className="text-[10px] uppercase tracking-[0.22em] text-orange-500">Autonomous</div>
+      <h2 className="mt-2 text-2xl font-bold uppercase leading-none tracking-tighter text-white">
+        Lead Agent<br />
+        <span className="text-zinc-600">Identity.</span>
+      </h2>
+      <dl className="mt-5 grid gap-px bg-zinc-900 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        {[
+          ['Agent name', 'System Agent'],
+          ['Trust score', identity.trustScore],
+          ['Level', identity.trustLevel],
+          ['Activity', `${identity.repos} repos${identity.pushes ? ` / ${identity.pushes} pushes` : ''}`],
+          ['Did document id', AGENTBOT_DID],
+          ['Role', 'Maintainer'],
+        ].map(([label, value]) => (
+          <div key={label} className="bg-zinc-950 p-3">
+            <dt className="text-[10px] uppercase tracking-widest text-zinc-600">{label}</dt>
+            <dd className="mt-2 break-all text-xs font-bold uppercase tracking-widest text-zinc-200">{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="mt-4 flex items-center justify-between gap-3 text-[10px] uppercase tracking-widest text-zinc-700">
+        <span>Auto-updated</span>
+        <a href="https://gitlawb.com/z6MkpUq1" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white">
+          profile ↗
+        </a>
+      </div>
+    </aside>
+  )
+}
 
 export default async function Home() {
   const session = await getAuthSession()
+  const leadIdentity = await fetchLeadAgentIdentity()
   
   let githubStars = 2
   let githubForks = 1
@@ -29,6 +120,9 @@ export default async function Home() {
       <section className="relative max-w-7xl mx-auto px-5 sm:px-6 py-20 sm:py-32 md:py-44 overflow-hidden">
         <div className="hidden lg:block absolute top-0 right-0 w-[55%] h-full">
           <HeroSphere />
+        </div>
+        <div className="relative z-20 mb-10 lg:absolute lg:right-6 lg:top-20 lg:mb-0 lg:w-[380px]">
+          <LeadAgentIdentityCard identity={leadIdentity} />
         </div>
 
         <div className="relative z-10 max-w-3xl">
