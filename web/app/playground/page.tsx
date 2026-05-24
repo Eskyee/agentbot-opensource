@@ -548,6 +548,8 @@ export default function PlaygroundPage() {
     try {
       const response = await fetch(`/api/playground/projects/${encodeURIComponent(activeProject.id)}/publish`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...activeProject, prompt, provider, model }),
       })
 
       if (response.status === 401) {
@@ -621,6 +623,8 @@ export default function PlaygroundPage() {
     try {
       const response = await fetch(`/api/playground/projects/${encodeURIComponent(activeProject.id)}/gitlawb`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...activeProject, prompt, provider, model }),
       })
 
       const body = await response.json()
