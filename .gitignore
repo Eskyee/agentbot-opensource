@@ -99,6 +99,8 @@ agentbot-backend/.env.local
 
 # Local standalone repos
 btcpay-configurator/
+mintlify-docs/
+x402-tempo/x402-gateway/
 keys/
 .claude/scheduled_tasks.lock
 .env*.local

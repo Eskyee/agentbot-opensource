@@ -3,6 +3,7 @@ const { withWorkflow } = require('workflow/next');
 const { withSentryConfig } = require('@sentry/nextjs');
 
 const shouldUploadSentrySourcemaps =
+  process.env.SENTRY_UPLOAD_SOURCE_MAPS === 'true' &&
   process.env.VERCEL_ENV === 'production' &&
   (!process.env.VERCEL_GIT_COMMIT_REF || process.env.VERCEL_GIT_COMMIT_REF === 'main');
 

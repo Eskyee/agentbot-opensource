@@ -1,6 +1,0 @@
-[submodule "x402-tempo/x402-gateway"]
-	path = x402-tempo/x402-gateway
-	url = https://github.com/Eskyee/x402-gateway.git
-[submodule "mintlify-docs"]
-	path = mintlify-docs
-	url = https://github.com/Eskyee/mintlify-docs.git
