@@ -323,7 +323,7 @@ async function persistServerProject(
 }
 
 export default function PlaygroundPage() {
-  const [prompt, setPrompt] = useState(EXAMPLES[0].prompt)
+  const [prompt, setPrompt] = useState('')
   const [projects, setProjects] = useState<PlaygroundProject[]>(() => defaultProjects())
   const [activeProjectId, setActiveProjectId] = useState('untitled-active')
   const [provider, setProvider] = useState('openclaude')

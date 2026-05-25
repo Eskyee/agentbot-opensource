@@ -9,7 +9,6 @@ const COLUMNS = [
     links: [
       { href: '/playground',       label: 'Playground' },
       { href: '/creator-toolkit',  label: 'Creator Toolkit' },
-      { href: '/terminal', label: 'Terminal' },
       { href: '/opengateway',      label: 'OpenGateway' },
       { href: '/pricing',          label: 'Pricing' },
       { href: '/dashboard',        label: 'Dashboard' },
