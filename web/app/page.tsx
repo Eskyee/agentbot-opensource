@@ -308,7 +308,7 @@ export default async function Home() {
               <span className="text-zinc-700">Build underground systems.</span>
             </h2>
             <p className="text-zinc-500 text-sm max-w-xl leading-relaxed mt-6">
-              Agentbot is tighter now: one playground, one creator toolkit, one OpenClaude runtime, one gateway, one dashboard.
+              Agentbot is tighter now: one playground, one creator toolkit, one terminal, one gateway, one dashboard.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
@@ -324,14 +324,9 @@ export default async function Home() {
                 body: 'Underground producer agents, prompts, soundpack structure, and launch assets.',
               },
               {
-                href: '/openclaude',
-                label: 'OpenClaude',
-                body: 'Open coding agent runtime pinned into Agentbot: terminal-first, model-neutral, GitLawb-aligned.',
-              },
-              {
                 href: '/opengateway',
                 label: 'OpenGateway',
-                body: 'OpenAI-compatible inference keys for Agentbot and OpenClaude deployments.',
+                body: 'OpenAI-compatible inference keys for Agentbot deployments.',
               },
               {
                 href: '/pricing',
@@ -753,7 +748,7 @@ export default async function Home() {
             {[
               { href: '/playground', label: 'Playground' },
               { href: '/creator-toolkit', label: 'Creator Toolkit' },
-              { href: '/openclaude', label: 'OpenClaude' },
+              { href: '/terminal', label: 'Terminal' },
               { href: '/opengateway', label: 'OpenGateway' },
               { href: '/pricing', label: 'Pricing' },
               { href: '/dashboard', label: 'Dashboard' },
