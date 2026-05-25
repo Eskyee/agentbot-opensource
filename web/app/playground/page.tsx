@@ -94,6 +94,8 @@ const VIEWPORTS = {
   fill: 'w-full',
 } as const
 
+const PLAYGROUND_PROMISE = 'Build and publish Vite + React apps with OpenClaude, Xiaomi MiMo, and Agentbot gateway routing.'
+
 type Viewport = keyof typeof VIEWPORTS
 type Pane = 'preview' | 'code'
 type View = 'builder' | 'apps' | 'projects' | 'publish'
@@ -158,6 +160,12 @@ function formatBytes(bytes: number) {
 
 function fileLabel(path: string) {
   return path.split('/').pop()?.toUpperCase() || path.toUpperCase()
+}
+
+function externalUrl(value?: string | null) {
+  if (!value) return null
+  if (/^https?:\/\//i.test(value)) return value
+  return `https://${value.replace(/^\/+/, '')}`
 }
 
 function buildConsoleEntries(generation: PlaygroundGeneration | null, error: string | null, isGenerating: boolean): ConsoleEntry[] {
@@ -695,7 +703,7 @@ export default function PlaygroundPage() {
   return (
     <main className="min-h-[calc(100vh-6rem)] bg-black text-white font-mono selection:bg-orange-500/30">
       <div className="border-b border-zinc-900 bg-black">
-        <div className="h-12 px-4 flex items-center justify-between gap-4">
+        <div className="min-h-12 px-4 py-2 flex flex-col gap-2 lg:h-12 lg:flex-row lg:items-center lg:justify-between lg:py-0">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
@@ -716,7 +724,7 @@ export default function PlaygroundPage() {
             </button>
           </div>
 
-          <div className="hidden lg:flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
+          <div className="flex items-center gap-2 overflow-x-auto text-[10px] uppercase tracking-widest text-zinc-500 lg:overflow-visible">
             <span className="inline-flex items-center gap-1 border border-orange-500/40 px-2 py-1 text-orange-500">
               <Check className="h-3 w-3" />
               Auto-approve on
@@ -728,7 +736,7 @@ export default function PlaygroundPage() {
               <Plus className="h-3 w-3" />
               New project
             </button>
-            <a href="/logout" className="px-2 py-1 hover:text-white">Sign out</a>
+            <a href="/logout" className="hidden px-2 py-1 hover:text-white sm:inline">Sign out</a>
           </div>
         </div>
       </div>
@@ -859,9 +867,7 @@ function BuilderView({
           <div className="p-5 space-y-5 flex-1">
             <div>
               <h1 className="text-2xl font-bold uppercase tracking-tighter">What should we build?</h1>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Describe an app. OpenClaude writes the files; the preview updates as it goes.
-              </p>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">{PLAYGROUND_PROMISE}</p>
             </div>
 
             <div className="space-y-2">
@@ -1006,6 +1012,11 @@ function BuilderView({
                           Tell the assistant what you want to build. It will edit the files in this project and the
                           preview will update automatically.
                         </p>
+                        <div className="mt-5 flex flex-wrap justify-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
+                          <span className="border border-zinc-900 px-2 py-1">Vite + React</span>
+                          <span className="border border-zinc-900 px-2 py-1">MiMo V2.5 Pro</span>
+                          <span className="border border-zinc-900 px-2 py-1">GitLawb push</span>
+                        </div>
                         <div className="mt-6 border border-zinc-900 bg-zinc-950/80 p-4 text-left">
                           <div className="text-[10px] uppercase tracking-widest text-zinc-300">Booting sandbox</div>
                           <p className="mt-2 text-xs leading-relaxed text-zinc-600">
@@ -1104,6 +1115,10 @@ function BuilderView({
               <div className="flex items-center justify-between gap-4">
                 <span>Mode</span>
                 <span className="text-zinc-300">auto-approve</span>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span>Gateway</span>
+                <span className="text-zinc-300">agentbot</span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span>Storage</span>
@@ -1271,7 +1286,7 @@ function AppsView({
         <div className="text-[10px] uppercase tracking-widest text-zinc-600">Playground / Apps</div>
         <h1 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Apps</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-500">
-          Published playground apps will show here. Open one to inspect files or publish the current project.
+          Published playground apps show here. Open a project to inspect files, open the live app, or download the generated source.
         </p>
       </div>
 
@@ -1292,6 +1307,10 @@ function AppsView({
         <div className="grid gap-px bg-zinc-900 md:grid-cols-2">
           {projects.map((project) => (
             <div key={project.id} className="bg-black p-6">
+              {(() => {
+                const liveUrl = externalUrl(project.publishedUrl)
+                return (
+                  <>
               <div className="text-[10px] uppercase tracking-widest text-green-500">Published</div>
               <h2 className="mt-4 text-xl font-bold tracking-tighter">{project.name}</h2>
               <p className="mt-2 text-xs uppercase tracking-widest text-zinc-600">{project.publishedUrl}</p>
@@ -1311,9 +1330,20 @@ function AppsView({
                   onClick={() => onOpen(project.id)}
                   className="inline-flex items-center gap-2 border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-widest text-zinc-300 hover:text-white"
                 >
-                  Open
-                  <ExternalLink className="h-3.5 w-3.5" />
+                  Inspect
+                  <Code2 className="h-3.5 w-3.5" />
                 </button>
+                {liveUrl ? (
+                  <a
+                    href={liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-widest text-zinc-300 hover:text-white"
+                  >
+                    Open app
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => onDownload(project)}
@@ -1324,6 +1354,9 @@ function AppsView({
                   <Download className="h-3.5 w-3.5" />
                 </button>
               </div>
+                  </>
+                )
+              })()}
             </div>
           ))}
         </div>
@@ -1361,7 +1394,7 @@ function PublishView({
         <div className="text-[10px] uppercase tracking-widest text-zinc-600">Playground / Publish</div>
         <h1 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Publish project</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-500">
-          Publish the generated Vite app as a Vercel preview, or push the source to a GitLawb node as a real git repo.
+          Publish the generated Vite app as an Agentbot preview, then push the same source to a GitLawb node as a real git repo.
         </p>
       </div>
 
@@ -1374,7 +1407,7 @@ function PublishView({
           </p>
           {project?.publishedUrl && (
             <a
-              href={project.publishedUrl}
+              href={externalUrl(project.publishedUrl) ?? project.publishedUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-green-500 hover:text-green-400"
