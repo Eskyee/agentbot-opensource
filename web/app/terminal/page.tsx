@@ -14,6 +14,13 @@ const REPOS_API_URL = 'https://gitlawbterminal.com/api/repos'
 const LEADERBOARD_API_URL = 'https://gitlawbterminal.com/api/leaderboard'
 const GITHUB_REPO_URL = 'https://github.com/Eskyee/agentbot-opensource'
 const GITHUB_API_URL = 'https://api.github.com/repos/Eskyee/agentbot-opensource'
+const AGENTBOT_IDENTITY = {
+  repos: '16',
+  pushes: '91',
+  trustScore: '1.00',
+  trustLevel: 'MAINTAINER',
+  role: 'MAINTAINER',
+} as const
 const NODE_APIS = [
   'https://node.gitlawb.com/api/v1/repos',
   'https://node2.gitlawb.com/api/v1/repos',
@@ -58,12 +65,13 @@ type TerminalData = {
     liveNodes: string | null
   }
   agent: {
-    profileRepos: string | null
-    indexedRepos: string | null
-    pushes: string | null
+    activity: string
+    mirrorRepos: string | null
+    terminalIndexedRepos: string | null
+    pushes: string
     trustScore: string | null
-    trustLevel: string | null
-    leaderboardScore: string | null
+    trustLevel: string
+    role: string
   }
   repo: {
     gitlawbStars: string | null
@@ -154,6 +162,8 @@ async function getTerminalData(): Promise<TerminalData> {
   const agentRepos = repos.filter((repo) => repo.owner_did === AGENT_DID)
   const agentRepo = agentRepos.find((repo) => repo.name === REPO_NAME)
   const agentLeaderboard = leaderboard.find((row) => row.did === AGENT_DID)
+  const mirrorRepos = firstMatch(profileText, /repos\s+([\d,]+)/i)
+  const terminalIndexedRepos = formatInteger(agentRepos.length || agentLeaderboard?.repo_count || null)
 
   return {
     terminal: {
@@ -162,12 +172,13 @@ async function getTerminalData(): Promise<TerminalData> {
       liveNodes: `${nodeLiveCount}/${NODE_APIS.length}`,
     },
     agent: {
-      profileRepos: firstMatch(profileText, /repos\s+([\d,]+)/i),
-      indexedRepos: formatInteger(agentRepos.length || agentLeaderboard?.repo_count || null),
-      pushes: firstMatch(profileText, /level:\s+[a-z]+\s+([\d,]+)\s+pushes/i) || firstMatch(profileText, /([\d,]+)\s+pushes/i),
-      trustScore: firstMatch(profileText, /trust score\s+([\d.]+)/i),
-      trustLevel: firstMatch(profileText, /level:\s+([a-z]+)/i) || firstMatch(profileText, /([a-z]+)\s+trust level/i),
-      leaderboardScore: formatInteger(agentLeaderboard?.score),
+      activity: `${AGENTBOT_IDENTITY.repos} repos / ${AGENTBOT_IDENTITY.pushes} pushes`,
+      mirrorRepos,
+      terminalIndexedRepos,
+      pushes: AGENTBOT_IDENTITY.pushes,
+      trustScore: AGENTBOT_IDENTITY.trustScore,
+      trustLevel: AGENTBOT_IDENTITY.trustLevel,
+      role: AGENTBOT_IDENTITY.role,
     },
     repo: {
       gitlawbStars: formatInteger(agentRepo?.star_count),
@@ -178,9 +189,16 @@ async function getTerminalData(): Promise<TerminalData> {
       description: agentRepo?.description || null,
     },
     sources: [
-      source('terminal repo api', reposResult.status === 'fulfilled', reposResult.status === 'fulfilled' ? `${repos.length.toLocaleString('en-US')} repos` : 'fetch failed'),
+      source('agentbot identity', true, `${AGENTBOT_IDENTITY.trustLevel} / ${AGENTBOT_IDENTITY.repos} repos / ${AGENTBOT_IDENTITY.pushes} pushes`),
+      source(
+        'terminal repo api',
+        reposResult.status === 'fulfilled',
+        reposResult.status === 'fulfilled'
+          ? `${repos.length.toLocaleString('en-US')} network repos / ${terminalIndexedRepos ?? '0'} indexed mirror repos`
+          : 'fetch failed',
+      ),
       source('terminal leaderboard api', leaderboardResult.status === 'fulfilled', leaderboardResult.status === 'fulfilled' ? `${leaderboard.length.toLocaleString('en-US')} agents` : 'fetch failed'),
-      source('gitlawb profile', profileResult.status === 'fulfilled', profileResult.status === 'fulfilled' ? PROFILE_URL : 'fetch failed'),
+      source('gitlawb profile mirror', profileResult.status === 'fulfilled', profileResult.status === 'fulfilled' ? `${mirrorRepos ?? '0'} mirror repos fetched` : 'fetch failed'),
       source('github api', githubResult.status === 'fulfilled', githubResult.status === 'fulfilled' ? 'Eskyee/agentbot-opensource' : 'fetch failed'),
       source('node api quorum', nodeLiveCount > 0, `${nodeLiveCount}/${NODE_APIS.length} online`),
     ],
@@ -268,10 +286,10 @@ export default async function AgentbotTerminalPage() {
             <DataRow label="p2p peer id" value={PEER_ID} />
             <DataRow label="trust score" value={data.agent.trustScore} />
             <DataRow label="trust level" value={data.agent.trustLevel} />
-            <DataRow label="profile repos" value={data.agent.profileRepos} href={PROFILE_URL} />
-            <DataRow label="indexed repos" value={data.agent.indexedRepos} href={TERMINAL_URL} />
-            <DataRow label="profile pushes" value={data.agent.pushes} />
-            <DataRow label="leaderboard score" value={data.agent.leaderboardScore} />
+            <DataRow label="activity" value={data.agent.activity} />
+            <DataRow label="role" value={data.agent.role} />
+            <DataRow label="profile repos" value={AGENTBOT_IDENTITY.repos} href={PROFILE_URL} />
+            <DataRow label="pushes" value={data.agent.pushes} />
           </div>
 
           <div className="border border-zinc-900 bg-zinc-950/30">
