@@ -9,7 +9,7 @@ const COLUMNS = [
     links: [
       { href: '/playground',       label: 'Playground' },
       { href: '/creator-toolkit',  label: 'Creator Toolkit' },
-      { href: '/gitlawb-terminal', label: 'GitLawb Terminal' },
+      { href: '/terminal', label: 'Terminal' },
       { href: '/opengateway',      label: 'OpenGateway' },
       { href: '/pricing',          label: 'Pricing' },
       { href: '/dashboard',        label: 'Dashboard' },

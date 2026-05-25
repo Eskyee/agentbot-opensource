@@ -9,7 +9,7 @@ import { customSignOut, useCustomSession } from "@/app/lib/useCustomSession";
 const PUBLIC_LINKS = [
   { href: "/playground", label: "Playground" },
   { href: "/creator-toolkit", label: "Creator Toolkit" },
-  { href: "/gitlawb-terminal", label: "Terminal" },
+  { href: "/terminal", label: "Terminal" },
   { href: "/opengateway", label: "OpenGateway" },
   { href: "/pricing", label: "Pricing" },
 ];
@@ -17,7 +17,7 @@ const PUBLIC_LINKS = [
 const APP_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/creator", label: "Creator Console" },
-  { href: "/gitlawb-terminal", label: "Terminal" },
+  { href: "/terminal", label: "Terminal" },
   { href: "/playground", label: "Playground" },
   { href: "/opengateway", label: "OpenGateway" },
 ];
