@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: '%s | Agentbot',
   },
   description: 'Agentbot is a focused control plane for playground apps, creator agents, OpenGateway keys, and GitLawb-backed autonomous projects.',
-  keywords: ['AI worker infrastructure', 'creator agents', 'Agentbot Playground', 'OpenGateway', 'GitLawb', 'OpenClaude', 'MiMo V2 Pro', 'autonomous creator systems'],
+  keywords: ['AI worker infrastructure', 'creator agents', 'Agentbot Playground', 'OpenGateway', 'GitLawb', 'MiMo V2 Pro', 'autonomous creator systems'],
   authors: [{ name: 'Agentbot', url: APP_URL }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
