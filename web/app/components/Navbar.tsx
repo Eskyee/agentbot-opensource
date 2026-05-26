@@ -63,7 +63,7 @@ export default function Navbar() {
       <nav className="fixed top-0 z-50 flex h-12 w-full items-center justify-between border-b border-zinc-900 bg-black px-5 font-mono">
         <Link href="/" className="flex shrink-0 items-baseline gap-2" onClick={closeMenu}>
           <span className="text-xs font-bold lowercase tracking-tight text-white">agentbot</span>
-          <span className="hidden text-[10px] uppercase tracking-widest text-zinc-700 sm:inline">v0.1 alpha</span>
+          <span className="hidden text-[10px] uppercase tracking-widest text-zinc-700 sm:inline">v0.0.0</span>
         </Link>
 
         <div className="hidden items-center gap-5 lg:flex">
