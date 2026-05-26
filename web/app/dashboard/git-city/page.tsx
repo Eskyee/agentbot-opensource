@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useRef } from 'react'
-import { GitBranch, Loader2, ExternalLink, Briefcase, Building as BuildingIcon, Gamepad2, Star, GitFork, Eye, Calendar, Users, Code, Box, List, Share2, Download } from 'lucide-react'
+import { GitBranch, Loader2, ExternalLink, Building as BuildingIcon, Gamepad2, Star, GitFork, Eye, Calendar, Users, Code, Box, List, Share2, Download } from 'lucide-react'
 import Link from 'next/link'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Text, Box as ThreeBox, Plane, Grid } from '@react-three/drei'
@@ -214,16 +214,7 @@ export default function GitCityPage() {
       />
 
       <DashboardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Link
-            href="/jobs"
-            className="border border-green-800 bg-green-900/20 p-4 hover:border-green-600 transition-colors"
-          >
-            <Briefcase className="h-6 w-6 text-green-400 mb-2" />
-            <h3 className="text-white font-bold">Jobs Board</h3>
-            <p className="text-zinc-400 text-xs mt-1">Find dev jobs or post listings</p>
-          </Link>
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <a
             href="https://www.thegitcity.com"
             target="_blank"

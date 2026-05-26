@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import nextDynamic from 'next/dynamic'
 import { BasefmLivePlayer } from '@/app/components/basefm/BasefmLivePlayer'
-import { GitlawbNodeIdentityCard } from '@/app/components/GitlawbNodeIdentityCard'
 
 const HeroSphere = nextDynamic(() => import('@/app/components/HeroSphereClient'))
 const HeroImage = nextDynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
@@ -183,8 +182,6 @@ export default async function Home() {
         </div>
       </section>
 
-      <GitlawbNodeIdentityCard />
-
       {/* PRIMARY: What it does — the one idea */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
@@ -308,11 +305,26 @@ export default async function Home() {
               <span className="text-zinc-700">Build underground systems.</span>
             </h2>
             <p className="text-zinc-500 text-sm max-w-xl leading-relaxed mt-6">
-              Agentbot is tighter now: one playground, one creator toolkit, one gateway, one pricing page, one dashboard.
+              Agentbot is tighter now: discovery pages, builder tools, gateway access, pricing, partners, and one dashboard.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
             {[
+              {
+                href: '/demo',
+                label: 'Demo',
+                body: 'See the platform flow before opening a dashboard.',
+              },
+              {
+                href: '/agents',
+                label: 'Agents',
+                body: 'Browse Agentbot agents and the work surfaces they connect to.',
+              },
+              {
+                href: '/marketplace',
+                label: 'Marketplace',
+                body: 'Find skills, tools, and integrations for AI workers.',
+              },
               {
                 href: '/playground',
                 label: 'Playground',
@@ -332,6 +344,11 @@ export default async function Home() {
                 href: '/pricing',
                 label: 'Pricing',
                 body: 'Pick the managed runtime tier that fits your team or creator system.',
+              },
+              {
+                href: '/partner',
+                label: 'Partner',
+                body: 'Work with Agentbot on models, tooling, distribution, or creator systems.',
               },
               {
                 href: '/dashboard',
@@ -744,13 +761,20 @@ export default async function Home() {
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Start</div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
+              { href: '/demo', label: 'Demo' },
+              { href: '/agents', label: 'Agents' },
+              { href: '/marketplace', label: 'Marketplace' },
               { href: '/playground', label: 'Playground' },
               { href: '/creator-toolkit', label: 'Creator Toolkit' },
               { href: '/opengateway', label: 'OpenGateway' },
+              { href: '/partner', label: 'Partner' },
               { href: '/pricing', label: 'Pricing' },
               { href: '/dashboard', label: 'Dashboard' },
+              { href: '/why', label: 'Why Agentbot' },
+              { href: '/showcase', label: 'Showcase' },
+              { href: '/blog', label: 'Blog' },
             ].map((link) => (
               <Link
                 key={link.href}

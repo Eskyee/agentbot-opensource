@@ -35,10 +35,10 @@ export default function CreatorToolkitPage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/dashboard/creator"
+                href="/dashboard"
                 className="bg-white px-5 py-3 text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-zinc-200"
               >
-                Open Creator Console
+                Open Dashboard
               </Link>
               <Link
                 href="/api/creator-toolkit/soundpack"

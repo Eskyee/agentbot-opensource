@@ -7,15 +7,16 @@ import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 import { customSignOut, useCustomSession } from "@/app/lib/useCustomSession";
 
 const PUBLIC_LINKS = [
+  { href: "/demo", label: "Demo" },
+  { href: "/agents", label: "Agents" },
+  { href: "/marketplace", label: "Marketplace" },
   { href: "/playground", label: "Playground" },
-  { href: "/creator-toolkit", label: "Creator Toolkit" },
-  { href: "/opengateway", label: "OpenGateway" },
+  { href: "/partner", label: "Partner" },
   { href: "/pricing", label: "Pricing" },
 ];
 
 const APP_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/dashboard/creator", label: "Creator Console" },
   { href: "/playground", label: "Playground" },
   { href: "/opengateway", label: "OpenGateway" },
 ];

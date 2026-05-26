@@ -40,7 +40,6 @@ export const navSections = [
       { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
       { label: 'Borg Soul', href: '/dashboard/borg', icon: '◭' },
       { label: 'Signals', href: '/dashboard/signals', icon: '⌁' },
-      { label: 'Creator Console', href: '/dashboard/creator', icon: '▰' },
     ],
   },
   {
@@ -81,7 +80,6 @@ export const navSections = [
       { label: 'Gitlawb Network', href: '/dashboard/gitlawb-network', icon: '◉' },
       { label: 'DJ Stream', href: '/dashboard/dj-stream', icon: '⏵' },
       { label: 'Mix Uploads', href: '/dashboard/mixtape', icon: '⏶' },
-      { label: 'Jobs', href: '/jobs', icon: '◈' },
     ],
   },
   {

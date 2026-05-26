@@ -75,15 +75,8 @@ export default function AIAgentJobsBoardLive() {
           </p>
 
           <div className="border-t border-zinc-800 mt-8 pt-8">
-            <Link 
-              href="/jobs"
-              className="inline-block bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-            >
-              Browse Jobs →
-            </Link>
-            <p className="text-zinc-400 text-sm mt-4">
-              or <a href="/jobs#post" className="text-orange-500 hover:text-white">post a job →
-            </a>
+            <p className="text-zinc-400 text-sm">
+              This launch note is preserved as archive context. The standalone jobs board has since been removed from the product navigation.
             </p>
           </div>
         </article>

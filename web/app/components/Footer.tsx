@@ -7,6 +7,9 @@ const COLUMNS = [
   {
     heading: 'Product',
     links: [
+      { href: '/demo',              label: 'Demo' },
+      { href: '/agents',            label: 'Agents' },
+      { href: '/marketplace',       label: 'Marketplace' },
       { href: '/playground',       label: 'Playground' },
       { href: '/creator-toolkit',  label: 'Creator Toolkit' },
       { href: '/opengateway',      label: 'OpenGateway' },
@@ -18,21 +21,31 @@ const COLUMNS = [
     heading: 'Builders',
     links: [
       { href: '/documentation', label: 'Docs' },
+      { href: '/guide',         label: 'Guide' },
+      { href: '/skills',        label: 'Skills API' },
       { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },
+      { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
       { href: 'https://release.bar/eskyee',                              label: 'Release Bar', external: true },
     ],
   },
   {
-    heading: 'Creators',
+    heading: 'Community',
     links: [
-      { href: '/dashboard/creator', label: 'Creator Console' },
       { href: '/basefm',            label: 'baseFM Live' },
-      { href: '/blog',      label: 'Blog' },
+      { href: '/blog',              label: 'Blog' },
+      { href: '/news',              label: 'News' },
+      { href: '/social',            label: 'Social' },
+      { href: '/token',             label: '$AGENTBOT' },
     ],
   },
   {
     heading: 'Company',
     links: [
+      { href: '/why',        label: 'Why Agentbot' },
+      { href: '/showcase',   label: 'Showcase' },
+      { href: '/use-cases',  label: 'Use Cases' },
+      { href: '/partner',    label: 'Partner' },
+      { href: '/advertise',  label: 'Advertise' },
       { href: '/terms',      label: 'Terms' },
       { href: '/privacy',    label: 'Privacy' },
     ],
