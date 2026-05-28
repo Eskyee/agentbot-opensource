@@ -26,7 +26,7 @@
     "@neondatabase/serverless": "^1.1.0",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@opentelemetry/api-logs": "^0.218.0",
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^7.8.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@sentry/nextjs": "^10.53.1",
