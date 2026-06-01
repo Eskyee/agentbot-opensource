@@ -54,6 +54,10 @@
       "schedule": "*/15 * * * *"
     },
     {
+      "path": "/api/cron/x-monitor",
+      "schedule": "*/15 * * * *"
+    },
+    {
       "path": "/api/cron/blog-daily",
       "schedule": "0 * * * *"
     },

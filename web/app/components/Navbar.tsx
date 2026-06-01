@@ -1,25 +1,16 @@
 "use client";
-
 import Link from "next/link";
+import Image from "next/image";
+import { useCustomSession, customSignOut } from "@/app/lib/useCustomSession";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
-import { customSignOut, useCustomSession } from "@/app/lib/useCustomSession";
+import { NotificationBell } from "@/app/social/_components/NotificationBell";
 
-const PUBLIC_LINKS = [
-  { href: "/demo", label: "Demo" },
-  { href: "/agents", label: "Agents" },
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/playground", label: "Playground" },
-  { href: "/partner", label: "Partner" },
-  { href: "/pricing", label: "Pricing" },
-];
-
-const APP_LINKS = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/playground", label: "Playground" },
-  { href: "/opengateway", label: "OpenGateway" },
-];
+// ─── Simplified nav: product-focused ─────────────────────────────────────────
+// LOGGED-OUT: Demo | Docs | Pricing → Sign in | Get Started
+// LOGGED-IN:  Dashboard | baseFM → user menu
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Navbar() {
   const { data: session, status } = useCustomSession();
@@ -36,100 +27,119 @@ export default function Navbar() {
   }, [menuOpen]);
 
   useEffect(() => {
-    function handler(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setUserMenuOpen(false);
-      }
+    function handler(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false)
     }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const isAdmin = session?.user?.isAdmin === true;
   const walletAddress = getWalletAddress(session?.user?.email);
   const { basename } = useBasename(walletAddress);
   const displayName = basename
-    ?? (walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : null)
+    ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : null)
     ?? session?.user?.name
-    ?? session?.user?.email?.split("@")[0]
+    ?? session?.user?.email?.split('@')[0]
     ?? null;
 
-  const isLoggedIn = mounted && session;
-  const navLinks = isLoggedIn ? APP_LINKS : PUBLIC_LINKS;
   const closeMenu = () => setMenuOpen(false);
+  const isLoggedIn = mounted && session;
 
   return (
     <>
-      <nav className="fixed top-0 z-50 flex h-12 w-full items-center justify-between border-b border-zinc-900 bg-black px-5 font-mono">
-        <Link href="/" className="flex shrink-0 items-baseline gap-2" onClick={closeMenu}>
-          <span className="text-xs font-bold lowercase tracking-tight text-white">agentbot</span>
-          <span className="hidden text-[10px] uppercase tracking-widest text-zinc-700 sm:inline">v0.0.0</span>
+      <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-[linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.94))] border-b border-zinc-800/50 font-mono backdrop-blur-sm">
+
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 shrink-0" onClick={closeMenu}>
+          <Image src="/icons/icon-192x192.png" alt="Agentbot" width={22} height={22} priority className="rounded" />
+          <span className="text-xs font-bold uppercase tracking-widest text-white">Agentbot</span>
         </Link>
 
-        <div className="hidden items-center gap-5 lg:flex">
+        {/* Desktop nav */}
+        <div className="hidden lg:flex items-center gap-7">
           {!mounted || status === "loading" ? (
-            <span className="text-[11px] lowercase text-zinc-700">loading</span>
+            <div className="flex gap-6">
+              {[1,2,3].map(i => <div key={i} className="w-14 h-3 bg-zinc-900 animate-pulse rounded" />)}
+            </div>
+          ) : isLoggedIn ? (
+            <>
+              <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
+              <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
+              <NotificationBell />
+            </>
           ) : (
-            navLinks.map((link) => (
-              <NavLink key={link.href} href={link.href} current={pathname}>
-                {link.label}
-              </NavLink>
-            ))
+            <>
+              <NavLink href="/demo" current={pathname}>Demo</NavLink>
+              <NavLink href="/documentation" current={pathname}>Docs</NavLink>
+              <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
+            </>
           )}
         </div>
 
-        <div className="hidden shrink-0 items-center gap-4 lg:flex">
+        {/* Desktop right */}
+        <div className="hidden lg:flex items-center gap-4 shrink-0">
           {!mounted || status === "loading" ? (
-            <span className="text-[11px] lowercase text-zinc-700">auth</span>
+            <div className="w-24 h-8" />
           ) : isLoggedIn ? (
             <div ref={userMenuRef} className="relative">
               <button
-                onClick={() => setUserMenuOpen((value) => !value)}
-                className="flex items-center gap-1 text-[11px] lowercase text-zinc-500 transition-colors hover:text-white"
+                onClick={() => setUserMenuOpen((v) => !v)}
+                className="flex items-center gap-2 text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider"
               >
-                <span className="max-w-[120px] truncate">{displayName}</span>
-                <span className={`text-[10px] transition-transform ${userMenuOpen ? "rotate-180" : ""}`}>▾</span>
+                <span className="truncate max-w-[100px]">{displayName}</span>
+                <svg className={`w-3 h-3 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none">
+                  <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </button>
 
-              {userMenuOpen ? (
-                <div className="absolute right-0 top-full z-50 mt-3 w-44 border border-zinc-900 bg-black">
-                  <div className="border-b border-zinc-900 px-4 py-2.5">
-                    <span className="text-[10px] lowercase text-zinc-600">{displayName}</span>
+              {userMenuOpen && (
+                <div className="absolute top-full right-0 mt-3 w-48 rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl z-50 overflow-hidden">
+                  <div className="py-2">
+                    <div className="px-4 py-2.5 border-b border-zinc-800/50">
+                      <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{displayName}</span>
+                    </div>
+                    <UserMenuLink href="/dashboard" onClick={() => setUserMenuOpen(false)}>Dashboard</UserMenuLink>
+                    <UserMenuLink href="/dashboard/agents" onClick={() => setUserMenuOpen(false)}>Agents</UserMenuLink>
+                    <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
+                    <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
+                    {isAdmin && (
+                      <UserMenuLink href="/dashboard/admin" onClick={() => setUserMenuOpen(false)}>
+                        <span className="text-orange-500">Admin</span>
+                      </UserMenuLink>
+                    )}
+                    <div className="border-t border-zinc-800/50 mt-1 pt-1">
+                      <button
+                        onClick={() => { setUserMenuOpen(false); customSignOut(); }}
+                        className="block w-full text-left px-4 py-2.5 text-[11px] text-zinc-500 hover:text-white uppercase tracking-widest transition-colors"
+                      >
+                        Sign out
+                      </button>
+                    </div>
                   </div>
-                  <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
-                  <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
-                  {isAdmin ? <UserMenuLink href="/dashboard/admin" onClick={() => setUserMenuOpen(false)}>Admin</UserMenuLink> : null}
-                  <button
-                    onClick={() => { setUserMenuOpen(false); customSignOut(); }}
-                    className="block w-full border-t border-zinc-900 px-4 py-2.5 text-left text-[11px] lowercase text-zinc-500 transition-colors hover:text-white"
-                  >
-                    Sign out
-                  </button>
                 </div>
-              ) : null}
+              )}
             </div>
           ) : (
             <>
-              <Link href="/login" className="text-[11px] lowercase text-zinc-500 transition-colors hover:text-white">
+              <Link href="/login" className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider">
                 Sign in
               </Link>
-              <Link
-                href="/signup"
-                className="border border-orange-500/40 bg-orange-500 px-3 py-1.5 text-[11px] font-bold lowercase text-black transition-colors hover:border-orange-400 hover:bg-orange-400"
-              >
-                Start
+              <Link href="/signup" className="text-[11px] bg-white text-black px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+                Get Started
               </Link>
             </>
           )}
         </div>
 
+        {/* Mobile hamburger */}
         <button
-          className="-mr-2 p-2 lg:hidden"
+          className="lg:hidden p-2 -mr-2"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
         >
-          <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {menuOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             ) : (
@@ -139,58 +149,59 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {menuOpen ? (
-        <div className="fixed inset-x-0 bottom-0 z-[60] overflow-y-auto border-t border-zinc-900 bg-black font-mono lg:hidden" style={{ top: 48 }}>
-          <div className="flex flex-col gap-1 p-5 pb-10">
-            {navLinks.map((link) => (
-              <MobileLink key={link.href} href={link.href} onClick={closeMenu}>
-                {link.label}
-              </MobileLink>
-            ))}
-
-            <div className="mt-4 border-t border-zinc-900 pt-4">
-              {isLoggedIn ? (
-                <>
-                  {displayName ? <div className="px-3 pb-2 text-[10px] lowercase text-zinc-600">{displayName}</div> : null}
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="lg:hidden fixed inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(24,24,27,0.98),rgba(12,10,9,1))] z-[60] overflow-y-auto font-mono" style={{ top: 56 }}>
+          <div className="flex flex-col p-6 gap-1 pb-12">
+            {isLoggedIn ? (
+              <>
+                <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
+                <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
+                <MobileLink href="/dashboard/agents" onClick={closeMenu}>Agents</MobileLink>
+                <div className="border-t border-zinc-900 mt-4 pt-4">
+                  {displayName && <div className="text-[10px] text-zinc-600 px-3 pb-2 uppercase tracking-widest">{displayName}</div>}
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
-                  {isAdmin ? <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink> : null}
+                  {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
                   <button
                     onClick={() => { closeMenu(); customSignOut(); }}
-                    className="w-full px-3 py-2.5 text-left text-xs lowercase text-zinc-500 hover:text-white"
+                    className="text-left text-xs py-2.5 px-3 text-zinc-500 hover:text-white w-full uppercase tracking-wider"
                   >
                     Sign out
                   </button>
-                </>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  <Link href="/login" onClick={closeMenu} className="block px-3 py-2.5 text-xs lowercase text-zinc-500 transition-colors hover:text-white">
+                </div>
+              </>
+            ) : (
+              <>
+                <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
+                <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
+                <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
+                <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
+                  <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">
                     Sign in
                   </Link>
-                  <Link
-                    href="/signup"
-                    onClick={closeMenu}
-                    className="mt-2 block bg-orange-500 px-3 py-2.5 text-xs font-bold lowercase text-black transition-colors hover:bg-orange-400"
-                  >
-                    Start
+                  <Link href="/signup" onClick={closeMenu} className="block text-center py-3 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+                    Get Started
                   </Link>
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
-      ) : null}
+      )}
     </>
   );
 }
 
 function NavLink({ href, current, children }: { href: string; current: string; children: React.ReactNode }) {
-  const isActive = current === href || current.startsWith(`${href}/`);
+  const isActive = current === href || current.startsWith(href + '/');
+  const isExternal = href.startsWith('http');
   return (
     <Link
       href={href}
-      className={`text-[11px] lowercase transition-colors ${
-        isActive ? "text-white" : "text-zinc-500 hover:text-white"
+      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      className={`text-[11px] uppercase tracking-widest transition-colors ${
+        isActive ? 'text-white' : 'text-zinc-500 hover:text-white'
       }`}
     >
       {children}
@@ -203,19 +214,20 @@ function UserMenuLink({ href, onClick, children }: { href: string; onClick: () =
     <Link
       href={href}
       onClick={onClick}
-      className="block px-4 py-2.5 text-[11px] lowercase text-zinc-500 transition-colors hover:text-white"
+      className="block px-4 py-2.5 text-[11px] text-zinc-400 hover:text-white uppercase tracking-widest transition-colors"
     >
       {children}
     </Link>
   );
 }
 
-function MobileLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
+function MobileLink({ href, onClick, children, external }: { href: string; onClick: () => void; children: React.ReactNode; external?: boolean }) {
   return (
     <Link
       href={href}
       onClick={onClick}
-      className="block px-3 py-2.5 text-xs lowercase text-zinc-500 transition-colors hover:text-white"
+      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      className="block text-xs py-2.5 px-3 text-zinc-400 hover:text-white uppercase tracking-wider transition-colors"
     >
       {children}
     </Link>
