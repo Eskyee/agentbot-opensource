@@ -28,7 +28,7 @@ jobs:
         run: echo "tag=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Build & push agentbot-web
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./web
           push: true
@@ -39,7 +39,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build & push agentbot-backend
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./agentbot-backend
           push: true
@@ -50,7 +50,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build & push agentbot-gateway
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./gateway
           push: true
