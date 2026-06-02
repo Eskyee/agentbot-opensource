@@ -1,0 +1,6 @@
+docs/
+memory/
+.turbo/
+*.md
+!web/**/*.md
+!README.md

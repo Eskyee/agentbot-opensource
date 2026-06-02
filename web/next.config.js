@@ -14,6 +14,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  outputFileTracingExcludes: {
+    '**': ['docs/**', '.turbo/**', 'memory/**'],
+  },
   experimental: {
     webpackMemoryOptimizations: true,
     optimizePackageImports: [
