@@ -1,3 +1,0 @@
-{
-  "installCommand": "npm install --include=dev --legacy-peer-deps --no-audit --fund=false"
-}
