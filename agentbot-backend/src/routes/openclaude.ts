@@ -4,7 +4,7 @@ const router = Router();
 
 const DEFAULT_MODEL = 'xiaomi/mimo-v2.5-pro';
 const VERCEL_AI_GATEWAY_URL = 'https://ai-gateway.vercel.sh/v1/chat/completions';
-const GITLAWB_OPENGATEWAY_URL = 'https://opengateway.gitlawb.com/v1/chat/completions';
+const GITLAWB_OPENGATEWAY_URL = 'https://opengateway.gitlawb.com/v1/chat/completions'; // openclaude v0.16.1
 
 function getGatewayConfig() {
   const vercelKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_AI_GATEWAY_KEY || '';
