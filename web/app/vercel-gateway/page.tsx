@@ -41,7 +41,7 @@ function formatUsd(value: number) {
   return new Intl.NumberFormat('en', { style: 'currency', currency: 'USD', maximumFractionDigits: 4 }).format(value)
 }
 
-export default function Vercel GatewayPage() {
+export default function VercelGatewayPage() {
   const [usage, setUsage] = useState<GatewayUsage | null>(null)
   const [health, setHealth] = useState<Health | null>(null)
   const [keyName, setKeyName] = useState('agentbot-playground')

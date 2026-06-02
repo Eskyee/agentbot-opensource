@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { resolveGatewayUpstreams } from '@/app/lib/vercel-gateway'
+import { resolveGatewayUpstreams } from '@/app/lib/opengateway'
 
 export const runtime = 'nodejs'
 

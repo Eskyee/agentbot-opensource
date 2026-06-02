@@ -5,7 +5,7 @@ import {
   normalizeGatewayModel,
   resolveGatewayUpstreams,
   shouldTryNextGatewayUpstream,
-} from '@/app/lib/vercel-gateway'
+} from '@/app/lib/opengateway'
 
 export const runtime = 'nodejs'
 export const maxDuration = 90
@@ -147,7 +147,7 @@ Requirements:
 - Keep every note concise and useful for a producer.`
 }
 
-async function generateWithVercel Gateway(title: string, genre: string, mood: string, bpm: number) {
+async function generateWithVercelGateway(title: string, genre: string, mood: string, bpm: number) {
   const upstreams = resolveGatewayUpstreams()
   if (upstreams.length === 0) {
     throw new Error('Vercel Gateway upstream is not configured.')
@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
   const bpm = Number(body.bpm) || 174
 
   try {
-    return NextResponse.json(await generateWithVercel Gateway(title, genre, mood, bpm))
+    return NextResponse.json(await generateWithVercelGateway(title, genre, mood, bpm))
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Vercel Gateway arrangement generation failed.'
     return NextResponse.json(deterministicArrangement(title, genre, mood, bpm, reason))

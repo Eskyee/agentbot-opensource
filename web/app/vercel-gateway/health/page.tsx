@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { resolveGatewayUpstream } from '@/app/lib/vercel-gateway'
+import { resolveGatewayUpstream } from '@/app/lib/opengateway'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,7 +48,7 @@ async function getHealth(): Promise<HealthState> {
   }
 }
 
-export default async function Vercel GatewayHealthPage() {
+export default async function VercelGatewayHealthPage() {
   const health = await getHealth()
 
   return (
