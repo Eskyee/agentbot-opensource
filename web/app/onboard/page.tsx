@@ -18,7 +18,7 @@ function OnboardContent() {
   const plan = searchParams.get('plan') || 'solo'
   const mode = searchParams.get('mode') || 'deploy' // deploy (default), create, link
   const [isAdmin, setIsAdmin] = useState(false)
-  const isPaid = searchParams.get('paid') === '1' || isAdmin
+  const isPaid = searchParams.get('paid') === '1' || isAdmin || plan === 'free'
   const paymentError = searchParams.get('payment_error')
   const paymentCancelled = searchParams.get('payment_cancelled') === '1'
   

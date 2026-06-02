@@ -205,19 +205,26 @@ export default async function Home() {
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Pricing</div>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mb-4">
-            Simple. <span className="text-orange-500">MiMo-Powered.</span>
+            Start free. <span className="text-orange-500">Scale when ready.</span>
           </h2>
           <p className="text-zinc-500 text-sm mb-12 max-w-md">
-            All plans include MiMo V2.5 Pro inference. No per-token charges.
-            No surprise bills. Bring your own key for zero cost.
+            Bring your own MiMo key and use Agentbot for free — forever.
+            Or let us handle everything from £29/mo.
           </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-px bg-zinc-900">
             {[
+              {
+                id: 'free',
+                name: 'Free',
+                price: '0',
+                badge: 'BYOK',
+                features: ['1 agent', 'All channels', 'All 50+ skills', 'Full dashboard', 'Bring your own MiMo key'],
+              },
               {
                 id: 'solo',
                 name: 'Solo',
                 price: '29',
-                features: ['1 agent', 'MiMo V2.5 Pro', 'X + Telegram', 'Daily digests', 'Approval queue'],
+                features: ['1 agent', 'MiMo V2.5 Pro included', 'X + Telegram', 'Daily digests', 'No API key needed'],
               },
               {
                 id: 'collective',
@@ -242,6 +249,9 @@ export default async function Home() {
               <div key={plan.id} className="bg-black p-6 sm:p-8 flex flex-col">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
+                  {plan.badge && (
+                    <span className="text-[8px] uppercase tracking-widest text-orange-500 border border-orange-500/30 px-1.5 py-0.5">{plan.badge}</span>
+                  )}
                   {plan.popular && (
                     <span className="text-[8px] uppercase tracking-widest text-orange-500 border border-orange-500/30 px-1.5 py-0.5">Popular</span>
                   )}
@@ -257,18 +267,23 @@ export default async function Home() {
                   ))}
                 </ul>
                 <Link
-                  href={`/api/stripe/checkout?plan=${plan.id}`}
+                  href={plan.id === 'free' ? '/signup?plan=free' : `/api/stripe/checkout?plan=${plan.id}`}
                   className={`mt-auto block w-full py-3 text-center text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                    plan.popular
+                    plan.id === 'free'
+                      ? 'border border-orange-500/30 text-orange-500 hover:bg-orange-500/10'
+                      : plan.popular
                       ? 'bg-white text-black hover:bg-zinc-200'
                       : 'border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
                   }`}
                 >
-                  Deploy
+                  {plan.id === 'free' ? 'Start Free' : 'Deploy'}
                 </Link>
               </div>
             ))}
           </div>
+          <p className="text-zinc-600 text-[10px] uppercase tracking-widest mt-6">
+            Free plan requires a MiMo API key · Get one at <a href="https://mimo.xiaomi.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-400">mimo.xiaomi.com</a>
+          </p>
         </div>
       </section>
 

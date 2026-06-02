@@ -8,10 +8,18 @@ import { Check } from 'lucide-react'
 
 const plans = [
   {
+    id: 'free',
+    name: 'Free',
+    price: '0',
+    features: ['1 agent', 'All channels (Telegram, Discord, WhatsApp, X)', 'All 50+ skills', 'Full dashboard', 'BYOK — bring your own MiMo key'],
+    popular: false,
+    badge: 'BYOK',
+  },
+  {
     id: 'solo',
     name: 'Solo',
     price: '29',
-    features: ['1 Creative Agent thread', 'Audience engagement (Telegram)', 'Opportunity discovery', '1 vCPU / 2 GB runtime floor', 'Best for trials and light workloads'],
+    features: ['1 agent', 'MiMo V2.5 Pro included', 'X + Telegram', 'Daily digests', 'No API key needed'],
     popular: false,
   },
   {
@@ -41,12 +49,16 @@ const paymentMethods = ['Visa', 'Mastercard', 'Apple Pay', 'Google Pay', 'PayPal
 
 const faqs = [
   {
-    q: 'What is the difference between Agentbot and OpenClaw?',
-    a: 'Agentbot = Creative Crew (fan engagement, promo, music). OpenClaw = Business Operations (email, contracts, invoicing). Solo tier gets Agentbot only. Collective+ includes OpenClaw seats.',
+    q: 'What is the Free plan?',
+    a: 'The Free plan gives you a full Agentbot agent — all channels, all skills, full dashboard — for £0/mo. You just need to bring your own MiMo API key from mimo.xiaomi.com (~$20/mo for 82B credits). We charge nothing for the platform.',
   },
   {
-    q: 'Do I need to provide my own AI API key?',
-    a: 'Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, OpenRouter, or local Ollama keys directly. You pay wholesale rates with zero markup.',
+    q: 'What is BYOK?',
+    a: 'BYOK stands for Bring Your Own Key. You provide your own MiMo subscription API key, and your agent runs on your credits. This is how we offer the free plan — you pay MiMo directly, we handle the platform.',
+  },
+  {
+    q: 'What is the difference between Free and Solo?',
+    a: 'Free requires your own MiMo key (BYOK). Solo includes MiMo V2.5 Pro inference — no key needed, we handle everything. Both give you 1 agent with full features.',
   },
   {
     q: 'What payment methods do you accept?',
@@ -71,11 +83,10 @@ export default function PricingPage() {
           <div className="max-w-2xl">
             <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Pricing</span>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
-              One Creative Crew,<br />
-              <span className="text-zinc-700">One Business Mind</span>
+              Start free. Scale <span className="text-orange-500">when ready.</span>
             </h1>
             <p className="text-zinc-400 text-sm max-w-md leading-relaxed mt-8">
-              Agentbot handles your fans. OpenClaw handles your inbox. Pay how you want — card or Apple Pay.
+              Bring your own MiMo key and use Agentbot for free — forever. Or let us handle everything from £29/mo.
             </p>
           </div>
         </section>
@@ -123,6 +134,11 @@ export default function PricingPage() {
               <div key={plan.id} className="bg-black p-8 flex flex-col">
                 <div className="flex items-center gap-2 mb-6">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
+                  {plan.badge && (
+                    <span className="text-[9px] uppercase tracking-widest text-orange-500 border border-orange-500/30 px-2 py-0.5">
+                      {plan.badge}
+                    </span>
+                  )}
                   {plan.popular && (
                     <span className="text-[9px] uppercase tracking-widest text-orange-500 border border-orange-500/30 px-2 py-0.5">
                       Popular
@@ -147,9 +163,9 @@ export default function PricingPage() {
                       ? 'bg-white text-black hover:bg-zinc-200'
                       : 'border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500'
                   }`}
-                  onClick={() => window.location.href = `/api/stripe/checkout?plan=${plan.id}`}
+                  onClick={() => window.location.href = plan.id === 'free' ? '/signup?plan=free' : `/api/stripe/checkout?plan=${plan.id}`}
                 >
-                  Select
+                  {plan.id === 'free' ? 'Start Free' : 'Select'}
                 </Button>
               </div>
             ))}
