@@ -1,43 +1,7 @@
 {
-  "$schema": "https://openapi.vercel.com/vercel.json",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install --include=dev --legacy-peer-deps --no-audit --fund=false",
-  "framework": "nextjs",
-  "regions": ["lhr1", "iad1"],
-  "rewrites": [],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" }
-      ]
+  "build": {
+    "env": {
+      "NODE_OPTIONS": "--max-old-space-size=4096"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/cleanup",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/blog-daily",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/moltx-weekly",
-      "schedule": "0 9 * * 1"
-    },
-    {
-      "path": "/api/cron/broadcast",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/verify-x-claims",
-      "schedule": "0 * * * *"
-    }
-  ]
+  }
 }
