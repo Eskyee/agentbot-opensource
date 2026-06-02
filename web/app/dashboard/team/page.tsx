@@ -171,12 +171,12 @@ agents:
   lead:
     role: Team Lead
     description: Coordinates the team
-    model: openrouter/xiaomi/mimo-v2-pro
+    model: xiaomi/mimo-v2.5-pro
     tools: [filesystem, think, todo, memory]
   specialist:
     role: Specialist
     description: Domain expert
-    model: openrouter/xiaomi/mimo-v2-pro
+    model: xiaomi/mimo-v2.5-pro
     tools: [filesystem, shell, think]`}
             />
             <button

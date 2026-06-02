@@ -50,6 +50,10 @@ model User {
   greenlightCertPem String? @db.Text
   greenlightKeyPem  String? @db.Text
 
+  // BYOK (Bring Your Own Key) — MiMo Subscription
+  byok_key_encrypted String? @db.Text
+  byok_enabled        Boolean  @default(false)
+
   accounts             Account[]
   agents               Agent[]
   agentFiles           AgentFile[]

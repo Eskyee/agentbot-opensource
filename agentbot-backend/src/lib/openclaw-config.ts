@@ -1,6 +1,8 @@
 import { randomBytes } from 'crypto';
 
-const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'google/gemini-2.0-flash';
+const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'xiaomi/mimo-v2.5-pro';
+const MIMO_API_KEY = process.env.MIMO_API_KEY || '';
+const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1';
 const OPENCLAW_HOME_DIR = '/root/.openclaw';
 const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`;
 
@@ -21,24 +23,27 @@ export const createOpenClawConfig = (
   plan?: string,
 ): Record<string, unknown> => {
   let model = DEFAULT_MODEL;
-  let fallbacks = ['openai/gpt-4o-mini'];
-  const provider = aiProvider || 'openrouter';
+  let fallbacks = ['xiaomi/mimo-v2.5', 'openai/gpt-4o-mini'];
+  const provider = aiProvider || 'xiaomi';
 
-  if (provider === 'gemini' || provider === 'google') {
+  if (provider === 'xiaomi' || provider === 'mimo') {
+    model = 'xiaomi/mimo-v2.5-pro';
+    fallbacks = ['xiaomi/mimo-v2.5', 'xiaomi/mimo-v2.5'];
+  } else if (provider === 'gemini' || provider === 'google') {
     model = 'google/gemini-2.0-flash';
-    fallbacks = ['openrouter/anthropic/claude-sonnet-4-5'];
+    fallbacks = ['xiaomi/mimo-v2.5-pro', 'openrouter/anthropic/claude-sonnet-4-5'];
   } else if (provider === 'groq') {
     model = 'groq/gemma2-9b-it';
-    fallbacks = ['openai/gpt-4o-mini'];
+    fallbacks = ['xiaomi/mimo-v2.5', 'openai/gpt-4o-mini'];
   } else if (provider === 'anthropic') {
     model = 'anthropic/claude-sonnet-4-5';
-    fallbacks = ['openai/gpt-4o'];
+    fallbacks = ['xiaomi/mimo-v2.5-pro', 'openai/gpt-4o'];
   } else if (provider === 'openai') {
     model = 'openai/gpt-4o';
-    fallbacks = ['openai/gpt-4o-mini'];
+    fallbacks = ['xiaomi/mimo-v2.5', 'openai/gpt-4o-mini'];
   } else if (provider === 'openrouter') {
     model = 'moonshotai/kimi-k2.5';
-    fallbacks = ['openrouter/openai/gpt-4o-mini'];
+    fallbacks = ['xiaomi/mimo-v2.5-pro', 'openrouter/openai/gpt-4o-mini'];
   } else {
     throw new Error(`Unsupported aiProvider: ${provider}`);
   }
@@ -191,6 +196,26 @@ export const createOpenClawConfig = (
       entries: {},
     },
   };
+
+  // Add MiMo provider if API key is available
+  if (MIMO_API_KEY) {
+    (config as any).models = {
+      providers: {
+        xiaomi: {
+          baseUrl: MIMO_BASE_URL,
+          apiKey: MIMO_API_KEY,
+          api: 'openai-completions',
+          headers: { 'api-key': MIMO_API_KEY },
+          models: [
+            { id: 'mimo-v2.5-pro', name: 'MiMo-V2.5-Pro', api: 'openai-completions', contextWindow: 1048576, reasoning: true, input: ['text'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+            { id: 'mimo-v2.5', name: 'MiMo-V2.5', api: 'openai-completions', contextWindow: 262144, reasoning: true, input: ['text', 'image'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+            { id: 'mimo-v2.5-pro', name: 'MiMo-V2-Pro', api: 'openai-completions', contextWindow: 1048576, reasoning: true, input: ['text'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+            { id: 'mimo-v2.5', name: 'MiMo-V2-Omni', api: 'openai-completions', contextWindow: 262144, reasoning: true, input: ['text', 'image'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+          ],
+        },
+      },
+    };
+  }
 
   // Enable plugins based on channels
   if (telegramToken) {

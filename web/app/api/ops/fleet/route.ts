@@ -152,7 +152,7 @@ export async function GET() {
         cpu: metrics.cpu,
         mem: metrics.mem,
         p50: 0,
-        model: agent.model || 'mimo-v2-pro',
+        model: agent.model || 'mimo-v2.5-pro',
         userId: agent.userId,
         createdAt: agent.createdAt.toISOString(),
       }
@@ -169,7 +169,7 @@ export async function GET() {
         cpu: 0,
         mem: 0,
         p50: 0,
-        model: 'mimo-v2-pro',
+        model: 'mimo-v2.5-pro',
       })
     }
 

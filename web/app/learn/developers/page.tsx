@@ -176,7 +176,7 @@ curl -X POST https://agentbot.sh/api/x402 \\
     title: 'OpenClaw Config',
     language: 'json',
     code: `{
-  "model": "openrouter/xiaomi/mimo-v2-pro",
+  "model": "xiaomi/mimo-v2.5-pro",
   "channels": {
     "telegram": { "enabled": true },
     "discord": { "enabled": true }

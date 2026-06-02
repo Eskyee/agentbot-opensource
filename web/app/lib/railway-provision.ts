@@ -181,7 +181,7 @@ export function getAgentEnvVars(
     },
     agents: {
       defaults: {
-        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+        model: { primary: 'xiaomi/mimo-v2.5-pro' },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
     },

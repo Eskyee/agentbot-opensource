@@ -70,7 +70,7 @@ export class AIProviderService {
   private static OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
   private static OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
-  // Vercel AI Gateway setup for mimo-v2-pro
+  // Vercel AI Gateway setup for mimo-v2.5-pro
   // Fail-closed: never fall back to a hardcoded literal. The previous default
   // committed an active credential to git history; the caller must set
   // VERCEL_AI_GATEWAY_KEY in env or this provider will reject every request.
@@ -95,9 +95,9 @@ export class AIProviderService {
   static async getAllModels(): Promise<AvailableModel[]> {
     const openrouterModels = await this.getOpenRouterModels();
     
-    // Inject the Factory AI Master Model: mimo-v2-pro
+    // Inject the Factory AI Master Model: mimo-v2.5-pro
     const masterModel: AvailableModel = {
-      id: 'xiaomi/mimo-v2-pro',
+      id: 'xiaomi/mimo-v2.5-pro',
       name: 'MiMo V2 Pro (Factory Master)',
       provider: 'vercel-gateway',
       description: 'Ultra high-performance factory-grade model optimized for autonomous agent operations.',
@@ -379,7 +379,7 @@ export class AIProviderService {
     }
 
     try {
-      const response = modelId === 'xiaomi/mimo-v2-pro'
+      const response = modelId === 'xiaomi/mimo-v2.5-pro'
         ? await this.chatVercelGateway(messages, modelId, options, context)
         : await this.chatOpenRouter(messages, modelId, options, context);
 
@@ -409,7 +409,7 @@ export class AIProviderService {
   }
 
   /**
-   * Chat with Vercel AI Gateway (mimo-v2-pro)
+   * Chat with Vercel AI Gateway (mimo-v2.5-pro)
    */
   private static async chatVercelGateway(
     messages: AIMessage[],

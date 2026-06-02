@@ -25,10 +25,10 @@ export interface AgentConfig {
  * Plan resource limits matching pricing tiers
  */
 const PLAN_RESOURCES: Record<string, { memory: string; models: string[]; sessions: number }> = {
-  solo: { memory: '64mb', models: ['openrouter/xiaomi/mimo-v2-pro', 'openrouter/anthropic/claude-sonnet-4'], sessions: 5 },
-  collective: { memory: '128mb', models: ['openrouter/xiaomi/mimo-v2-pro', 'openrouter/anthropic/claude-sonnet-4', 'openrouter/google/gemini-2.5-flash'], sessions: 15 },
-  label: { memory: '256mb', models: ['openrouter/xiaomi/mimo-v2-pro', 'openrouter/anthropic/claude-sonnet-4', 'openrouter/google/gemini-2.5-flash', 'openrouter/deepseek/deepseek-r1'], sessions: 50 },
-  network: { memory: '512mb', models: ['openrouter/*'], sessions: 999 },
+  solo: { memory: '64mb', models: ['xiaomi/mimo-v2.5-pro', 'xiaomi/mimo-v2.5'], sessions: 5 },
+  collective: { memory: '128mb', models: ['xiaomi/mimo-v2.5-pro', 'xiaomi/mimo-v2.5', 'xiaomi/mimo-v2.5'], sessions: 15 },
+  label: { memory: '256mb', models: ['xiaomi/mimo-v2.5-pro', 'xiaomi/mimo-v2.5', 'xiaomi/mimo-v2.5', 'xiaomi/mimo-v2.5-pro'], sessions: 50 },
+  network: { memory: '512mb', models: ['xiaomi/*'], sessions: 999 },
 };
 
 /**
@@ -56,7 +56,7 @@ export function generateConfig(config: AgentConfig): { config: object; authToken
       controlUi: true,
     },
     models: {
-      default: config.model || 'openrouter/xiaomi/mimo-v2-pro',
+      default: config.model || 'xiaomi/mimo-v2.5-pro',
       fallbacks: ['openrouter/anthropic/claude-sonnet-4', 'openrouter/google/gemini-2.5-flash'],
       budget: {
         maxCostUsd: plan === 'solo' ? 2 : plan === 'collective' ? 5 : 10,

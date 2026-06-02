@@ -117,7 +117,11 @@ function buildOpenClawConfig(tailscaleOptions?: TailscaleProvisionOptions | null
   const gatewayToken = crypto.randomBytes(32).toString('hex')
   const gatewayTailscaleConfig = buildGatewayTailscaleConfig(gatewayToken, tailscaleOptions)
   const config = {
-    env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
+    env: {
+      OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
+      MIMO_API_KEY: process.env.MIMO_API_KEY || '',
+      MIMO_BASE_URL: process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1',
+    },
     gateway: {
       mode: 'local',
       ...gatewayTailscaleConfig,
@@ -135,8 +139,23 @@ function buildOpenClawConfig(tailscaleOptions?: TailscaleProvisionOptions | null
     agents: {
       defaults: {
         workspace: OPENCLAW_WORKSPACE_DIR,
-        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+        model: { primary: 'xiaomi/mimo-v2.5-pro', fallbacks: ['xiaomi/mimo-v2.5', 'openrouter/anthropic/claude-sonnet-4-5'] },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
+      },
+    },
+    models: {
+      mode: 'merge',
+      providers: {
+        xiaomi: {
+          baseUrl: process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1',
+          apiKey: process.env.MIMO_API_KEY || '',
+          api: 'openai-completions',
+          headers: { 'api-key': process.env.MIMO_API_KEY || '' },
+          models: [
+            { id: 'mimo-v2.5-pro', name: 'MiMo-V2.5-Pro', api: 'openai-completions', contextWindow: 1048576, reasoning: true, input: ['text'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+            { id: 'mimo-v2.5', name: 'MiMo-V2.5', api: 'openai-completions', contextWindow: 262144, reasoning: true, input: ['text', 'image'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+          ],
+        },
       },
     },
     channels: {
@@ -177,6 +196,8 @@ function getAgentEnvVars(agentId: string, plan: string, tailscaleOptions?: Tails
     AGENTBOT_API_URL: process.env.BACKEND_API_URL || '',
     DATABASE_URL: process.env.DATABASE_URL || '',
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
+    MIMO_API_KEY: process.env.MIMO_API_KEY || '',
+    MIMO_BASE_URL: process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1',
     INTERNAL_API_KEY: process.env.INTERNAL_API_KEY || '',
     WALLET_ENCRYPTION_KEY: process.env.WALLET_ENCRYPTION_KEY || '',
     NODE_ENV: 'production',

@@ -45,7 +45,7 @@ export const TEAM_TEMPLATES: Record<string, TeamConfig> = {
 Break requirements into clear iterations. Coordinate the engineer to build features.
 Use the QA agent to verify implementations. Track progress via todos.
 Report completion to the user with clear summaries.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -57,7 +57,7 @@ Report completion to the user with clear summaries.`,
 Implement features based on requirements from the PM.
 Write clean, well-documented code. Run tests before marking complete.
 Report blockers immediately.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'shell', 'think'],
         memoryShared: true,
       },
@@ -68,7 +68,7 @@ Report blockers immediately.`,
         instruction: `You are the QA agent of a development team.
 Test implementations from the Engineer. Report bugs with reproduction steps.
 Verify fixes before marking resolved. Maintain a test log.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'shell', 'think'],
         memoryShared: true,
       },
@@ -86,7 +86,7 @@ Verify fixes before marking resolved. Maintain a test log.`,
         instruction: `You are the Content Manager.
 Plan content strategy based on goals. Assign topics to the writer.
 Review drafts from the editor. Ensure brand consistency.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -98,7 +98,7 @@ Review drafts from the editor. Ensure brand consistency.`,
 Create content based on topics assigned by the Manager.
 Research thoroughly. Write engaging, well-structured content.
 Submit drafts for editorial review.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -109,7 +109,7 @@ Submit drafts for editorial review.`,
         instruction: `You are the Editor.
 Review writer drafts for clarity, grammar, and brand voice.
 Provide constructive feedback. Polish final versions for publication.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think'],
         memoryShared: true,
       },
@@ -127,7 +127,7 @@ Provide constructive feedback. Polish final versions for publication.`,
         instruction: `You are the Lead Researcher.
 Define research questions and methodology. Coordinate the analyst for data gathering.
 Synthesize findings into actionable insights.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -138,7 +138,7 @@ Synthesize findings into actionable insights.`,
         instruction: `You are the Analyst.
 Gather data from available sources. Process and analyze findings.
 Identify patterns and trends. Report raw findings to the Lead Researcher.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'shell', 'think'],
         memoryShared: true,
       },
@@ -149,7 +149,7 @@ Identify patterns and trends. Report raw findings to the Lead Researcher.`,
         instruction: `You are the Research Writer.
 Compile research findings into clear, readable reports.
 Use proper citations. Structure reports for different audiences.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think'],
         memoryShared: true,
       },
@@ -170,7 +170,7 @@ Use proper citations. Structure reports for different audiences.`,
 Monitor system health and coordinate deployments. Manage incident response.
 Coordinate the Infrastructure Engineer for provisioning and the Security Auditor for hardening.
 Maintain runbooks and postmortems.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'shell', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -181,7 +181,7 @@ Maintain runbooks and postmortems.`,
         instruction: `You are the Infrastructure Engineer.
 Provision and manage cloud resources. Write Docker and K8s configs.
 Automate CI/CD pipelines. Report capacity and cost metrics.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'shell', 'think'],
         memoryShared: true,
       },
@@ -193,7 +193,7 @@ Automate CI/CD pipelines. Report capacity and cost metrics.`,
 Scan infrastructure for vulnerabilities. Review Docker and K8s configs.
 Enforce least-privilege access. Generate security reports.
 Flag issues immediately to the SRE Lead.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'shell', 'think'],
         memoryShared: true,
       },
@@ -211,7 +211,7 @@ Flag issues immediately to the SRE Lead.`,
         instruction: `You are the API Architect.
 Design RESTful or GraphQL API contracts. Define request/response schemas.
 Review backend implementations for consistency. Maintain API versioning strategy.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -223,7 +223,7 @@ Review backend implementations for consistency. Maintain API versioning strategy
 Implement API endpoints based on the architect's contracts.
 Write database migrations and queries. Write and run integration tests.
 Report performance metrics.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'shell', 'think'],
         memoryShared: true,
       },
@@ -234,7 +234,7 @@ Report performance metrics.`,
         instruction: `You are the Docs Writer.
 Generate API documentation from code. Maintain OpenAPI/Swagger specs.
 Write usage examples and SDK guides. Keep docs in sync with releases.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think'],
         memoryShared: true,
       },
@@ -254,7 +254,7 @@ Write usage examples and SDK guides. Keep docs in sync with releases.`,
         instruction: `You are the Social Media Strategy Lead.
 Plan content calendars based on trends and goals. Define brand voice guidelines.
 Analyze engagement metrics. Coordinate the Content Creator and Engagement Manager.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -265,7 +265,7 @@ Analyze engagement metrics. Coordinate the Content Creator and Engagement Manage
         instruction: `You are the Social Media Content Creator.
 Create engaging posts, captions, and story scripts. Follow brand voice guidelines.
 Optimize for each platform. Submit content for strategy review.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -276,7 +276,7 @@ Optimize for each platform. Submit content for strategy review.`,
         instruction: `You are the Engagement Manager.
 Monitor comments and DMs. Respond in brand voice. Track sentiment trends.
 Flag escalations to the Strategy Lead. Report engagement metrics daily.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -297,7 +297,7 @@ Flag escalations to the Strategy Lead. Report engagement metrics daily.`,
 Analyze legal situations and provide strategic advice. Review risks for business decisions.
 Coordinate the Contract Drafter and Compliance Officer.
 Always recommend consulting a licensed attorney for binding advice.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -309,7 +309,7 @@ Always recommend consulting a licensed attorney for binding advice.`,
 Draft contracts, NDAs, agreements, and terms of service.
 Use clear, precise language. Flag ambiguous clauses for review.
 All drafts require human legal review before use.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think'],
         memoryShared: true,
       },
@@ -321,7 +321,7 @@ All drafts require human legal review before use.`,
 Monitor regulatory requirements (GDPR, SOC2, etc.). Audit internal processes.
 Maintain compliance documentation. Flag gaps to the Legal Advisor.
 Generate compliance reports for stakeholders.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -340,7 +340,7 @@ Generate compliance reports for stakeholders.`,
 Analyze financial data and identify trends. Build forecasts and projections.
 Present findings with clear visualizations. Report to the Budget Manager.
 Always note assumptions and limitations.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'shell', 'think', 'memory'],
         memoryShared: true,
       },
@@ -352,7 +352,7 @@ Always note assumptions and limitations.`,
 Manage bookkeeping and account reconciliation. Prepare financial statements.
 Track expenses and revenue. Maintain audit trails.
 Report discrepancies immediately.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think'],
         memoryShared: true,
       },
@@ -364,7 +364,7 @@ Report discrepancies immediately.`,
 Create and maintain departmental budgets. Monitor spending against targets.
 Approve or flag expenditures. Report budget variances monthly.
 Coordinate with the Financial Analyst on forecasting.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo'],
         memoryShared: true,
       },
@@ -383,7 +383,7 @@ Coordinate with the Financial Analyst on forecasting.`,
 Plan marketing campaigns based on business goals. Define product positioning.
 Allocate budget across channels. Coordinate the Copywriter and Growth Analyst.
 Report campaign ROI and learnings.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -395,7 +395,7 @@ Report campaign ROI and learnings.`,
 Write compelling ad copy, landing pages, and email sequences.
 Follow brand voice guidelines. A/B test headlines and CTAs.
 Submit copy for strategist review before publishing.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -407,7 +407,7 @@ Submit copy for strategist review before publishing.`,
 Track marketing metrics (CAC, LTV, conversion rates). Run A/B experiments.
 Optimize conversion funnels. Report findings to the Strategist.
 Identify growth opportunities from data.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'shell', 'think'],
         memoryShared: true,
       },
@@ -425,7 +425,7 @@ Identify growth opportunities from data.`,
         instruction: `You are the Sales Manager.
 Set sales targets and manage the pipeline. Coach the Lead Qualifier and Account Executive.
 Review win/loss reports. Forecast revenue. Coordinate with Marketing on lead quality.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -437,7 +437,7 @@ Review win/loss reports. Forecast revenue. Coordinate with Marketing on lead qua
 Score inbound leads based on ICP criteria. Qualify prospects via outreach.
 Schedule demos for qualified leads. Update CRM with lead status.
 Report qualification metrics weekly.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -449,7 +449,7 @@ Report qualification metrics weekly.`,
 Run product demos for qualified leads. Handle objections with value props.
 Negotiate pricing and terms. Close deals and hand off to onboarding.
 Report deal status and forecast to the Sales Manager.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -470,7 +470,7 @@ Report deal status and forecast to the Sales Manager.`,
 Manage the user's calendar and daily schedule. Set reminders for important tasks.
 Prioritize tasks by urgency. Suggest time blocks for focused work.
 Be proactive — remind the user of upcoming deadlines.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -481,7 +481,7 @@ Be proactive — remind the user of upcoming deadlines.`,
         instruction: `You are the Research Assistant.
 Find and summarize information on any topic. Fact-check claims.
 Provide clear, concise summaries with sources. Save findings to memory for future reference.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -493,7 +493,7 @@ Provide clear, concise summaries with sources. Save findings to memory for futur
 Draft emails, documents, social posts, and reports based on the user's voice.
 Match tone and style. Proofread and polish before submitting.
 Learn the user's preferences over time.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -512,7 +512,7 @@ Learn the user's preferences over time.`,
 Manage day-to-day operations. Track income and expenses.
 Handle admin tasks (scheduling, invoicing, filing).
 Keep the business running while the user focuses on their craft.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'todo', 'memory'],
         memoryShared: true,
       },
@@ -524,7 +524,7 @@ Keep the business running while the user focuses on their craft.`,
 Create social media content and blog posts. Manage posting schedule.
 Run email campaigns. Track engagement metrics.
 Focus on organic growth — no big budgets needed.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },
@@ -536,7 +536,7 @@ Focus on organic growth — no big budgets needed.`,
 Handle customer inquiries promptly and professionally.
 Manage feedback and feature requests. Resolve common issues.
 Escalate complex cases to the user with context and suggested responses.`,
-        model: 'openrouter/xiaomi/mimo-v2-pro',
+        model: 'xiaomi/mimo-v2.5-pro',
         tools: ['filesystem', 'think', 'memory'],
         memoryShared: true,
       },

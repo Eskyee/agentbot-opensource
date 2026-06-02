@@ -349,7 +349,7 @@ export async function createContainer(
     agents: {
       defaults: {
         workspace: OPENCLAW_WORKSPACE_DIR,
-        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+        model: { primary: 'xiaomi/mimo-v2.5-pro', fallbacks: ['xiaomi/mimo-v2.5'] },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
     },

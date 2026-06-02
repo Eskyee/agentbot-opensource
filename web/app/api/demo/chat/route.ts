@@ -7,7 +7,7 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 const DEMO_MODELS = [
-  { id: 'xiaomi/mimo-v2-pro', name: 'MiMo-V2-Pro', provider: 'Xiaomi' },
+  { id: 'xiaomi/mimo-v2.5-pro', name: 'MiMo-V2-Pro', provider: 'Xiaomi' },
   { id: 'anthropic/claude-sonnet-4.5', name: 'Claude Sonnet 4.5', provider: 'Anthropic' },
   { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
   { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'Google' },
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Demo unavailable — service not configured.' }, { status: 503 })
     }
 
-    const modelId = model || 'xiaomi/mimo-v2-pro'
+    const modelId = model || 'xiaomi/mimo-v2.5-pro'
 
     // Only allow user-role messages from client conversation history (prevent role injection)
     const safeHistory = (Array.isArray(conversation) ? conversation : [])

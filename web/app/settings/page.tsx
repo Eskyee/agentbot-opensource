@@ -13,6 +13,7 @@ import {
   AgentsTab,
   BasefmTab,
   IntegrationsTab,
+  ByokTab,
 } from './tabs'
 import { buildAppUrl } from '@/app/lib/app-url'
 
@@ -25,6 +26,7 @@ const TABS = [
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
   { id: 'basefm', label: 'baseFM', icon: '📻' },
   { id: 'integrations', label: 'Integrations', icon: '🔌' },
+  { id: 'byok', label: 'BYOK', icon: '⚡' },
 ]
 
 export default function SettingsPage() {
@@ -346,6 +348,7 @@ export default function SettingsPage() {
             {activeTab === 'basefm' && <BasefmTab />}
 
             {activeTab === 'integrations' && <IntegrationsTab />}
+            {activeTab === 'byok' && <ByokTab agents={effectiveAgents} />}
           </div>
         </main>
       </div>

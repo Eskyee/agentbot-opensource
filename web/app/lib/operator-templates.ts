@@ -43,7 +43,7 @@ export const OPERATOR_TEMPLATES: OperatorTemplate[] = [
       { type: 'output', config: { format: 'engagement-report' }, position: '{"x":400,"y":0}' },
     ],
     agentDefaults: {
-      model: 'openrouter/xiaomi/mimo-v2-pro',
+      model: 'xiaomi/mimo-v2.5-pro',
       skills: ['web-search', 'social-post'],
       agentType: 'music-promoter',
     },
@@ -63,7 +63,7 @@ export const OPERATOR_TEMPLATES: OperatorTemplate[] = [
       { type: 'output', config: { format: 'daily-summary' }, position: '{"x":600,"y":0}' },
     ],
     agentDefaults: {
-      model: 'openrouter/xiaomi/mimo-v2-pro',
+      model: 'xiaomi/mimo-v2.5-pro',
       skills: ['web-search', 'auto-reply'],
       agentType: 'community-manager',
     },
@@ -82,7 +82,7 @@ export const OPERATOR_TEMPLATES: OperatorTemplate[] = [
       { type: 'output', config: { format: 'draft-review' }, position: '{"x":400,"y":0}' },
     ],
     agentDefaults: {
-      model: 'openrouter/xiaomi/mimo-v2-pro',
+      model: 'xiaomi/mimo-v2.5-pro',
       skills: ['web-search', 'file-handler'],
       agentType: 'content-creator',
     },
@@ -102,7 +102,7 @@ export const OPERATOR_TEMPLATES: OperatorTemplate[] = [
       { type: 'output', config: { format: 'alert-telegram' }, position: '{"x":600,"y":0}' },
     ],
     agentDefaults: {
-      model: 'openrouter/xiaomi/mimo-v2-pro',
+      model: 'xiaomi/mimo-v2.5-pro',
       skills: ['web-search', 'crypto-prices'],
       agentType: 'crypto-analyst',
     },
@@ -121,7 +121,7 @@ export const OPERATOR_TEMPLATES: OperatorTemplate[] = [
       { type: 'output', config: { format: 'stream-stats' }, position: '{"x":400,"y":0}' },
     ],
     agentDefaults: {
-      model: 'openrouter/xiaomi/mimo-v2-pro',
+      model: 'xiaomi/mimo-v2.5-pro',
       skills: ['web-search', 'audio-gen'],
       agentType: 'dj-radio',
     },
@@ -141,7 +141,7 @@ export const OPERATOR_TEMPLATES: OperatorTemplate[] = [
       { type: 'output', config: { format: 'event-digest' }, position: '{"x":600,"y":0}' },
     ],
     agentDefaults: {
-      model: 'openrouter/xiaomi/mimo-v2-pro',
+      model: 'xiaomi/mimo-v2.5-pro',
       skills: ['web-search', 'social-post'],
       agentType: 'event-scout',
     },

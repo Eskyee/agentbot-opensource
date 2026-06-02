@@ -25,9 +25,9 @@ function OnboardContent() {
   const [step, setStep] = useState<Step>('telegram')
   const [telegramToken, setTelegramToken] = useState('')
   const [telegramUserId, setTelegramUserId] = useState('')
-  const [aiProvider, setAiProvider] = useState('vercel-gateway')
+  const [aiProvider, setAiProvider] = useState('xiaomi-direct')
   const [apiKey, setApiKey] = useState('')
-  const [selectedModel, setSelectedModel] = useState('xiaomi/mimo-v2-pro')
+  const [selectedModel, setSelectedModel] = useState('xiaomi/mimo-v2.5-pro')
   const [selectedSkills, setSelectedSkills] = useState<string[]>(['web-search', 'file-handler'])
   const [agentType, setAgentType] = useState('general')
   const [isValidating, setIsValidating] = useState(false)
@@ -68,12 +68,10 @@ function OnboardContent() {
 
   // Available models
   const AVAILABLE_MODELS = [
-    { id: 'xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (Factory Master)', provider: 'vercel-gateway', description: 'Ultra high-performance factory-grade model. Default for all new agents.', recommended: true, tier: 'free' },
-    { id: 'openrouter/xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (OpenRouter)', provider: 'openrouter', description: 'Xiaomi latest model via OpenRouter. Fast and capable.', tier: 'free' },
-    { id: 'openrouter/mistralai/mistral-7b-instruct', name: 'Mistral 7B (Free Tier)', provider: 'openrouter', description: 'Lightweight & fast. Free for all users.', tier: 'free' },
-    { id: 'openrouter/meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 (Advanced)', provider: 'openrouter', description: 'Advanced general assistant. Requires Solo plan.', tier: 'solo' },
-    { id: 'openrouter/qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 (Coding)', provider: 'openrouter', description: 'Smart contracts & coding logic. Requires Collective plan.', tier: 'collective' },
-    { id: 'openrouter/deepseek/deepseek-r1', name: 'DeepSeek R1 (Reasoning)', provider: 'openrouter', description: 'Maximum intelligence. Requires Label plan.', tier: 'label' },
+    { id: 'xiaomi/mimo-v2.5-pro', name: 'MiMo V2.5 Pro', provider: 'xiaomi-direct', description: 'Best reasoning, 1M context. 99% cheaper than GPT-5. Recommended.', recommended: true, tier: 'free' },
+    { id: 'xiaomi/mimo-v2.5', name: 'MiMo V2.5', provider: 'xiaomi-direct', description: 'Multimodal — images + text, 256K context. Fast.', tier: 'free' },
+    { id: 'openrouter/anthropic/claude-sonnet-4-5', name: 'Claude Sonnet 4.5', provider: 'openrouter', description: 'Anthropic premium. Requires Collective plan.', tier: 'collective' },
+    { id: 'openrouter/deepseek/deepseek-r1', name: 'DeepSeek R1', provider: 'openrouter', description: 'Maximum reasoning. Requires Label plan.', tier: 'label' },
   ]
 
   // Available ready-to-use skills

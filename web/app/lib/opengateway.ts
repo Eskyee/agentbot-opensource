@@ -25,12 +25,15 @@ type UsageLike = {
 
 const DEFAULT_MODELS = [
   'mimo-v2.5-pro',
-  'xiaomi/mimo-v2.5-pro',
-  'openai/gpt-5.4',
+  'mimo-v2.5',
+  'openai/gpt-4o',
   'openai/gpt-4o-mini',
   'anthropic/claude-sonnet-4.5',
   'google/gemini-2.5-flash',
 ]
+
+const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
+const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
 
 export function gatewayCorsHeaders(): Record<string, string> {
   return {
@@ -116,6 +119,15 @@ export function resolveGatewayUpstreams(): UpstreamConfig[] {
     })
   }
 
+  // Direct MiMo upstream — subscription BYOK (fastest, zero extra cost)
+  if (MIMO_API_KEY) {
+    upstreams.push({
+      baseUrl: MIMO_BASE_URL,
+      apiKey: MIMO_API_KEY,
+      provider: 'xiaomi-direct',
+    })
+  }
+
   const openRouterKey = process.env.OPENROUTER_API_KEY?.trim()
   if (openRouterKey) {
     upstreams.push({
@@ -157,9 +169,14 @@ export function normalizeGatewayModel(model: string, provider: string): string {
   const trimmed = model.trim()
   if (!trimmed) return 'mimo-v2.5-pro'
 
+  // Direct MiMo — use model ID as-is (subscription handles it)
+  if (provider === 'xiaomi-direct') {
+    return trimmed
+  }
+
   if (provider === 'vercel-ai-gateway') {
     if (trimmed === 'mimo-v2.5-pro') return 'xiaomi/mimo-v2.5-pro'
-    if (trimmed === 'mimo-v2-pro') return 'xiaomi/mimo-v2-pro'
+    if (trimmed === 'mimo-v2.5-pro') return 'xiaomi/mimo-v2.5-pro'
   }
 
   if (provider === 'openrouter') {

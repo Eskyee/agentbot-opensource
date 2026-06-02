@@ -93,7 +93,7 @@ export async function GET(
       cpu,
       mem,
       p50: 0,
-      model: agent.model || 'mimo-v2-pro',
+      model: agent.model || 'mimo-v2.5-pro',
     }
 
     const identity = {
