@@ -491,6 +491,16 @@ export const blogPosts: BlogPostSummary[] = [
     track: 'Shipping',
   },
   {
+    slug: 'agentbot-sdk-mcp-x402',
+    dateLabel: '3 Jun',
+    isoDate: '2026-06-03',
+    title: 'SDK. MCP Server. x402 Payments. Full Stack.',
+    excerpt:
+      '@agentbot/sdk, standalone MCP server, real tool execution, and x402 micropayments. The complete AI agent infrastructure.',
+    tags: ['SDK', 'MCP', 'x402', 'Infrastructure'],
+    track: 'Shipping',
+  },
+  {
     slug: 'atlas-basefm',
     dateLabel: '19 Mar',
     isoDate: '2026-03-19',
