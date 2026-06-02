@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   const upstreams = resolveGatewayUpstreams()
   if (upstreams.length === 0) {
     return openAiError(
-      'Agentbot OpenGateway has no upstream provider configured. Set AGENTBOT_GATEWAY_UPSTREAM_API_KEY, AI_GATEWAY_API_KEY, or OPENROUTER_API_KEY.',
+      'Agentbot Vercel Gateway has no upstream provider configured. Set AGENTBOT_GATEWAY_UPSTREAM_API_KEY, AI_GATEWAY_API_KEY, or OPENROUTER_API_KEY.',
       503,
       'upstream_not_configured',
     )

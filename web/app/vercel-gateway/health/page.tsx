@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { resolveGatewayUpstream } from '@/app/lib/opengateway'
+import { resolveGatewayUpstream } from '@/app/lib/vercel-gateway'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,15 +48,15 @@ async function getHealth(): Promise<HealthState> {
   }
 }
 
-export default async function OpenGatewayHealthPage() {
+export default async function Vercel GatewayHealthPage() {
   const health = await getHealth()
 
   return (
     <main className="min-h-screen bg-black px-6 py-10 text-zinc-100 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link href="/opengateway" className="font-mono text-xs uppercase tracking-[0.28em] text-orange-500">
-            Agentbot / OpenGateway
+          <Link href="/vercel-gateway" className="font-mono text-xs uppercase tracking-[0.28em] text-orange-500">
+            Agentbot / Vercel Gateway
           </Link>
           <Link href="/playground" className="font-mono text-xs uppercase tracking-[0.18em] text-zinc-500 hover:text-white">
             Playground
@@ -100,10 +100,10 @@ export default async function OpenGatewayHealthPage() {
           ) : null}
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/opengateway" className="bg-white px-4 py-3 font-mono text-xs uppercase tracking-[0.18em] text-black hover:bg-zinc-200">
+            <Link href="/vercel-gateway" className="bg-white px-4 py-3 font-mono text-xs uppercase tracking-[0.18em] text-black hover:bg-zinc-200">
               Open console
             </Link>
-            <a href="/api/opengateway/health" className="border border-zinc-800 px-4 py-3 font-mono text-xs uppercase tracking-[0.18em] text-zinc-300 hover:border-zinc-600 hover:text-white">
+            <a href="/api/vercel-gateway/health" className="border border-zinc-800 px-4 py-3 font-mono text-xs uppercase tracking-[0.18em] text-zinc-300 hover:border-zinc-600 hover:text-white">
               Raw JSON
             </a>
           </div>

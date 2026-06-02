@@ -594,7 +594,7 @@ export const creatorSoundpacks: CreatorSoundpack[] = [
 export const launchRoadmap = [
   'Ship public Creator Toolkit page and dashboard workspace',
   'Release Agentbot Underground Vol. 1 manifest and prompt pack',
-  'Connect producer agents to OpenGateway models for creator sessions',
+  'Connect producer agents to Vercel Gateway models for creator sessions',
   'Add baseFM show builder: set flow, host links, visual overlay prompts',
   'Launch marketplace listings for packs, agents, radio IDs, and creator templates',
 ]

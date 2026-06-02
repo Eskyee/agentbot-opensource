@@ -12,7 +12,7 @@ const COLUMNS = [
       { href: '/marketplace',       label: 'Marketplace' },
       { href: '/playground',       label: 'Playground' },
       { href: '/creator-toolkit',  label: 'Creator Toolkit' },
-      { href: '/opengateway',      label: 'OpenGateway' },
+      { href: '/vercel-gateway',      label: 'Vercel Gateway' },
       { href: '/pricing',          label: 'Pricing' },
       { href: '/dashboard',        label: 'Dashboard' },
     ],

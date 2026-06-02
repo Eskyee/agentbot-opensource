@@ -144,7 +144,7 @@ export function resolveGatewayUpstream(): UpstreamConfig | null {
   return resolveGatewayUpstreams()[0] ?? null
 }
 
-export function gatewayUpstreamHeaders(upstream: UpstreamConfig, title = 'Agentbot OpenGateway') {
+export function gatewayUpstreamHeaders(upstream: UpstreamConfig, title = 'Agentbot Vercel Gateway') {
   const referer = process.env.NEXTAUTH_URL || 'https://agentbot.sh'
   const headers: Record<string, string> = {
     Authorization: `Bearer ${upstream.apiKey}`,

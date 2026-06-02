@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     default: 'Agentbot — Deploy AI workers. Build underground systems.',
     template: '%s | Agentbot',
   },
-  description: 'Agentbot is a focused control plane for playground apps, creator agents, OpenGateway keys, and GitLawb-backed autonomous projects.',
-  keywords: ['AI worker infrastructure', 'creator agents', 'Agentbot Playground', 'OpenGateway', 'GitLawb', 'MiMo V2 Pro', 'autonomous creator systems'],
+  description: 'Agentbot is a focused control plane for playground apps, creator agents, Vercel Gateway, and GitLawb-backed autonomous projects.',
+  keywords: ['AI worker infrastructure', 'creator agents', 'Agentbot Playground', 'Vercel Gateway', 'GitLawb', 'MiMo V2 Pro', 'autonomous creator systems'],
   authors: [{ name: 'Agentbot', url: APP_URL }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     url: APP_URL,
     siteName: 'Agentbot',
     title: 'Agentbot | Deploy AI workers. Build underground systems.',
-    description: 'Playground apps, creator agents, OpenGateway keys, and GitLawb-backed autonomous projects.',
+    description: 'Playground apps, creator agents, Vercel Gateway, and GitLawb-backed autonomous projects.',
     images: [
       {
         url: '/opengraph-image',
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Agentbot | Deploy AI workers. Build underground systems.',
-    description: 'Playground apps, creator agents, OpenGateway keys, and GitLawb-backed autonomous projects.',
+    description: 'Playground apps, creator agents, Vercel Gateway, and GitLawb-backed autonomous projects.',
     creator: '@Esky33junglist',
     images: ['/opengraph-image'],
   },
@@ -79,7 +79,7 @@ const jsonLd = {
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   url: APP_URL,
-  description: 'Focused control plane for playground apps, creator agents, OpenGateway keys, and GitLawb-backed autonomous projects.',
+  description: 'Focused control plane for playground apps, creator agents, Vercel Gateway, and GitLawb-backed autonomous projects.',
   offers: [
     {
       '@type': 'Offer',

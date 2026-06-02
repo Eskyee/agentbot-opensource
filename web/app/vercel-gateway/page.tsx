@@ -41,7 +41,7 @@ function formatUsd(value: number) {
   return new Intl.NumberFormat('en', { style: 'currency', currency: 'USD', maximumFractionDigits: 4 }).format(value)
 }
 
-export default function OpenGatewayPage() {
+export default function Vercel GatewayPage() {
   const [usage, setUsage] = useState<GatewayUsage | null>(null)
   const [health, setHealth] = useState<Health | null>(null)
   const [keyName, setKeyName] = useState('agentbot-playground')
@@ -62,8 +62,8 @@ export default function OpenGatewayPage() {
 
   async function loadConsole() {
     const [usageRes, healthRes] = await Promise.all([
-      fetch('/api/opengateway/usage', { cache: 'no-store' }),
-      fetch('/api/opengateway/health', { cache: 'no-store' }),
+      fetch('/api/vercel-gateway/usage', { cache: 'no-store' }),
+      fetch('/api/vercel-gateway/health', { cache: 'no-store' }),
     ])
 
     if (usageRes.status === 401) {
@@ -121,7 +121,7 @@ export default function OpenGatewayPage() {
             <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">
               <Link href="/playground" className="hover:text-white">Playground</Link>
               <Link href="/dashboard" className="hover:text-white">Dashboard</Link>
-              <Link href="/opengateway/health" className="hover:text-white">Health</Link>
+              <Link href="/vercel-gateway/health" className="hover:text-white">Health</Link>
             </div>
           </div>
 
