@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs",
   "git": {
     "deploymentEnabled": {
       "main": true,
@@ -12,8 +11,6 @@
   },
   "installCommand": "npm install --include=dev --legacy-peer-deps --no-audit --fund=false",
   "buildCommand": "NEXT_PUBLIC_DEMO_MODE=true npm run build",
-  "outputDirectory": ".next",
-  "ignoreCommand": "git diff --name-only HEAD~1 | grep -qvE '^docs/|^\\.github/|^README\\.md$|^LICENSE$' && exit 1 || exit 0",
   "functions": {
     "app/api/sandbox/route.ts": {
       "maxDuration": 300
