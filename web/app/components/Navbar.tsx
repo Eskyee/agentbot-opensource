@@ -71,6 +71,7 @@ export default function Navbar() {
           ) : (
             <>
               <NavLink href="/demo" current={pathname}>Demo</NavLink>
+              <NavLink href="/partner/mimo" current={pathname}>MiMo</NavLink>
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
             </>
