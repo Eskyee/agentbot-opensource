@@ -47,7 +47,6 @@ export const navSections = [
     label: 'Chain',
     items: [
       { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
-      { label: 'Solana', href: '/dashboard/solana', icon: '◑' },
       { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
       { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },

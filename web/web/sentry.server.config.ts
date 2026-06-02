@@ -1,0 +1,1 @@
+../sentry.server.config.ts

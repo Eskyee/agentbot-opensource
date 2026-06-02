@@ -87,7 +87,6 @@ const GUIDE_SEARCH_INDEX: GuideSearchRecord[] = [
     id: 'solana',
     title: 'Solana Dashboard',
     description: 'Wallet connect, Jupiter, OpenSea Solana NFT path, and token-holder utility flows.',
-    href: '/dashboard/solana',
     category: 'dashboard',
     keywords: ['solana', 'wallet', 'jupiter', 'opensea', 'nft'],
   },
