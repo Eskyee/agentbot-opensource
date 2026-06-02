@@ -37,8 +37,6 @@ const nextConfig = {
       },
     ],
   },
-  output: 'standalone',
-  outputFileTracingRoot: path.join(__dirname, '..'),
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
   turbopack: {
     root: path.join(__dirname, '..'),
