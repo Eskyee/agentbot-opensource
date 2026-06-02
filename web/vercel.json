@@ -1,7 +1,3 @@
 {
-  "build": {
-    "env": {
-      "NODE_OPTIONS": "--max-old-space-size=4096"
-    }
-  }
+  "installCommand": "npm install --legacy-peer-deps --no-audit --fund=false"
 }
