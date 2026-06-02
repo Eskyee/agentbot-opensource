@@ -1,134 +1,57 @@
-version: '3.9'
+# Agentbot — Self-Hosted Docker Compose
+# Run your own Agentbot + OpenClaw instance with MiMo integration.
+# No Railway needed. Just Docker.
+
+version: '3.8'
 
 services:
-  # Web service (Next.js)
-  web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-      target: development
-    container_name: agentbot-web-local
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./web:/app/web
-      - ./agentbot-backend:/app/agentbot-backend
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:3001
-      - NEXT_PUBLIC_GATEWAY_URL=http://localhost:8080
-      - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@postgres:5432/agentbot}
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-dev-secret-change-in-prod}
-      - NEXTAUTH_URL=http://localhost:3000
-    depends_on:
-      - postgres
-      - backend
+  # OpenClaw Gateway — your personal AI agent runtime
+  openclaw:
+    image: ghcr.io/openclaw/openclaw:2026.5.28
+    container_name: agentbot-openclaw
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Backend service (Express + TypeScript)
-  backend:
-    build:
-      context: ./agentbot-backend
-      dockerfile: Dockerfile
-    container_name: agentbot-backend-local
     ports:
-      - "3001:3001"
-    volumes:
-      - ./agentbot-backend:/app/agentbot-backend
-      - ./agentbot-backend/node_modules:/app/agentbot-backend/node_modules
+      - "18789:18789"
     environment:
-      - NODE_ENV=development
-      - PORT=3001
-      - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@postgres:5432/agentbot}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - COINBASE_API_KEY=${COINBASE_API_KEY}
-      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-in-prod}
-      - WALLET_ENCRYPTION_KEY=${WALLET_ENCRYPTION_KEY}
-    depends_on:
-      - postgres
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
-  # Gateway service (OpenClaw)
-  gateway:
-    build:
-      context: ./gateway
-      dockerfile: Dockerfile
-    container_name: agentbot-gateway-local
-    ports:
-      - "8080:8080"
-    volumes:
-      - gateway-config:/home/node/.openclaw
-      - gateway-workspace:/home/node/.openclaw/workspace
-      - ./gateway:/app/gateway
-      - ./gateway/node_modules:/app/gateway/node_modules
-    environment:
-      - NODE_ENV=development
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-    restart: unless-stopped
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - MIMO_API_KEY=${MIMO_API_KEY}
+      - MIMO_BASE_URL=https://token-plan-ams.xiaomimimo.com/v1
+    volumes:
+      - openclaw-data:/root/.openclaw
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:18789/api/status"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # PostgreSQL database
-  postgres:
-    image: postgres:16-alpine
-    container_name: agentbot-postgres-local
+  # Vercel Gateway proxy — routes inference to MiMo
+  # (Optional: use agentbot.sh/v1/chat/completions instead)
+  gateway:
+    image: node:22-slim
+    container_name: agentbot-gateway
+    restart: unless-stopped
     ports:
-      - "127.0.0.1:5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - "8402:8402"
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
-      - POSTGRES_DB=${POSTGRES_DB:-agentbot}
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Redis (optional, for caching/sessions)
-  redis:
-    image: redis:7-alpine
-    container_name: agentbot-redis-local
-    ports:
-      - "127.0.0.1:6379:6379"
+      - MIMO_API_KEY=${MIMO_API_KEY}
+      - MIMO_BASE_URL=https://token-plan-ams.xiaomimimo.com/v1
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
     volumes:
-      - redis-data:/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - ./gateway:/app
+    working_dir: /app
+    command: ["node", "server.js"]
+    depends_on:
+      - openclaw
 
 volumes:
-  postgres-data:
-    name: agentbot-postgres-local
-  redis-data:
-    name: agentbot-redis-local
-  gateway-config:
-    name: agentbot-gateway-local-config
-  gateway-workspace:
-    name: agentbot-gateway-local-workspace
+  openclaw-data:
 
-networks:
-  default:
-    name: agentbot-local
-    driver: bridge
+# Usage:
+# 1. Copy this file to your server
+# 2. Create .env with your keys:
+#    OPENCLAW_GATEWAY_TOKEN=your-token
+#    MIMO_API_KEY=tp-ebz5le...l23ou6
+# 3. Run: docker compose up -d
+# 4. Access: http://localhost:18789 (OpenClaw UI)
+# 5. Inference: http://localhost:8402/v1/chat/completions (Gateway)
