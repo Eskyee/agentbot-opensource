@@ -10,14 +10,6 @@
       "dev-*": false
     }
   },
-  "regions": [
-    "iad1",
-    "lhr1"
-  ],
-  "functionFailoverRegions": [
-    "sfo1"
-  ],
-  "fluid": true,
   "installCommand": "npm install --include=dev --legacy-peer-deps --no-audit --fund=false",
   "buildCommand": "NEXT_PUBLIC_DEMO_MODE=true npm run build",
   "outputDirectory": ".next",
