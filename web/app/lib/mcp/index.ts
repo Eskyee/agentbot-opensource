@@ -17,6 +17,8 @@
  */
 
 import { prisma } from '@/app/lib/prisma'
+import { getHandler, registerHandler, type Handler } from './handlers'
+import { x402Handlers, X402_MCP_CONFIG } from './x402-mcp'
 
 export interface McpConfig {
   enabled?: boolean
@@ -185,28 +187,54 @@ export class McpManager {
 
   /**
    * Execute a tool handler
+   *
+   * Looks up a real handler from handlers.ts (or registered at runtime).
+   * Falls back to a structured error if no handler is found.
    */
   private async executeTool(
     skillId: string,
     tool: McpTool,
     parameters: Record<string, unknown>
   ): Promise<unknown> {
-    // In production, this would:
-    // 1. Import the skill's tool handlers
-    // 2. Validate parameters against schema
-    // 3. Execute with proper error handling
-    // 4. Return typed results
-
     console.log(`[MCP] Executing tool ${tool.name} for skill ${skillId}`)
-    console.log(`[MCP] Parameters:`, parameters)
 
-    // Mock execution - return success
-    return {
-      tool: tool.name,
-      skillId,
-      parameters,
-      executedAt: new Date().toISOString()
+    // Resolve the handler — try the handler registry first
+    const handler: Handler | null = getHandler(skillId, tool.name)
+
+    if (!handler) {
+      // No handler registered for this tool
+      throw new Error(
+        `No handler registered for tool "${tool.name}" in skill "${skillId}". ` +
+        `Available handlers: ${JSON.stringify(
+          Object.keys(BUILTIN_MCPS).concat(['x402'])
+        )}`
+      )
     }
+
+    // Validate required parameters against the tool schema
+    const schema = tool.parameters as Record<string, { required?: boolean; type?: string; default?: unknown }>
+    for (const [key, spec] of Object.entries(schema)) {
+      if (spec?.required && !(key in parameters)) {
+        throw new Error(
+          `Missing required parameter "${key}" for tool "${tool.name}"`
+        )
+      }
+      // Apply defaults
+      if (!(key in parameters) && spec?.default !== undefined) {
+        parameters[key] = spec.default
+      }
+    }
+
+    // Execute with timeout
+    const timeoutMs = 30_000
+    const result = await Promise.race([
+      handler(parameters),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Tool "${tool.name}" timed out after ${timeoutMs}ms`)), timeoutMs)
+      ),
+    ])
+
+    return result
   }
 
   /**
@@ -426,6 +454,11 @@ export function createSkillMcp(
   }
 }
 
+// Register x402 handlers into the handler map
+for (const [name, handler] of Object.entries(x402Handlers)) {
+  registerHandler('x402', name, handler)
+}
+
 /**
  * Built-in MCPs for common operations
  */
@@ -468,5 +501,7 @@ export const BUILTIN_MCPS = {
         language: { type: 'string' }
       }
     }
-  ])
+  ]),
+
+  x402: X402_MCP_CONFIG as McpConfig
 }
