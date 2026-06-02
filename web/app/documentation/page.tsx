@@ -36,6 +36,21 @@ const docsSections = [
     title: 'Vercel Gateway',
     description: 'OpenAI-compatible inference gateway. MiMo direct, OpenRouter fallback.',
     items: ['Endpoint: https://agentbot.sh/v1/chat/completions', 'MiMo direct upstream — zero middleman, lowest latency', 'OpenRouter fallback for non-MiMo models', 'API key authentication via Settings → API Keys']
+  },
+  {
+    title: 'MCP Server',
+    description: 'Skill-embedded Model Context Protocol servers. Expose tools to any MCP-compatible client.',
+    items: ['Each Agentbot skill can include an MCP server (stdio or SSE)', 'Agents auto-discover MCP tools from installed skills', 'Connect any MCP client — Cursor, Claude Desktop, Windsurf', 'Skills expose typed tool schemas with JSON Schema validation', 'Run: agentbot mcp serve --skill <name> --transport sse']
+  },
+  {
+    title: 'Agentbot SDK',
+    description: 'TypeScript SDK for building on Agentbot programmatically.',
+    items: ['npm install @agentbot/sdk', 'Provision agents, manage skills, send messages', 'Full TypeScript types for all API endpoints', 'Built-in x402 payment helpers for autonomous agent commerce', 'Streaming support for real-time agent interactions']
+  },
+  {
+    title: 'x402 MCP Services',
+    description: 'Discover and pay for MCP services using the x402 micropayment protocol.',
+    items: ['Browse paid MCP servers on the Agentic Market', 'Agents pay per-call with USDC on Base — no subscriptions', 'x402 headers handle payment negotiation automatically', 'SDK wraps x402: just call tools, payment is transparent', 'Pricing from $0.001/call — MiMo makes it viable']
   }
 ];
 
@@ -68,6 +83,30 @@ const newFeatures = [
     description: 'Run agents on autopilot. Set recurring tasks, cron jobs, and automated workflows.',
     links: [
       { label: 'Tasks Dashboard', href: '/dashboard/tasks' }
+    ]
+  },
+  {
+    title: 'MCP Server',
+    description: 'Skill-embedded Model Context Protocol. Expose agent tools to Cursor, Claude Desktop, and any MCP client.',
+    links: [
+      { label: 'MCP Docs', href: '#mcp-server' },
+      { label: 'Skills Dashboard', href: '/dashboard/skills' }
+    ]
+  },
+  {
+    title: 'Agentbot SDK',
+    description: 'TypeScript SDK for programmatic agent management. Provision, orchestrate, and pay — all from code.',
+    links: [
+      { label: 'npm Package', href: 'https://www.npmjs.com/package/@agentbot/sdk' },
+      { label: 'SDK Docs', href: '#sdk-reference' }
+    ]
+  },
+  {
+    title: 'x402 MCP Services',
+    description: 'Discover and pay for MCP services autonomously. USDC on Base, per-call pricing, zero subscriptions.',
+    links: [
+      { label: 'Agentic Market', href: '/marketplace' },
+      { label: 'x402 Docs', href: '#x402-mcp' }
     ]
   },
   {
@@ -179,6 +218,122 @@ export default function DocumentationPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* MCP Server */}
+        <section id="mcp-server" className="mb-16">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">MCP Server</div>
+          <div className="bg-black border border-zinc-800 p-6 sm:p-8 mb-px">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-2">Skill-Embedded MCP Servers</h2>
+            <p className="text-zinc-500 text-xs mb-4">
+              Every Agentbot skill can include a Model Context Protocol server. MCP tools are auto-discovered by agents
+              and exposed to external clients like Cursor, Claude Desktop, and Windsurf.
+            </p>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 mb-4">
+              <pre className="text-[11px] text-zinc-300 font-mono overflow-x-auto">{`// skill/mcp-server.ts
+import { McpServer } from '@agentbot/sdk/mcp';
+
+const server = new McpServer({
+  name: 'venue-finder',
+  version: '1.0.0',
+});
+
+server.tool('find_venues', {
+  description: 'Search venues by location and capacity',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      city: { type: 'string' },
+      capacity: { type: 'number' },
+    },
+    required: ['city'],
+  },
+}, async ({ city, capacity }) => {
+  const venues = await searchVenues(city, capacity);
+  return { content: [{ type: 'text', text: JSON.stringify(venues) }] };
+});
+
+server.start({ transport: 'sse', port: 8402 });`}</pre>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/dashboard/skills" className="text-[10px] uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors">Skills Dashboard →</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* SDK */}
+        <section id="sdk-reference" className="mb-16">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Agentbot SDK</div>
+          <div className="bg-black border border-zinc-800 p-6 sm:p-8 mb-px">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-2">@agentbot/sdk</h2>
+            <p className="text-zinc-500 text-xs mb-4">
+              TypeScript SDK for building on Agentbot. Provision agents, manage skills, send messages,
+              and handle x402 payments — all with full type safety.
+            </p>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 mb-4">
+              <pre className="text-[11px] text-zinc-300 font-mono overflow-x-auto">{`npm install @agentbot/sdk`}</pre>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 mb-4">
+              <pre className="text-[11px] text-zinc-300 font-mono overflow-x-auto">{`import { Agentbot } from '@agentbot/sdk';
+
+const client = new Agentbot({
+  apiKey: process.env.AGENTBOT_API_KEY,
+  baseUrl: 'https://agentbot.sh',
+});
+
+// Provision a new agent
+const agent = await client.agents.create({
+  name: 'my-dj-agent',
+  model: 'mimo-v2.5',
+  channels: ['telegram', 'discord'],
+  skills: ['venue-finder', 'instant-split'],
+});
+
+// Send a message
+const response = await client.agents.message(agent.id, {
+  content: 'Find me a venue in London for 200 people',
+});
+
+console.log(response.text);`}</pre>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="https://www.npmjs.com/package/@agentbot/sdk" className="text-[10px] uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors">npm Package →</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* x402 MCP */}
+        <section id="x402-mcp" className="mb-16">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">x402 MCP Services</div>
+          <div className="bg-black border border-zinc-800 p-6 sm:p-8 mb-px">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-2">Discover & Pay for MCP Services</h2>
+            <p className="text-zinc-500 text-xs mb-4">
+              The Agentic Market lists paid MCP servers. Agents discover services, negotiate price via x402 headers,
+              and pay per-call with USDC on Base. No subscriptions, no accounts — just tools and micropayments.
+            </p>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 mb-4">
+              <pre className="text-[11px] text-zinc-300 font-mono overflow-x-auto">{`import { Agentbot, x402 } from '@agentbot/sdk';
+
+const client = new Agentbot({ apiKey: process.env.AGENTBOT_API_KEY });
+
+// Discover paid MCP services
+const services = await client.marketplace.discover({
+  category: 'data',
+  maxPrice: 0.05,  // max $0.05 per call
+});
+
+// Use a paid service — x402 handles payment automatically
+const result = await client.mcp.invoke({
+  service: services[0].id,
+  tool: 'get_pool_data',
+  args: { pool: '0xabc...', network: 'base' },
+  payment: x402.auto(),  // pay transparently from agent wallet
+});`}</pre>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/marketplace" className="text-[10px] uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors">Agentic Market →</Link>
+            </div>
           </div>
         </section>
 
