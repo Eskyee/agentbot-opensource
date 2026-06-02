@@ -148,7 +148,7 @@ export default async function Home() {
               { label: 'Manages Email', body: 'Reads your inbox, drafts responses, flags urgent messages. Works while you sleep.' },
               { label: 'Runs Workflows', body: 'Custom automations, cron jobs, scheduled tasks. Your agent does the repetitive work.' },
               { label: 'Streams Music', body: 'Connect to baseFM. Your agent can DJ, manage playlists, and run live streams.' },
-              { label: 'Handles Payments', body: 'x402 onchain payments, Stripe billing, invoice generation. Money moves automatically.' },
+              { label: 'Handles Payments', body: 'x402 onchain payments, Stripe billing, invoice generation. Bankr wallet integration for multi-chain balances and trades. Money moves automatically.' },
             ].map((item) => (
               <div key={item.label} className="bg-black p-6 sm:p-8">
                 <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3">{item.label}</div>

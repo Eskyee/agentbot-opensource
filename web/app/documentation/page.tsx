@@ -117,6 +117,14 @@ const newFeatures = [
     ]
   },
   {
+    title: 'Bankr Wallet',
+    description: 'AI-powered crypto wallet. Check balances across Base, Polygon, Ethereum, Solana. Execute trades with natural language.',
+    links: [
+      { label: 'Settings → Bankr Key', href: '/settings' },
+      { label: 'Bankr API', href: 'https://api.bankr.bot' }
+    ]
+  },
+  {
     title: 'baseFM Integration',
     description: 'AI-powered autonomous radio on Base. Agent DJs, live streaming, $RAVE token gating.',
     links: [

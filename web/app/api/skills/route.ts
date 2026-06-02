@@ -64,6 +64,14 @@ const DEFAULT_SKILLS = [
   { name: 'Stateful Agents', description: 'Persistent state, agent-to-agent coordination, scheduled tasks, and Drizzle ORM SQLite migrations.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
   { name: 'Deploy CLI', description: 'CLI reference for deploying agents, managing secrets, streaming logs, and troubleshooting containers.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
   { name: 'Code Review', description: 'Review agent code against production best practices. Security, state management, and anti-pattern detection.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  // v2026.6.2 — MiMo-native infrastructure
+  { name: 'Bankr Wallet', description: 'AI-powered crypto wallet. Check balances across Base, Polygon, Ethereum, Solana. Send prompts to execute trades. Manage your portfolio with natural language.', category: 'finance', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
+  { name: 'x402 Payments', description: 'Accept and make micropayments in USDC on Base via x402 protocol. Pay-per-request inference. Agentic Market integration.', category: 'payments', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
+  { name: 'MCP Server', description: 'Model Context Protocol server. Expose MiMo inference, x402 payments, and tools to any MCP-compatible client.', category: 'ai', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
+  { name: 'Agentbot SDK', description: 'TypeScript SDK for building on Agentbot. Chat, models, agents, x402 payments, MCP client. npm install @agentbot/sdk.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
+  { name: 'MiMo V2.5 Inference', description: 'Direct MiMo V2.5 Pro inference via Vercel Gateway. 1M context, reasoning, 99% cheaper than GPT.', category: 'ai', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
+  { name: 'BYOK MiMo', description: 'Bring Your Own MiMo subscription. Paste your API key and run on your own 82B credit plan.', category: 'ai', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Agentic Market', description: 'Discover and call 1000+ paid AI services. x402 payments. Auto-indexed on Bazaar.', category: 'marketplace', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
 ]
 
 
