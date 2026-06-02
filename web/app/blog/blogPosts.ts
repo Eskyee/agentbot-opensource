@@ -481,6 +481,16 @@ export const blogPosts: BlogPostSummary[] = [
     track: 'Shipping',
   },
   {
+    slug: 'agentbot-mimo-native',
+    dateLabel: '2 Jun',
+    isoDate: '2026-06-02',
+    title: 'How Agentbot Built the First MiMo-Native Agent Platform',
+    excerpt:
+      '99% cost reduction. Direct MiMo V2.5 integration. BYOK support. The technical deep-dive.',
+    tags: ['MiMo', 'Integration', 'Technical'],
+    track: 'Shipping',
+  },
+  {
     slug: 'atlas-basefm',
     dateLabel: '19 Mar',
     isoDate: '2026-03-19',
