@@ -19,6 +19,7 @@ const nextConfig = {
   },
   experimental: {
     webpackMemoryOptimizations: true,
+    webpackBuildWorker: false,
     optimizePackageImports: [
       '@base-org/account',
       '@base-org/account-ui',

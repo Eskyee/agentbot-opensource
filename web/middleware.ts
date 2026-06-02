@@ -1,6 +1,7 @@
 import { paymentProxy, x402ResourceServer } from "@x402/next";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
+import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 
 // ClawRouter EVM wallet — receives x402 payments
 const payTo = "0x451cE4B37ad54BcFCD49b8a4140C17315358EDa5";
@@ -26,6 +27,27 @@ export const middleware = paymentProxy(
       ],
       description: "MiMo V2.5 Pro chat completions — pay per request in USDC on Base",
       mimeType: "application/json",
+      extensions: {
+        ...declareDiscoveryExtension({
+          output: {
+            example: {
+              id: "chatcmpl-abc123",
+              object: "chat.completion",
+              model: "mimo-v2.5-pro",
+              choices: [
+                {
+                  message: {
+                    role: "assistant",
+                    content: "Hello! I'm a MiMo V2.5 Pro AI agent. How can I help?",
+                  },
+                  finish_reason: "stop",
+                },
+              ],
+              usage: { prompt_tokens: 12, completion_tokens: 20, total_tokens: 32 },
+            },
+          },
+        }),
+      },
     },
   },
   server,
