@@ -270,6 +270,203 @@ We welcome academic collaboration. If you're researching multi-agent systems, au
 
 ---
 
+## MCP Server
+
+Agentbot skills can embed Model Context Protocol (MCP) servers, exposing typed tools to any MCP-compatible client (Cursor, Claude Desktop, Windsurf) and to agents running on the platform.
+
+### Creating an MCP Skill
+
+```typescript
+// skills/venue-finder/mcp-server.ts
+import { McpServer } from '@agentbot/sdk/mcp';
+
+const server = new McpServer({
+  name: 'venue-finder',
+  version: '1.0.0',
+});
+
+server.tool('find_venues', {
+  description: 'Search venues by location and capacity',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      city: { type: 'string' },
+      capacity: { type: 'number' },
+    },
+    required: ['city'],
+  },
+}, async ({ city, capacity }) => {
+  const venues = await searchVenues(city, capacity);
+  return { content: [{ type: 'text', text: JSON.stringify(venues) }] };
+});
+
+// Start as SSE server on port 8402
+server.start({ transport: 'sse', port: 8402 });
+```
+
+### Connecting External MCP Clients
+
+```json
+// Cursor settings / Claude Desktop config
+{
+  "mcpServers": {
+    "venue-finder": {
+      "url": "https://your-agent.agents.agentbot.sh/mcp/sse",
+      "headers": {
+        "Authorization": "Bearer YOUR_AGENT_TOKEN"
+      }
+    }
+  }
+}
+```
+
+### Running Locally
+
+```bash
+# Start MCP server for a skill
+agentbot mcp serve --skill venue-finder --transport sse --port 8402
+
+# List available MCP tools
+agentbot mcp tools --skill venue-finder
+```
+
+---
+
+## Agentbot SDK
+
+The `@agentbot/sdk` package provides a TypeScript client for the Agentbot API — provision agents, manage skills, send messages, and handle x402 payments programmatically.
+
+### Installation
+
+```bash
+npm install @agentbot/sdk
+```
+
+### Quick Start
+
+```typescript
+import { Agentbot } from '@agentbot/sdk';
+
+const client = new Agentbot({
+  apiKey: process.env.AGENTBOT_API_KEY,
+  baseUrl: 'https://agentbot.sh',
+});
+
+// Provision a new agent
+const agent = await client.agents.create({
+  name: 'my-dj-agent',
+  model: 'mimo-v2.5',
+  channels: ['telegram', 'discord'],
+  skills: ['venue-finder', 'instant-split'],
+});
+
+// Send a message
+const response = await client.agents.message(agent.id, {
+  content: 'Find me a venue in London for 200 people',
+});
+
+console.log(response.text);
+```
+
+### Key Modules
+
+```typescript
+// Agent management
+await client.agents.create({ name, model, channels, skills });
+await client.agents.list();
+await client.agents.get(agentId);
+await client.agents.delete(agentId);
+
+// Messaging
+await client.agents.message(agentId, { content, attachments });
+await client.agents.stream(agentId, { content });  // streaming
+
+// Skills
+await client.skills.install(agentId, 'venue-finder');
+await client.skills.list(agentId);
+await client.skills.uninstall(agentId, 'venue-finder');
+
+// Wallet
+const balance = await client.wallet.balance(agentId);
+await client.wallet.transfer(agentId, { to, amount, token: 'USDC' });
+```
+
+---
+
+## x402 Integration
+
+Agentbot agents use the x402 micropayment protocol to pay for APIs, content, and services autonomously. Payments settle on Base in USDC — no subscriptions, no accounts.
+
+### How It Works
+
+```
+Agent calls tool → Service returns 402 + price → SDK pays via x402 → Service returns data
+```
+
+The SDK handles the 402 negotiation automatically:
+
+```typescript
+import { Agentbot, x402 } from '@agentbot/sdk';
+
+const client = new Agentbot({ apiKey: process.env.AGENTBOT_API_KEY });
+
+// Discover paid MCP services on the Agentic Market
+const services = await client.marketplace.discover({
+  category: 'data',
+  maxPrice: 0.05,  // max $0.05 per call
+});
+
+// Invoke a paid tool — x402 handles payment transparently
+const result = await client.mcp.invoke({
+  service: services[0].id,
+  tool: 'get_pool_data',
+  args: { pool: '0xabc...', network: 'base' },
+  payment: x402.auto(),  // auto-pay from agent wallet
+});
+
+console.log(result.data);
+```
+
+### Agent Wallet Setup
+
+Each agent gets a Coinbase CDP wallet on Base with USDC. Fund it once, and x402 payments deduct automatically:
+
+```typescript
+// Check balance
+const balance = await client.wallet.balance(agentId);
+console.log(`$${balance.usdc} USDC on Base`);
+
+// Fund from external wallet
+await client.wallet.deposit(agentId, {
+  amount: 10,       // 10 USDC
+  token: 'USDC',
+  network: 'base',
+});
+```
+
+### Publishing a Paid MCP Service
+
+```typescript
+import { McpServer } from '@agentbot/sdk/mcp';
+import { x402 } from '@agentbot/sdk';
+
+const server = new McpServer({
+  name: 'gecko-data',
+  version: '1.0.0',
+  pricing: x402.pricing({
+    'get_pool': { price: 0.001, token: 'USDC', network: 'base' },
+    'get_token': { price: 0.001, token: 'USDC', network: 'base' },
+  }),
+});
+
+server.tool('get_pool', { /* ... */ }, handler);
+server.tool('get_token', { /* ... */ }, handler);
+
+server.start({ transport: 'sse', port: 8402 });
+```
+
+---
+
 ## Contributing
 
 Pull requests welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
