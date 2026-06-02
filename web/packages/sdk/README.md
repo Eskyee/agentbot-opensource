@@ -11,34 +11,66 @@ npm install @agentbot/sdk
 ## Quick Start
 
 ```typescript
-import { Agentbot } from '@agentbot/sdk';
+import { AgentbotClient } from '@agentbot/sdk';
 
-const client = new Agentbot({
+const client = new AgentbotClient({
   apiKey: process.env.AGENTBOT_API_KEY,
   baseUrl: 'https://agentbot.sh',
 });
 
-// Provision a new agent
-const agent = await client.agents.create({
-  name: 'my-dj-agent',
-  model: 'mimo-v2.5',
-  channels: ['telegram', 'discord'],
-  skills: ['venue-finder', 'instant-split'],
+// Send a chat message
+const response = await client.chat({
+  message: 'Find me a venue in London for 200 people',
 });
 
-console.log(`Agent ${agent.name} provisioned at ${agent.subdomain}`);
+console.log(response.reply);
 ```
 
 ## API Reference
 
+### Chat
+
+```typescript
+// Synchronous chat
+const response = await client.chat({
+  message: 'What BPM works for peak-time techno?',
+  model: 'mimo-v2.5',  // optional model override
+});
+
+console.log(response.reply);
+console.log(response.agent);
+console.log(response.toolCalls);
+
+// Streaming chat
+const stream = await client.chatStream({
+  message: 'Recommend 5 warehouse rave tracks',
+});
+
+for await (const chunk of stream) {
+  process.stdout.write(chunk.text);
+}
+```
+
+### Models
+
+```typescript
+const models = await client.models();
+
+for (const model of models) {
+  console.log(`${model.name} — ctx: ${model.contextLength}`);
+  console.log(`  Prompt: $${model.pricing.prompt}/token`);
+  console.log(`  Completion: $${model.pricing.completion}/token`);
+}
+```
+
 ### Agents
 
 ```typescript
-// Create an agent
+// Create a new agent
 const agent = await client.agents.create({
   name: 'basefm-dj',
   model: 'mimo-v2.5',
-  channels: ['telegram'],
+  channels: ['telegram', 'discord'],
   skills: ['venue-finder', 'royalty-tracker'],
   personality: 'selector',  // basement | selector | A&R | road | label
 });
@@ -49,29 +81,22 @@ const agents = await client.agents.list();
 // Get agent details
 const details = await client.agents.get(agentId);
 
-// Delete an agent
-await client.agents.delete(agentId);
-
 // Update agent config
 await client.agents.update(agentId, {
   skills: ['venue-finder', 'instant-split', 'setlist-oracle'],
 });
-```
 
-### Messaging
+// Delete an agent
+await client.agents.delete(agentId);
 
-```typescript
-// Send a message (synchronous)
+// Send a message to an agent
 const response = await client.agents.message(agentId, {
-  content: 'Find me a venue in London for 200 people this Saturday',
+  content: 'Plan my set for Warehouse Project',
 });
 
-console.log(response.text);
-console.log(response.toolCalls);  // any tool invocations
-
-// Stream a message (real-time)
+// Stream from an agent
 const stream = await client.agents.stream(agentId, {
-  content: 'Analyze my latest royalty statements',
+  content: 'Analyze my royalty statements',
 });
 
 for await (const chunk of stream) {
@@ -82,25 +107,25 @@ for await (const chunk of stream) {
 ### Skills
 
 ```typescript
-// Install a skill
-await client.skills.install(agentId, 'venue-finder');
-
 // List installed skills
 const skills = await client.skills.list(agentId);
+
+// Install a skill
+await client.skills.install(agentId, 'venue-finder');
 
 // Uninstall a skill
 await client.skills.uninstall(agentId, 'venue-finder');
 
-// Get skill details (tools, MCP config)
+// Get skill details
 const skill = await client.skills.get('venue-finder');
-console.log(skill.tools);      // available tool schemas
-console.log(skill.mcpServer);  // MCP server config if present
+console.log(skill.tools);
+console.log(skill.mcpServer);
 ```
 
 ### Wallet
 
 ```typescript
-// Check agent wallet balance
+// Check balance
 const balance = await client.wallet.balance(agentId);
 console.log(`$${balance.usdc} USDC on ${balance.network}`);
 
@@ -111,20 +136,69 @@ await client.wallet.transfer(agentId, {
   token: 'USDC',
 });
 
-// Deposit from external wallet
-await client.wallet.deposit(agentId, {
-  amount: 10,
+// View payment history
+const payments = await client.wallet.payments(agentId, {
+  since: new Date('2026-06-01'),
+  limit: 50,
+});
+
+// Set spending limits
+await client.wallet.setSpendLimit(agentId, {
+  daily: 1.00,
+  perCall: 0.05,
   token: 'USDC',
-  network: 'base',
 });
 ```
 
-### MCP Server
+### Health
 
 ```typescript
-import { McpServer } from '@agentbot/sdk/mcp';
+const health = await client.health();
+console.log(health.status);   // 'healthy' | 'degraded' | 'down'
+console.log(health.version);
+console.log(health.uptime);
+```
 
-// Create an MCP server for a skill
+## MCP Client
+
+Connect to Agentbot MCP servers to call tools programmatically.
+
+```typescript
+import { McpClient } from '@agentbot/sdk';
+
+const mcp = new McpClient({
+  apiKey: process.env.AGENTBOT_API_KEY,
+});
+
+// List available MCP servers
+const servers = await mcp.listServers();
+
+// Activate a service
+await mcp.activate({ name: 'gecko-data' });
+
+// List tools on a service
+const tools = await mcp.listTools('gecko-data');
+
+// Call a tool
+const result = await mcp.callTool({
+  service: 'gecko-data',
+  tool: 'get_pool_data',
+  args: { pool: '0xabc...', network: 'base' },
+});
+
+console.log(result.content);
+
+// Deactivate
+await mcp.deactivate({ name: 'gecko-data' });
+```
+
+## MCP Server Builder
+
+Build MCP servers that expose tools over SSE or stdio.
+
+```typescript
+import { McpServer } from '@agentbot/sdk';
+
 const server = new McpServer({
   name: 'venue-finder',
   version: '1.0.0',
@@ -142,66 +216,55 @@ server.tool('find_venues', {
     required: ['city'],
   },
 }, async ({ city, capacity }) => {
-  const venues = await searchVenues(city, capacity);
+  const venues = await searchVenues(city as string, capacity as number);
   return {
     content: [{ type: 'text', text: JSON.stringify(venues) }],
   };
 });
 
-// Start the server
+// Start over SSE
 server.start({ transport: 'sse', port: 8402 });
 ```
 
-## x402 Payment Examples
+## x402 Payments
 
-### Discovering Paid Services
+Handle HTTP 402 payment flows for paid APIs and MCP services.
 
 ```typescript
-import { Agentbot, x402 } from '@agentbot/sdk';
+import { x402 } from '@agentbot/sdk';
 
-const client = new Agentbot({ apiKey: process.env.AGENTBOT_API_KEY });
-
-// Browse the Agentic Market for paid MCP services
-const services = await client.marketplace.discover({
-  category: 'data',
-  maxPrice: 0.05,        // max price per call in USD
-  network: 'base',
+// Configure x402
+x402.configureX402({
+  apiKey: process.env.AGENTBOT_API_KEY,
 });
 
-for (const svc of services) {
-  console.log(`${svc.name} — $${svc.pricePerCall}/call`);
-  console.log(`  Tools: ${svc.tools.map(t => t.name).join(', ')}`);
-}
-```
-
-### Invoking Paid Tools
-
-```typescript
-// The SDK handles 402 negotiation automatically
-const result = await client.mcp.invoke({
-  service: 'gecko-data',
-  tool: 'get_pool_data',
-  args: {
-    pool: '0xabc...',
-    network: 'base',
-  },
-  payment: x402.auto(),  // pay transparently from agent wallet
+// Pay for a request that returns 402
+const result = await x402.payForRequest({
+  url: 'https://premium-api.example.com/data',
+  method: 'GET',
+  maxAmount: 0.05,
 });
 
 console.log(result.data);
 console.log(`Paid $${result.payment.amount} USDC`);
+
+// Auto-pay with MCP tools
+const toolResult = await client.mcp.invoke({
+  service: 'gecko-data',
+  tool: 'get_pool_data',
+  args: { pool: '0xabc...', network: 'base' },
+  payment: x402.auto(0.05),  // auto-pay up to $0.05
+});
 ```
 
 ### Publishing a Paid MCP Service
 
 ```typescript
-import { McpServer } from '@agentbot/sdk/mcp';
-import { x402 } from '@agentbot/sdk';
+import { McpServer, x402 } from '@agentbot/sdk';
 
 const server = new McpServer({
   name: 'gecko-data',
   version: '1.0.0',
-  // Define per-tool pricing
   pricing: x402.pricing({
     get_pool:  { price: 0.001, token: 'USDC', network: 'base' },
     get_token: { price: 0.001, token: 'USDC', network: 'base' },
@@ -220,39 +283,22 @@ server.tool('get_pool', {
     required: ['pool', 'network'],
   },
 }, async ({ pool, network }) => {
-  const data = await fetch(`https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pool}`);
-  return { content: [{ type: 'text', text: await data.text() }] };
+  const res = await fetch(`https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pool}`);
+  return { content: [{ type: 'text', text: await res.text() }] };
 });
 
-// Start — x402 payment headers are handled automatically
 server.start({ transport: 'sse', port: 8402 });
-```
-
-### Setting Payment Limits
-
-```typescript
-// Set a daily spending cap for an agent
-await client.wallet.setSpendLimit(agentId, {
-  daily: 1.00,   // max $1/day
-  perCall: 0.05,  // max $0.05 per individual call
-  token: 'USDC',
-});
-
-// View payment history
-const payments = await client.wallet.payments(agentId, {
-  since: new Date('2026-06-01'),
-  limit: 50,
-});
-
-for (const p of payments) {
-  console.log(`${p.service}/${p.tool} — $${p.amount} at ${p.timestamp}`);
-}
 ```
 
 ## Error Handling
 
 ```typescript
-import { Agentbot, AgentbotError, PaymentRequiredError } from '@agentbot/sdk';
+import {
+  AgentbotClient,
+  AgentbotError,
+  PaymentRequiredError,
+  RateLimitError,
+} from '@agentbot/sdk';
 
 try {
   const result = await client.mcp.invoke({
@@ -265,6 +311,8 @@ try {
   if (err instanceof PaymentRequiredError) {
     console.log(`Insufficient balance. Need $${err.required} USDC.`);
     console.log(`Current balance: $${err.balance} USDC`);
+  } else if (err instanceof RateLimitError) {
+    console.log(`Rate limited. Retry after ${err.retryAfter}s.`);
   } else if (err instanceof AgentbotError) {
     console.log(`API error: ${err.code} — ${err.message}`);
   }
@@ -274,7 +322,7 @@ try {
 ## Configuration
 
 ```typescript
-const client = new Agentbot({
+const client = new AgentbotClient({
   // Required
   apiKey: process.env.AGENTBOT_API_KEY,
 
@@ -282,10 +330,6 @@ const client = new Agentbot({
   baseUrl: 'https://agentbot.sh',     // default
   timeout: 30_000,                     // request timeout in ms
   retries: 3,                          // auto-retry on 429/5xx
-  wallet: {
-    maxSpendPerCall: 0.05,             // safety limit
-    maxSpendPerDay: 1.00,              // daily cap
-  },
 });
 ```
 
