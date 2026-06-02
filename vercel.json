@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rootDirectory": ".",
   "framework": "nextjs",
   "git": {
     "deploymentEnabled": {
@@ -11,8 +10,13 @@
       "dev-*": false
     }
   },
-  "regions": ["iad1", "lhr1"],
-  "functionFailoverRegions": ["sfo1"],
+  "regions": [
+    "iad1",
+    "lhr1"
+  ],
+  "functionFailoverRegions": [
+    "sfo1"
+  ],
   "fluid": true,
   "installCommand": "npm install --include=dev --legacy-peer-deps --no-audit --fund=false",
   "buildCommand": "NEXT_PUBLIC_DEMO_MODE=true npm run build",
@@ -70,14 +74,30 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
       ]
     }
   ],
   "redirects": [
-    { "source": "/docs", "destination": "https://raveculture.mintlify.app", "permanent": false }
+    {
+      "source": "/docs",
+      "destination": "https://raveculture.mintlify.app",
+      "permanent": false
+    }
   ]
 }
