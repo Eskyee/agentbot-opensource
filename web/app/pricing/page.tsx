@@ -133,7 +133,7 @@ export default function PricingPage() {
 
         {/* Plan Cards */}
         <section className="border-t border-zinc-800 pt-16 mb-16">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-800">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-px bg-zinc-800">
             {plans.map((plan) => (
               <div key={plan.id} className="bg-black p-8 flex flex-col">
                 <div className="flex items-center gap-2 mb-6">
@@ -169,7 +169,7 @@ export default function PricingPage() {
                   }`}
                   onClick={() => window.location.href = plan.id === 'free' ? '/signup?plan=free' : `/api/stripe/checkout?plan=${plan.id}`}
                 >
-                  {plan.id === 'free' ? 'Start Free' : 'Select'}
+                  {plan.id === 'free' ? 'Start Free' : 'Deploy'}
                 </Button>
               </div>
             ))}

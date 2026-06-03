@@ -280,7 +280,28 @@ function DashboardContent() {
     )
   }
 
-  if (!instance) return null
+  if (!instance) {
+    return (
+      <div className="flex min-h-screen bg-black font-mono">
+        <DashboardSidebar userName={userName} credits={credits} plan={undefined} runtimeUrl={undefined} runtimeGatewayToken={undefined} runtimeInstanceId={undefined} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="max-w-md text-center space-y-6">
+            <div className="text-4xl">🤖</div>
+            <h2 className="text-xl font-bold uppercase tracking-tight">No Agent Deployed</h2>
+            <p className="text-zinc-500 text-sm leading-relaxed">
+              You haven't deployed an agent yet. Head to the marketplace to deploy your first AI agent — it takes about 2 minutes.
+            </p>
+            <Link
+              href="/marketplace"
+              className="inline-block bg-white text-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+            >
+              Deploy Your First Agent →
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const instanceName = instance.userId ? `Agent ${instance.userId.slice(0, 8)}` : 'Agent'
   const runtimeHealth = instance.status === 'running' ? 'healthy' : instance.status
