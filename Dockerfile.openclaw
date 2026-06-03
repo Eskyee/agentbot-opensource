@@ -1,0 +1,15 @@
+# Dockerfile.openclaw — Agentbot agent runtime on Fly.io
+FROM ghcr.io/openclaw/openclaw:2026.5.28
+
+# OpenClaw exposes port 18789
+EXPOSE 18789
+
+# Volumes for persistent data
+VOLUME ["/root/.openclaw"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+  CMD curl -f http://localhost:18789/api/status || exit 1
+
+# Start the gateway
+CMD ["openclaw", "gateway", "start", "--foreground"]
