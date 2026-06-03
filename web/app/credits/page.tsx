@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { toast } from 'sonner'
 
 const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'), { ssr: false })
 
@@ -48,10 +49,10 @@ export default function CreditsPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert(data.error || 'Failed to create checkout')
+        toast.error(data.error || 'Failed to create checkout')
       }
     } catch {
-      alert('Network error')
+      toast.error('Network error')
     } finally {
       setPurchasing(false)
     }
@@ -69,10 +70,10 @@ export default function CreditsPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert(data.error || 'Failed to create subscription')
+        toast.error(data.error || 'Failed to create subscription')
       }
     } catch {
-      alert('Network error')
+      toast.error('Network error')
     } finally {
       setPurchasing(false)
     }

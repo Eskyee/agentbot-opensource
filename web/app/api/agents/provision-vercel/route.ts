@@ -87,12 +87,12 @@ export async function POST(req: NextRequest) {
       name: `agent-${agentId.slice(0, 8)}`,
       status: 'active',
       model: model,
-      plan: plan,
+      tier: plan,
       config: JSON.stringify({
         ...DEFAULT_CONFIG,
         model: { ...DEFAULT_CONFIG.model, primary: model },
+        channels,
       }),
-      channels: JSON.stringify(channels),
     },
   })
 

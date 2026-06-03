@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
 
   try {
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' })
+    const stripe = new Stripe(stripeKey, { apiVersion: '2026-02-25.clover' })
 
     // Subscription mode
     if (body.subscription) {

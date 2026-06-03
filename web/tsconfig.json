@@ -22,6 +22,9 @@
       }
     ],
     "paths": {
+      "@agentbot/sdk": [
+        "./packages/sdk/src/index.ts"
+      ],
       "@/*": [
         "./*"
       ],

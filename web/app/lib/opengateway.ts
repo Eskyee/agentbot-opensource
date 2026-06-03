@@ -12,6 +12,7 @@ export type UpstreamConfig = {
   baseUrl: string
   apiKey: string
   provider: string
+  headers?: Record<string, string>
 }
 
 type UsageLike = {
@@ -229,7 +230,7 @@ export function extractUsage(data: unknown, requestBody: unknown): { inputTokens
 }
 
 export function recordGatewayUsage(params: {
-  auth: GatewayAuth
+  auth: GatewayAuth | null
   model: string
   inputTokens: number
   outputTokens: number
@@ -242,8 +243,8 @@ export function recordGatewayUsage(params: {
 
   prisma.usage_logs.create({
     data: {
-      user_id: params.auth.userId,
-      agent_id: params.auth.keyId,
+      user_id: params.auth?.userId ?? 'anonymous',
+      agent_id: params.auth?.keyId ?? 'x402',
       model: params.model,
       input_tokens: params.inputTokens,
       output_tokens: params.outputTokens,

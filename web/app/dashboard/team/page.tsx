@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Users, Play } from 'lucide-react'
+import { toast } from 'sonner'
 import {
   DashboardShell,
   DashboardHeader,
@@ -51,12 +52,12 @@ export default function TeamPage() {
       })
       const data = await res.json()
       if (data.success) {
-        alert(`Team provisioned! Team ID: ${data.teamId}`)
+        toast.success(`Team provisioned! ID: ${data.teamId}`)
       } else {
-        alert(`Error: ${data.error}`)
+        toast.error(data.error || 'Provisioning failed')
       }
     } catch (err: any) {
-      alert(`Error: ${err.message}`)
+      toast.error(err.message || 'Network error')
     }
     setProvisioning(false)
   }

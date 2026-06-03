@@ -381,6 +381,7 @@ export default function SkillsPage() {
     <DashboardShell>
       <DashboardHeader
         title="Skill Marketplace"
+        subtitle="Browse, install, and rate agent skills"
         icon={<Wrench className="h-5 w-5 text-orange-500" />}
         action={
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

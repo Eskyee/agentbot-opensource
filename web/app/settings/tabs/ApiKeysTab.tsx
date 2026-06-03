@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 interface ApiKeysTabProps {
   agents: { id: string; name: string; status: string }[]
@@ -68,7 +69,7 @@ export function ApiKeysTab({ agents }: ApiKeysTabProps) {
     }
 
     setApiKeys([...apiKeys, newKey])
-    alert(`API Key created: ${newKey.key}`)
+    toast.success(`API Key created: ${newKey.key}`)
   }
 
   const deleteApiKey = (id: string) => {

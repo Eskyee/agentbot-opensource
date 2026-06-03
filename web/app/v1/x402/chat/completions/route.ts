@@ -92,13 +92,14 @@ export async function POST(req: NextRequest) {
       // Record usage
       const latencyMs = Date.now() - startTime
       recordGatewayUsage({
+        auth: null,
         model: upstreamModel,
-        provider: upstream.provider,
         inputTokens: data.usage?.prompt_tokens ?? 0,
         outputTokens: data.usage?.completion_tokens ?? 0,
+        endpoint: '/v1/x402/chat/completions',
         latencyMs,
-        userId: undefined, // x402 payments are anonymous
-      }).catch(() => {})
+        success: true,
+      })
 
       return NextResponse.json(data, {
         headers: {

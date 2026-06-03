@@ -387,7 +387,7 @@ function DashboardContent() {
             </section>
 
             {/* Control panel */}
-            <InstanceControlPanel instance={instance} stats={stats} controlsEnabled={controlsEnabled} autoPairHealth={autoPairHealth} probeActionLoading={probeActionLoading} actionLoading={actionLoading} onCopyToken={() => { const token = instance?.gatewayToken || bootstrap?.gatewayToken; if (token) { navigator.clipboard.writeText(token); toast.success('Token copied!') } else { toast.error('Token not available') } }} onRefreshPairing={() => { setAutoPairHealth('loading'); fetchEverything() }} onProbeAction={handleRuntimeProbeAction} onAction={performAction} skillsManagerUrl={skillsManagerUrl} configManagerUrl={configManagerUrl} />
+            <InstanceControlPanel instance={instance} stats={stats} controlsEnabled={controlsEnabled} autoPairHealth={autoPairHealth} probeActionLoading={probeActionLoading} actionLoading={actionLoading} communityRewards={{ connected: false, walletAddress: null, claimed: false, currentTier: null, balanceUi: null, creditsClaimed: 0 }} onCopyToken={() => { const token = instance?.gatewayToken || bootstrap?.gatewayToken; if (token) { navigator.clipboard.writeText(token); toast.success('Token copied!') } else { toast.error('Token not available') } }} onRefreshPairing={() => { setAutoPairHealth('loading'); fetchEverything() }} onProbeAction={handleRuntimeProbeAction} onAction={performAction} skillsManagerUrl={skillsManagerUrl} configManagerUrl={configManagerUrl} />
           </div>
         </main>
       </div>

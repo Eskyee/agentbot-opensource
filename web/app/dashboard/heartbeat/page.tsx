@@ -124,6 +124,7 @@ export default function HeartbeatPage() {
     <DashboardShell>
       <DashboardHeader
         title="Heartbeat Monitor"
+        subtitle="Agent pulse frequency and health tracking"
         icon={<Activity className="h-5 w-5 text-zinc-500" />}
       />
 

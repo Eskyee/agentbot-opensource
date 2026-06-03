@@ -67,6 +67,7 @@ export default function FleetPage() {
     <DashboardShell className="flex flex-col h-screen overflow-hidden">
       <DashboardHeader
         title="Fleet"
+        subtitle="Monitor and manage your agent constellation in real-time"
         icon={<FleetIcon />}
         action={
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
@@ -117,7 +118,28 @@ export default function FleetPage() {
           )}
           {graphLoading ? (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="animate-pulse text-xs text-zinc-500 uppercase tracking-widest">Loading fleet...</div>
+              <div className="text-center">
+                <div className="relative mx-auto mb-4">
+                  <div className="w-12 h-12 border-2 border-zinc-800 border-t-orange-500 rounded-full animate-spin" />
+                </div>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 animate-pulse">Loading fleet...</p>
+              </div>
+            </div>
+          ) : agents.length === 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center max-w-sm px-6">
+                <p className="text-4xl mb-4">🤖</p>
+                <h3 className="text-sm font-bold uppercase tracking-tight text-white mb-2">No agents in fleet</h3>
+                <p className="text-xs text-zinc-500 mb-6">
+                  Deploy your first agent to see it appear in the fleet constellation.
+                </p>
+                <a
+                  href="/onboard?mode=deploy"
+                  className="inline-flex items-center border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  Deploy Agent
+                </a>
+              </div>
             </div>
           ) : (
             <OrganismCanvas 

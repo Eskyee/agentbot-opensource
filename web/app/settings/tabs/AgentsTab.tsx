@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 export function AgentsTab({
   agents,
@@ -39,10 +40,10 @@ export function AgentsTab({
         onDelete?.(id)
       } else {
         const data = await res.json().catch(() => ({}))
-        alert(data.error || 'Failed to delete agent')
+        toast.error(data.error || 'Failed to delete agent')
       }
     } catch {
-      alert('Network error. Try again.')
+      toast.error('Network error. Try again.')
     } finally {
       setDeletingId(null)
     }

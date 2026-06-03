@@ -106,3 +106,4 @@ keys/
 .env*.local
 .deepsec
 .env*
+.vscode/settings.json

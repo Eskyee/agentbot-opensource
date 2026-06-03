@@ -36,7 +36,7 @@ export default function FinancePage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Finance & Profit" icon={<DollarSign className="h-5 w-5 text-green-400" />} />
+      <DashboardHeader title="Finance & Profit" subtitle="Fleet costs, AI spend, and portfolio overview" icon={<DollarSign className="h-5 w-5 text-green-400" />} />
       <DashboardContent>
         {/* Metric Cards */}
         <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">

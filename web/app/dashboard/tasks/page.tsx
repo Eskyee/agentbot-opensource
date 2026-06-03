@@ -230,6 +230,7 @@ export default function TasksPage() {
 
       <DashboardHeader
         title="Scheduled Tasks"
+        subtitle="Automate your agents with cron-based scheduled prompts"
         icon={<ClockIcon />}
         count={tasks.length}
         action={

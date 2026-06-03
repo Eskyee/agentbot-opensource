@@ -746,11 +746,7 @@ function OnboardContent() {
                           Recommended
                         </span>
                       )}
-                      {'badge' in provider && provider.badge && (
-                        <span className="bg-orange-500/20 text-orange-500 text-xs px-2 py-1 rounded-full">
-                          {provider.badge}
-                        </span>
-                      )}
+                      {/* No badge handling needed — no providers use badges currently */}
                     </div>
                   </button>
                 ))}

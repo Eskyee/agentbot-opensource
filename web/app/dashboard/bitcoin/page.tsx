@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { Bitcoin, Copy, RefreshCw, Plus, ArrowDownLeft, Activity, QrCode, Camera, ArrowRight, Shield, CheckCircle2, Upload, Download } from 'lucide-react'
+import { toast } from 'sonner'
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
 import StatusPill from '@/app/components/shared/StatusPill'
 
@@ -464,7 +465,7 @@ export default function BitcoinPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to save credentials')
 
-      alert('Greenlight credentials saved successfully')
+      toast.success('Greenlight credentials saved')
       setGlCert('')
       setGlKey('')
       await loadData({ quiet: true })

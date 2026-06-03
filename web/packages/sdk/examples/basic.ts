@@ -10,7 +10,7 @@
 
 import { AgentbotClient, McpClient, x402 } from '@agentbot/sdk';
 
-const API_KEY = process.env.AGENTBOT_API_KEY;
+const API_KEY = process.env.AGENTBOT_API_KEY ?? '';
 if (!API_KEY) {
   console.error('Set AGENTBOT_API_KEY environment variable');
   process.exit(1);
@@ -58,7 +58,7 @@ async function main() {
     console.log(`  Agent: ${response.agent}`);
     console.log(`  Reply: ${response.reply}`);
     if (response.toolCalls?.length) {
-      console.log(`  Tools used: ${response.toolCalls.map((t) => t.name).join(', ')}`);
+      console.log(`  Tools used: ${response.toolCalls.map((t: { name: string }) => t.name).join(', ')}`);
     }
     console.log();
   } catch (err) {
@@ -110,7 +110,7 @@ async function main() {
 
       const tools = await mcp.listTools(server.name);
       if (tools.length > 0) {
-        console.log(`  Available tools: ${tools.map((t) => t.name).join(', ')}`);
+        console.log(`  Available tools: ${tools.map((t: { name: string }) => t.name).join(', ')}`);
       }
     }
     console.log();
@@ -124,7 +124,7 @@ async function main() {
     const { services } = await client.marketplace.discover({ maxPrice: 0.05 });
     for (const svc of services) {
       console.log(`  • ${svc.name} — $${svc.pricePerCall}/call on ${svc.network}`);
-      console.log(`    Tools: ${svc.tools.map((t) => t.name).join(', ')}`);
+      console.log(`    Tools: ${svc.tools.map((t: { name: string }) => t.name).join(', ')}`);
     }
     console.log();
   } catch (err) {

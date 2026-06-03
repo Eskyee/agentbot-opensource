@@ -201,6 +201,7 @@ export default function MemoryPage() {
     <DashboardShell>
       <DashboardHeader
         title="Memory Log"
+        subtitle="Agent memory entries and live infrastructure status"
         icon={<Brain className="h-5 w-5 text-orange-400" />}
         count={entries.length}
         action={

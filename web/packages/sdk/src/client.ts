@@ -124,7 +124,7 @@ export class AgentbotClient {
   private async requestStream(
     path: string,
     body: unknown,
-  ): AsyncGenerator<StreamChunk> {
+  ): Promise<AsyncGenerator<StreamChunk>> {
     const url = `${this.baseUrl}${path}`;
     const res = await fetch(url, {
       method: 'POST',
@@ -188,7 +188,7 @@ export class AgentbotClient {
     return this.request<ChatResponse>('POST', '/api/chat', request);
   }
 
-  async chatStream(request: ChatRequest): AsyncGenerator<StreamChunk> {
+  async chatStream(request: ChatRequest): Promise<AsyncGenerator<StreamChunk>> {
     return this.requestStream('/api/chat', { ...request, stream: true });
   }
 

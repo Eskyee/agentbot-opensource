@@ -155,6 +155,7 @@ export default function KeysPage() {
     <DashboardShell>
       <DashboardHeader
         title="API Keys"
+        subtitle="Create and manage keys for programmatic access"
         icon={<KeyIcon />}
         count={keys.length}
         action={
