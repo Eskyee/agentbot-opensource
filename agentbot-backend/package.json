@@ -14,9 +14,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@coinbase/cdp-sdk": "^1.50.0",
-    "@openrouter/sdk": "^0.12.35",
-    "@sentry/node": "^10.54.0",
+    "@coinbase/cdp-sdk": "^1.51.0",
+    "@openrouter/sdk": "^0.12.79",
+    "@sentry/node": "^10.56.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
@@ -42,7 +42,7 @@
     "@types/ws": "^8.18.1",
     "jest": "^30.4.2",
     "supertest": "^7.2.2",
-    "ts-jest": "^29.4.11",
+    "ts-jest": "^29.4.10",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.2.0"
   },
