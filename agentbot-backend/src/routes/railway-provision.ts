@@ -117,7 +117,11 @@ function buildOpenClawConfig(tailscaleOptions?: TailscaleProvisionOptions | null
   const gatewayToken = crypto.randomBytes(32).toString('hex')
   const gatewayTailscaleConfig = buildGatewayTailscaleConfig(gatewayToken, tailscaleOptions)
   const config = {
-    env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
+    env: {
+      OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
+      MIMO_API_KEY: process.env.MIMO_API_KEY || '',
+      MIMO_BASE_URL: process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1',
+    },
     gateway: {
       mode: 'local',
       ...gatewayTailscaleConfig,
@@ -135,8 +139,23 @@ function buildOpenClawConfig(tailscaleOptions?: TailscaleProvisionOptions | null
     agents: {
       defaults: {
         workspace: OPENCLAW_WORKSPACE_DIR,
-        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+        model: { primary: 'xiaomi/mimo-v2.5-pro', fallbacks: ['xiaomi/mimo-v2.5', 'openrouter/anthropic/claude-sonnet-4-5'] },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
+      },
+    },
+    models: {
+      mode: 'merge',
+      providers: {
+        xiaomi: {
+          baseUrl: process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1',
+          apiKey: process.env.MIMO_API_KEY || '',
+          api: 'openai-completions',
+          headers: { 'api-key': process.env.MIMO_API_KEY || '' },
+          models: [
+            { id: 'mimo-v2.5-pro', name: 'MiMo-V2.5-Pro', api: 'openai-completions', contextWindow: 1048576, reasoning: true, input: ['text'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+            { id: 'mimo-v2.5', name: 'MiMo-V2.5', api: 'openai-completions', contextWindow: 262144, reasoning: true, input: ['text', 'image'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+          ],
+        },
       },
     },
     channels: {
@@ -171,12 +190,14 @@ function buildOpenClawConfig(tailscaleOptions?: TailscaleProvisionOptions | null
 function getAgentEnvVars(agentId: string, plan: string, tailscaleOptions?: TailscaleProvisionOptions | null): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
-    OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || 'https://YOUR_SERVICE_URL',
+    OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || 'https://openclaw-production-a09d.up.railway.app',
     AGENTBOT_USER_ID: agentId,
     AGENTBOT_PLAN: plan,
     AGENTBOT_API_URL: process.env.BACKEND_API_URL || '',
     DATABASE_URL: process.env.DATABASE_URL || '',
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
+    MIMO_API_KEY: process.env.MIMO_API_KEY || '',
+    MIMO_BASE_URL: process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1',
     INTERNAL_API_KEY: process.env.INTERNAL_API_KEY || '',
     WALLET_ENCRYPTION_KEY: process.env.WALLET_ENCRYPTION_KEY || '',
     NODE_ENV: 'production',
@@ -253,7 +274,7 @@ export async function provisionOnRailway(
   // 1. Create service — idempotent: if it already exists, look up its ID
   let serviceId: string
   // Public official OpenClaw image — ghcr.io/openclaw/openclaw is public, no registry auth required
-  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.27'
+  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.5.28'
 
   try {
     const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
@@ -361,7 +382,7 @@ export async function provisionOnRailway(
   console.log(`[RailwayProvision] Env vars set (varsSet=${varsSet}) for ${serviceId}`)
 
   // 4. Generate public domain
-  let url = `https://${serviceName}YOUR_SERVICE_URL`
+  let url = `https://${serviceName}.up.railway.app`
   try {
     const domainResult = await railwayGql<{ serviceDomainCreate: { domain: string } }>(`
       mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {

@@ -1,14 +1,11 @@
-FROM node:22-slim
+FROM debian:bookworm-slim
 
-WORKDIR /app
+RUN apt-get update && apt-get install -y curl ca-certificates \
+    && curl -fsSL https://gitlawb.com/install.sh | sh \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-COPY package.json package-lock.json* ./
-RUN npm install --production 2>/dev/null || npm install --production --legacy-peer-deps
+ENV GITLAWB_NODE=https://node.gitlawb.com
+ENV PATH="/root/.local/bin:$PATH"
 
-# Copy source
-COPY dist/ ./dist/
-COPY README.md ./
-
-# MCP server runs on stdio
-CMD ["node", "dist/index.js"]
+CMD ["gl", "mcp", "serve"]

@@ -70,7 +70,7 @@ export function StatsBar({ stats, loading }: StatsBarProps) {
 
   if (loading || !stats) {
     return (
-      <div className="grid grid-cols-5 gap-px bg-zinc-800 mb-4">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-px bg-zinc-800 mb-4">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="h-20 bg-zinc-950 animate-pulse" />
         ))}
@@ -84,7 +84,7 @@ export function StatsBar({ stats, loading }: StatsBarProps) {
   }
 
   return (
-    <div className="grid grid-cols-5 gap-px bg-zinc-800 mb-4 border border-zinc-800">
+    <div className="grid grid-cols-3 sm:grid-cols-5 gap-px bg-zinc-800 mb-4 border border-zinc-800">
       <StatBlock
         label="Running"
         value={`${String(stats.running).padStart(2, '0')}/${stats.total}`}

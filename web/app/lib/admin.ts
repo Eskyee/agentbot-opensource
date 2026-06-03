@@ -7,10 +7,10 @@ function parseEmails(value: string | undefined) {
 
 const ADMIN_EMAILS = Array.from(
   new Set([
-    'YOUR_ADMIN_EMAIL_1',
+    'eskyjunglelab@gmail.com',
     'admin@agentbot.sh',
-    'YOUR_ADMIN_EMAIL_2',
-    'YOUR_ADMIN_EMAIL_5',
+    'rbasefm@icloud.com',
+    'djescaba@icloud.com',
     ...parseEmails(process.env.ADMIN_EMAILS),
     ...parseEmails(process.env.OPERATOR_ADMIN_EMAILS),
   ])

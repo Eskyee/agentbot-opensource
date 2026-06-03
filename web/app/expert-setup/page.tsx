@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Calendar, Video, CheckCircle, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 const slots = [
   { day: 'Mon', date: 'Apr 14', times: ['10:00', '14:00', '16:00'] },
@@ -36,10 +37,10 @@ export default function ExpertSetupPage() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert('Failed to create checkout. Please try again.')
+        toast.error('Failed to create checkout. Please try again.')
       }
     } catch (err) {
-      alert('Error booking session')
+      toast.error('Error booking session')
     } finally {
       setLoading(false)
     }
@@ -87,7 +88,7 @@ export default function ExpertSetupPage() {
             Select a Time Slot
           </h3>
 
-          <div className="grid grid-cols-5 gap-2 mb-6">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-6">
             {slots.map((slot) => (
               <div key={slot.date} className="text-center">
                 <div className="text-[10px] uppercase text-zinc-500 mb-1">{slot.day}</div>

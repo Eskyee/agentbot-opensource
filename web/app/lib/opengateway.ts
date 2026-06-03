@@ -12,6 +12,7 @@ export type UpstreamConfig = {
   baseUrl: string
   apiKey: string
   provider: string
+  headers?: Record<string, string>
 }
 
 type UsageLike = {
@@ -25,12 +26,15 @@ type UsageLike = {
 
 const DEFAULT_MODELS = [
   'mimo-v2.5-pro',
-  'xiaomi/mimo-v2.5-pro',
-  'openai/gpt-5.4',
+  'mimo-v2.5',
+  'openai/gpt-4o',
   'openai/gpt-4o-mini',
   'anthropic/claude-sonnet-4.5',
   'google/gemini-2.5-flash',
 ]
+
+const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
+const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
 
 export function gatewayCorsHeaders(): Record<string, string> {
   return {
@@ -116,6 +120,15 @@ export function resolveGatewayUpstreams(): UpstreamConfig[] {
     })
   }
 
+  // Direct MiMo upstream — subscription BYOK (fastest, zero extra cost)
+  if (MIMO_API_KEY) {
+    upstreams.push({
+      baseUrl: MIMO_BASE_URL,
+      apiKey: MIMO_API_KEY,
+      provider: 'xiaomi-direct',
+    })
+  }
+
   const openRouterKey = process.env.OPENROUTER_API_KEY?.trim()
   if (openRouterKey) {
     upstreams.push({
@@ -132,13 +145,21 @@ export function resolveGatewayUpstream(): UpstreamConfig | null {
   return resolveGatewayUpstreams()[0] ?? null
 }
 
-export function gatewayUpstreamHeaders(upstream: UpstreamConfig, title = 'Agentbot OpenGateway') {
-  return {
+export function gatewayUpstreamHeaders(upstream: UpstreamConfig, title = 'Agentbot Vercel Gateway') {
+  const referer = process.env.NEXTAUTH_URL || 'https://agentbot.sh'
+  const headers: Record<string, string> = {
     Authorization: `Bearer ${upstream.apiKey}`,
     'Content-Type': 'application/json',
-    'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://127.0.0.1:3007',
+    'HTTP-Referer': referer,
     'X-Title': title,
   }
+
+  if (upstream.provider === 'openrouter') {
+    headers['X-OpenRouter-Title'] = title
+    headers['X-OpenRouter-Categories'] = 'cli-agent,cloud-agent'
+  }
+
+  return headers
 }
 
 export function shouldTryNextGatewayUpstream(status: number): boolean {
@@ -149,9 +170,14 @@ export function normalizeGatewayModel(model: string, provider: string): string {
   const trimmed = model.trim()
   if (!trimmed) return 'mimo-v2.5-pro'
 
+  // Direct MiMo — use model ID as-is (subscription handles it)
+  if (provider === 'xiaomi-direct') {
+    return trimmed
+  }
+
   if (provider === 'vercel-ai-gateway') {
     if (trimmed === 'mimo-v2.5-pro') return 'xiaomi/mimo-v2.5-pro'
-    if (trimmed === 'mimo-v2-pro') return 'xiaomi/mimo-v2-pro'
+    if (trimmed === 'mimo-v2.5-pro') return 'xiaomi/mimo-v2.5-pro'
   }
 
   if (provider === 'openrouter') {
@@ -204,7 +230,7 @@ export function extractUsage(data: unknown, requestBody: unknown): { inputTokens
 }
 
 export function recordGatewayUsage(params: {
-  auth: GatewayAuth
+  auth: GatewayAuth | null
   model: string
   inputTokens: number
   outputTokens: number
@@ -217,8 +243,8 @@ export function recordGatewayUsage(params: {
 
   prisma.usage_logs.create({
     data: {
-      user_id: params.auth.userId,
-      agent_id: params.auth.keyId,
+      user_id: params.auth?.userId ?? 'anonymous',
+      agent_id: params.auth?.keyId ?? 'x402',
       model: params.model,
       input_tokens: params.inputTokens,
       output_tokens: params.outputTokens,

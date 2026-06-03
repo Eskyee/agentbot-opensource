@@ -8,7 +8,7 @@ export async function getAgentUrl(userId: string): Promise<string | null> {
     select: { openclawUrl: true, openclawInstanceId: true },
   })
   if (!user?.openclawInstanceId) return null
-  return user.openclawUrl || `https://agentbot-agent-${user.openclawInstanceId}YOUR_SERVICE_URL`
+  return user.openclawUrl || `https://agentbot-agent-${user.openclawInstanceId}-production.up.railway.app`
 }
 
 export async function proxyGet(path: string) {

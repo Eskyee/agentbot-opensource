@@ -8,7 +8,6 @@ import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
-import { Spinner } from 'geist/components'
 
 const DashboardSidebar = dynamic(() => import('@/app/components/DashboardSidebar').then(m => m.DashboardSidebar))
 const InstanceControlPanel = dynamic(() => import('@/app/components/dashboard/InstanceControlPanel').then(m => m.InstanceControlPanel))
@@ -21,12 +20,7 @@ interface InstanceData {
   userId: string
   status: string
   statusReason?: string | null
-  probeChecks?: Array<{
-    path: string
-    ok: boolean
-    status: number | null
-    reason: string | null
-  }>
+  probeChecks?: Array<{ path: string; ok: boolean; status: number | null; reason: string | null }>
   subdomain?: string
   url: string
   plan: string
@@ -35,7 +29,6 @@ interface InstanceData {
   ffmpegVersion?: string | null
   botUsername?: string
   gatewayToken?: string
-  /** Auto-connect URL with token in #fragment */
   controlUiUrl?: string
   verified?: boolean
   verificationType?: string | null
@@ -64,54 +57,99 @@ type ConfirmAction = {
   variant: 'danger' | 'warning' | 'default'
 }
 
-function DashboardLoadingShell() {
-  return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-mono">
-      <div className="mb-4">
-        <Spinner size={48} />
-      </div>
-      <p className="animate-pulse uppercase tracking-[0.2em] text-[10px] text-zinc-500">Initializing Dashboard...</p>
-    </div>
-  )
-}
-
 const CONFIRM_ACTIONS: Record<string, ConfirmAction> = {
   stop: {
     action: 'stop',
     title: 'Stop Agent',
-    description: 'This will stop your agent container. It will go offline and stop responding to messages until you start it again.',
+    description: 'Your agent will go offline and stop responding until you start it again.',
     confirmLabel: 'Stop Agent',
     pendingLabel: 'Stopping...',
     variant: 'danger',
   },
   'reset-memory': {
     action: 'reset-memory',
-    title: 'Reset Agent Memory',
-    description: 'This will permanently wipe all memory, identity, and conversation history. This cannot be undone.',
+    title: 'Reset Memory',
+    description: 'This permanently wipes all memory, identity, and conversation history.',
     confirmLabel: 'Reset Memory',
     pendingLabel: 'Resetting...',
     variant: 'danger',
   },
 }
 
+function DashboardLoadingShell() {
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-mono">
+      <div className="relative">
+        <div className="w-12 h-12 border-2 border-zinc-800 border-t-orange-500 rounded-full animate-spin" />
+      </div>
+      <p className="mt-6 text-[10px] uppercase tracking-[0.3em] text-zinc-600">Initializing</p>
+    </div>
+  )
+}
+
+function MetricCard({ label, value, sub, trend }: { label: string; value: string; sub?: string; trend?: 'up' | 'down' | 'neutral' }) {
+  return (
+    <div className="group relative overflow-hidden rounded-xl border border-zinc-800/50 bg-zinc-950 p-5 transition-all hover:border-zinc-700/50 hover:bg-zinc-900/50">
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 mb-2">{label}</p>
+      <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
+      {sub && <p className="text-[11px] text-zinc-500 mt-1">{sub}</p>}
+      {trend && (
+        <span className={`inline-flex items-center gap-1 mt-2 text-[10px] font-bold uppercase tracking-widest ${
+          trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-500' : 'text-zinc-500'
+        }`}>
+          {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'} {trend}
+        </span>
+      )}
+    </div>
+  )
+}
+
+function StatusDot({ status }: { status: 'ok' | 'degraded' | 'down' }) {
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] font-bold ${
+      status === 'ok' ? 'text-emerald-500' : status === 'degraded' ? 'text-yellow-500' : 'text-red-500'
+    }`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${
+        status === 'ok' ? 'bg-emerald-500' : status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'
+      }`} />
+      {status === 'ok' ? 'Online' : status === 'degraded' ? 'Degraded' : 'Down'}
+    </span>
+  )
+}
+
+function QuickAction({ icon, label, href, onClick, variant = 'default' }: {
+  icon: string; label: string; href?: string; onClick?: () => void; variant?: 'default' | 'primary' | 'danger'
+}) {
+  const classes = `flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-xs font-bold uppercase tracking-widest ${
+    variant === 'primary'
+      ? 'bg-white text-black border-white hover:bg-zinc-200'
+      : variant === 'danger'
+      ? 'border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/40'
+      : 'border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 hover:bg-zinc-900'
+  }`
+
+  const content = <><span className="text-sm">{icon}</span> {label}</>
+
+  if (href) {
+    return href.startsWith('http') ? (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={classes}>{content}</a>
+    ) : (
+      <Link href={href} className={classes}>{content}</Link>
+    )
+  }
+  return <button onClick={onClick} className={classes}>{content}</button>
+}
+
 function DashboardContent() {
   const { data: session, status } = useCustomSession()
   const router = useRouter()
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'User'
   const searchParams = useSearchParams()
   const [instance, setInstance] = useState<InstanceData | null>(null)
   const [stats, setStats] = useState<{
-    cpu: string
-    memory: string
-    uptime?: string | null
-    messages?: number | null
-    errors?: number | null
-    health?: string | null
-    telemetry?: {
-      resourceMetricsAvailable?: boolean
-      lifecycleMetricsAvailable?: boolean
-      messageMetricsAvailable?: boolean
-    }
+    cpu: string; memory: string; uptime?: string | null; messages?: number | null; errors?: number | null; health?: string | null
+    telemetry?: { resourceMetricsAvailable?: boolean; lifecycleMetricsAvailable?: boolean; messageMetricsAvailable?: boolean }
   } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -127,63 +165,34 @@ function DashboardContent() {
   const controlsEnabled = OPENCLAW_CONTROLS_ENABLED
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.replace('/login?callbackUrl=/dashboard')
-    }
+    if (status === 'unauthenticated') router.replace('/login?callbackUrl=/dashboard')
   }, [status, router])
 
   const fetchEverything = useCallback(async () => {
     const urlUserId = searchParams.get('id')
     const storedData = localStorage.getItem('agentbot_instance')
-    
     try {
-      // FETCH EVERYTHING IN ONE CALL - 90% FASTER
       const dataRes = await fetch('/api/dashboard/data')
       if (!dataRes.ok) {
-        if (dataRes.status === 401) {
-          setError('Please sign in to view your dashboard')
-          setLoading(false)
-          return
-        }
+        if (dataRes.status === 401) { setError('Please sign in to view your dashboard'); setLoading(false); return }
         throw new Error('Failed to fetch dashboard data')
       }
-      
       const data = await dataRes.json()
-      
-      // Hydrate UI state from consolidated response
       setCredits(data.credits || 0)
       setStatusChecks(data.health?.checks || [])
-      setBootstrap(data) // Use consolidated data as bootstrap
-      
+      setBootstrap(data)
       if (data.instance) {
         const url = data.instance.url
         const gatewayToken = data.gatewayToken
-        const controlUiUrl = buildOpenClawControlUrl({
-          view: 'chat',
-          gatewayUrl: url,
-          gatewayToken,
-          session: 'main',
-        })
-        
+        const controlUiUrl = buildOpenClawControlUrl({ view: 'chat', gatewayUrl: url, gatewayToken, session: 'main' })
         setInstance({ ...data.instance, gatewayToken, controlUiUrl })
-        
-        // Cache for future visits
-        localStorage.setItem('agentbot_instance', JSON.stringify({
-          userId: data.openclawInstanceId,
-          url: data.openclawUrl,
-        }))
+        localStorage.setItem('agentbot_instance', JSON.stringify({ userId: data.openclawInstanceId, url: data.openclawUrl }))
       }
-
-      if (data.stats) {
-        setStats(data.stats)
-      }
-
-      const health = data.gatewayToken ? 'ready' : 'missing'
-      setAutoPairHealth(health)
+      if (data.stats) setStats(data.stats)
+      setAutoPairHealth(data.gatewayToken ? 'ready' : 'missing')
       setLoading(false)
-      
     } catch (err) {
-      console.error('[Dashboard] Consolidated fetch failed:', err)
+      console.error('[Dashboard] Fetch failed:', err)
       setError('Failed to initialize dashboard')
       setLoading(false)
     }
@@ -193,165 +202,77 @@ function DashboardContent() {
     if (healingAttempted) return
     setHealingAttempted(true)
     try {
-      // First ensure OpenClaw 2026.4.2 compatibility
       const compatibility = await fetch('/api/openclaw/ensure-compatibility', { method: 'POST' })
       if (compatibility.ok) {
         const compatData = await compatibility.json()
         if (compatData.fixes?.length > 0) console.log('Applied compatibility fixes:', compatData.fixes)
       }
-
-      // Now heal the token
       const res = await fetch('/api/support/heal-token', { method: 'POST' })
       if (res.ok) {
         const data = await res.json()
-        if (data.healed) {
-          setAutoPairHealth('ready')
-          // Refresh data after healing
-          fetchEverything()
-        }
+        if (data.healed) { setAutoPairHealth('ready'); fetchEverything() }
       }
-    } catch (error) {
-      console.error('Auto Pair heal failed', error)
-    }
+    } catch (error) { console.error('Auto Pair heal failed', error) }
   }, [fetchEverything, healingAttempted])
 
-  // Trigger healing effect
   useEffect(() => {
-    if (autoPairHealth === 'missing' && !healingAttempted && !loading) {
-      healAutoPair()
-    }
+    if (autoPairHealth === 'missing' && !healingAttempted && !loading) healAutoPair()
   }, [autoPairHealth, healingAttempted, loading, healAutoPair])
 
   useEffect(() => {
-    // Clear localStorage instance data when no session (user logged out)
-    if (!session) {
-      localStorage.removeItem('agentbot_instance')
-      setInstance(null)
-      setError('')
-      setLoading(false)
-      return
-    }
-
+    if (!session) { localStorage.removeItem('agentbot_instance'); setInstance(null); setError(''); setLoading(false); return }
     setLoading(true)
     fetchEverything()
   }, [session, fetchEverything])
 
   const handleRuntimeProbeAction = async (action: 'probe' | 'resync') => {
     if (!instance) return
-
     setProbeActionLoading(action)
     try {
       const res = await fetch(`/api/instance/${instance.userId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action })
       })
       const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data?.error || `Failed to ${action} runtime`)
-      }
-
+      if (!res.ok) throw new Error(data?.error || `Failed to ${action} runtime`)
       await fetchEverything()
       toast.success(action === 'probe' ? 'Runtime probe refreshed' : 'Runtime resync triggered')
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : `Failed to ${action} runtime`)
-    } finally {
-      setProbeActionLoading(null)
-    }
+    } catch (error) { toast.error(error instanceof Error ? error.message : `Failed to ${action} runtime`) }
+    finally { setProbeActionLoading(null) }
   }
 
   const performAction = async (action: 'restart' | 'stop' | 'start' | 'update' | 'repair' | 'reset-memory') => {
     if (!instance) return
-    if (!controlsEnabled) {
-      toast.warning('Managed runtime controls are temporarily disabled while the Railway control path is hardened.')
-      return
-    }
-
-    // Destructive actions need confirmation dialog
-    if (CONFIRM_ACTIONS[action] && !confirmDialog) {
-      setConfirmDialog(CONFIRM_ACTIONS[action])
-      return
-    }
-
+    if (!controlsEnabled) { toast.warning('Managed runtime controls are temporarily disabled.'); return }
+    if (CONFIRM_ACTIONS[action] && !confirmDialog) { setConfirmDialog(CONFIRM_ACTIONS[action]); return }
     setActionLoading(action)
-    const labels: Record<string, string> = {
-      restart: 'Restarting agent',
-      stop: 'Stopping agent',
-      start: 'Starting agent',
-      update: 'Updating agent',
-      repair: 'Repairing agent',
-      'reset-memory': 'Resetting memory',
-    }
+    const labels: Record<string, string> = { restart: 'Restarting agent', stop: 'Stopping agent', start: 'Starting agent', update: 'Updating agent', repair: 'Repairing agent', 'reset-memory': 'Resetting memory' }
     const toastId = toast.loading(labels[action] || 'Processing...')
-
     try {
-      const res = await fetch(`/api/instance/${instance.userId}/${action}`, {
-        method: 'POST'
-      })
+      const res = await fetch(`/api/instance/${instance.userId}/${action}`, { method: 'POST' })
       const data = await res.json()
-
       if (data.success) {
-        const successMsg: Record<string, string> = {
-          restart: 'Agent restarted successfully',
-          stop: 'Agent stopped',
-          start: 'Agent started',
-          update: 'Agent updated to latest version',
-          repair: 'Agent repaired successfully',
-          'reset-memory': 'Memory wiped — agent is fresh',
-        }
+        const successMsg: Record<string, string> = { restart: 'Agent restarted', stop: 'Agent stopped', start: 'Agent started', update: 'Agent updated', repair: 'Agent repaired', 'reset-memory': 'Memory wiped — agent is fresh' }
         toast.success(successMsg[action] || 'Done', { id: toastId })
         setTimeout(() => fetchEverything(), 1000)
-      } else {
-        toast.error(data.error || 'Action failed', { id: toastId })
-      }
-    } catch {
-      toast.error('Action failed — check your connection', { id: toastId })
-    } finally {
-      setActionLoading('')
-    }
+      } else { toast.error(data.error || 'Action failed', { id: toastId }) }
+    } catch { toast.error('Action failed — check your connection', { id: toastId }) }
+    finally { setActionLoading('') }
   }
 
-  // Return loading shell for ALL non-ready states — prevents flash of content
-  if (status !== 'authenticated' || loading) {
-    return <DashboardLoadingShell />
-  }
+  if (status !== 'authenticated' || loading) return <DashboardLoadingShell />
 
   if (error) {
     const isAuthError = error.includes('sign in') || error.includes('Unauthorized')
-    const isNoInstance = error.includes('deploy first') || error.includes('No instance')
-    const isInstanceError = !isAuthError && !isNoInstance // backend returned error for existing instance
-
-    let title = 'Deploy your first agent'
-    let cta = { label: 'Create New Runtime', href: '/onboard?mode=deploy' }
-
-    if (isAuthError) {
-      title = 'Sign in required'
-      cta = { label: 'Sign In', href: '/login?callbackUrl=/dashboard' }
-    } else if (isInstanceError) {
-      title = 'Instance unavailable'
-      cta = { label: 'View Status', href: '/dashboard/system-pulse' }
-    }
-
     return (
       <div className="flex h-screen bg-black font-mono">
-        <DashboardSidebar
-          userName={userName}
-          plan={instance?.plan}
-          isAdmin={session?.user?.isAdmin === true}
-          isOpen={sidebarOpen}
-          onToggle={() => setSidebarOpen(!sidebarOpen)}
-        />
-
+        <DashboardSidebar userName={userName} plan={instance?.plan} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-left max-w-md">
-            <h1 className="text-2xl font-bold uppercase tracking-tighter mb-4">{title}</h1>
-            <p className="text-zinc-400 text-sm mb-8">{error}</p>
-            <Link
-              href={cta.href}
-              className="inline-block bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-            >
-              {cta.label}
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-6">⚙️</div>
+            <h1 className="text-xl font-bold uppercase tracking-tighter mb-3">{isAuthError ? 'Sign in required' : 'Deploy your first agent'}</h1>
+            <p className="text-zinc-500 text-sm mb-8">{error}</p>
+            <Link href={isAuthError ? '/login?callbackUrl=/dashboard' : '/onboard?mode=deploy'} className="inline-flex items-center justify-center bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+              {isAuthError ? 'Sign In' : 'Deploy Agent'}
             </Link>
           </div>
         </div>
@@ -359,216 +280,202 @@ function DashboardContent() {
     )
   }
 
-  if (!instance) return null
+  if (!instance) {
+    return (
+      <div className="flex min-h-screen bg-black font-mono">
+        <DashboardSidebar userName={userName} credits={credits} plan={undefined} runtimeUrl={undefined} runtimeGatewayToken={undefined} runtimeInstanceId={undefined} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="max-w-md text-center space-y-6">
+            <div className="text-4xl">🤖</div>
+            <h2 className="text-xl font-bold uppercase tracking-tight">No Agent Deployed</h2>
+            <p className="text-zinc-500 text-sm leading-relaxed">
+              You haven't deployed an agent yet. Head to the marketplace to deploy your first AI agent — it takes about 2 minutes.
+            </p>
+            <Link
+              href="/marketplace"
+              className="inline-block bg-white text-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+            >
+              Deploy Your First Agent →
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-  const instanceName = instance.userId
-    ? `Agentbot Agent ${instance.userId.slice(0, 12)}`
-    : 'Agentbot Agent'
+  const instanceName = instance.userId ? `Agent ${instance.userId.slice(0, 8)}` : 'Agent'
   const runtimeHealth = instance.status === 'running' ? 'healthy' : instance.status
+  const isUnreachable = instance.status !== 'running'
+  const skillsManagerUrl = buildOpenClawControlUrl({ view: 'skills', gatewayUrl: instance.url, gatewayToken: instance.gatewayToken })
+  const configManagerUrl = buildOpenClawControlUrl({ view: 'config', gatewayUrl: instance.url, gatewayToken: instance.gatewayToken })
 
-  const skillsManagerUrl = buildOpenClawControlUrl({
-    view: 'skills',
-    gatewayUrl: instance.url,
-    gatewayToken: instance.gatewayToken,
-  })
-  const configManagerUrl = buildOpenClawControlUrl({
-    view: 'config',
-    gatewayUrl: instance.url,
-    gatewayToken: instance.gatewayToken,
-  })
+  // When Railway is down, show a clean view with local OpenClaw link
+  if (isUnreachable) {
+    return (
+      <div className="flex min-h-screen bg-black font-mono">
+        <DashboardSidebar userName={userName} credits={credits} plan={instance?.plan} runtimeUrl={instance?.url || bootstrap?.openclawUrl} runtimeGatewayToken={instance?.gatewayToken || bootstrap?.gatewayToken} runtimeInstanceId={instance?.userId || bootstrap?.openclawInstanceId} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="sticky top-14 z-30 bg-black/80 backdrop-blur-xl border-b border-zinc-900 px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors" aria-label="Open menu">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
+              <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Dashboard</span>
+            </div>
+            <Link href="/onboard?mode=deploy" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+              + New Agent
+            </Link>
+          </header>
+          <main className="flex-1 overflow-y-auto">
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
+              <div className="text-6xl mb-6">🦞</div>
+              <h1 className="text-2xl font-bold tracking-tighter uppercase mb-3">Agent Offline</h1>
+              <p className="text-zinc-500 text-sm mb-8">
+                Your managed runtime is suspended. You can still chat with your local OpenClaw instance running on your Mac mini.
+              </p>
+              <div className="space-y-4">
+                <a
+                  href="https://agentbot.sh/chat"
+                  className="block w-full bg-white text-black py-3 rounded-lg font-bold uppercase tracking-widest text-xs hover:bg-zinc-200 transition-colors"
+                >
+                  💬 Open Chat (Local OpenClaw)
+                </a>
+                <a
+                  href="https://agentbot.sh/demo"
+                  className="block w-full border border-zinc-800 py-3 rounded-lg font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  🤖 Try Demo
+                </a>
+                <Link
+                  href="/marketplace"
+                  className="block w-full border border-zinc-800 py-3 rounded-lg font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  🚀 Deploy New Agent
+                </Link>
+              </div>
+              <div className="mt-12 pt-8 border-t border-zinc-900">
+                <h3 className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <QuickAction icon="📊" label="Analytics" href="/dashboard/analytics" />
+                  <QuickAction icon="💰" label="Billing" href="/billing" />
+                  <QuickAction icon="🔧" label="Skills" href="/dashboard/skills" />
+                  <QuickAction icon="⚙️" label="Settings" href="/settings" />
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen bg-black font-mono">
-      <DashboardSidebar
-        userName={userName}
-        credits={credits}
-        plan={instance?.plan}
-        runtimeUrl={instance?.url || bootstrap?.openclawUrl}
-        runtimeGatewayToken={instance?.gatewayToken || bootstrap?.gatewayToken}
-        runtimeInstanceId={instance?.userId || bootstrap?.openclawInstanceId}
-        isAdmin={session?.user?.isAdmin === true}
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-      />
+      <DashboardSidebar userName={userName} credits={credits} plan={instance?.plan} runtimeUrl={instance?.url || bootstrap?.openclawUrl} runtimeGatewayToken={instance?.gatewayToken || bootstrap?.gatewayToken} runtimeInstanceId={instance?.userId || bootstrap?.openclawInstanceId} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
 
-      <div className="flex-1 flex flex-col">
-        {/* Top Navbar */}
-        <header className="sticky top-14 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
-              aria-label="Open menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <span className="text-sm font-bold uppercase tracking-tighter">◈ Mission Control</span>
-          </div>
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="sticky top-14 z-30 bg-black/80 backdrop-blur-xl border-b border-zinc-900 px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <a
-              href="/dashboard/wallet"
-              className="hidden sm:inline-block border border-zinc-800 px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-            >
+            <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors" aria-label="Open menu">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Dashboard</span>
+              <span className="text-zinc-700">·</span>
+              <StatusDot status={instance.status === 'running' ? 'ok' : instance.status === 'stopped' ? 'down' : 'degraded'} />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/wallet" className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-800 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white hover:border-zinc-600 transition-all">
               ◎ Wallet
-            </a>
-            <a
-              href="/agents"
-              className="bg-white text-black px-4 sm:px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-            >
+            </Link>
+            <Link href="/onboard?mode=deploy" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
               + New Agent
-            </a>
+            </Link>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="p-4 sm:p-6 lg:p-8">
-          {/* Permission Gate — shows pending approval requests */}
-          <PermissionGate agentId={instance?.userId} />
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <PermissionGate agentId={instance?.userId} />
 
-          {/* Hero Header */}
-          <div className="mb-6 rounded-2xl border-b border-zinc-800 bg-[radial-gradient(circle_at_top_left,_rgba(232,93,38,0.18),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.14),_transparent_32%),linear-gradient(180deg,_rgba(0,24,27,0.92),_rgba(9,9,11,0.96))] px-5 py-5 sm:px-6 lg:px-8">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Agentbot Runtime</p>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                    {instanceName}
-                  </h2>
-                  <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
-                    instance.status === 'running'
-                      ? 'border-green-500/30 bg-green-500/10 text-green-400'
-                      : instance.status === 'stopped'
-                        ? 'border-zinc-600/30 bg-zinc-600/20 text-zinc-400'
-                        : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
-                  }`}>
-                    <span className={`h-2 w-2 rounded-full ${
-                      instance.status === 'running' ? 'bg-green-400' : instance.status === 'stopped' ? 'bg-zinc-500' : 'bg-yellow-400'
-                    }`} />
-                    {instance.status === 'running' ? 'Running' : instance.status === 'stopped' ? 'Stopped' : instance.status}
-                  </span>
-                  {runtimeHealth === 'healthy' && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-300">
-                      <span className="h-2 w-2 rounded-full bg-green-400" />
-                      Healthy
-                    </span>
-                  )}
+            {/* Hero */}
+            <section className="mb-8">
+              <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-gradient-to-br from-zinc-950 via-zinc-950 to-zinc-900 p-6 sm:p-8">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="relative">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">MiMo V2.5 Pro · OpenClaw {instance.openclawVersion || '2026.5.28'}</p>
+                      <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter text-white mb-2">{instanceName}</h1>
+                      <p className="text-zinc-500 text-sm max-w-md">Your AI agent is {instance.status === 'running' ? 'live and processing tasks' : instance.status}. {instance.status === 'running' ? 'All systems nominal.' : 'Start it to resume.'}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {instance.controlUiUrl && (
+                        <a href={instance.controlUiUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+                          Open Chat ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mt-5">
+                    {[instance.plan || 'Solo', '1 vCPU · 2 GB', '10 GB SSD', instance.openclawVersion ? `v${instance.openclawVersion}` : null].filter(Boolean).map((tag) => (
+                      <span key={tag} className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{tag}</span>
+                    ))}
+                  </div>
                 </div>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                  Clean controls for your Agentbot instance, with runtime actions and machine facts in one place.
-                </p>
               </div>
-              {instance.controlUiUrl && (
-                <a
-                  href={instance.controlUiUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-zinc-200"
-                >
-                  Open
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  </svg>
-                </a>
-              )}
-            </div>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
-                1 vCPU, 2 GB RAM
-              </span>
-              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
-                10 GB SSD
-              </span>
-              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
-                {instance.plan || 'Solo'}
-              </span>
-              {instance.openclawVersion && (
-                <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
-                  v{instance.openclawVersion}
-                </span>
-              )}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link
-                href="/expert-setup"
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
-              >
-                Book setup
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M7 7h10v10" /><path d="M7 17 17 7" />
-                </svg>
-              </Link>
-              <Link
-                href="/billing"
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
-              >
-                Manage billing
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M7 7h10v10" /><path d="M7 17 17 7" />
-                </svg>
-              </Link>
-            </div>
-          </div>
+            </section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-            {statusChecks.map((check) => (
-              <div key={check.name} className="border border-zinc-800 bg-zinc-950 p-4 flex items-center justify-between rounded-lg">
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-600">{check.name}</p>
-                  <p className="text-lg font-mono text-white">
-                    {check.status === 'ok' ? 'Working' : check.status === 'degraded' ? 'Wired, degraded' : 'Down'}
-                  </p>
-                  {check.detail && <p className="text-[10px] text-zinc-500 mt-1">{check.detail}</p>}
+            {/* Metrics */}
+            <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+              <MetricCard label="Status" value={instance.status === 'running' ? 'Live' : instance.status} sub={runtimeHealth === 'healthy' ? 'All systems nominal' : undefined} />
+              <MetricCard label="Messages" value={stats?.messages?.toLocaleString() || '—'} sub="Processed today" />
+              <MetricCard label="Uptime" value={stats?.uptime || '—'} sub="Last 30 days" />
+              <MetricCard label="Credits" value={credits > 0 ? credits.toLocaleString() : '—'} sub={credits > 0 ? 'Remaining' : 'Unlimited (BYOK)'} />
+            </section>
+
+            {/* Health checks */}
+            {statusChecks.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-3">System Health</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {statusChecks.map((check) => (
+                    <div key={check.name} className="flex items-center justify-between px-4 py-3 rounded-xl border border-zinc-800/50 bg-zinc-950">
+                      <span className="text-xs text-zinc-400">{check.name}</span>
+                      <StatusDot status={check.status} />
+                    </div>
+                  ))}
                 </div>
-                <span className={`h-3 w-3 rounded-full ${check.status === 'ok' ? 'bg-green-400' : check.status === 'degraded' ? 'bg-yellow-400' : 'bg-orange-500'}`} />
-              </div>
-            ))}
-          </div>
+              </section>
+            )}
 
-          <InstanceControlPanel
-            instance={instance}
-            stats={stats}
-            controlsEnabled={controlsEnabled}
-            autoPairHealth={autoPairHealth}
-            probeActionLoading={probeActionLoading}
-            actionLoading={actionLoading}
-            onCopyToken={() => {
-              const token = instance?.gatewayToken || bootstrap?.gatewayToken
-              if (token) {
-                navigator.clipboard.writeText(token)
-                toast.success('Token copied!')
-              } else {
-                toast.error('Token not available — try Agentbot Recovery to repair it')
-              }
-            }}
-            onRefreshPairing={() => {
-              setAutoPairHealth('loading')
-              fetchEverything()
-            }}
-            onProbeAction={handleRuntimeProbeAction}
-            onAction={performAction}
-            skillsManagerUrl={skillsManagerUrl}
-            configManagerUrl={configManagerUrl}
-          />
-        </div>
+            {/* Quick actions */}
+            <section className="mb-8">
+              <h2 className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-3">Quick Actions</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {instance.controlUiUrl && <QuickAction icon="💬" label="Chat" href={instance.controlUiUrl} variant="primary" />}
+                <QuickAction icon="🔧" label="Skills" href={skillsManagerUrl} />
+                <QuickAction icon="⚙️" label="Config" href={configManagerUrl} />
+                <QuickAction icon="📊" label="Analytics" href="/dashboard/analytics" />
+                <QuickAction icon="🔄" label="Restart" onClick={() => performAction('restart')} />
+                <QuickAction icon="⏹" label="Stop" onClick={() => performAction('stop')} variant="danger" />
+                <QuickAction icon="📡" label="Probe" onClick={() => handleRuntimeProbeAction('probe')} />
+                <QuickAction icon="💰" label="Billing" href="/billing" />
+              </div>
+            </section>
+
+            {/* Control panel */}
+            <InstanceControlPanel instance={instance} stats={stats} controlsEnabled={controlsEnabled} autoPairHealth={autoPairHealth} probeActionLoading={probeActionLoading} actionLoading={actionLoading} communityRewards={{ connected: false, walletAddress: null, claimed: false, currentTier: null, balanceUi: null, creditsClaimed: 0 }} onCopyToken={() => { const token = instance?.gatewayToken || bootstrap?.gatewayToken; if (token) { navigator.clipboard.writeText(token); toast.success('Token copied!') } else { toast.error('Token not available') } }} onRefreshPairing={() => { setAutoPairHealth('loading'); fetchEverything() }} onProbeAction={handleRuntimeProbeAction} onAction={performAction} skillsManagerUrl={skillsManagerUrl} configManagerUrl={configManagerUrl} />
+          </div>
         </main>
       </div>
 
       {confirmDialog && (
-        <ConfirmDialog
-          open={!!confirmDialog}
-          onOpenChange={(open: boolean) => { if (!open) setConfirmDialog(null) }}
-          title={confirmDialog.title}
-          description={confirmDialog.description}
-          confirmLabel={confirmDialog.confirmLabel}
-          pendingLabel={confirmDialog.pendingLabel}
-          variant={confirmDialog.variant}
-          onConfirm={async () => {
-            setConfirmDialog(null)
-            await performAction(confirmDialog.action)
-          }}
-        />
+        <ConfirmDialog open={!!confirmDialog} onOpenChange={(open: boolean) => { if (!open) setConfirmDialog(null) }} title={confirmDialog.title} description={confirmDialog.description} confirmLabel={confirmDialog.confirmLabel} pendingLabel={confirmDialog.pendingLabel} variant={confirmDialog.variant} onConfirm={async () => { setConfirmDialog(null); await performAction(confirmDialog.action) }} />
       )}
     </div>
   )

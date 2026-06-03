@@ -199,6 +199,7 @@ export default function ConfigEditorPage() {
     <DashboardShell>
       <DashboardHeader
         title="Config Editor"
+        subtitle="View, edit, and version your agent configuration"
         icon={<Settings className="h-5 w-5 text-orange-500" />}
         action={
           <div className="flex items-center gap-2">

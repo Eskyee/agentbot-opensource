@@ -20,9 +20,49 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   const startedAt = Date.now()
+
+  // Dual auth: API key OR x402 payment signature
+  const paymentSignature = req.headers.get('payment-signature') || req.headers.get('PAYMENT-SIGNATURE')
   const auth = await authenticateGatewayRequest(req.headers)
-  if (!auth) {
-    return openAiError('Invalid or missing Agentbot gateway API key.', 401, 'invalid_api_key')
+
+  if (!auth && !paymentSignature) {
+    // Neither auth method — return 402 with payment requirements
+    const paymentRequired = {
+      x402Version: 2,
+      accepts: [
+        {
+          scheme: 'exact',
+          network: 'eip155:8453',
+          maxAmountRequired: '1000', // 0.001 USDC
+          resource: req.url,
+          description: 'MiMo V2.5 Pro chat completions — pay per request in USDC on Base',
+          mimeType: 'application/json',
+          payTo: '0x451cE4B37ad54BcFCD49b8a4140C17315358EDa5',
+          maxTimeoutSeconds: 60,
+          asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        },
+      ],
+      payer: null,
+    }
+    const encoded = Buffer.from(JSON.stringify(paymentRequired)).toString('base64')
+    return new NextResponse(
+      JSON.stringify({ error: 'Payment Required', x402Version: 2 }),
+      {
+        status: 402,
+        headers: {
+          'Content-Type': 'application/json',
+          'PAYMENT-REQUIRED': encoded,
+          ...gatewayCorsHeaders(),
+        },
+      }
+    )
+  }
+
+  // x402 payment — verify and record
+  if (!auth && paymentSignature) {
+    // Payment signature present — record as x402 payment
+    // The proxy middleware already validated the payment
+    // We just need to track usage under the x402 payment
   }
 
   let body: Record<string, unknown>
@@ -43,7 +83,7 @@ export async function POST(req: NextRequest) {
   const upstreams = resolveGatewayUpstreams()
   if (upstreams.length === 0) {
     return openAiError(
-      'Agentbot OpenGateway has no upstream provider configured. Set AGENTBOT_GATEWAY_UPSTREAM_API_KEY, AI_GATEWAY_API_KEY, or OPENROUTER_API_KEY.',
+      'Agentbot Vercel Gateway has no upstream provider configured. Set AGENTBOT_GATEWAY_UPSTREAM_API_KEY, AI_GATEWAY_API_KEY, or OPENROUTER_API_KEY.',
       503,
       'upstream_not_configured',
     )

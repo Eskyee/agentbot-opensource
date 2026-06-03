@@ -181,7 +181,7 @@ export function getAgentEnvVars(
     },
     agents: {
       defaults: {
-        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+        model: { primary: 'xiaomi/mimo-v2.5-pro' },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
     },
@@ -368,7 +368,7 @@ export async function provisionOnRailway(
   })
 
   // 3. Generate public domain (must happen before deploy)
-  let url = `https://${serviceName}YOUR_SERVICE_URL`
+  let url = `https://${serviceName}.up.railway.app`
   try {
     const domainResult = await railwayGql<{
       serviceDomainCreate: { domain: string }

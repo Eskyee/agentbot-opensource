@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useTransition } from 'react';
+import { toast } from 'sonner';
 import { useCustomSession } from '@/app/lib/useCustomSession';
 import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch';
 import { Wallet, ExternalLink, Copy, Check } from 'lucide-react';
@@ -348,7 +349,7 @@ export default function WalletPage() {
                             } else if (res.status === 401) {
                               window.location.href = data.loginUrl || '/signup';
                             } else if (data.error) {
-                              alert(`Top-up error: ${data.error}`);
+                              toast.error(data.error || 'Top-up failed');
                             }
                           } catch (err) {
                             console.error('Top-up error:', err);

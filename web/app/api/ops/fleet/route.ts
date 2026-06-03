@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
-const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://YOUR_SERVICE_URL'
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://YOUR_SERVICE_URL'
+const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://openclaw-production-a09d.up.railway.app'
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://agentbot-backend-production.up.railway.app'
 
 interface FleetNode {
   id: string
@@ -152,7 +152,7 @@ export async function GET() {
         cpu: metrics.cpu,
         mem: metrics.mem,
         p50: 0,
-        model: agent.model || 'mimo-v2-pro',
+        model: agent.model || 'mimo-v2.5-pro',
         userId: agent.userId,
         createdAt: agent.createdAt.toISOString(),
       }
@@ -169,7 +169,7 @@ export async function GET() {
         cpu: 0,
         mem: 0,
         p50: 0,
-        model: 'mimo-v2-pro',
+        model: 'mimo-v2.5-pro',
       })
     }
 

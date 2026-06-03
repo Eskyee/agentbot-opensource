@@ -13,7 +13,7 @@ The Borg Dashboard reported "Soul offline" (503) because the underlying soul hos
 
 ### 错误信息
 ```
-No healthy soul host found from: https://YOUR_SERVICE_URL, https://YOUR_SERVICE_URL
+No healthy soul host found from: https://agentbot-agent-8711c7cdf8242b25-production.up.railway.app, https://borg-0-production-7139.up.railway.app
 ```
 
 ### 上下文

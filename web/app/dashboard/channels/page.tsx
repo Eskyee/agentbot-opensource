@@ -1,6 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { Radio } from 'lucide-react'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
 
 interface Channel {
   id: string
@@ -100,12 +106,16 @@ export default function ChannelsPage() {
   const [expandedId, setExpandedId] = useState<string | null>('telegram')
 
   return (
-    <main className="min-h-screen bg-black text-white font-mono">
-      <div className="mx-auto max-w-4xl px-6 py-16">
-        {/* Header */}
-        <div className="mb-12">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 block">Settings</span>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase mb-4">Connect Your Agent</h1>
+    <DashboardShell>
+      <DashboardHeader
+        title="Channels"
+        subtitle="Connect your agent to messaging platforms"
+        icon={<Radio className="h-5 w-5 text-orange-500" />}
+        count={channels.filter(c => c.status === 'connected').length}
+      />
+
+      <DashboardContent className="max-w-4xl space-y-8">
+        <div>
           <p className="text-zinc-400 text-sm max-w-xl leading-relaxed">
             Your agent lives in the cloud. Bring it to where you already message. Pick a channel, connect in minutes, and start chatting — no dashboard required.
           </p>
@@ -193,7 +203,7 @@ export default function ChannelsPage() {
         </div>
 
         {/* Help */}
-        <div className="mt-12 border border-zinc-800 p-6">
+        <div className="border border-zinc-800 bg-zinc-950 p-6">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Need Help?</div>
           <p className="text-sm text-zinc-400 mb-4">
             If your agent isn&apos;t responding after connecting, go to your dashboard and click &quot;Restart Agent.&quot; Wait for it to restart, then message again.
@@ -205,7 +215,7 @@ export default function ChannelsPage() {
             Back to Dashboard →
           </a>
         </div>
-      </div>
-    </main>
+      </DashboardContent>
+    </DashboardShell>
   )
 }

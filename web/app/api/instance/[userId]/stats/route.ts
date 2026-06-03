@@ -18,7 +18,7 @@ export async function GET(
   }
   const { user } = owned
 
-  const runtimeUrl = user.openclawUrl || `https://agentbot-agent-${userId}YOUR_SERVICE_URL`
+  const runtimeUrl = user.openclawUrl || `https://agentbot-agent-${userId}-production.up.railway.app`
   const runtime = await probeOpenClawRuntime(runtimeUrl)
   const status = runtime.status === 'healthy' ? 'running' : runtime.status
   const health = runtime.status === 'running' || runtime.status === 'healthy'

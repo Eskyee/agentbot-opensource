@@ -1,181 +1,180 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
-import { logUsage } from '@/lib/usage-logger'
-import { APP_URL } from '@/app/lib/app-url'
+import crypto from 'crypto'
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
+// Route demo through the bridge (same as /chat) — uses local OpenClaw
+const BRIDGE_SECRET = process.env.BRIDGE_SECRET || ''
+const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
+const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
+const OPENROUTER_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
+const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || ''
+const MAX_DEMO_MESSAGES = 10
 
-const DEMO_MODELS = [
-  { id: 'xiaomi/mimo-v2-pro', name: 'MiMo-V2-Pro', provider: 'Xiaomi' },
-  { id: 'anthropic/claude-sonnet-4.5', name: 'Claude Sonnet 4.5', provider: 'Anthropic' },
-  { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
-  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'Google' },
-  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', provider: 'DeepSeek' },
-  { id: 'minimax/minimax-chat', name: 'MiniMax M2.7', provider: 'MiniMax' },
-]
+const rateLimit = new Map<string, { count: number; resetAt: number }>()
 
-export async function POST(req: NextRequest) {
-  const ip = getClientIP(req)
-  if (await isRateLimited(ip)) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimit.get(ip)
+  if (!entry || now > entry.resetAt) {
+    rateLimit.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 })
+    return true
   }
-
-  try {
-    const { message, model, mode, conversation } = await req.json()
-
-    if (!message) {
-      return NextResponse.json({ error: 'Message required' }, { status: 400 })
-    }
-
-    // Always use server-side key — never accept caller-supplied keys
-    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
-
-    if (!OPENROUTER_API_KEY) {
-      return NextResponse.json({ error: 'Demo unavailable — service not configured.' }, { status: 503 })
-    }
-
-    const modelId = model || 'xiaomi/mimo-v2-pro'
-
-    // Only allow user-role messages from client conversation history (prevent role injection)
-    const safeHistory = (Array.isArray(conversation) ? conversation : [])
-      .filter((m: any) => m && m.role === 'user' && typeof m.content === 'string')
-      .map((m: any) => ({ role: 'user' as const, content: String(m.content).slice(0, 4000) }))
-
-const AGENTBOT_SYSTEM_PROMPT = `You are Agentbot, an AI agent platform for music operations deployed on Base.
-
-## What is Agentbot?
-Agentbot deploys OpenClaw (300K+ GitHub stars) to the cloud. Users sign up, choose a plan, and get a 24/7 AI agent that works across Telegram, Discord, WhatsApp. New users get a default OpenClaw agent ready in 60 seconds.
-
-## Pricing (4 Plans)
-- SOLO: £29/mo — 1 concurrent thread, Telegram, 100 BlockDB queries/mo, default OpenClaw agent
-- COLLECTIVE: £69/mo — 3 concurrent threads, Telegram+WhatsApp, 5K BlockDB, x402 payments, agent-to-agent marketplace
-- LABEL: £149/mo — 10 concurrent threads, all channels, white-label, staging, colony management
-- NETWORK: £499/mo + 15% revenue — unlimited, dedicated VM, reseller tools, auto-settlement, 99.9% SLA
-
-## Core Services
-- BlockDB: Query 100M+ music components, £0.001/query, onchain attribution
-- Skills: Visual Synthesizer (artwork), Track Archaeologist (catalog), Setlist Oracle (DJ sets), Groupie Manager (fan CRM), Royalty Tracker, Demo Submitter
-- Event Skills: Ticketing (x402 USDC), Scheduler (Telegram/Discord/Email), Venue Finder (global + UK), Festival Finder (UK/Europe/USA)
-- baseFM: Submit demos, host radio shows, automatic royalty distribution
-
-## x402 Gateway (NEW)
-- Accept USDC payments on Base network
-- Tempo network settlement (sub-second, 24/7)
-- Auto-settlement: operator wallet sponsors gas for agents
-- Guard system: rate limits, payment caps, cooldowns, blacklist
-- 16 API endpoints: premium access, inference, BlockDB, agent-to-agent payments
-- MPP (Machine Payments Protocol) compliant — co-authored by Stripe and Tempo
-
-## Agent Marketplace (NEW)
-- Discover agents, agent-to-agent payments, fitness scoring
-- Dynamic pricing based on agent performance
-- Colony system: join colonies, track agent performance, success rate scoring
-- Auto-settlement: gateway operator wallet pays gas for pull-mode clients
-
-## Embedded Wallets (NEW)
-- Passkey wallets via WebAuthn (Face ID / Touch ID)
-- Domain-bound to agentbot.sh
-- No seed phrases, no MetaMask required
-- Gas sponsored by operator wallet
-- Cross-device sync via iCloud Keychain / Google Password Manager
-
-## Global Payouts (NEW)
-- Pay agents globally in seconds (140+ countries)
-- 60-80% cheaper than traditional wires
-- pathUSD stablecoin on Tempo network
-- Dollar-denominated, no currency volatility
-- 24/7 settlement — no bank holidays, no time zones
-
-## Technical
-- BYOK: Connect your own OpenRouter/Anthropic/OpenAI keys (no markup)
-- Managed: We manage keys at cost + 20%
-- Actor-model: Thread = conversation (~50MB RAM), Agent = persona config (stored), Crew = 3-10 coordinating
-- Default model: MiMo-V2-Pro (Xiaomi's flagship, 1T+ params, 1M context, #1 in programming benchmarks)
-- Tempo node: We run our own RPC node for direct network access
-
-## Skills Available
-When users ask about or want to use these skills, you can help them:
-- Visual Synthesizer: Generate artwork - POST to /api/skills/visual-synthesizer with {prompt, style}
-- Track Archaeologist: Search catalog - POST to /api/skills/track-archaeologist with {action: "search", bpm, genre, mood}
-- Setlist Oracle: Build DJ sets - POST to /api/skills/setlist-oracle with {action: "build", genre, duration}
-- Groupie Manager: Fan CRM - POST to /api/skills/groupie-manager with {action: "segment"}
-- Royalty Tracker: Check royalties - POST to /api/skills/royalty-tracker with {action: "total"}
-- Demo Submitter: Submit to Base FM - POST to /api/skills/demo-submitter with {action: "submit", title, artist}
-- Event Ticketing: Sell tickets with USDC - POST to /api/skills/event-ticketing with {action: "purchase", eventId, email, tier}
-- Event Scheduler: Schedule events - POST to /api/skills/event-scheduler with {action: "schedule", title, date, time, channels}
-- Venue Finder: Find venues globally - POST to /api/skills/venue-finder with {action: "search", city, type, capacity, maxPrice}
-- Festival Finder: Discover festivals - POST to /api/skills/festival-finder with {action: "search", genre, country, budget}
-
-## Tone
-Direct, subculture-literate, anti-hype. Use "threads" not "agents" for runtime. Use "configurations" for stored personas. Never say "unlimited" when "concurrent" is the actual limit.
-
-Be helpful, concise, and demonstrate agent capabilities.`
-
-    const messages = [
-      {
-        role: 'system',
-        content: AGENTBOT_SYSTEM_PROMPT
-      },
-      ...safeHistory,
-      { role: 'user', content: message }
-    ]
-
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': APP_URL,
-        'X-Title': 'Agentbot Demo'
-      },
-      body: JSON.stringify({
-        model: modelId,
-        messages,
-        stream: false,
-        max_tokens: 1024
-      })
-    })
-
-    if (!response.ok) {
-      const rawError = await response.text()
-      console.error('OpenRouter error:', response.status, rawError)
-      return NextResponse.json({
-        error: 'AI service error. Please try again.'
-      }, { status: response.status })
-    }
-
-    const data = await response.json()
-    
-    // Log usage for cost tracking (fire-and-forget)
-    const usage = data.usage || {};
-    logUsage({
-      userId: 'demo', // Demo endpoint — no authenticated user
-      agentId: 'demo-chat',
-      model: modelId,
-      inputTokens: usage.prompt_tokens || 0,
-      outputTokens: usage.completion_tokens || 0,
-      endpoint: '/api/demo/chat',
-      success: true,
-    });
-    
-    return NextResponse.json({
-      id: data.id,
-      model: modelId,
-      message: data.choices?.[0]?.message?.content || 'No response',
-      usage: data.usage,
-      done: true
-    })
-  } catch (error) {
-    console.error('Demo chat error:', error)
-    return NextResponse.json({ error: 'Failed to get response' }, { status: 500 })
-  }
+  if (entry.count >= MAX_DEMO_MESSAGES) return false
+  entry.count++
+  return true
 }
 
-export async function GET() {
-  return NextResponse.json({
-    models: DEMO_MODELS,
-    mode: 'demo',
-    message: 'Welcome to Agentbot Demo - try AI models without deploying'
+const SYSTEM_PROMPT = `You are Agentbot — an AI assistant made by Agentbot.sh, a platform for deploying autonomous AI agents on Base.
+
+Key facts about Agentbot:
+- Deploy autonomous agents that run 24/7 on Telegram, Discord, WhatsApp, X
+- Powered by MiMo V2.5 Pro (99% cheaper than GPT-5)
+- Agents can search the web, manage files, run code, send emails, schedule tasks
+- x402 micropayments for pay-per-use AI
+- Built for music & culture (powers baseFM — 24/7 autonomous underground radio)
+- $AGENTBOT token on Base: 0x986b41c76ab8b7350079613340ee692773b34ba3
+- Pricing: Free (BYOK), Solo £29/mo, Collective £69/mo, Label £149/mo, Network £499/mo
+
+Be helpful, concise, and show what an Agentbot agent can do. Keep responses under 200 words.
+If someone asks how to get started, point them to agentbot.sh/signup or agentbot.sh/pricing.`
+
+// Import bridge state for direct relay
+import { pendingRequests, pendingResponses } from '@/app/api/bridge/poll/route'
+
+async function callViaBridge(messages: { role: string; content: string }[]): Promise<string | null> {
+  if (!BRIDGE_SECRET) return null
+
+  const requestId = crypto.randomUUID()
+
+  pendingRequests.set(requestId, {
+    requestId,
+    userId: 'demo',
+    messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+    timestamp: Date.now(),
   })
+
+  // Wait for bridge response (poll every 500ms, timeout 45s)
+  const timeout = 45_000
+  const start = Date.now()
+
+  while (Date.now() - start < timeout) {
+    const resp = pendingResponses.get(requestId)
+    if (resp && resp.done) {
+      pendingResponses.delete(requestId)
+      return resp.content
+    }
+    await new Promise(r => setTimeout(r, 500))
+  }
+
+  pendingRequests.delete(requestId)
+  pendingResponses.delete(requestId)
+  return null
+}
+
+async function callMiMo(messages: { role: string; content: string }[]): Promise<string> {
+  const res = await fetch(`${MIMO_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${MIMO_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'mimo-v2.5-pro',
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+      max_tokens: 500,
+      temperature: 0.7,
+    }),
+    signal: AbortSignal.timeout(30_000),
+  })
+  if (!res.ok) throw new Error(`MiMo ${res.status}`)
+  const data = await res.json()
+  return data.choices?.[0]?.message?.content || 'Sorry, no response.'
+}
+
+async function callOpenRouter(messages: { role: string; content: string }[]): Promise<string> {
+  const res = await fetch(`${OPENROUTER_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENROUTER_KEY}`,
+      'HTTP-Referer': 'https://agentbot.sh',
+      'X-Title': 'Agentbot Demo',
+    },
+    body: JSON.stringify({
+      model: 'xiaomi/mimo-v2.5-pro',
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+      max_tokens: 500,
+      temperature: 0.7,
+    }),
+    signal: AbortSignal.timeout(30_000),
+  })
+  if (!res.ok) throw new Error(`OpenRouter ${res.status}`)
+  const data = await res.json()
+  return data.choices?.[0]?.message?.content || 'Sorry, no response.'
+}
+
+export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
+
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded. Try again in an hour, or sign up at agentbot.sh/signup for unlimited access.' },
+      { status: 429 }
+    )
+  }
+
+  const body = await request.json().catch(() => ({}))
+  const messages = body.messages as { role: string; content: string }[] | undefined
+
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    return NextResponse.json({ error: 'Messages array required' }, { status: 400 })
+  }
+
+  const sanitized = messages
+    .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+    .slice(-20)
+    .map(m => ({ role: m.role, content: m.content.slice(0, 2000) }))
+
+  if (sanitized.length === 0) {
+    return NextResponse.json({ error: 'No valid messages' }, { status: 400 })
+  }
+
+  // Try bridge first (local OpenClaw), then MiMo, then OpenRouter
+  try {
+    // 1. Try bridge (local OpenClaw)
+    const bridgeReply = await callViaBridge(sanitized)
+    if (bridgeReply) {
+      return NextResponse.json({ reply: bridgeReply, source: 'bridge' })
+    }
+
+    // 2. Try MiMo direct
+    if (MIMO_API_KEY) {
+      try {
+        const reply = await callMiMo(sanitized)
+        return NextResponse.json({ reply, source: 'mimo' })
+      } catch (e) {
+        console.warn('[Demo] MiMo failed:', e)
+      }
+    }
+
+    // 3. Try OpenRouter
+    if (OPENROUTER_KEY) {
+      try {
+        const reply = await callOpenRouter(sanitized)
+        return NextResponse.json({ reply, source: 'openrouter' })
+      } catch (e) {
+        console.warn('[Demo] OpenRouter failed:', e)
+      }
+    }
+
+    return NextResponse.json(
+      { error: 'AI is temporarily unavailable. Our bridge and API providers are offline. Try again shortly.' },
+      { status: 503 }
+    )
+  } catch (err) {
+    console.error('[Demo] All providers failed:', err)
+    return NextResponse.json(
+      { error: 'AI is temporarily unavailable. Try again in a moment.' },
+      { status: 502 }
+    )
+  }
 }

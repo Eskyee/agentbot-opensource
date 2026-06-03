@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface SecurityTabProps {
   twoFactorEnabled: boolean
@@ -55,7 +56,7 @@ export function SecurityTab({ twoFactorEnabled }: SecurityTabProps) {
   }
 
   const enable2FA = async () => {
-    alert('2FA setup is coming soon! This will require scanning a QR code with an authenticator app like Google Authenticator or Authy.')
+    toast.info('2FA setup is coming soon! Scan a QR code with Google Authenticator or Authy.')
   }
 
   const deleteAccount = async () => {
@@ -65,7 +66,7 @@ export function SecurityTab({ twoFactorEnabled }: SecurityTabProps) {
       window.location.href = '/'
     } catch (error) {
       console.error('Failed to delete account:', error)
-      alert('Failed to delete account')
+      toast.error('Failed to delete account')
     }
   }
 

@@ -144,7 +144,7 @@ Version:     2026.4.26
 Build:       20260426-1
 Node:        v25.8.1
 Platform:    darwin arm64
-Docker:      ghcr.io/openclaw/openclaw:2026.4.26
+Docker:      ghcr.io/openclaw/openclaw:2026.5.28
 API:         v2
 Gateway:     v2026.4.26
 Skills:      v2 manifest

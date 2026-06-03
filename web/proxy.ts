@@ -40,6 +40,46 @@ function looksLikeNextAuthToken(value: string | undefined): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  // x402 payment enforcement for /v1/x402/* routes
+  // Returns 402 with payment requirements if no valid payment header
+  if (request.nextUrl.pathname.startsWith('/v1/x402/')) {
+    const paymentHeader = request.headers.get('payment-signature') || request.headers.get('PAYMENT-SIGNATURE');
+    if (!paymentHeader) {
+      // No payment — return 402 with payment requirements in PAYMENT-REQUIRED header
+      const paymentRequired = {
+        x402Version: 2,
+        accepts: [
+          {
+            scheme: 'exact',
+            network: 'eip155:8453',
+            maxAmountRequired: '1000', // 0.001 USDC (6 decimals)
+            resource: request.url,
+            description: 'MiMo V2.5 Pro chat completions — pay per request in USDC on Base',
+            mimeType: 'application/json',
+            payTo: '0x451cE4B37ad54BcFCD49b8a4140C17315358EDa5',
+            maxTimeoutSeconds: 60,
+            asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+          },
+        ],
+        payer: null,
+      };
+      const encoded = Buffer.from(JSON.stringify(paymentRequired)).toString('base64');
+      return new NextResponse(
+        JSON.stringify({ error: 'Payment Required', x402Version: 2 }),
+        {
+          status: 402,
+          headers: {
+            'Content-Type': 'application/json',
+            'PAYMENT-REQUIRED': encoded,
+          },
+        }
+      );
+    }
+    // Payment header present — let it through to the route handler
+    return NextResponse.next();
+  }
+
+  // Dashboard auth guard
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     const customToken =
       request.cookies.get(SESSION_COOKIE_NAME)?.value ||
@@ -61,5 +101,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/dashboard/:path*', '/v1/x402/:path*'],
 };

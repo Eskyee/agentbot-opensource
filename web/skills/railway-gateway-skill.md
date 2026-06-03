@@ -10,17 +10,17 @@ Manage the OpenClaw Control UI gateway on Railway.
 
 ## Service Info
 
-- **URL:** https://YOUR_SERVICE_URL
+- **URL:** https://openclaw-gateway-production-ad37.up.railway.app
 - **Project:** OpenClaw-Agentbot (proj_cxA5FUU5aqWoH6Wz6zpyTE9)
 - **Service:** openclaw-gateway (def185af-8af6-412c-9f8f-ed50e531a331)
 - **Region:** us-west1
-- **Image:** ghcr.io/openclaw/openclaw:2026.4.26 (wrapped by gateway/Dockerfile)
+- **Image:** ghcr.io/openclaw/openclaw:2026.5.28 (wrapped by gateway/Dockerfile)
 - **Gateway Token:** f0dc61a4b42057275eab13e0eb7ede8f17f0709ae06ae9984a5b019850370710
 
 ## Architecture
 
 ```
-Dockerfile → wraps ghcr.io/openclaw/openclaw:2026.4.26
+Dockerfile → wraps ghcr.io/openclaw/openclaw:2026.5.28
 entrypoint.sh → writes config → exec openclaw gateway
 railway.json → healthcheck at /healthz
 ```
@@ -51,7 +51,7 @@ Config is written fresh on EVERY container start. No volumes, no env var overrid
 ## Health Check
 
 ```bash
-curl -s https://YOUR_SERVICE_URL/health
+curl -s https://openclaw-gateway-production-ad37.up.railway.app/health
 ```
 
 Expected: `{"ok":true,"status":"live"}`

@@ -1,38 +1,61 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Check } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
+
+function FAQItem({ question, answer, isFirst }: { question: string; answer: string; isFirst: boolean }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div>
+      {!isFirst && <Separator className="bg-zinc-800" />}
+      <button onClick={() => setOpen(!open)} className="w-full py-6 flex items-center justify-between text-left">
+        <dt className="text-sm font-bold text-white uppercase tracking-wider pr-4">{question}</dt>
+        <ChevronDown className={`h-4 w-4 text-zinc-500 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && <dd className="pb-6 text-sm text-zinc-400 leading-relaxed">{answer}</dd>}
+    </div>
+  )
+}
 
 const plans = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: '0',
+    features: ['1 agent, 24/7 runtime', 'All channels (Telegram, Discord, WhatsApp, X)', 'All 50+ skills', 'Full dashboard + approval queue', 'Your own MiMo key (~$20/mo at mimo.xiaomi.com)'],
+    popular: false,
+    badge: 'BYOK',
+  },
   {
     id: 'solo',
     name: 'Solo',
     price: '29',
-    features: ['1 Creative Agent thread', 'Audience engagement (Telegram)', 'Opportunity discovery', '1 vCPU / 2 GB runtime floor', 'Best for trials and light workloads'],
+    features: ['1 agent, 24/7 runtime', 'MiMo V2.5 Pro included — no key needed', 'All channels (Telegram, Discord, WhatsApp, X)', 'All 50+ skills + daily digests', 'Flat rate — no per-token charges, no surprise bills'],
     popular: false,
   },
   {
     id: 'collective',
     name: 'Collective',
     price: '69',
-    features: ['3 Creative Agent threads', '1 OpenClaw Business seat', 'Email Triage (50/day)', 'x402 USDC Invoicing', '2 vCPU / 4 GB runtime', 'Recommended production floor'],
+    features: ['3 agents, 24/7 runtime', 'MiMo V2.5 Pro included — unlimited usage', 'All channels + custom workflows', 'Thread drafting + auto-replies', 'Priority support (24h response)'],
     popular: true,
   },
   {
     id: 'label',
     name: 'Label',
     price: '149',
-    features: ['10 Creative Agent threads', '3 OpenClaw Business seats', 'Multi-inbox (A&R@, Booking@)', 'White-label emails', '4 vCPU / 8 GB runtime', 'Better for browser + multi-channel work'],
+    features: ['10 agents, 24/7 runtime', 'Everything in Collective', 'Team management (roles, permissions)', 'API access + webhooks', 'White-label (your brand, our infra)'],
     popular: false,
   },
   {
     id: 'network',
     name: 'Network',
     price: '499',
-    features: ['Unlimited Creative Agents', 'Unlimited OpenClaw seats', 'White-label (resell)', '99.9% SLA guarantee', '8 vCPU / 16 GB runtime', 'High-throughput production'],
+    features: ['Unlimited agents, 24/7 runtime', 'Everything in Label', 'Dedicated infrastructure (isolated)', 'Custom models (bring any provider)', '99.9% SLA guarantee'],
     popular: false,
   },
 ]
@@ -41,12 +64,20 @@ const paymentMethods = ['Visa', 'Mastercard', 'Apple Pay', 'Google Pay', 'PayPal
 
 const faqs = [
   {
-    q: 'What is the difference between Agentbot and OpenClaw?',
-    a: 'Agentbot = Creative Crew (fan engagement, promo, music). OpenClaw = Business Operations (email, contracts, invoicing). Solo tier gets Agentbot only. Collective+ includes OpenClaw seats.',
+    q: 'What is the Free plan?',
+    a: 'The Free plan gives you a full Agentbot agent — all channels, all skills, full dashboard — for £0/mo. You just need to bring your own MiMo API key from mimo.xiaomi.com (~$20/mo for 82B credits). We charge nothing for the platform.',
   },
   {
-    q: 'Do I need to provide my own AI API key?',
-    a: 'Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, OpenRouter, or local Ollama keys directly. You pay wholesale rates with zero markup.',
+    q: 'What is BYOK?',
+    a: 'BYOK stands for Bring Your Own Key. You provide your own MiMo subscription API key, and your agent runs on your credits. This is how we offer the free plan — you pay MiMo directly, we handle the platform.',
+  },
+  {
+    q: 'What does "MiMo V2.5 Pro included" mean?',
+    a: 'You dont need to buy a MiMo subscription. We provide the API key from our platform subscription. Your agent runs on MiMo tokens from our pool — no per-token charges, no surprise bills. Flat monthly rate, unlimited usage within fair use.',
+  },
+  {
+    q: 'What is the difference between Free and Solo?',
+    a: 'Free requires your own MiMo key (BYOK). Solo includes MiMo V2.5 Pro inference — no key needed, we handle everything. Both give you 1 agent with full features, all channels, all skills.',
   },
   {
     q: 'What payment methods do you accept?',
@@ -71,11 +102,10 @@ export default function PricingPage() {
           <div className="max-w-2xl">
             <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Pricing</span>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
-              One Creative Crew,<br />
-              <span className="text-zinc-700">One Business Mind</span>
+              Start free. Scale <span className="text-orange-500">when ready.</span>
             </h1>
             <p className="text-zinc-400 text-sm max-w-md leading-relaxed mt-8">
-              Agentbot handles your fans. OpenClaw handles your inbox. Pay how you want — card or Apple Pay.
+              Bring your own MiMo key and use Agentbot for free — forever. Or let us handle everything from £29/mo.
             </p>
           </div>
         </section>
@@ -118,11 +148,16 @@ export default function PricingPage() {
 
         {/* Plan Cards */}
         <section className="border-t border-zinc-800 pt-16 mb-16">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-800">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-px bg-zinc-800">
             {plans.map((plan) => (
               <div key={plan.id} className="bg-black p-8 flex flex-col">
                 <div className="flex items-center gap-2 mb-6">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
+                  {plan.badge && (
+                    <span className="text-[9px] uppercase tracking-widest text-orange-500 border border-orange-500/30 px-2 py-0.5">
+                      {plan.badge}
+                    </span>
+                  )}
                   {plan.popular && (
                     <span className="text-[9px] uppercase tracking-widest text-orange-500 border border-orange-500/30 px-2 py-0.5">
                       Popular
@@ -147,9 +182,9 @@ export default function PricingPage() {
                       ? 'bg-white text-black hover:bg-zinc-200'
                       : 'border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500'
                   }`}
-                  onClick={() => window.location.href = `/api/stripe/checkout?plan=${plan.id}`}
+                  onClick={() => window.location.href = plan.id === 'free' ? '/signup?plan=free' : `/api/stripe/checkout?plan=${plan.id}`}
                 >
-                  Select
+                  {plan.id === 'free' ? 'Start Free' : 'Deploy'}
                 </Button>
               </div>
             ))}
@@ -205,13 +240,7 @@ export default function PricingPage() {
 
             <div className="space-y-0">
               {faqs.map((faq, i) => (
-                <div key={i}>
-                  {i > 0 && <Separator className="bg-zinc-800" />}
-                  <div className="py-6">
-                    <dt className="text-sm font-bold text-white uppercase tracking-wider">{faq.q}</dt>
-                    <dd className="mt-2 text-sm text-zinc-400 leading-relaxed">{faq.a}</dd>
-                  </div>
-                </div>
+                <FAQItem key={i} question={faq.q} answer={faq.a} isFirst={i === 0} />
               ))}
             </div>
           </div>

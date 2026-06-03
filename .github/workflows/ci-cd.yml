@@ -23,7 +23,7 @@ jobs:
     name: Backend (TypeScript Build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4.2.2
 
       - uses: actions/setup-node@v4.1.0
         with:
@@ -47,7 +47,7 @@ jobs:
     name: Frontend (Next.js Build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4.2.2
 
       - uses: actions/setup-node@v4.1.0
         with:
@@ -69,7 +69,7 @@ jobs:
           NEXTAUTH_SECRET: 'ci-build-stub-not-a-real-secret'
           NEXTAUTH_URL: 'https://agentbot.sh'
           INTERNAL_API_KEY: 'ci-build-stub'
-          BACKEND_API_URL: 'https://YOUR_SERVICE_URL'
+          BACKEND_API_URL: 'https://agentbot-backend-production.up.railway.app'
 
       - name: Run E2E Tests
         run: cd web && (npx playwright test 2>/dev/null || echo "No E2E tests ran — skipping")
@@ -82,7 +82,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4.2.2
 
       - uses: actions/setup-node@v4.1.0
         with:
@@ -124,7 +124,7 @@ jobs:
 
       - name: Railway — backend health
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://YOUR_SERVICE_URL/health)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://agentbot-backend-production.up.railway.app/health)
           echo "Railway /health → $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "⚠️ Railway returned $STATUS"
@@ -134,7 +134,7 @@ jobs:
 
       - name: Railway — x402 gateway health
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://YOUR_SERVICE_URL/health)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://x402-gateway-production.up.railway.app/health)
           echo "x402 /health → $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "⚠️ x402 returned $STATUS"
@@ -144,7 +144,7 @@ jobs:
 
       - name: Railway — browser automation health
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://YOUR_SERVICE_URL/health)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://agentbot-browser-production.up.railway.app/health)
           echo "Browser /health → $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "⚠️ Browser returned $STATUS"

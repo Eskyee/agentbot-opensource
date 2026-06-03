@@ -15,7 +15,7 @@ export const MPP_CONFIG = {
   defaultCurrency: '0x20c0000000000000000000000000000000000000' as Address,
   
   // Agentbot's payment recipient address (Atlas operator wallet)
-  recipient: '0xYOUR_WALLET_ADDRESS_HERE' as Address,
+  recipient: '0xd8fd0e1dce89beaab924ac68098ddb17613db56f' as Address,
   
   // Enable testnet mode during development
   useTestnet: process.env.TEMPO_TESTNET === 'true',

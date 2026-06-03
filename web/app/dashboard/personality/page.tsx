@@ -170,7 +170,7 @@ export default function PersonalityPage() {
           <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">
             Choose Personality Type
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-px bg-zinc-800">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-px bg-zinc-800">
             {PERSONALITIES.map((p) => {
               const Icon = p.icon
               return (

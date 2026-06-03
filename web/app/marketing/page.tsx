@@ -321,7 +321,7 @@ export default function MarketingPage() {
               {[
                 ['identity', 'did:key · ed25519 · 14d rotation'],
                 ['workflow', 'durable · cancel-safe · replayable'],
-                ['model', 'mimo-v2-pro · gateway-pinned'],
+                ['model', 'mimo-v2.5-pro · gateway-pinned'],
                 ['state', 'SQL + gitlawb mirror · merkle'],
                 ['cache', 'centralized redis · 41ms p95'],
                 ['regions', 'iad · fra · lhr · sin · syd'],
@@ -486,7 +486,7 @@ function MiniConsole() {
   const lines = [
     { t: '00:00.000', status: 'ok', label: 'intake.signed', ms: '12ms' },
     { t: '00:00.040', status: 'ok', label: 'skill.resolve liquid.swap@2.1.0', ms: '19ms' },
-    { t: '00:00.065', status: 'ok', label: 'model.invoke mimo-v2-pro', ms: '184ms' },
+    { t: '00:00.065', status: 'ok', label: 'model.invoke mimo-v2.5-pro', ms: '184ms' },
     { t: '00:00.249', status: 'ok', label: 'tool.call bridge.x402', ms: '311ms' },
     { t: '00:00.560', status: 'warn', label: 'tool.call liquid.swap · slip 0.05%', ms: '870ms' },
     { t: '00:01.430', status: 'live', label: 'state.commit · mirror queued', ms: '…' },

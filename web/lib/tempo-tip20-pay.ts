@@ -59,7 +59,7 @@ function chainIdFromNetwork(network: string): number {
 /**
  * Sign + submit an x402 tempo-tip20 payment to a paid endpoint.
  *
- * @param url The paid endpoint URL (e.g. https://YOUR_SERVICE_URL/clone)
+ * @param url The paid endpoint URL (e.g. https://borg-0-production.up.railway.app/clone)
  * @param privateKey Server-side wallet with pathUSD balance
  * @param requestBody Body to send with the paid request
  */

@@ -44,7 +44,7 @@ services:
     ports:
       - "3001:3001"
     env_file:
-      - ./agentbot-backend/.env
+      - ./agentbot-backend/.env.local
     environment:
       NODE_ENV: development
       PORT: "3001"
@@ -69,7 +69,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - ./web/.env.local
+      - ./.env.local
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://agentbot:agentbot_local_dev@postgres:5432/agentbot

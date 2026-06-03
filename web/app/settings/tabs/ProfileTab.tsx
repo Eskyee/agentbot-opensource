@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 
 interface ProfileTabProps {
   displayName: string
@@ -39,11 +40,11 @@ export function ProfileTab({
         body: JSON.stringify({ name: displayName }),
       })
       if (res.ok) {
-        alert('Profile updated successfully')
+        toast.success('Profile updated')
       }
     } catch (error) {
       console.error('Failed to save settings:', error)
-      alert('Failed to update profile')
+      toast.error('Failed to update profile')
     } finally {
       setSaving(false)
     }

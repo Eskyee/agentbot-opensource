@@ -324,7 +324,6 @@ export default function SponsorPage() {
               <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-white">
                 <ExternalLink className="h-3 w-3" /> GitHub
               </a>
-              <Link href="/jobs" className="hover:text-white">Jobs Board</Link>
               <Link href="/dashboard" className="hover:text-white">Dashboard</Link>
             </div>
           </div>

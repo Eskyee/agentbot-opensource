@@ -6,11 +6,12 @@ import { prisma } from '@/app/lib/prisma'
 import { alertStripeFailure, sendAlert } from '@/app/lib/alerts'
 import { sendPaymentReceiptEmail } from '@/app/lib/email'
 import { signedFetch } from '@/app/lib/backend-client'
+import { isStaticBuildPhase } from '@/app/lib/build-phase'
 
 // Fail closed: guard at module load
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
-if (!webhookSecret) {
+if (!webhookSecret && !isStaticBuildPhase()) {
   console.error('[SECURITY] STRIPE_WEBHOOK_SECRET not configured — Stripe webhooks will be rejected')
 }
 
@@ -84,10 +85,23 @@ async function processStripeEvent(event: Stripe.Event): Promise<void> {
         break
 
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice & { customer_email?: string | null; amount_paid?: number }
+        const invoice = event.data.object as Stripe.Invoice & { customer_email?: string | null; amount_paid?: number; customer?: string | null; subscription?: string | null }
         const customerEmail = invoice.customer_email
         if (customerEmail) {
           await sendPaymentReceiptEmail(customerEmail, invoice.amount_paid ?? 0, 'Subscription renewal')
+        }
+        // Add monthly credits for subscription renewals
+        const renewalCredits = Math.floor((invoice.amount_paid ?? 0) / 100)
+        if (renewalCredits > 0 && invoice.customer) {
+          try {
+            await prisma.user.updateMany({
+              where: { stripeCustomerId: String(invoice.customer) },
+              data: { referralCredits: { increment: renewalCredits } },
+            })
+            console.log(`[Webhook] Added ${renewalCredits} monthly credits for subscription renewal`)
+          } catch (err) {
+            console.error('[Webhook] Failed to add renewal credits:', err)
+          }
         }
         break
       }
@@ -159,12 +173,21 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event): Promise<void
   const mappedPlan = planMap[plan] || 'solo'
   const amount = session.amount_total ?? 0
 
-  const subscriptionData = {
+  const subscriptionData: Record<string, unknown> = {
     plan: mappedPlan,
     stripeCustomerId,
     stripeSubscriptionId,
     subscriptionStatus: 'active' as const,
     subscriptionStartDate: new Date(),
+  }
+
+  // Add credits based on payment amount
+  // $10 = 10 credits, $29 = 29 credits, etc.
+  // 1 credit = 1 API call (COST_PER_CALL in /api/v1/credits)
+  const creditsToAdd = Math.floor(amount / 100) // amount is in cents
+  if (creditsToAdd > 0) {
+    subscriptionData.referralCredits = { increment: creditsToAdd }
+    console.log(`[Webhook] Adding ${creditsToAdd} credits for $${(amount / 100).toFixed(2)} payment`)
   }
 
   if (userId && userId.trim() !== '') {

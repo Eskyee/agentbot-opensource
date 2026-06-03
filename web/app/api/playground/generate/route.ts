@@ -25,7 +25,7 @@ type PlaygroundGeneration = {
 }
 
 const DEFAULT_MODEL = 'xiaomi/mimo-v2.5-pro'
-const GITLAWB_OPENGATEWAY_URL = 'https://opengateway.gitlawb.com/v1/chat/completions'
+const PLAYGROUND_MAX_TOKENS = 6000
 
 const ALLOWED_PATHS = new Set([
   '.gitignore',
@@ -56,12 +56,41 @@ function jsonResponse(error: string, status: number, details?: Record<string, un
   return NextResponse.json({ error, ...details }, { status })
 }
 
+function userFacingGenerationError(error: unknown) {
+  const message = error instanceof Error ? error.message : 'Generation failed'
+
+  if (/JSON repair returned no content|Model response did not include JSON|Generation payload is not an object/i.test(message)) {
+    return 'OpenClaude did not return valid app files. Try sending again; if it keeps happening, check the configured AI Gateway key and model access.'
+  }
+
+  if (/401|403|authentication|unauthorized|forbidden|invalid api key/i.test(message)) {
+    return 'Playground model access is not authorized. Sign in and make sure the AI Gateway API key is configured for xiaomi/mimo-v2.5-pro.'
+  }
+
+  if (/429|rate limit|rate limits|temporarily have rate limits|free credits/i.test(message)) {
+    return 'Vercel AI Gateway is rate limited for this key. Add paid credits or try again later; the playground is still using Agentbot Vercel AI Gateway.'
+  }
+
+  if (/Vercel AI Gateway is not configured|Playground model backend is not configured/i.test(message)) {
+    return 'Playground model backend is not configured. Add AI_GATEWAY_API_KEY or VERCEL_AI_GATEWAY_KEY for Agentbot Vercel AI Gateway.'
+  }
+
+  return message
+}
+
 function asString(value: unknown, fallback = ''): string {
   return typeof value === 'string' ? value : fallback
 }
 
 function safePath(path: string): boolean {
   return ALLOWED_PATHS.has(path) && !path.includes('..') && !path.startsWith('/')
+}
+
+function normalizeFilePath(path: string) {
+  const trimmed = path.trim().replace(/^\/+/, '')
+  if (trimmed === 'App.tsx') return 'src/App.tsx'
+  if (trimmed === 'index.css' || trimmed === 'App.css') return 'src/index.css'
+  return trimmed
 }
 
 function scaffoldFiles(): PlaygroundFile[] {
@@ -118,17 +147,34 @@ function normalizeGeneration(raw: unknown): PlaygroundGeneration {
   }
 
   const value = raw as Record<string, unknown>
-  const files = Array.isArray(value.files)
+  const title = asString(value.title, 'Untitled').slice(0, 80)
+  const summary = asString(value.summary, 'OpenClaude generated a project draft.').slice(0, 240)
+  const rawFiles = Array.isArray(value.files)
     ? value.files
-        .map((file) => file && typeof file === 'object' ? file as Record<string, unknown> : null)
-        .filter(Boolean)
-        .map((file) => ({
-          path: asString(file?.path).trim(),
-          language: asString(file?.language, 'text').trim() || 'text',
-          content: asString(file?.content),
-        }))
-        .filter((file) => safePath(file.path) && file.content.trim().length > 0)
-    : []
+    : value.files && typeof value.files === 'object'
+      ? Object.entries(value.files as Record<string, unknown>).map(([path, content]) => (
+          content && typeof content === 'object'
+            ? { path, ...(content as Record<string, unknown>) }
+            : { path, content }
+        ))
+      : [
+          value.appTsx || value.app || value['src/App.tsx']
+            ? { path: 'src/App.tsx', language: 'tsx', content: value.appTsx || value.app || value['src/App.tsx'] }
+            : null,
+          value.indexCss || value.css || value['src/index.css']
+            ? { path: 'src/index.css', language: 'css', content: value.indexCss || value.css || value['src/index.css'] }
+            : null,
+        ].filter(Boolean)
+
+  const files = rawFiles
+    .map((file) => file && typeof file === 'object' ? file as Record<string, unknown> : null)
+    .filter(Boolean)
+    .map((file) => ({
+      path: normalizeFilePath(asString(file?.path)),
+      language: asString(file?.language, 'text').trim() || 'text',
+      content: asString(file?.content),
+    }))
+    .filter((file) => safePath(file.path) && file.content.trim().length > 0)
 
   const completeFiles = [
     ...files,
@@ -139,20 +185,61 @@ function normalizeGeneration(raw: unknown): PlaygroundGeneration {
     throw new Error('Generation did not include editable files')
   }
 
-  const previewHtml = asString(value.previewHtml)
-  if (!previewHtml.trim()) {
-    throw new Error('Generation did not include previewHtml')
-  }
+  const previewHtml = asString(value.previewHtml).trim() || synthesizePreviewHtml(title, summary, completeFiles)
 
   return {
-    title: asString(value.title, 'Untitled').slice(0, 80),
-    summary: asString(value.summary, 'OpenClaude generated a project draft.').slice(0, 240),
+    title,
+    summary,
     previewHtml,
     files: completeFiles,
     console: Array.isArray(value.console)
       ? value.console.map((line) => asString(line)).filter(Boolean).slice(0, 8)
       : ['OpenClaude wrote files', 'Preview updated'],
   }
+}
+
+function htmlEscape(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function synthesizePreviewHtml(title: string, summary: string, files: PlaygroundFile[]) {
+  const appFile = files.find((file) => file.path === 'src/App.tsx')?.content || ''
+  const cssFile = files.find((file) => file.path === 'src/index.css')?.content || ''
+  const visibleText = Array.from(appFile.matchAll(/>([^<>{}\n]{3,80})</g))
+    .map((match) => match[1]?.trim())
+    .filter(Boolean)
+    .slice(0, 6)
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    ${cssFile.slice(0, 5000)}
+    body { min-height: 100vh; margin: 0; background: #050505; color: #fafafa; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    .agentbot-preview { min-height: 100vh; display: grid; place-items: center; padding: 32px; background: radial-gradient(circle at top right, rgba(249, 115, 22, .2), transparent 30%), #050505; }
+    .agentbot-preview-card { width: min(760px, 100%); border: 1px solid #27272a; background: rgba(9, 9, 11, .92); padding: 28px; }
+    .agentbot-preview-kicker { color: #f97316; font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .18em; text-transform: uppercase; }
+    .agentbot-preview h1 { margin: 12px 0; font-size: clamp(34px, 7vw, 72px); line-height: .95; }
+    .agentbot-preview p, .agentbot-preview li { color: #a1a1aa; line-height: 1.65; }
+  </style>
+</head>
+<body>
+  <main class="agentbot-preview">
+    <section class="agentbot-preview-card">
+      <div class="agentbot-preview-kicker">Agentbot preview</div>
+      <h1>${htmlEscape(title)}</h1>
+      <p>${htmlEscape(summary)}</p>
+      ${visibleText.length ? `<ul>${visibleText.map((item) => `<li>${htmlEscape(item)}</li>`).join('')}</ul>` : ''}
+    </section>
+  </main>
+</body>
+</html>`
 }
 
 function buildSystemPrompt() {
@@ -163,7 +250,6 @@ Return ONLY valid JSON. Do not wrap it in markdown.
 Build a small, polished React app from the user's request. Output:
 - title: short project title
 - summary: one sentence
-- previewHtml: a complete standalone HTML document for iframe preview. Inline CSS and JavaScript are allowed. It must visually match the generated React app.
 - files: produce only these editable app files:
   src/App.tsx, src/index.css
 - console: 3-6 concise build log lines
@@ -173,6 +259,7 @@ Code requirements:
 - Keep App.tsx self-contained and readable.
 - Keep CSS in src/index.css.
 - Keep src/App.tsx and src/index.css compact; under 160 lines each.
+- Do not include previewHtml unless it is a short static preview under 1200 characters.
 - Do not include secrets, external trackers, remote scripts, or network calls.
 - Do not use markdown prose outside JSON.
 - JSON strings must escape newlines correctly.`
@@ -180,6 +267,10 @@ Code requirements:
 
 function buildUserPrompt(prompt: string) {
   return `Create this app in the playground:\n\n${prompt}\n\nThe examples available in the UI are: ${EXAMPLE_PROMPTS.join(', ')}.`
+}
+
+function resolvePlaygroundGatewayUpstreams() {
+  return resolveGatewayUpstreams().filter((upstream) => upstream.provider === 'vercel-ai-gateway')
 }
 
 async function repairGenerationJson(content: string, upstream: ReturnType<typeof resolveGatewayUpstreams>[number], model: string) {
@@ -191,12 +282,12 @@ async function repairGenerationJson(content: string, upstream: ReturnType<typeof
       messages: [
         {
           role: 'system',
-          content: 'Repair the user payload into valid JSON only. Preserve all fields and code content. Return no markdown.',
+          content: 'Repair the user payload into compact valid JSON only. Return title, summary, files, and console. Preserve src/App.tsx and src/index.css code content. Omit previewHtml unless it is already short and valid. Return no markdown.',
         },
         { role: 'user', content },
       ],
       temperature: 0,
-      max_tokens: 1800,
+      max_tokens: PLAYGROUND_MAX_TOKENS,
       ...(upstream.provider === 'openrouter' ? { reasoning: { max_tokens: 0 } } : {}),
     }),
     signal: AbortSignal.timeout(110_000),
@@ -219,7 +310,7 @@ async function repairGenerationJson(content: string, upstream: ReturnType<typeof
 }
 
 async function generateWithVercelGateway(prompt: string, model: string) {
-  const upstreams = resolveGatewayUpstreams()
+  const upstreams = resolvePlaygroundGatewayUpstreams()
   if (upstreams.length === 0) {
     throw new Error('Vercel AI Gateway is not configured.')
   }
@@ -237,7 +328,7 @@ async function generateWithVercelGateway(prompt: string, model: string) {
           { role: 'user', content: buildUserPrompt(prompt) },
         ],
         temperature: 0.35,
-        max_tokens: 1800,
+        max_tokens: PLAYGROUND_MAX_TOKENS,
         ...(upstream.provider === 'openrouter' ? { reasoning: { max_tokens: 0 } } : {}),
       }),
       signal: AbortSignal.timeout(110_000),
@@ -261,46 +352,25 @@ async function generateWithVercelGateway(prompt: string, model: string) {
 
     try {
       return normalizeGeneration(extractJson(content))
-    } catch {
-      return repairGenerationJson(content, upstream, model)
+    } catch (parseError) {
+      try {
+        return await repairGenerationJson(content, upstream, model)
+      } catch (repairError) {
+        lastFailure = repairError instanceof Error
+          ? repairError.message
+          : parseError instanceof Error
+            ? parseError.message
+            : `${upstream.provider} returned invalid JSON`
+        console.warn('[playground.generate] upstream returned invalid JSON', {
+          provider: upstream.provider,
+          error: lastFailure,
+        })
+        continue
+      }
     }
   }
 
   throw new Error(lastFailure || 'All configured playground model upstreams failed.')
-}
-
-async function generateWithGitlawbOpengateway(prompt: string, model: string, apiKey: string) {
-  const response = await fetch(GITLAWB_OPENGATEWAY_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: model.replace(/^xiaomi\//, ''),
-      messages: [
-        { role: 'system', content: buildSystemPrompt() },
-        { role: 'user', content: buildUserPrompt(prompt) },
-      ],
-      temperature: 0.35,
-    }),
-    signal: AbortSignal.timeout(55_000),
-  })
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => '')
-    throw new Error(`GitLawb Opengateway failed with ${response.status}${text ? `: ${text.slice(0, 300)}` : ''}`)
-  }
-
-  const data = await response.json() as {
-    choices?: Array<{ message?: { content?: string } }>
-  }
-  const content = data.choices?.[0]?.message?.content
-  if (!content) {
-    throw new Error('GitLawb Opengateway returned no content')
-  }
-
-  return normalizeGeneration(extractJson(content))
 }
 
 function localMockGeneration(prompt: string): PlaygroundGeneration {
@@ -486,23 +556,17 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    if (resolveGatewayUpstreams().length > 0) {
+    if (resolvePlaygroundGatewayUpstreams().length > 0) {
       const generation = await generateWithVercelGateway(prompt, model)
-      return NextResponse.json({ provider: 'agentbot-opengateway', model, generation })
-    }
-
-    const opengatewayKey = process.env.GITLAWB_OPENGATEWAY_API_KEY || process.env.OPENGATEWAY_API_KEY
-    if (opengatewayKey) {
-      const generation = await generateWithGitlawbOpengateway(prompt, model, opengatewayKey)
-      return NextResponse.json({ provider: 'gitlawb-opengateway', model, generation })
+      return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation })
     }
 
     return jsonResponse('Playground model backend is not configured.', 503, {
-      requiredEnv: ['AGENTBOT_GATEWAY_UPSTREAM_API_KEY', 'AI_GATEWAY_API_KEY', 'OPENROUTER_API_KEY', 'GITLAWB_OPENGATEWAY_API_KEY'],
+      requiredEnv: ['AI_GATEWAY_API_KEY', 'VERCEL_AI_GATEWAY_KEY'],
       localTestEnv: 'Set PLAYGROUND_ALLOW_LOCAL_MOCK=1 only for offline UI testing.',
     })
   } catch (error) {
     console.error('[playground.generate] failed', error)
-    return jsonResponse(error instanceof Error ? error.message : 'Generation failed', 502)
+    return jsonResponse(userFacingGenerationError(error), 502)
   }
 }

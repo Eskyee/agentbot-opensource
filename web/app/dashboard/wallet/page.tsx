@@ -740,8 +740,20 @@ export default function WalletPage() {
                         </div>
                       ))
                     ) : (
-                      <div className="bg-zinc-950 p-4 text-sm text-zinc-500">
-                        No recent USDC transfers were found in the current indexed window.
+                      <div className="bg-zinc-950 p-6 text-center">
+                        <p className="text-2xl mb-3">📭</p>
+                        <p className="text-sm text-zinc-400 mb-1">No recent transfers</p>
+                        <p className="text-xs text-zinc-600 mb-4">
+                          No USDC transfers found in the current indexed window. Full history is available on Basescan.
+                        </p>
+                        <a
+                          href={`https://basescan.org/address/${effectiveAddress}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 border border-zinc-800 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                        >
+                          View on Basescan <ExternalLink className="h-3 w-3" />
+                        </a>
                       </div>
                     )}
                   </div>

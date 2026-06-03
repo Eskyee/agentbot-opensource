@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     await resend.emails.send({
       from: 'Agentbot Partners <onboarding@resend.dev>',
-      to: ['YOUR_ADMIN_EMAIL_2'],
+      to: ['rbasefm@icloud.com'],
       subject: `${fastTrack ? '🚀 FAST TRACK' : 'New'} Partner Inquiry: ${name}${company ? ` from ${company}` : ''} [${type}]`,
       html: `
         <h2>${fastTrack ? '🚀 FAST TRACK - Enterprise Partner' : 'New Partner Inquiry'}</h2>

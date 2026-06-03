@@ -13,6 +13,7 @@ import {
   AgentsTab,
   BasefmTab,
   IntegrationsTab,
+  ByokTab,
 } from './tabs'
 import { buildAppUrl } from '@/app/lib/app-url'
 
@@ -25,6 +26,7 @@ const TABS = [
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
   { id: 'basefm', label: 'baseFM', icon: '📻' },
   { id: 'integrations', label: 'Integrations', icon: '🔌' },
+  { id: 'byok', label: 'API Keys', icon: '⚡' },
 ]
 
 export default function SettingsPage() {
@@ -131,7 +133,7 @@ export default function SettingsPage() {
     <div className="flex min-h-screen bg-black">
       <DashboardSidebar
         userName={userName}
-        plan="Solo"
+        plan={session?.user?.plan || 'Solo'}
         isAdmin={session?.user?.isAdmin === true}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
@@ -167,7 +169,8 @@ export default function SettingsPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-0 mb-6 sm:mb-8 overflow-x-auto pb-2 border-b border-zinc-800 -mx-4 sm:mx-0 px-4 sm:px-0">
+            <div className="relative">
+            <div className="flex gap-0 mb-6 sm:mb-8 overflow-x-auto pb-2 border-b border-zinc-800 -mx-4 sm:mx-0 px-4 sm:px-0 scrollbar-none">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
@@ -182,6 +185,9 @@ export default function SettingsPage() {
                   <span>{tab.label}</span>
                 </button>
               ))}
+            </div>
+            {/* Scroll fade indicator — shows on mobile when tabs overflow */}
+            <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-zinc-900 to-transparent pointer-events-none sm:hidden" />
             </div>
 
             {/* Tab Content — each tab manages its own state */}
@@ -346,6 +352,7 @@ export default function SettingsPage() {
             {activeTab === 'basefm' && <BasefmTab />}
 
             {activeTab === 'integrations' && <IntegrationsTab />}
+            {activeTab === 'byok' && <ByokTab agents={effectiveAgents} />}
           </div>
         </main>
       </div>

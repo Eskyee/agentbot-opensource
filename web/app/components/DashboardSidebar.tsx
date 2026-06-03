@@ -28,82 +28,58 @@ export const operatorNavSection = {
 };
 
 export const navSections = [
-  // PRIMARY: Core agent management — the "one good idea"
+  // CORE: What users actually need
   {
-    label: 'Agents',
+    label: 'Agent',
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: '◈' },
-      { label: 'Ops Center', href: '/dashboard/ops', icon: '◈' },
-      { label: 'Team', href: '/dashboard/team', icon: '⬢' },
-      { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
-      { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
+      { label: 'X Agent', href: '/dashboard/x', icon: '𝕩' },
       { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
-      { label: 'Borg Soul', href: '/dashboard/borg', icon: '◭' },
-      { label: 'Signals', href: '/dashboard/signals', icon: '⌁' },
-      { label: 'Creator Console', href: '/dashboard/creator', icon: '▰' },
-    ],
-  },
-  {
-    label: 'Chain',
-    items: [
-      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
-      { label: 'Solana', href: '/dashboard/solana', icon: '◑' },
-      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
-      { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
-      { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
-      { label: 'ClawBank', href: '/dashboard/clawbank', icon: '🏦' },
-    ],
-  },
-  {
-    label: 'Education',
-    items: [
-      { label: 'Coach', href: '/dashboard/coach', icon: '🎓' },
-      { label: 'Learn', href: '/learn', icon: '📖' },
-      { label: 'Guide', href: '/guide', icon: '?' },
-    ],
-  },
-  {
-    label: 'Runtime',
-    items: [
-      { label: 'Verify Agent', href: '/dashboard/verify', icon: '🛡' },
-      { label: 'Maintenance', href: '/dashboard/maintenance', icon: '✦' },
       { label: 'Workflows', href: '/dashboard/workflows', icon: '⊞' },
-      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '⇄' },
+      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '◉' },
     ],
   },
-  // SECONDARY: network, operations — power-user features
+  {
+    label: 'Finance',
+    items: [
+      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
+      { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
+      { label: 'Billing', href: '/billing', icon: '☆' },
+      { label: 'Credits', href: '/credits', icon: '💰' },
+      { label: 'Usage', href: '/usage/global', icon: '📊' },
+    ],
+  },
   {
     label: 'Network',
     items: [
-      { label: 'Community', href: '/dashboard/community', icon: '✦' },
-      { label: 'Buddies', href: '/buddies', icon: '🐚' },
-      { label: 'Git City', href: '/dashboard/git-city', icon: '⌂' },
       { label: 'Gitlawb Network', href: '/dashboard/gitlawb-network', icon: '◉' },
-      { label: 'DJ Stream', href: '/dashboard/dj-stream', icon: '⏵' },
-      { label: 'Mix Uploads', href: '/dashboard/mixtape', icon: '⏶' },
-      { label: 'Jobs', href: '/jobs', icon: '◈' },
-    ],
-  },
-  {
-    label: 'Operations',
-    items: [
-      { label: 'Paid Tools', href: '/dashboard/tools', icon: '◫' },
-      { label: 'ClawMerchants', href: '/dashboard/market-intel', icon: '▣' },
+      { label: 'Community', href: '/dashboard/community', icon: '✦' },
       { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '☼' },
-      { label: 'Devices', href: '/dashboard/devices', icon: '▪' },
-      { label: 'Browser', href: '/dashboard/browser', icon: '🌐' },
-      { label: 'Sandbox', href: '/dashboard/sandbox', icon: '🖥' },
-      { label: 'Support', href: '/dashboard/support', icon: '☰' },
     ],
   },
   {
     label: 'Account',
     items: [
-      { label: 'Billing', href: '/billing', icon: '☆' },
-      { label: 'Domains', href: '/dashboard/domains', icon: '🌍' },
-      { label: 'Feedback', href: '/dashboard/feedback', icon: '💬' },
       { label: 'Settings', href: '/settings', icon: '⚙' },
+      { label: 'Support', href: '/dashboard/support', icon: '☰' },
+    ],
+  },
+  // ADVANCED: Collapsed by default, power users only
+  {
+    label: 'Advanced',
+    collapsed: true,
+    items: [
+      { label: 'Ops Center', href: '/dashboard/ops', icon: '◈' },
+      { label: 'Team', href: '/dashboard/team', icon: '⬢' },
+      { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
+      { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
+      { label: 'Coach', href: '/dashboard/coach', icon: '🎓' },
+      { label: 'Maintenance', href: '/dashboard/maintenance', icon: '✦' },
+      { label: 'Paid Tools', href: '/dashboard/tools', icon: '◫' },
+      { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
+      { label: 'Devices', href: '/dashboard/devices', icon: '▪' },
       { label: 'Showcase', href: '/showcase', icon: '✧' },
+      { label: 'Feedback', href: '/dashboard/feedback', icon: '💬' },
     ],
   },
 ];

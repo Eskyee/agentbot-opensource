@@ -154,6 +154,10 @@ export interface ContainerResult {
   startedAt?: string;
   serviceId?: string;
   url?: string;
+  restartCount?: number;
+  lastExitCode?: number | null;
+  lastExitAt?: string | null;
+  lastDeployAt?: string | null;
   /** Auto-connect Control UI URL with token embedded in fragment (never sent to server) */
   controlUiUrl?: string;
 }
@@ -276,7 +280,7 @@ export async function createContainer(
     const existingDomain = await getServiceDomain(existingId).catch(() => null);
     const existingUrl = existingDomain
       ? `https://${existingDomain}`
-      : `https://${serviceName}YOUR_SERVICE_URL`;
+      : `https://${serviceName}.up.railway.app`;
     console.log(`[ContainerManager/Railway] Reusing existing service ${existingId} (${serviceName}) for ${userId} → ${existingUrl}`);
     return {
       container: serviceName,
@@ -345,7 +349,7 @@ export async function createContainer(
     agents: {
       defaults: {
         workspace: OPENCLAW_WORKSPACE_DIR,
-        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+        model: { primary: 'xiaomi/mimo-v2.5-pro', fallbacks: ['xiaomi/mimo-v2.5'] },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
     },
@@ -465,17 +469,17 @@ export async function createContainer(
   // Use the Railway-provided domain (with targetPort: 18789)
   const serviceUrl = serviceDomain?.domain
     ? `https://${serviceDomain.domain}`
-    : `https://${serviceName}YOUR_SERVICE_URL`;
+    : `https://${serviceName}.up.railway.app`;
 
   const controlUiBase = (
     process.env.OPENCLAW_CONTROL_UI_URL ||
     process.env.OPENCLAW_GATEWAY_URL ||
-    'https://YOUR_SERVICE_URL'
+    'https://openclaw-production-a09d.up.railway.app'
   )
     .replace(/\/(chat|skills|config)\/?$/, '')
     .replace(/\/$/, '');
   const controlSession = process.env.OPENCLAW_CONTROL_UI_SESSION || 'agent:main:main';
-  const gatewayUrl = `wss://${serviceDomain?.domain || `${serviceName}YOUR_SERVICE_URL`}`;
+  const gatewayUrl = `wss://${serviceDomain?.domain || `${serviceName}.up.railway.app`}`;
 
   const controlUiUrl = gatewayToken
     ? `${controlUiBase}/chat?session=${encodeURIComponent(controlSession)}#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(gatewayUrl)}`
@@ -553,7 +557,12 @@ export async function getContainerStatus(userId: string): Promise<ContainerResul
         serviceInstances: {
           edges: Array<{
             node: {
-              latestDeployment: { id: string; status: string; url?: string } | null;
+              latestDeployment: { id: string; status: string; url?: string; createdAt?: string } | null;
+              deployments?: {
+                edges: Array<{
+                  node: { id: string; status: string; createdAt: string };
+                }>;
+              };
             };
           }>;
         };

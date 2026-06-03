@@ -1,7 +1,7 @@
 import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from './platform-urls';
 
-const CANONICAL_BORG_URL = 'https://YOUR_SERVICE_URL';
-const LEGACY_BORG_URL = 'https://YOUR_SERVICE_URL';
+const CANONICAL_BORG_URL = 'https://borg-0-production.up.railway.app';
+const LEGACY_BORG_URL = 'https://borg-0-production-7139.up.railway.app';
 
 export interface ServiceHealth {
   name: string;

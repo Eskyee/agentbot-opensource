@@ -75,7 +75,6 @@ export default function BattleTestedPost() {
 
           <h3>New Features</h3>
           <ul>
-            <li><strong><Link href="/jobs" className="text-green-400">Jobs Board</Link></strong> — hire talent or find roles in the agent ecosystem, integrates with git-city API</li>
             <li><strong><Link href="/sponsor" className="text-green-400">GitHub Sponsors</Link></strong> — support the platform, tier options from $10-200/mo</li>
             <li><strong><Link href="/dashboard/git-city" className="text-green-400">Git City</Link></strong> — analyze any GitHub repo as a 3D city, view commits, contributors, stars</li>
             <li><strong>Skills Marketplace</strong> — 11 music-specific skills (Visual Synthesizer, Track Archaeologist, Royalty Tracker, etc.)</li>

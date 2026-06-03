@@ -57,6 +57,14 @@ export function normalizeStatus(value: unknown): PlaygroundProjectStatus {
   return value === 'PUBLISHED' || value === 'ARCHIVED' ? value : 'IDLE'
 }
 
+export function isMissingPlaygroundProjectTable(error: unknown) {
+  const record = error && typeof error === 'object' ? error as { code?: unknown; message?: unknown } : null
+  const code = typeof record?.code === 'string' ? record.code : ''
+  const message = typeof record?.message === 'string' ? record.message : ''
+
+  return code === 'P2021' || /PlaygroundProject.*does not exist|table .*PlaygroundProject.*does not exist/i.test(message)
+}
+
 export function normalizeGeneration(value: unknown): PlaygroundGeneration | null {
   if (!value || typeof value !== 'object') return null
 

@@ -39,7 +39,7 @@ sed -i '' "s|OpenClaw [0-9]\{4\}\.[0-9]*\.[0-9]*|OpenClaw $LATEST|" \
 
 # Commit and push
 git add -A
-git commit -m "Auto-update OpenClaw to $LATEST" --author="Atlas (Agentbot Ops) <YOUR_ADMIN_EMAIL_5>"
+git commit -m "Auto-update OpenClaw to $LATEST" --author="Atlas (Agentbot Ops) <djescaba@icloud.com>"
 git push origin main
 
 echo "DONE: Updated and pushed $CURRENT_PINNED → $LATEST" >> "$LOG_FILE"

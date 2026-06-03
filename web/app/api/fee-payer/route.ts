@@ -15,6 +15,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { tempo, tempoTestnet } from 'viem/chains'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/app/lib/auth'
+import { isStaticBuildPhase } from '@/app/lib/build-phase'
 
 // Select chain based on env
 const chain = process.env.TEMPO_TESTNET === 'true' ? tempoTestnet : tempo
@@ -22,7 +23,7 @@ const chain = process.env.TEMPO_TESTNET === 'true' ? tempoTestnet : tempo
 // Fee payer account — operator wallet pays gas
 const feePayerKey = process.env.TEMPO_FEE_PAYER_KEY as `0x${string}` | undefined
 
-if (!feePayerKey) {
+if (!feePayerKey && !isStaticBuildPhase()) {
   console.warn('[FeePayer] TEMPO_FEE_PAYER_KEY not set — fee payer disabled')
 }
 
@@ -74,5 +75,4 @@ export async function GET() {
     chainId: chain.id,
   })
 }
-
 

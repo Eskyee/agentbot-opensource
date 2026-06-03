@@ -7,31 +7,43 @@ const COLUMNS = [
   {
     heading: 'Product',
     links: [
-      { href: '/playground',       label: 'Playground' },
-      { href: '/creator-toolkit',  label: 'Creator Toolkit' },
-      { href: '/opengateway',      label: 'OpenGateway' },
-      { href: '/pricing',          label: 'Pricing' },
-      { href: '/dashboard',        label: 'Dashboard' },
+      { href: '/demo',              label: 'Demo' },
+      { href: '/partner/mimo',      label: 'MiMo Partnership' },
+      { href: '/agents',            label: 'Agents' },
+      { href: '/marketplace',       label: 'Marketplace' },
+      { href: '/vercel-gateway',    label: 'Vercel Gateway' },
+      { href: '/pricing',           label: 'Pricing' },
+      { href: '/dashboard',         label: 'Dashboard' },
     ],
   },
   {
     heading: 'Builders',
     links: [
       { href: '/documentation', label: 'Docs' },
+      { href: '/blog/posts/agentbot-mimo-native', label: 'MiMo Integration' },
       { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },
+      { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
+      { href: 'https://mimo.xiaomi.com',                                 label: 'MiMo API', external: true },
+      { href: 'https://openclaw.ai',                                     label: 'OpenClaw', external: true },
     ],
   },
   {
-    heading: 'Creators',
+    heading: 'Community',
     links: [
-      { href: '/dashboard/creator', label: 'Creator Console' },
       { href: '/basefm',            label: 'baseFM Live' },
-      { href: '/blog',      label: 'Blog' },
+      { href: '/blog',              label: 'Blog' },
+      { href: '/news',              label: 'News' },
+      { href: '/social',            label: 'Social' },
+      { href: '/token',             label: '$AGENTBOT' },
     ],
   },
   {
     heading: 'Company',
     links: [
+      { href: '/why',        label: 'Why Agentbot' },
+      { href: '/showcase',   label: 'Showcase' },
+      { href: '/use-cases',  label: 'Use Cases' },
+      { href: '/partner',    label: 'Partner' },
       { href: '/terms',      label: 'Terms' },
       { href: '/privacy',    label: 'Privacy' },
     ],
@@ -40,8 +52,8 @@ const COLUMNS = [
 
 export default function Footer() {
   const [status, setStatus] = useState<'checking' | 'operational' | 'down'>('checking');
-  const [version, setVersion] = useState<string>('v0.0.0');
-  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.4.27');
+  const [version, setVersion] = useState<string>('v1.1.0');
+  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.5.28');
 
   useEffect(() => {
     async function checkStatus() {
@@ -133,7 +145,11 @@ export default function Footer() {
             </div>
             <span className="text-zinc-800 text-[10px]">|</span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-700">
-              Agentbot {version}
+              STABLE {version}
+            </span>
+            <span className="text-zinc-800 text-[10px]">|</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-800">
+              May 20, 2026 · 14 days ago
             </span>
             <span className="text-zinc-800 text-[10px]">|</span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-700">

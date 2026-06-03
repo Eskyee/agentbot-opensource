@@ -1,0 +1,45 @@
+name: Mirror to GitLawb
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    name: Push main to GitLawb
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to GitLawb
+        env:
+          GITLAWB_DID: ${{ secrets.GITLAWB_DID }}
+          GITLAWB_IDENTITY_PEM: ${{ secrets.GITLAWB_IDENTITY_PEM }}
+          GITLAWB_NODE: ${{ secrets.GITLAWB_NODE }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GITLAWB_DID:-}" ] || [ -z "${GITLAWB_IDENTITY_PEM:-}" ]; then
+            echo "GitLawb mirror skipped: configure GITLAWB_DID and GITLAWB_IDENTITY_PEM repository secrets."
+            exit 0
+          fi
+
+          mkdir -p "$RUNNER_TEMP/gitlawb-bin"
+          cp scripts/git-remote-gitlawb-http.js "$RUNNER_TEMP/gitlawb-bin/git-remote-gitlawb"
+          chmod +x "$RUNNER_TEMP/gitlawb-bin/git-remote-gitlawb"
+          export PATH="$RUNNER_TEMP/gitlawb-bin:$PATH"
+          export GITLAWB_NODE="${GITLAWB_NODE:-https://node.gitlawb.com}"
+
+          git config user.name "Agentbot Open Source Mirror"
+          git config user.email "opensource@agentbot.local"
+          git remote remove gitlawb 2>/dev/null || true
+          git remote add gitlawb "gitlawb://${GITLAWB_DID}/agentbot-opensource"
+          git push gitlawb HEAD:main

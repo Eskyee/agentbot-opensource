@@ -5,7 +5,7 @@ import TestStreamClient from './TestStreamClient'
 export default async function TestStreamPage() {
   const session = await getAuthSession()
   
-  const adminEmail = 'YOUR_ADMIN_EMAIL_2'
+  const adminEmail = 'rbasefm@icloud.com'
   
   if (!session?.user?.email || session.user.email !== adminEmail) {
     redirect('/')

@@ -4,11 +4,11 @@ import { buildAppUrl } from '@/app/lib/app-url'
 
 export const metadata: Metadata = {
   title: 'Docs — Agentbot Developer & Operator Guide',
-  description: 'Complete documentation for deploying and operating AI agents on Agentbot. Plans, models, API keys, skills, scheduled tasks, crypto wallets, and more.',
-  keywords: ['Agentbot docs', 'AI agent documentation', 'BYOK AI guide', 'agent hosting docs', 'deploy AI agent guide', 'OpenRouter guide'],
+  description: 'Complete documentation for deploying and operating AI agents on Agentbot. Powered by MiMo V2.5, built on OpenClaw. Plans from £29/mo.',
+  keywords: ['Agentbot docs', 'AI agent documentation', 'MiMo V2.5', 'OpenClaw', 'BYOK AI guide', 'agent hosting docs', 'deploy AI agent guide'],
   openGraph: {
     title: 'Agentbot Docs — Developer & Operator Guide',
-    description: 'Everything you need to deploy, operate, and grow your AI agents. Plans from £29/mo, BYOK, 15+ supported models.',
+    description: 'Everything you need to deploy, operate, and grow your AI agents. Powered by MiMo V2.5. Plans from £29/mo.',
     url: buildAppUrl('/documentation'),
   },
   alternates: {
@@ -19,216 +19,206 @@ export const metadata: Metadata = {
 const docsSections = [
   {
     title: 'Getting Started',
-    description: 'Deploy your AI agent in under a minute. We handle the infrastructure.',
-    items: ['60-second signup', 'Choose your plan', 'Connect Telegram bot', 'Add your AI API key']
+    description: 'Deploy your AI agent in under 2 minutes. MiMo handles the thinking.',
+    items: ['Sign up and choose a plan', 'Connect Telegram, Discord, or WhatsApp', 'Your agent deploys on MiMo V2.5 Pro automatically', 'No API key needed — inference is included in your plan']
   },
   {
     title: 'Plans & Resources',
-    description: 'Dual-agent architecture: Agentbot (Creative) + OpenClaw (Business).',
-    items: ['Solo £29: Creative only, no business automation', 'Collective £69: 1 OpenClaw seat (tour manager)', 'Label £149: 3 OpenClaw seats (full back office)', 'Network £499: Unlimited, white-label, SLA']
+    description: 'All plans include MiMo V2.5 Pro inference. No per-token charges.',
+    items: ['Solo £29: 1 agent, MiMo V2.5 Pro, X + Telegram', 'Collective £69: 3 agents, custom workflows, priority support', 'Label £149: 10 agents, team management, API access, white-label', 'Network £499: Unlimited agents, dedicated infra, custom models, SLA']
   },
   {
-    title: 'Agentbot vs OpenClaw',
-    description: 'Two agents, one mission: automate your music business.',
-    items: ['Agentbot: Fan engagement, promo, A&R, artwork', 'OpenClaw: Email, contracts, scraping, invoicing', 'A2A Bus: They talk to each other (Collective+)']
+    title: 'Powered by MiMo',
+    description: 'All agents run on Xiaomi MiMo V2.5 — 99% cheaper than GPT.',
+    items: ['MiMo V2.5 Pro: 1M context, built-in reasoning, multimodal', 'MiMo V2.5: Fast inference, 256K context, image support', 'MiMo TTS: Agent voices (free for a limited time)', 'MiMo ASR: Speech recognition for voice commands']
   },
   {
-    title: 'AI Models',
-    description: 'Bring your own API key. Pay AI providers directly - no markup.',
-    items: ['Use OpenRouter, Anthropic, OpenAI, or local Ollama', 'We default to MiMo-V2-Pro via OpenRouter', 'Free models to try', 'You pay only for what you use']
+    title: 'Vercel Gateway',
+    description: 'OpenAI-compatible inference gateway. MiMo direct, OpenRouter fallback.',
+    items: ['Endpoint: https://agentbot.sh/v1/chat/completions', 'MiMo direct upstream — zero middleman, lowest latency', 'OpenRouter fallback for non-MiMo models', 'API key authentication via Settings → API Keys']
+  },
+  {
+    title: 'MCP Server',
+    description: 'Skill-embedded Model Context Protocol servers. Expose tools to any MCP-compatible client.',
+    items: ['Each Agentbot skill can include an MCP server (stdio or SSE)', 'Agents auto-discover MCP tools from installed skills', 'Connect any MCP client — Cursor, Claude Desktop, Windsurf', 'Skills expose typed tool schemas with JSON Schema validation', 'Run: agentbot mcp serve --skill <name> --transport sse']
+  },
+  {
+    title: 'Agentbot SDK',
+    description: 'TypeScript SDK for building on Agentbot programmatically.',
+    items: ['npm install @agentbot/sdk', 'Provision agents, manage skills, send messages', 'Full TypeScript types for all API endpoints', 'Built-in x402 payment helpers for autonomous agent commerce', 'Streaming support for real-time agent interactions']
+  },
+  {
+    title: 'x402 MCP Services',
+    description: 'Discover and pay for MCP services using the x402 micropayment protocol.',
+    items: ['Browse paid MCP servers on the Agentic Market', 'Agents pay per-call with USDC on Base — no subscriptions', 'x402 headers handle payment negotiation automatically', 'SDK wraps x402: just call tools, payment is transparent', 'Pricing from $0.001/call — MiMo makes it viable']
   }
 ];
 
 const newFeatures = [
   {
-    title: 'Crypto Trading',
-    description: 'Bankr integration for autonomous trading. Connect your wallet and let your agent trade.',
+    title: 'BYOK — Bring Your Own Key',
+    description: 'Have your own MiMo subscription? Paste your key and run on your credits — zero platform cost.',
     links: [
-      { label: 'Trading Dashboard', href: '/dashboard/trading' },
-      { label: 'Bankr Guide', href: '/blog/posts/bankr-wallet-guide' }
+      { label: 'Settings → BYOK', href: '/settings?tab=byok' },
+      { label: 'Get MiMo Key', href: 'https://mimo.xiaomi.com' }
     ]
   },
   {
-    title: 'x402 Payments',
-    description: 'Accept USDC payments on Base. Build paid APIs that agents can pay for.',
+    title: 'Vercel Gateway API',
+    description: 'OpenAI-compatible endpoint for custom integrations. MiMo direct, streaming supported.',
+    links: [
+      { label: 'Gateway Health', href: '/vercel-gateway/health' },
+      { label: 'API Reference', href: '#api-reference' }
+    ]
+  },
+  {
+    title: 'Agent Skills',
+    description: 'Extend your agent with custom skills. Web search, file handling, code execution, and more.',
+    links: [
+      { label: 'Skills Dashboard', href: '/dashboard/skills' }
+    ]
+  },
+  {
+    title: 'Scheduled Tasks',
+    description: 'Run agents on autopilot. Set recurring tasks, cron jobs, and automated workflows.',
+    links: [
+      { label: 'Tasks Dashboard', href: '/dashboard/tasks' }
+    ]
+  },
+  {
+    title: 'MCP Server',
+    description: 'Skill-embedded Model Context Protocol. Expose agent tools to Cursor, Claude Desktop, and any MCP client.',
+    links: [
+      { label: 'MCP Docs', href: '#mcp-server' },
+      { label: 'Skills Dashboard', href: '/dashboard/skills' }
+    ]
+  },
+  {
+    title: 'Agentbot SDK',
+    description: 'TypeScript SDK for programmatic agent management. Provision, orchestrate, and pay — all from code.',
+    links: [
+      { label: 'npm Package', href: 'https://www.npmjs.com/package/@agentbot/sdk' },
+      { label: 'SDK Docs', href: '#sdk-reference' }
+    ]
+  },
+  {
+    title: 'x402 MCP Services',
+    description: 'Discover and pay for MCP services autonomously. USDC on Base, per-call pricing, zero subscriptions.',
+    links: [
+      { label: 'Agentic Market', href: '/marketplace' },
+      { label: 'x402 Docs', href: '#x402-mcp' }
+    ]
+  },
+  {
+    title: 'Crypto & Payments',
+    description: 'x402 onchain payments on Base. Accept USDC, manage wallets, process invoices.',
     links: [
       { label: 'x402 Setup', href: '#' }
     ]
   },
   {
-    title: 'Agent Skills',
-    description: 'Extend your agent with custom skills. Marketplace coming soon.',
+    title: 'Bankr Wallet',
+    description: 'AI-powered crypto wallet. Check balances across Base, Polygon, Ethereum, Solana. Execute trades with natural language.',
     links: [
-      { label: 'Skills Docs', href: '/dashboard/skills' }
+      { label: 'Settings → Bankr Key', href: '/settings' },
+      { label: 'Bankr API', href: 'https://api.bankr.bot' }
     ]
   },
   {
-    title: 'Scheduled Tasks',
-    description: 'Run agents on autopilot. Set recurring tasks and workflows.',
+    title: 'baseFM Integration',
+    description: 'AI-powered autonomous radio on Base. Agent DJs, live streaming, $RAVE token gating.',
     links: [
-      { label: 'Tasks', href: '/dashboard/tasks' }
+      { label: 'baseFM Live', href: '/basefm/live' }
     ]
-  },
-  {
-    title: 'Liquid Wallet Kit',
-    description: 'Deploy Blockstream LWK on Railway for multi-sig Liquid operations with Jade HWW.',
-    links: [
-      { label: 'LWK + Railway Guide', href: '/docs/liquid-lwk-railway' }
-    ]
-  },
-  {
-    title: 'Solana Agents',
-    description: 'Connect to Solana DeFi. Token swaps, NFT minting, 60+ MCP tools.',
-    links: [
-      { label: 'Solana Integrations', href: '/solana' }
-    ]
-  },
-  {
-    title: 'Blockchain Buddies',
-    description: 'Digital pets for your agent. Hatch, feed, and play with on-chain companions.',
-    links: [
-      { label: 'Buddies', href: '/buddies' }
-    ]
-  },
-  {
-    title: 'Agent Swarms',
-    description: 'Deploy multiple agents that work together. Coordinate complex workflows.',
-    links: [
-      { label: 'Swarms', href: '/dashboard/swarms' }
-    ]
-  },
-  {
-    title: 'Visual Workflows',
-    description: 'Build workflows with a visual editor. No code required.',
-    links: [
-      { label: 'Workflows', href: '/dashboard/workflows' }
-    ]
-  },
-  {
-    title: 'Vercel Workflows',
-    description: 'Lightweight pause/resume agents. Build with WDK - native integration coming soon.',
-    links: [
-      { label: 'Learn more', href: 'https://vercel.com/docs/workflow', external: true }
-    ],
-    badge: 'Coming Soon'
   }
 ];
 
-const planResources = [
-  { plan: 'Solo', ram: '2GB', cpu: '1 vCPU', price: '£29/mo', description: 'Trial / light workloads only' },
-  { plan: 'Collective', ram: '4GB', cpu: '2 vCPU', price: '£69/mo', description: 'Recommended production floor' },
-  { plan: 'Label', ram: '8GB', cpu: '4 vCPU', price: '£149/mo', description: 'Heavy production + browser/tool work' },
-  { plan: 'Network', ram: '16GB', cpu: '8 vCPU', price: '£499/mo', description: 'High-throughput + unlimited' },
+const apiReference = [
+  {
+    method: 'POST',
+    endpoint: '/v1/chat/completions',
+    description: 'OpenAI-compatible chat completions. MiMo V2.5 Pro default.',
+    auth: 'Bearer token (API key from Settings → API Keys)'
+  },
+  {
+    method: 'GET',
+    endpoint: '/v1/models',
+    description: 'List available models. Returns MiMo V2.5 Pro, MiMo V2.5, and fallback models.',
+    auth: 'None'
+  },
+  {
+    method: 'GET',
+    endpoint: '/vercel-gateway/health',
+    description: 'Gateway health check. Returns upstream status and latency.',
+    auth: 'None'
+  },
+  {
+    method: 'POST',
+    endpoint: '/api/user/byok',
+    description: 'Register your own MiMo API key. Validated live against MiMo API.',
+    auth: 'Session token'
+  }
 ];
 
-const supportedModels = [
-  // Best Models
-  'MiMo-V2-Pro', 'Claude Sonnet 4', 'GPT-4o', 'Gemini 2.5 Flash', 'DeepSeek R1',
-  // Good Models
-  'GPT-4o Mini', 'Claude 3 Haiku', 'Gemini 1.5 Pro', 'Mistral Large',
-  // Free/Low Cost Models
-  'Gemini 2.0 Flash', 'Gemini 1.5 Flash', 'Llama 3.1 70B', 'Groq Llama 3',
-  // Other
-  'GPT-4', 'Claude 3 Opus', 'Mistral Medium', 'DeepSeek', 
-];
-
-const tokenPricing = [
-  // Free to Very Cheap
-  { model: 'Gemini 2.0 Flash (Free)', input: 'Free', output: 'Free', note: '150 RPM' },
-  { model: 'Groq Llama 3', input: '£0.0002/1k', output: '£0.0002/1k', note: 'Ultra fast' },
-  // Cheap
-  { model: 'Gemini 1.5 Flash', input: '£0.0001/1k', output: '£0.0005/1k' },
-  { model: 'Llama 3.1 70B', input: '£0.0004/1k', output: '£0.0004/1k' },
-  // Mid-Range
-  { model: 'MiMo-V2-Pro', input: '$1/M', output: '$3/M', note: 'Default • #1 Programming' },
-  { model: 'Kimi K2.5', input: '£0.0005/1k', output: '£0.0015/1k' },
-  { model: 'GPT-4o Mini', input: '£0.0003/1k', output: '£0.0012/1k' },
-  { model: 'Claude 3 Haiku', input: '£0.0002/1k', output: '£0.0010/1k' },
-  // Premium
-  { model: 'GPT-4o', input: '£0.0022/1k', output: '£0.0088/1k' },
-  { model: 'Claude 3.5 Sonnet', input: '£0.0020/1k', output: '£0.0080/1k' },
-  { model: 'Claude Sonnet 4', input: '$3/M', output: '$15/M' },
-  { model: 'Gemini 1.5 Pro', input: '£0.0013/1k', output: '£0.0050/1k' },
-  { model: 'DeepSeek R1', input: '$0.55/M', output: '$2.19/M' },
-];
-
-export default function ViewDocsPage() {
+export default function DocumentationPage() {
   return (
     <main className="min-h-screen bg-black text-white font-mono">
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        <div className="mb-8 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest text-zinc-600">
-          <Link href="/learn" className="hover:text-white transition-colors">Learn</Link>
-          <span>/</span>
-          <span className="text-zinc-400">Docs</span>
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter uppercase mb-4">Docs</h1>
-        <p className="text-sm text-zinc-400 mb-10">
-          This is the structured reference and operator guide for Agentbot. If you want guided walkthroughs instead, start with Learn.
-        </p>
+      <div className="max-w-5xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
 
-        <div className="grid gap-px bg-zinc-800 mb-10 sm:grid-cols-3">
-          <Link href="/learn" className="bg-black p-5 hover:bg-zinc-950 transition-colors group">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Guided Path</span>
-            <h2 className="text-sm font-bold uppercase tracking-tight group-hover:text-white transition-colors">Learn Agentbot</h2>
-            <p className="text-xs text-zinc-500 mt-2">User-facing walkthroughs, onboarding, and practical “what do I do first?” guidance.</p>
-          </Link>
-          <Link href="/why" className="bg-black p-5 hover:bg-zinc-950 transition-colors group">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Platform Story</span>
-            <h2 className="text-sm font-bold uppercase tracking-tight group-hover:text-white transition-colors">Why Agentbot</h2>
-            <p className="text-xs text-zinc-500 mt-2">Best product explanation for how Agentbot fits against local OpenClaw and why the platform exists.</p>
-          </Link>
-          <Link href="/learn/developers" className="bg-black p-5 hover:bg-zinc-950 transition-colors group">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Builder Path</span>
-            <h2 className="text-sm font-bold uppercase tracking-tight group-hover:text-white transition-colors">For Developers</h2>
-            <p className="text-xs text-zinc-500 mt-2">Developer docs, APIs, SDKs, runtime guides, and architecture pages.</p>
-          </Link>
-        </div>
-
-        <div className="border border-zinc-800 bg-zinc-950 p-5 mb-10">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Full Docs Site</span>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-zinc-400 max-w-2xl">
-              Need the full documentation experience? Open the dedicated docs site for guides, reference pages, and developer docs at{' '}
-              <a
-                href="https://agentbot.sh/documentation"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white underline hover:text-zinc-300"
-              >
-                agentbot.sh/documentation
-              </a>.
-            </p>
-            <a
-              href="https://agentbot.sh/documentation"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200 transition-colors"
-            >
-              Open developer docs
-            </a>
+        {/* Header */}
+        <div className="mb-16">
+          <div className="flex flex-wrap gap-2 mb-6">
+            <span className="inline-block px-3 py-1 border border-orange-500/30 text-orange-500 text-[10px] uppercase tracking-widest">
+              Powered by MiMo
+            </span>
+            <span className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
+              Built on OpenClaw
+            </span>
           </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-[0.95]">
+            Documentation
+          </h1>
+          <p className="text-zinc-400 text-sm mt-6 max-w-lg">
+            Everything you need to deploy, operate, and grow your AI agents on Agentbot.
+            Powered by Xiaomi MiMo V2.5. Built on OpenClaw.
+          </p>
         </div>
 
-        <div className="mb-10">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-6">What&apos;s New</span>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Core Docs */}
+        <section className="mb-16">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Core</div>
+          <div className="grid sm:grid-cols-2 gap-px bg-zinc-900">
+            {docsSections.map((section) => (
+              <div key={section.title} className="bg-black p-6 sm:p-8">
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-2">{section.title}</h2>
+                <p className="text-zinc-500 text-xs mb-4">{section.description}</p>
+                <ul className="space-y-2">
+                  {section.items.map((item) => (
+                    <li key={item} className="text-zinc-400 text-xs flex items-start gap-2">
+                      <span className="text-orange-500 mt-0.5">→</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Features */}
+        <section className="mb-16">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Features</div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
             {newFeatures.map((feature) => (
-              <div key={feature.title} className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-sm uppercase tracking-tight">{feature.title}</h3>
-                  {feature.badge && (
-                    <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-orange-500/30 px-2 py-0.5">
-                      {feature.badge}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-zinc-500 mb-3">{feature.description}</p>
+              <div key={feature.title} className="bg-black p-6">
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">{feature.title}</h3>
+                <p className="text-zinc-500 text-xs mb-4">{feature.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {feature.links.map((link) => (
-                    <Link 
-                      key={link.href} 
+                    <Link
+                      key={link.label}
                       href={link.href}
-                      className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white"
+                      className="text-[10px] uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors"
                     >
                       {link.label} →
                     </Link>
@@ -237,92 +227,172 @@ export default function ViewDocsPage() {
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="grid gap-px bg-zinc-800 sm:grid-cols-2 lg:grid-cols-4 mb-10">
-          {docsSections.map((section) => (
-            <article key={section.title} className="bg-black p-6">
-              <h2 className="text-sm font-bold uppercase tracking-tighter mb-3">{section.title}</h2>
-              <p className="text-xs text-zinc-500 mb-4">{section.description}</p>
-              <ul className="space-y-2 text-xs text-zinc-400">
-                {section.items.map((item) => (
-                  <li key={item}>&mdash; {item}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
+        {/* MCP Server */}
+        <section id="mcp-server" className="mb-16">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">MCP Server</div>
+          <div className="bg-black border border-zinc-800 p-6 sm:p-8 mb-px">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-2">Skill-Embedded MCP Servers</h2>
+            <p className="text-zinc-500 text-xs mb-4">
+              Every Agentbot skill can include a Model Context Protocol server. MCP tools are auto-discovered by agents
+              and exposed to external clients like Cursor, Claude Desktop, and Windsurf.
+            </p>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 mb-4">
+              <pre className="text-[11px] text-zinc-300 font-mono overflow-x-auto">{`// skill/mcp-server.ts
+import { McpServer } from '@agentbot/sdk/mcp';
 
-        <div className="border border-zinc-800 bg-black p-5 mb-10">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Supported AI Models</span>
-          <p className="text-xs text-zinc-500 mb-4">All models available through OpenRouter with automatic fallback.</p>
-          <div className="flex flex-wrap gap-2">
-            {supportedModels.map((model) => (
-              <span key={model} className="text-[10px] uppercase tracking-widest border border-zinc-800 text-zinc-400 px-3 py-1">
-                {model}
-              </span>
+const server = new McpServer({
+  name: 'venue-finder',
+  version: '1.0.0',
+});
+
+server.tool('find_venues', {
+  description: 'Search venues by location and capacity',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      city: { type: 'string' },
+      capacity: { type: 'number' },
+    },
+    required: ['city'],
+  },
+}, async ({ city, capacity }) => {
+  const venues = await searchVenues(city, capacity);
+  return { content: [{ type: 'text', text: JSON.stringify(venues) }] };
+});
+
+server.start({ transport: 'sse', port: 8402 });`}</pre>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/dashboard/skills" className="text-[10px] uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors">Skills Dashboard →</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* SDK */}
+        <section id="sdk-reference" className="mb-16">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Agentbot SDK</div>
+          <div className="bg-black border border-zinc-800 p-6 sm:p-8 mb-px">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-2">@agentbot/sdk</h2>
+            <p className="text-zinc-500 text-xs mb-4">
+              TypeScript SDK for building on Agentbot. Provision agents, manage skills, send messages,
+              and handle x402 payments — all with full type safety.
+            </p>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 mb-4">
+              <pre className="text-[11px] text-zinc-300 font-mono overflow-x-auto">{`npm install @agentbot/sdk`}</pre>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 mb-4">
+              <pre className="text-[11px] text-zinc-300 font-mono overflow-x-auto">{`import { Agentbot } from '@agentbot/sdk';
+
+const client = new Agentbot({
+  apiKey: process.env.AGENTBOT_API_KEY,
+  baseUrl: 'https://agentbot.sh',
+});
+
+// Provision a new agent
+const agent = await client.agents.create({
+  name: 'my-dj-agent',
+  model: 'mimo-v2.5',
+  channels: ['telegram', 'discord'],
+  skills: ['venue-finder', 'instant-split'],
+});
+
+// Send a message
+const response = await client.agents.message(agent.id, {
+  content: 'Find me a venue in London for 200 people',
+});
+
+console.log(response.text);`}</pre>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="https://www.npmjs.com/package/@agentbot/sdk" className="text-[10px] uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors">npm Package →</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* x402 MCP */}
+        <section id="x402-mcp" className="mb-16">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">x402 MCP Services</div>
+          <div className="bg-black border border-zinc-800 p-6 sm:p-8 mb-px">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-2">Discover & Pay for MCP Services</h2>
+            <p className="text-zinc-500 text-xs mb-4">
+              The Agentic Market lists paid MCP servers. Agents discover services, negotiate price via x402 headers,
+              and pay per-call with USDC on Base. No subscriptions, no accounts — just tools and micropayments.
+            </p>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 mb-4">
+              <pre className="text-[11px] text-zinc-300 font-mono overflow-x-auto">{`import { Agentbot, x402 } from '@agentbot/sdk';
+
+const client = new Agentbot({ apiKey: process.env.AGENTBOT_API_KEY });
+
+// Discover paid MCP services
+const services = await client.marketplace.discover({
+  category: 'data',
+  maxPrice: 0.05,  // max $0.05 per call
+});
+
+// Use a paid service — x402 handles payment automatically
+const result = await client.mcp.invoke({
+  service: services[0].id,
+  tool: 'get_pool_data',
+  args: { pool: '0xabc...', network: 'base' },
+  payment: x402.auto(),  // pay transparently from agent wallet
+});`}</pre>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/marketplace" className="text-[10px] uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors">Agentic Market →</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* API Reference */}
+        <section id="api-reference" className="mb-16">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">API Reference</div>
+          <div className="space-y-px bg-zinc-900">
+            {apiReference.map((api) => (
+              <div key={api.endpoint} className="bg-black p-4 sm:p-6 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-6">
+                <div className="shrink-0">
+                  <span className={`inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
+                    api.method === 'POST' ? 'bg-orange-500/20 text-orange-500' : 'bg-zinc-800 text-zinc-400'
+                  }`}>
+                    {api.method}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <code className="text-xs text-white font-mono break-all">{api.endpoint}</code>
+                  <p className="text-zinc-500 text-xs mt-1">{api.description}</p>
+                  <p className="text-zinc-700 text-[10px] mt-1">Auth: {api.auth}</p>
+                </div>
+              </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="border border-zinc-800 bg-black p-5 mb-10">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Token Pricing (GBP)</span>
-          <p className="text-xs text-zinc-500 mb-4">AI model pricing per 1k tokens. Input = prompts, Output = responses.</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="text-left py-2 px-3 text-zinc-500 font-medium uppercase tracking-widest text-[10px]">Model</th>
-                  <th className="text-right py-2 px-3 text-zinc-500 font-medium uppercase tracking-widest text-[10px]">Input</th>
-                  <th className="text-right py-2 px-3 text-zinc-500 font-medium uppercase tracking-widest text-[10px]">Output</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tokenPricing.map((t) => (
-                  <tr key={t.model} className="border-b border-zinc-800">
-                    <td className="py-2 px-3 text-white font-medium">{t.model}</td>
-                    <td className="py-2 px-3 text-right text-zinc-400">{t.input}</td>
-                    <td className="py-2 px-3 text-right text-zinc-400">{t.output}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Quick Links */}
+        <section>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Quick Links</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Dashboard', href: '/dashboard' },
+              { label: 'Vercel Gateway', href: '/vercel-gateway' },
+              { label: 'BYOK Settings', href: '/settings?tab=byok' },
+              { label: 'MiMo Partner', href: '/partner/mimo' },
+              { label: 'Blog', href: '/blog' },
+              { label: 'GitHub', href: 'https://github.com/Eskyee/agentbot-opensource' },
+              { label: 'OpenClaw Docs', href: 'https://docs.openclaw.ai' },
+              { label: 'MiMo API', href: 'https://mimo.xiaomi.com' },
+            ].map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
-        </div>
-
-        <div className="border border-zinc-800 bg-black p-5">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Quick Links</span>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/signup" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500">
-              Signup
-            </Link>
-            <Link href="/pricing" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500">
-              Pricing
-            </Link>
-            <Link href="/marketplace" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500">
-              Marketplace
-            </Link>
-            <Link href="/blog" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500">
-              Blog
-            </Link>
-            <a href="https://agentbot.sh/documentation" target="_blank" rel="noopener noreferrer" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-white hover:text-white hover:border-zinc-500">
-              Dev Docs
-            </a>
-            <Link href="/token" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-orange-400 hover:text-white hover:border-zinc-500">
-              $AGENTBOT
-            </Link>
-            <Link href="/basefm" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-orange-400 hover:text-white hover:border-zinc-500">
-              $BASEFM
-            </Link>
-            <Link href="/terms" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white hover:border-zinc-500">
-              Terms
-            </Link>
-            <Link href="/privacy" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white hover:border-zinc-500">
-              Privacy
-            </Link>
-          </div>
-        </div>
+        </section>
       </div>
     </main>
-  );
+  )
 }

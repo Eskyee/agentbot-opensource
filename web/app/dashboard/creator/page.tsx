@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
+  creatorSoundpacks,
+  type CreatorSoundpack,
   masterCreatorSystemPrompt,
   producerAgents,
   soundpackBlueprint,
@@ -173,6 +175,26 @@ function scheduleFxSweep(context: AudioContext, destination: AudioNode, time: nu
   return osc
 }
 
+function schedulePsyBass(context: AudioContext, destination: AudioNode, time: number, rootFrequency: number, intensity: number) {
+  const osc = context.createOscillator()
+  const filter = context.createBiquadFilter()
+  const gain = context.createGain()
+  osc.type = 'sawtooth'
+  osc.frequency.setValueAtTime(rootFrequency, time)
+  filter.type = 'lowpass'
+  filter.frequency.setValueAtTime(180 + intensity * 420, time)
+  filter.Q.setValueAtTime(7, time)
+  gain.gain.setValueAtTime(0.0001, time)
+  gain.gain.exponentialRampToValueAtTime(0.09 + intensity * 0.12, time + 0.012)
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.18)
+  osc.connect(filter)
+  filter.connect(gain)
+  gain.connect(destination)
+  osc.start(time)
+  osc.stop(time + 0.2)
+  return osc
+}
+
 function startArrangementAudioSketch(arrangement: ArrangementResult, onEnded: () => void): AudioSketch {
   const AudioContextCtor = window.AudioContext || window.webkitAudioContext
   const context = new AudioContextCtor()
@@ -181,7 +203,7 @@ function startArrangementAudioSketch(arrangement: ArrangementResult, onEnded: ()
   const noise = makeNoiseBuffer(context)
   const sources: AudioScheduledSourceNode[] = []
   const beat = 60 / clamp(arrangement.bpm || 174, 80, 220)
-  const sectionBeats = 8
+  const sectionBeats = 16
   const sectionDuration = beat * sectionBeats
   const notes = [55, 49, 58.27, 51.91, 61.74, 46.25, 65.41]
 
@@ -234,6 +256,111 @@ function startArrangementAudioSketch(arrangement: ArrangementResult, onEnded: ()
   }
 }
 
+function startSoundpackAudioSketch(soundpack: CreatorSoundpack, onEnded: () => void): AudioSketch {
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext
+  const context = new AudioContextCtor()
+  const master = context.createGain()
+  const compressor = context.createDynamicsCompressor()
+  const noise = makeNoiseBuffer(context, 0.55)
+  const sources: AudioScheduledSourceNode[] = []
+  const beat = 60 / clamp(soundpack.bpm, 80, 190)
+  const phrases = 8
+  const phraseBeats = 16
+  const roots = [55, 58.27, 49, 61.74, 51.91, 65.41, 46.25, 58.27]
+  const startAt = context.currentTime + 0.08
+  const isPsy = /psy/i.test(soundpack.family)
+  const isTechno = /techno/i.test(soundpack.family)
+  const isRadio = /radio|basefm/i.test(soundpack.family)
+  const isNeuro = /neuro/i.test(soundpack.family)
+
+  master.gain.setValueAtTime(0.78, context.currentTime)
+  compressor.threshold.setValueAtTime(-17, context.currentTime)
+  compressor.ratio.setValueAtTime(7, context.currentTime)
+  compressor.attack.setValueAtTime(0.005, context.currentTime)
+  compressor.release.setValueAtTime(0.16, context.currentTime)
+  master.connect(compressor)
+  compressor.connect(context.destination)
+
+  for (let phrase = 0; phrase < phrases; phrase += 1) {
+    const phraseStart = startAt + phrase * phraseBeats * beat
+    const intensity = clamp(0.18 + phrase * 0.11, 0.18, 1)
+    const root = roots[phrase % roots.length]
+    const breakdown = phrase === 0 || phrase === 4 || phrase === 7
+
+    sources.push(scheduleFxSweep(context, master, phraseStart + phraseBeats * beat * 0.65, phraseBeats * beat * 0.28, intensity))
+
+    if (!isRadio) {
+      sources.push(...scheduleReese(
+        context,
+        master,
+        phraseStart,
+        phraseBeats * beat * 0.94,
+        isPsy ? root * 2 : root,
+        breakdown ? intensity * 0.35 : isNeuro ? intensity : intensity * 0.72,
+      ))
+    } else {
+      sources.push(scheduleFxSweep(context, master, phraseStart, phraseBeats * beat * 0.9, intensity * 0.6))
+    }
+
+    for (let beatIndex = 0; beatIndex < phraseBeats; beatIndex += 0.5) {
+      const time = phraseStart + beatIndex * beat
+      const wholeBeat = Number.isInteger(beatIndex)
+      const offBeat = Math.abs(beatIndex % 1 - 0.5) < 0.01
+
+      if (isPsy) {
+        if (wholeBeat) sources.push(scheduleKick(context, master, time, intensity))
+        if (offBeat && !breakdown) sources.push(schedulePsyBass(context, master, time, root * 0.5, intensity))
+        if (beatIndex % 2 === 1.5) sources.push(scheduleHat(context, master, noise, time, intensity))
+      } else if (isTechno) {
+        if (wholeBeat) sources.push(scheduleKick(context, master, time, intensity))
+        if (offBeat) sources.push(scheduleHat(context, master, noise, time, intensity))
+        if (wholeBeat && beatIndex % 4 === 2) sources.push(scheduleSnare(context, master, noise, time, intensity * 0.65))
+      } else if (isRadio) {
+        if (wholeBeat && beatIndex % 4 === 0) sources.push(scheduleKick(context, master, time, intensity * 0.45))
+        if (beatIndex % 2 === 1) sources.push(scheduleSnare(context, master, noise, time, intensity * 0.35))
+        if (offBeat && phrase > 1) sources.push(scheduleHat(context, master, noise, time, intensity * 0.5))
+      } else {
+        if (wholeBeat && beatIndex % 2 === 0) sources.push(scheduleKick(context, master, time, intensity))
+        if (wholeBeat && beatIndex % 2 === 1) sources.push(scheduleSnare(context, master, noise, time, intensity))
+        if (!breakdown || beatIndex % 1 === 0) sources.push(scheduleHat(context, master, noise, time, intensity))
+      }
+    }
+  }
+
+  const totalDuration = phrases * phraseBeats * beat + 0.6
+  const endTimer = window.setTimeout(() => {
+    void context.close().catch(() => undefined)
+    onEnded()
+  }, totalDuration * 1000)
+
+  return {
+    stop: () => {
+      window.clearTimeout(endTimer)
+      sources.forEach((source) => {
+        try {
+          source.stop()
+        } catch {
+          // The source may already have ended.
+        }
+      })
+      void context.close().catch(() => undefined)
+    },
+  }
+}
+
+function copyViaTextArea(value: string) {
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.setAttribute('readonly', 'true')
+  textarea.style.position = 'fixed'
+  textarea.style.left = '-9999px'
+  document.body.appendChild(textarea)
+  textarea.select()
+  const copied = document.execCommand('copy')
+  document.body.removeChild(textarea)
+  if (!copied) throw new Error('Copy command failed')
+}
+
 declare global {
   interface Window {
     webkitAudioContext?: typeof AudioContext
@@ -250,8 +377,10 @@ export default function CreatorDashboardPage() {
   const [isRunning, setIsRunning] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [playingSoundpackSlug, setPlayingSoundpackSlug] = useState('')
   const [publishResult, setPublishResult] = useState<{ webUrl: string; remoteUrl: string } | null>(null)
   const [error, setError] = useState('')
+  const [copyStatus, setCopyStatus] = useState('')
   const audioSketchRef = useRef<AudioSketch | null>(null)
 
   const prompts = useMemo(
@@ -262,14 +391,42 @@ export default function CreatorDashboardPage() {
   const selectedAgent = producerAgents.find((agent) => agent.id === selectedAgentId) || producerAgents[0]
   const combinedPrompt = `${selectedAgent.systemPrompt}\n\nCreator task:\n${selectedPrompt.prompt}`
 
+  useEffect(() => {
+    if (!prompts.some((prompt) => prompt.id === selectedPromptId)) {
+      setSelectedPromptId(prompts[0]?.id || toolkitPrompts[0].id)
+    }
+  }, [prompts, selectedPromptId])
+
   useEffect(() => () => {
     audioSketchRef.current?.stop()
   }, [])
+
+  async function copyText(value: string, label: string) {
+    setError('')
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value)
+      } else {
+        copyViaTextArea(value)
+      }
+      setCopyStatus(`${label} copied`)
+      window.setTimeout(() => setCopyStatus(''), 1800)
+    } catch {
+      try {
+        copyViaTextArea(value)
+        setCopyStatus(`${label} copied`)
+        window.setTimeout(() => setCopyStatus(''), 1800)
+      } catch {
+        setError('Copy failed. Select the prompt text and copy it manually.')
+      }
+    }
+  }
 
   function stopAudioSketch() {
     audioSketchRef.current?.stop()
     audioSketchRef.current = null
     setIsPlaying(false)
+    setPlayingSoundpackSlug('')
   }
 
   async function playAudioSketch() {
@@ -280,10 +437,31 @@ export default function CreatorDashboardPage() {
       audioSketchRef.current = startArrangementAudioSketch(arrangement, () => {
         audioSketchRef.current = null
         setIsPlaying(false)
+        setPlayingSoundpackSlug('')
       })
       setIsPlaying(true)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Audio preview failed')
+    }
+  }
+
+  async function playSoundpackSketch(soundpack: CreatorSoundpack) {
+    if (playingSoundpackSlug === soundpack.slug) {
+      stopAudioSketch()
+      return
+    }
+    stopAudioSketch()
+    setError('')
+    try {
+      audioSketchRef.current = startSoundpackAudioSketch(soundpack, () => {
+        audioSketchRef.current = null
+        setIsPlaying(false)
+        setPlayingSoundpackSlug('')
+      })
+      setIsPlaying(true)
+      setPlayingSoundpackSlug(soundpack.slug)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Soundpack stream failed')
     }
   }
 
@@ -390,18 +568,47 @@ export default function CreatorDashboardPage() {
             </div>
 
             <div className="border border-zinc-800 bg-zinc-950/60 p-4">
-              <div className="mb-3 text-[10px] uppercase tracking-widest text-zinc-500">Soundpack Skeleton</div>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500">Soundpack Audition</div>
+                  <div className="mt-1 text-xs text-zinc-600">Full idea streams, not one-shot loops.</div>
+                </div>
+                {playingSoundpackSlug ? <span className="text-[10px] uppercase tracking-widest text-lime-300">live</span> : null}
+              </div>
               <div className="space-y-2">
-                {soundpackBlueprint.folders.map((folder) => (
+                {creatorSoundpacks.map((pack) => (
                   <button
-                    key={folder.path}
+                    key={pack.slug}
                     type="button"
-                    className="w-full border border-zinc-900 bg-black p-3 text-left text-xs text-zinc-400 transition-colors hover:border-zinc-700 hover:text-white"
+                    onClick={() => void playSoundpackSketch(pack)}
+                    className={`w-full border p-3 text-left text-xs transition-colors ${
+                      playingSoundpackSlug === pack.slug
+                        ? 'border-lime-300 bg-lime-950/10 text-lime-100'
+                        : 'border-zinc-900 bg-black text-zinc-400 hover:border-zinc-700 hover:text-white'
+                    }`}
                   >
-                    <span className="block font-bold text-zinc-200">{folder.path}</span>
-                    <span>{folder.contents.slice(0, 2).join(' / ')}</span>
+                    <span className="flex items-start justify-between gap-3">
+                      <span>
+                        <span className="block font-bold uppercase tracking-wider text-zinc-100">{pack.title}</span>
+                        <span className="mt-1 block text-[10px] uppercase tracking-widest text-cyan-300">{pack.family} · {pack.bpm} BPM</span>
+                      </span>
+                      <span className="shrink-0 text-[10px] uppercase tracking-widest">
+                        {playingSoundpackSlug === pack.slug ? 'stop' : 'play'}
+                      </span>
+                    </span>
+                    <span className="mt-2 block leading-5">{pack.signal}</span>
                   </button>
                 ))}
+              </div>
+              <div className="mt-4 border-t border-zinc-900 pt-4">
+                <div className="mb-2 text-[10px] uppercase tracking-widest text-zinc-600">Pack Folders</div>
+                <div className="flex flex-wrap gap-2">
+                  {soundpackBlueprint.folders.map((folder) => (
+                    <span key={folder.path} className="border border-zinc-900 px-2 py-1 text-[10px] text-zinc-500">
+                      {folder.path}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </aside>
@@ -447,11 +654,15 @@ export default function CreatorDashboardPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={isPlaying ? stopAudioSketch : playAudioSketch}
-                      disabled={!arrangement}
+                      onClick={isPlaying && !playingSoundpackSlug ? stopAudioSketch : playAudioSketch}
+                      disabled={!arrangement || Boolean(playingSoundpackSlug)}
                       className="border border-lime-300/60 px-4 py-3 text-xs font-black uppercase tracking-widest text-lime-200 transition-colors hover:border-white hover:text-white disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-700"
                     >
-                      {isPlaying ? 'Stop Audio Sketch' : 'Play Audio Sketch'}
+                      {playingSoundpackSlug
+                        ? 'Soundpack Stream Live'
+                        : isPlaying
+                          ? 'Stop Full Track Stream'
+                          : 'Play Full Track Stream'}
                     </button>
                   </div>
                   {error ? (
@@ -487,7 +698,7 @@ export default function CreatorDashboardPage() {
                           <span>{arrangement.genre}</span>
                           <span>{arrangement.bpm} BPM</span>
                           <span>{arrangement.mood}</span>
-                          {isPlaying ? <span className="text-lime-300">audio sketch live</span> : null}
+                          {isPlaying && !playingSoundpackSlug ? <span className="text-lime-300">full track stream live</span> : null}
                           {arrangement.provider ? <span>{arrangement.provider}</span> : null}
                           {arrangement.fallback ? <span className="text-amber-300">fallback</span> : null}
                         </div>
@@ -539,18 +750,41 @@ export default function CreatorDashboardPage() {
 
             <section className="border border-zinc-800 bg-zinc-950/40">
               <div className="border-b border-zinc-900 p-4">
-                <div className="text-[10px] uppercase tracking-widest text-zinc-500">Compiled Agent Brief</div>
-                <h2 className="mt-2 text-xl font-black uppercase tracking-tight">{selectedPrompt.title}</h2>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-500">Compiled Agent Brief</div>
+                    <h2 className="mt-2 text-xl font-black uppercase tracking-tight">{selectedPrompt.title}</h2>
+                  </div>
+                  {copyStatus ? <span className="text-[10px] uppercase tracking-widest text-lime-300">{copyStatus}</span> : null}
+                </div>
               </div>
               <div className="grid gap-5 p-4">
                 <div>
-                  <div className="mb-2 text-[10px] uppercase tracking-widest text-zinc-500">Master Identity</div>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-500">Master Identity</div>
+                    <button
+                      type="button"
+                      onClick={() => void copyText(masterCreatorSystemPrompt, 'System prompt')}
+                      className="border border-zinc-800 px-2 py-1 text-[10px] uppercase tracking-widest text-zinc-400 transition-colors hover:border-cyan-400 hover:text-white"
+                    >
+                      Copy
+                    </button>
+                  </div>
                   <pre className="max-h-44 overflow-auto whitespace-pre-wrap border border-zinc-900 bg-black p-4 text-xs leading-6 text-zinc-400">
                     {masterCreatorSystemPrompt}
                   </pre>
                 </div>
                 <div>
-                  <div className="mb-2 text-[10px] uppercase tracking-widest text-zinc-500">Ready Prompt</div>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-500">Ready Prompt</div>
+                    <button
+                      type="button"
+                      onClick={() => void copyText(combinedPrompt, 'Ready prompt')}
+                      className="border border-zinc-800 px-2 py-1 text-[10px] uppercase tracking-widest text-zinc-400 transition-colors hover:border-cyan-400 hover:text-white"
+                    >
+                      Copy
+                    </button>
+                  </div>
                   <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap border border-zinc-900 bg-black p-4 text-xs leading-6 text-zinc-200">
                     {combinedPrompt}
                   </pre>

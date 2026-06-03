@@ -6,6 +6,7 @@ import { coinbaseWallet } from 'wagmi/connectors'
 import { ReactNode } from 'react'
 
 const config = createConfig({
+  ssr: true,
   chains: [base, baseSepolia],
   connectors: [
     coinbaseWallet({

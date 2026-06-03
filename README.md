@@ -1,495 +1,123 @@
+# Agentbot
+
+**Deploy AI workers. Build underground systems.**
+
 <div align="center">
 
-# Agentbot × OpenClaw × MiMo
+<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeigkpl3kax3x5wpx4xyyfldhyq6hqcwlihz5ku4cxc4ltufow4osyi" alt="Factory AI" width="900" />
 
-**The first MiMo-native AI agent platform.**
+[![Runtime](https://img.shields.io/badge/runtime-OpenClaw_2026.4.26-EF6F2E)](https://github.com/OpenClaw/openclaw)
+[![Website](https://img.shields.io/badge/site-agentbot.sh-black)](https://agentbot.sh)
+[![Docs](https://img.shields.io/badge/docs-live-EF6F2E)](https://agentbot.sh/documentation)
+[![Discord](https://img.shields.io/badge/Discord-Join%20chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/vTPG4vdV6D)
 
-99% cheaper than GPT. 1M context. Deployed in 2 minutes.
-
-[![CI](https://github.com/Eskyee/agentbot-opensource/actions/workflows/ci.yml/badge.svg)](https://github.com/Eskyee/agentbot-opensource/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](./LICENSE)
-[![MiMo](https://img.shields.io/badge/AI-Xiaomi_MiMo_V2.5-orange)](https://huggingface.co/XiaomiMiMo)
-[![OpenClaw](https://img.shields.io/badge/runtime-OpenClaw-blue)](https://github.com/OpenClaw/openclaw)
-[![Discord](https://img.shields.io/discord/1234567890?label=Discord&color=5865F2)](https://discord.gg/eskyee)
-
-![Agentbot Banner](https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreiec4xih75nginbmhmicbk3t5i4amubxbndil2ntzpiupsmj2mlwpy)
-
-[**Website**](https://agentbot.raveculture.xyz) · [**Docs**](https://docs.agentbot.raveculture.xyz) · [**Discord**](https://discord.gg/eskyee) · [**Releases**](https://github.com/Eskyee/agentbot-opensource/releases) · [**DeepWiki**](https://deepwiki.com/Eskyee/agentbot-opensource/1-agentbot-overview)
+[**Website**](https://agentbot.sh) · [**Documentation**](https://agentbot.sh/documentation) · [**Discord**](https://discord.gg/vTPG4vdV6D) · [**Open Source Repo**](https://github.com/Eskyee/agentbot-opensource)
 
 </div>
 
 ---
 
-## Why MiMo Changes Everything
-
-Traditional AI agent platforms charge $15-60/M tokens for models that forget what you said 10 messages ago. Agentbot runs on **Xiaomi MiMo V2.5** — a reasoning-first model with:
-
-| | GPT-4o | Claude 3.5 | **MiMo V2.5** |
-|---|---|---|---|
-| **Context** | 128K | 200K | **1M tokens** |
-| **Cost** | $15/M input | $3/M input | **$0.15/M input** |
-| **Reasoning** | Good | Good | **Best-in-class (RL-trained)** |
-| **Code** | Great | Great | **Great (7B matches 32B models)** |
-
-Agentbot connects directly to MiMo's API — no OpenRouter middleman, no markup. You bring your MiMo key, you get the full context window at native pricing.
-
-```
-Your agent. Your key. MiMo-powered. Zero markup.
-```
-
-> **🚀 Launched 31st March 2026** · **MiMo-native since June 2026** — live at [agentbot.raveculture.xyz](https://agentbot.raveculture.xyz)
-
----
-
-## MiMo Integration
-
-Agentbot is the first open-source platform built from the ground up for MiMo:
-
-### Direct API Connection
-No OpenRouter proxy tax. Agentbot connects straight to MiMo's inference endpoint for minimum latency and maximum context. Native streaming, tool calling, and function execution.
-
-### BYOK — Bring Your Own Key
-```bash
-MIMO_API_KEY=your-key-here
-MIMO_MODEL=mimo-v2.5
-```
-Your key, your billing, your data. Zero markup on token costs. Use your own MiMo API key or one provisioned through the Agentic Market.
-
-### x402 Payment Protocol
-Agents pay for APIs, content, and services autonomously using the x402 micropayment protocol over Base/USDC. MiMo's low cost makes autonomous agent economics viable for the first time — run an agent for pennies per day instead of dollars per hour.
-
-### Agentic Market Listing
-Agentbot agents are listed on the [Agentic Market](https://agentbot.raveculture.xyz/marketplace) — discover, deploy, and pay for MiMo-native agents with USDC. Each agent is a composable unit: install skills, connect channels, set permissions, go live.
-
----
-
-## Dashboard
-
-```
-┌─────────────────────────────────────────────────────┐
-│  AGENTBOT × MiMo                        ● CONNECTED │
-├─────────────────────────────────────────────────────┤
-│  AGENT: basefm-agent                                 │
-│  STATUS: ACTIVE  │  UPTIME: 3d 14h  │  MiMo V2.5   │
-│                                                      │
-│  CHANNELS        SKILLS              WALLET          │
-│  ✓ Telegram      12 installed        $247.50 USDC    │
-│  ✓ WhatsApp      ▸ instant-split     Base mainnet    │
-│  ✗ Discord       ▸ venue-finder                      │
-│                  ▸ royalty-tracker   [OPEN AGENT]    │
-│                                                      │
-│  CONTEXT: 1M tokens    COST: ~$0.02/day              │
-└─────────────────────────────────────────────────────┘
-```
-
-**[→ Live demo at agentbot.raveculture.xyz](https://agentbot.raveculture.xyz)**
-
----
-
-## Quick Start
-
-```bash
-git clone https://github.com/Eskyee/agentbot-opensource.git
-cd agentbot-opensource
-cp .env.example .env        # add your MIMO_API_KEY
-docker-compose up -d        # postgres + redis
-npm install && npm run dev  # frontend on :3000
-```
-
-Backend:
-```bash
-cd agentbot-backend && npm install && npm run dev  # api on :3001
-```
-
-Visit `http://localhost:3000` — provision your first MiMo-powered agent in 120 seconds.
-
-**Environment variables:**
-```bash
-# Required — MiMo API (direct connection, no OpenRouter)
-MIMO_API_KEY=your-mimo-api-key
-MIMO_MODEL=mimo-v2.5
-MIMO_BASE_URL=https://api.mimo.ai/v1   # or self-hosted endpoint
-
-# Optional — additional providers (BYOK, zero markup)
-ANTHROPIC_API_KEY=
-OPENAI_API_KEY=
-GROQ_API_KEY=
-```
-
----
-
-## What Agents Can Do
-
-| Capability | Description |
-|-----------|-------------|
-| 🧠 **MiMo V2.5** | 1M context, RL-trained reasoning, 99% cheaper than GPT-4o |
-| 💬 **Multi-channel** | Telegram, Discord, WhatsApp — one agent, all channels |
-| 🔑 **BYOK** | MiMo direct API + OpenRouter, Claude, GPT, Gemini, Groq, DeepSeek — your key, zero markup |
-| 💰 **USDC Wallets** | Each agent has a Coinbase CDP wallet on Base — send and receive payments |
-| ⚡ **x402 Micropayments** | Agents pay for APIs, content, and services autonomously |
-| 🔗 **A2A Bus** | Agents message each other — SSRF-protected webhook delivery |
-| 🛠 **Skill Marketplace** | Install: instant split, venue finder, booking settlement, royalty tracker, setlist oracle, visual synthesizer + more |
-| 🎭 **Agent Personalities** | basement / selector / A&R / road / label — each agent gets a music-industry system prompt |
-| 📧 **Email Triage** | Agents manage your inbox — filter, reply, escalate |
-| 📅 **Calendar Guard** | Protect your schedule — agents negotiate on your behalf |
-| 🔐 **Permission Gates** | Safe / Dangerous / Destructive tiers — you approve before agents act |
-| 🎛 **Concurrent Orchestration** | Parallel tool execution — read-only ops run simultaneously |
-| 🔑 **Passkeys** | WebAuthn passkey login — no passwords required |
-| 🆓 **Free Trial** | 7-day trial on signup — no card required |
-| 🌐 **Agent Showcase** | Opt-in public showcase — let the community discover your agents |
-| 🌉 **Agent Bridge** | Private A2A message bus for coordination across your fleet |
-
----
-
-## Architecture
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                    AGENTBOT PLATFORM                         │
-│                                                              │
-│  Next.js Frontend        Express Backend (TypeScript)        │
-│  ├── Dashboard           ├── Provisioning API               │
-│  ├── Permission Gates    ├── Container Manager (Docker)      │
-│  ├── Maintenance         ├── Agent-to-Agent Bus              │
-│  └── Marketplace         └── Orchestration Engine            │
-│                                                              │
-│  PostgreSQL (Prisma)     Redis (sessions, state)             │
-└──────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-     ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-     │  OpenClaw   │  │  OpenClaw   │  │  OpenClaw   │
-     │  Container  │  │  Container  │  │  Container  │
-     │  Agent A    │  │  Agent B    │  │  Agent C    │
-     │  MiMo V2.5  │  │  MiMo V2.5  │  │  MiMo V2.5  │
-     └─────────────┘  └─────────────┘  └─────────────┘
-        Telegram          Discord          WhatsApp
-        USDC Wallet        Skills           Memory
-```
-
-Caddy reverse proxy routes `agent-name.agents.yourdomain.com` to each container. Each agent gets its own subdomain, workspace, channel config, and direct MiMo API connection.
-
----
-
-## Powered by OpenClaw + MiMo
-
-Agentbot is a managed hosting layer for the [OpenClaw](https://github.com/OpenClaw/openclaw) agent runtime, optimized for [Xiaomi MiMo V2.5](https://huggingface.co/XiaomiMiMo).
-
-**OpenClaw** handles the agent loop — tool calling, memory, channel I/O, skill execution. **MiMo** provides the intelligence — 1M context window, RL-trained reasoning, and token pricing that makes autonomous agents economically viable. **Agentbot** handles provisioning, billing, multi-tenancy, and the management dashboard.
-
-```
-OpenClaw = the body (tools, memory, channels)
-MiMo     = the brain (reasoning, context, planning)
-Agentbot = the infrastructure (deploy, scale, manage)
-```
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **AI Model** | **Xiaomi MiMo V2.5** (direct API, 1M context, RL reasoning) |
-| Frontend | Next.js 14, React, Tailwind CSS |
-| Components | shadcn/ui — dark minimal |
-| Backend | Express.js, TypeScript |
-| Database | PostgreSQL + Prisma ORM |
-| Cache | Redis |
-| Containers | Docker (per-agent isolation) |
-| Proxy | Caddy (subdomain routing) |
-| Agent Runtime | OpenClaw |
-| Payments | Stripe (subscriptions) + Coinbase CDP (agent wallets) + x402 protocol |
-| BYOK Providers | OpenRouter, Anthropic, OpenAI, Gemini, Groq, DeepSeek (zero markup) |
-
----
-
-## Plans
-
-| Plan | Price | Memory | CPUs | Description |
-|------|-------|--------|------|-------------|
-| **Underground** | £29/mo | 2GB | 1 | Solo artist — one agent, full power |
-| **Collective** | £69/mo | 4GB | 2 | Small crew — 3 agents coordinating |
-| **Label** | £149/mo | 8GB | 4 | Full operation — 10 agents, A2A fleet |
-
-All plans include: MiMo V2.5 integration, USDC wallet, skill marketplace, passkey auth, 7-day free trial.
-
-Self-hosting? Run unlimited agents at cost. The platform is MIT licensed — no restrictions.
-
----
-
-## Security
-
-- 🔒 Bearer token auth with `timingSafeEqual` — fail-closed on all protected routes
-- 🔑 SHA-256 hashed API keys — raw keys never stored or logged
-- 🌐 SSRF blocklist — IPv4 private + IPv6 ULA + mapped IPv4 + CGN
-- ⚡ Ed25519 Discord webhook verification
-- 🛡 Tiered permission system — agents ask before executing dangerous commands
-- 🐚 `spawn()` not `exec()` — no shell injection vectors
-- 🔐 AES-256-GCM encrypted per-user secrets
-- 🔑 MiMo API keys stored encrypted, never logged or transmitted to third parties
-
----
-
-## Research & Education
-
-Agentbot implements several patterns that may be of interest to researchers and students:
-
-| Pattern | Where |
-|---------|-------|
-| **MiMo-native agent orchestration** | Direct API integration with 1M context RL model |
-| **Concurrent tool orchestration** | Read-only tools batched via `Promise.all`, mutating ops serial |
-| **Tiered agent permissions** | Safe / Dangerous / Destructive classification at runtime |
-| **Agent-to-Agent bus** | SSRF-protected webhook delivery between isolated containers |
-| **x402 micropayment protocol** | Agents paying APIs autonomously over Base / USDC |
-| **Multi-tenant Docker isolation** | Per-agent containers with resource limits and subdomain routing |
-| **Deterministic permission gates** | Human-in-the-loop approval for dangerous tool calls |
-| **Cost-optimized inference** | MiMo V2.5 pricing enables 24/7 autonomous agents at pennies/day |
-
-We welcome academic collaboration. If you're researching multi-agent systems, autonomous AI orchestration, RL reasoning models, or AI economics — open an issue or join the Discord.
-
----
-
-## Project Structure
-
-```
-├── web/                     # Next.js frontend (Vercel)
-│   ├── app/
-│   │   ├── dashboard/       # Agent management UI
-│   │   ├── api/             # API routes (provision, agents, billing...)
-│   │   └── components/      # Shared UI components
-│   └── prisma/              # Database schema + migrations
-├── agentbot-backend/        # Express API (Render / Docker)
-│   └── src/
-│       ├── routes/          # API endpoints
-│       ├── services/        # Business logic
-│       └── lib/             # Utilities (SSRF, permissions, orchestration)
-├── docker-compose.yml       # Local dev infrastructure
-└── render.yaml              # Render deployment config
-```
-
----
-
-## MCP Server
-
-Agentbot skills can embed Model Context Protocol (MCP) servers, exposing typed tools to any MCP-compatible client (Cursor, Claude Desktop, Windsurf) and to agents running on the platform.
-
-### Creating an MCP Skill
-
-```typescript
-// skills/venue-finder/mcp-server.ts
-import { McpServer } from '@agentbot/sdk/mcp';
-
-const server = new McpServer({
-  name: 'venue-finder',
-  version: '1.0.0',
-});
-
-server.tool('find_venues', {
-  description: 'Search venues by location and capacity',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      city: { type: 'string' },
-      capacity: { type: 'number' },
-    },
-    required: ['city'],
-  },
-}, async ({ city, capacity }) => {
-  const venues = await searchVenues(city, capacity);
-  return { content: [{ type: 'text', text: JSON.stringify(venues) }] };
-});
-
-// Start as SSE server on port 8402
-server.start({ transport: 'sse', port: 8402 });
-```
-
-### Connecting External MCP Clients
-
-```json
-// Cursor settings / Claude Desktop config
-{
-  "mcpServers": {
-    "venue-finder": {
-      "url": "https://your-agent.agents.agentbot.sh/mcp/sse",
-      "headers": {
-        "Authorization": "Bearer YOUR_AGENT_TOKEN"
-      }
-    }
-  }
-}
-```
-
-### Running Locally
+This repository contains the live product code for **Agentbot**: AI worker infrastructure, underground creator systems, and autonomous media culture. It manages agent identity, execution, OpenGateway inference, playground publishing, GitLawb mirroring, and the Creator Console.
+
+Agentbot is not another generic AI platform. It is infrastructure for autonomous underground creator systems.
+
+## Platform Direction
+
+- **Factory AI Unified:** High-energy "Factory Orange" aesthetic (#EF6F2E).
+- **Fact-Based Backend:** Cryptographically verified identity and state mirroring.
+- **Production Private Cloud:** Managed Railway runtimes for total data sovereignty.
+- **AI Gateway Mastery:** Ultra-performance inference via Vercel AI Gateway + MiMo V2 Pro.
+- **Creator Console:** Underground arrangement agents, soundpack manifests, baseFM prompts, and visual systems.
+
+## What Lives Here
+
+- `web/`
+  Next.js 16 app powering the Factory dashboard and APIs.
+- `agentbot-backend/`
+  High-performance Node/Hono services for identity and state management.
+- `gateway/`
+  Managed multi-platform communication bridge (x402 protocol).
+- `mintlify-docs/`
+  Docs source for the Factory protocol.
+- `skills/`
+  Managed skill library including Bitcoin, Liquid, and Social integrations.
+- `soul/`
+  Borg-7139 soul host and cognitive architecture logic.
+
+## Production Surfaces
+
+- **Main Site:** `https://agentbot.sh`
+- **Ops Command Center:** `https://agentbot.sh/admin` (Live Data)
+- **Agentbot Coach:** `https://agentbot.sh/dashboard/coach` (New Operator Training)
+- **Bitcoin Dashboard:** `https://agentbot.sh/dashboard/bitcoin` (Mainnet Active)
+- **Fleet Control:** `https://agentbot.sh/dashboard/fleet`
+
+## Technical Standards
+
+- **Identity:** `SignatureGuard` enforced across all backend routes. `signedFetch` (DID-native) on frontend.
+- **Infrastructure:** 100% Railway-native. Render references purged.
+- **Model:** `xiaomi/mimo-v2-pro` (Factory Master) via Vercel AI Gateway.
+- **Persistence:** SQL State + Gitlawb Fact Mirroring.
+- **Performance:** Centralized Redis caching and parallel data orchestration.
+
+## Primary Node Identity
+
+| Metric | Value |
+|--------|-------|
+| **Status** | Online |
+| **Network** | alpha |
+| **DID** | `did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY` |
+| **Gitlawb Profile** | [z6MkpUq1](https://gitlawb.com/node/repos/z6MkpUq1/) |
+| **Open Source Mirror** | [agentbot-opensource](https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource) |
+| **Protocols** | `git-smart-http`, `mcp`, `libp2p` |
+
+## Lead Agent Identity
+
+| Metric | Value |
+|--------|-------|
+| **Name** | Agentbot System Agent (`z6MkpUq1`) |
+| **DID** | `did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY` |
+| **Trust Score** | `0.00` (Newcomer) |
+| **Activity** | 15 Repos · 0 Pushes |
+| **Role** | Platform Maintainer |
+
+## Local Development
+
+### Web app
 
 ```bash
-# Start MCP server for a skill
-agentbot mcp serve --skill venue-finder --transport sse --port 8402
-
-# List available MCP tools
-agentbot mcp tools --skill venue-finder
+cd web
+npm install
+npm run build
+npm run start
 ```
 
----
-
-## Agentbot SDK
-
-The `@agentbot/sdk` package provides a TypeScript client for the Agentbot API — provision agents, manage skills, send messages, and handle x402 payments programmatically.
-
-### Installation
+### Useful commands
 
 ```bash
-npm install @agentbot/sdk
+npm run demo    # Local Agentbot demo at http://127.0.0.1:3007
+npm run build   # Turbo-orchestrated full build
+npm run dev     # Parallel dev environment
+npm run test    # Identity and Logic verification
 ```
 
-### Quick Start
+## Creator Toolkit
 
-```typescript
-import { Agentbot } from '@agentbot/sdk';
+The underground creator layer lives at:
 
-const client = new Agentbot({
-  apiKey: process.env.AGENTBOT_API_KEY,
-  baseUrl: 'https://agentbot.sh',
-});
+- `/creator-toolkit` — public toolkit, prompt library, producer agents, soundpack structure
+- `/dashboard/creator` — Creator Console with the first Arrangement Agent
+- `/api/creator-toolkit/arrangement` — deterministic Break Architect arrangement output
+- `/api/creator-toolkit/producer-brief` — compiled agent prompts for model calls
+- `/api/creator-toolkit/soundpack` — downloadable soundpack and marketplace manifest
 
-// Provision a new agent
-const agent = await client.agents.create({
-  name: 'my-dj-agent',
-  model: 'mimo-v2.5',
-  channels: ['telegram', 'discord'],
-  skills: ['venue-finder', 'instant-split'],
-});
+## Key Documentation
 
-// Send a message
-const response = await client.agents.message(agent.id, {
-  content: 'Find me a venue in London for 200 people',
-});
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — The Fact-Based Backend
+- [docs/NEW_FEATURES_APRIL_2026.md](./docs/NEW_FEATURES_APRIL_2026.md) — Launch log
+- [SECURITY.md](./SECURITY.md) — SignatureGuard and DID Protocol
+- [PLATFORM_RULES.md](./PLATFORM_RULES.md) — Operational guidelines
 
-console.log(response.text);
-```
+## License
 
-### Key Modules
-
-```typescript
-// Agent management
-await client.agents.create({ name, model, channels, skills });
-await client.agents.list();
-await client.agents.get(agentId);
-await client.agents.delete(agentId);
-
-// Messaging
-await client.agents.message(agentId, { content, attachments });
-await client.agents.stream(agentId, { content });  // streaming
-
-// Skills
-await client.skills.install(agentId, 'venue-finder');
-await client.skills.list(agentId);
-await client.skills.uninstall(agentId, 'venue-finder');
-
-// Wallet
-const balance = await client.wallet.balance(agentId);
-await client.wallet.transfer(agentId, { to, amount, token: 'USDC' });
-```
-
----
-
-## x402 Integration
-
-Agentbot agents use the x402 micropayment protocol to pay for APIs, content, and services autonomously. Payments settle on Base in USDC — no subscriptions, no accounts.
-
-### How It Works
-
-```
-Agent calls tool → Service returns 402 + price → SDK pays via x402 → Service returns data
-```
-
-The SDK handles the 402 negotiation automatically:
-
-```typescript
-import { Agentbot, x402 } from '@agentbot/sdk';
-
-const client = new Agentbot({ apiKey: process.env.AGENTBOT_API_KEY });
-
-// Discover paid MCP services on the Agentic Market
-const services = await client.marketplace.discover({
-  category: 'data',
-  maxPrice: 0.05,  // max $0.05 per call
-});
-
-// Invoke a paid tool — x402 handles payment transparently
-const result = await client.mcp.invoke({
-  service: services[0].id,
-  tool: 'get_pool_data',
-  args: { pool: '0xabc...', network: 'base' },
-  payment: x402.auto(),  // auto-pay from agent wallet
-});
-
-console.log(result.data);
-```
-
-### Agent Wallet Setup
-
-Each agent gets a Coinbase CDP wallet on Base with USDC. Fund it once, and x402 payments deduct automatically:
-
-```typescript
-// Check balance
-const balance = await client.wallet.balance(agentId);
-console.log(`$${balance.usdc} USDC on Base`);
-
-// Fund from external wallet
-await client.wallet.deposit(agentId, {
-  amount: 10,       // 10 USDC
-  token: 'USDC',
-  network: 'base',
-});
-```
-
-### Publishing a Paid MCP Service
-
-```typescript
-import { McpServer } from '@agentbot/sdk/mcp';
-import { x402 } from '@agentbot/sdk';
-
-const server = new McpServer({
-  name: 'gecko-data',
-  version: '1.0.0',
-  pricing: x402.pricing({
-    'get_pool': { price: 0.001, token: 'USDC', network: 'base' },
-    'get_token': { price: 0.001, token: 'USDC', network: 'base' },
-  }),
-});
-
-server.tool('get_pool', { /* ... */ }, handler);
-server.tool('get_token', { /* ... */ }, handler);
-
-server.start({ transport: 'sse', port: 8402 });
-```
-
----
-
-## Contributing
-
-Pull requests welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
-
-Good first issues: docs improvements, new skill integrations, additional channel adapters, UI components.
-
-If you're building something on top of Agentbot or OpenClaw, let us know in the Discord — we'll feature it.
-
----
-
-## Community
-
-- 💬 [Discord](https://discord.gg/eskyee) — agents and humans welcome
-- 🐛 [Issues](https://github.com/Eskyee/agentbot-opensource/issues)
-- 📖 [Docs](https://docs.agentbot.raveculture.xyz)
-- 🚀 [Hosted Platform](https://agentbot.raveculture.xyz)
-- 📦 [Releases](https://github.com/Eskyee/agentbot-opensource/releases)
-- 📝 [Changelog](./CHANGELOG.md)
-
----
-
-<div align="center">
-
-MIT License · Built by [raveculture](https://github.com/Eskyee) · Powered by [OpenClaw](https://github.com/OpenClaw/openclaw) + [Xiaomi MiMo](https://huggingface.co/XiaomiMiMo)
-
-</div>
+MIT

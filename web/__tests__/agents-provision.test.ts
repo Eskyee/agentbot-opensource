@@ -87,7 +87,7 @@ describe('/api/agents/provision', () => {
     mockedRailwayConfigured.mockReturnValue(true)
     mockedProvisionOnRailway.mockResolvedValue({
       agentId: 'agent-1',
-      url: 'https://YOUR_SERVICE_URL',
+      url: 'https://agentbot-agent-agent-1.up.railway.app',
       serviceId: 'svc_123',
       status: 'deploying',
     })
@@ -111,10 +111,10 @@ describe('/api/agents/provision', () => {
       agent: {
         id: 'agent-1',
         status: 'deploying',
-        websocketUrl: 'https://YOUR_SERVICE_URL',
+        websocketUrl: 'https://agentbot-agent-agent-1.up.railway.app',
         runtime: {
           instanceId: 'agent-1',
-          url: 'https://YOUR_SERVICE_URL',
+          url: 'https://agentbot-agent-agent-1.up.railway.app',
           serviceId: 'svc_123',
         },
       },

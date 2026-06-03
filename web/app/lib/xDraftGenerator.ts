@@ -24,7 +24,7 @@ export async function generateXDraft(sourceText: string, tone: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'openrouter/xiaomi/mimo-v2-pro',
+      model: 'xiaomi/mimo-v2.5-pro',
       messages: [{ role: 'user', content: prompt }],
       stream: false,
       max_tokens: 160,

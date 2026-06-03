@@ -157,6 +157,15 @@ export default async function TokenPage() {
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </a>
               <a
+                href="https://www.coinbase.com/advanced-trade/spot/AGENTBOT-USD"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-300 transition-colors hover:border-blue-400/60 hover:text-white"
+              >
+                Coinbase DEX
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+              <a
                 href={stats.pairUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -165,6 +174,37 @@ export default async function TokenPage() {
                 View Live Chart
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </a>
+            </div>
+
+            {/* Base Token Surface */}
+            <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400">Also on Base</div>
+              <p className="mt-3 text-sm leading-6 text-zinc-300">
+                $AGENTBOT is also deployed on Base (Ethereum L2).
+              </p>
+              <code className="mt-2 block break-all rounded-lg border border-zinc-800 bg-black px-3 py-2 text-xs text-blue-400">
+                0x986b41c76ab8b7350079613340ee692773b34ba3
+              </code>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <a
+                  href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
+                >
+                  Basescan
+                  <ArrowUpRight className="h-3 w-3" />
+                </a>
+                <a
+                  href="https://www.coinbase.com/advanced-trade/spot/AGENTBOT-USD"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
+                >
+                  Coinbase
+                  <ArrowUpRight className="h-3 w-3" />
+                </a>
+              </div>
             </div>
           </div>
 
@@ -318,9 +358,11 @@ export default async function TokenPage() {
             <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Track Live</div>
             <div className="mt-5 space-y-3">
               {[
+                { label: 'Coinbase DEX', href: 'https://www.coinbase.com/advanced-trade/spot/AGENTBOT-USD', icon: Coins },
                 { label: 'Pump.fun', href: COMMUNITY_TOKEN.pumpFunUrl, icon: Waves },
                 { label: 'DexScreener Pair', href: stats.pairUrl, icon: Coins },
                 { label: 'Solscan Token', href: COMMUNITY_TOKEN.solscanUrl, icon: ExternalLink },
+                { label: 'Basescan (Base)', href: 'https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3', icon: ExternalLink },
                 { label: 'Solscan Pair', href: COMMUNITY_TOKEN.solscanPairUrl, icon: ExternalLink },
                 { label: 'OKLink', href: COMMUNITY_TOKEN.oklinkUrl, icon: ExternalLink },
               ].map((item) => {
@@ -356,8 +398,10 @@ export default async function TokenPage() {
             </div>
             <div className="space-y-3">
               {[
+                { label: 'Coinbase DEX', href: 'https://www.coinbase.com/advanced-trade/spot/AGENTBOT-USD' },
                 { label: 'Pump.fun Listing', href: COMMUNITY_TOKEN.pumpFunUrl },
                 { label: 'DexScreener Chart', href: COMMUNITY_TOKEN.dexScreenerUrl },
+                { label: 'Basescan (Base L2)', href: 'https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3' },
                 { label: 'Solscan Token', href: COMMUNITY_TOKEN.solscanUrl },
                 { label: 'Bankr Profile', href: 'https://bankr.bot/agents/agentbot' },
                 { label: 'Agentbot Platform', href: 'https://agentbot.sh' },

@@ -147,10 +147,10 @@ Requirements:
 - Keep every note concise and useful for a producer.`
 }
 
-async function generateWithOpenGateway(title: string, genre: string, mood: string, bpm: number) {
+async function generateWithVercelGateway(title: string, genre: string, mood: string, bpm: number) {
   const upstreams = resolveGatewayUpstreams()
   if (upstreams.length === 0) {
-    throw new Error('OpenGateway upstream is not configured.')
+    throw new Error('Vercel Gateway upstream is not configured.')
   }
 
   const fallback = deterministicArrangement(title, genre, mood, bpm)
@@ -212,9 +212,9 @@ export async function POST(req: NextRequest) {
   const bpm = Number(body.bpm) || 174
 
   try {
-    return NextResponse.json(await generateWithOpenGateway(title, genre, mood, bpm))
+    return NextResponse.json(await generateWithVercelGateway(title, genre, mood, bpm))
   } catch (error) {
-    const reason = error instanceof Error ? error.message : 'OpenGateway arrangement generation failed.'
+    const reason = error instanceof Error ? error.message : 'Vercel Gateway arrangement generation failed.'
     return NextResponse.json(deterministicArrangement(title, genre, mood, bpm, reason))
   }
 }

@@ -481,6 +481,26 @@ export const blogPosts: BlogPostSummary[] = [
     track: 'Shipping',
   },
   {
+    slug: 'agentbot-mimo-native',
+    dateLabel: '2 Jun',
+    isoDate: '2026-06-02',
+    title: 'How Agentbot Built the First MiMo-Native Agent Platform',
+    excerpt:
+      '99% cost reduction. Direct MiMo V2.5 integration. BYOK support. The technical deep-dive.',
+    tags: ['MiMo', 'Integration', 'Technical'],
+    track: 'Shipping',
+  },
+  {
+    slug: 'agentbot-sdk-mcp-x402',
+    dateLabel: '3 Jun',
+    isoDate: '2026-06-03',
+    title: 'SDK. MCP Server. x402 Payments. Full Stack.',
+    excerpt:
+      '@agentbot/sdk, standalone MCP server, real tool execution, and x402 micropayments. The complete AI agent infrastructure.',
+    tags: ['SDK', 'MCP', 'x402', 'Infrastructure'],
+    track: 'Shipping',
+  },
+  {
     slug: 'atlas-basefm',
     dateLabel: '19 Mar',
     isoDate: '2026-03-19',

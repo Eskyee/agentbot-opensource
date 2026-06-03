@@ -37,6 +37,21 @@ export function MarketplaceClient({ templates }: { templates: Template[] }) {
         </div>
       )}
 
+      {templates.length === 0 ? (
+        <div className="border border-zinc-800 bg-zinc-950 p-10 text-center">
+          <p className="text-4xl mb-4">🤖</p>
+          <h3 className="text-sm font-bold uppercase tracking-tight text-white mb-2">No templates yet</h3>
+          <p className="text-xs text-zinc-500 max-w-md mx-auto mb-6">
+            The marketplace is being curated. Check back soon or deploy a custom agent from the dashboard.
+          </p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+          >
+            Go to Dashboard
+          </button>
+        </div>
+      ) : (
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
         {templates.map((template) => (
           <article key={template.name} className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors">
@@ -64,6 +79,7 @@ export function MarketplaceClient({ templates }: { templates: Template[] }) {
           </article>
         ))}
       </div>
+      )}
 
       {deployingTemplate && (
         <DeployModal template={deployingTemplate} onClose={() => setDeployingTemplate(null)} onDeployed={handleDeployed} />

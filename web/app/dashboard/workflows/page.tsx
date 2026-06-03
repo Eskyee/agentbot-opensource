@@ -163,6 +163,7 @@ export default function WorkflowsPage() {
     <DashboardShell>
       <DashboardHeader
         title="Workflows"
+        subtitle="Build and manage durable execution pipelines"
         icon={
           <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 10h16M4 14h16M4 18h16" />

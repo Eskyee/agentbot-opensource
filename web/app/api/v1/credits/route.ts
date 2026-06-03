@@ -3,13 +3,13 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
 
-const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://YOUR_SERVICE_URL'
+const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://openclaw-production-a09d.up.railway.app'
 const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN || ''
 const COST_PER_CALL = 1
-const DEFAULT_MODEL = 'openrouter/xiaomi/mimo-v2-pro'
+const DEFAULT_MODEL = 'xiaomi/mimo-v2.5-pro'
 
 const ALLOWED_MODELS = [
-  'openrouter/xiaomi/mimo-v2-pro',
+  'xiaomi/mimo-v2.5-pro',
   'openrouter/google/gemini-2.0-flash-001',
   'openrouter/openai/gpt-4o-mini',
 ]

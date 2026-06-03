@@ -25,7 +25,7 @@ function generateDID(agentId: string): { did: string; publicKey: string } {
 }
 
 const EXECUTION_TYPES = ['prompt', 'skill', 'workflow', 'sync', 'chat', 'tool', 'cron']
-const MODELS = ['mimo-v2-pro', 'mimo-v2.5-pro', 'gpt-4o', 'claude-3.5-sonnet', 'blockrun/auto']
+const MODELS = ['mimo-v2.5-pro', 'mimo-v2.5-pro', 'gpt-4o', 'claude-3.5-sonnet', 'blockrun/auto']
 
 async function main() {
   console.log('🌱 Seeding ops data...\n')
