@@ -128,10 +128,10 @@ a {
 }
 
 /* Scrollbar - Geist style */
-scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-
+::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
