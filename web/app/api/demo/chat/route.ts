@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
-const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
-const DEFAULT_MODEL = 'mimo-v2.5-pro'
+// Route through OpenRouter (proxies MiMo globally, no cross-border 451 issues)
+const OPENROUTER_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
+const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || ''
+const DEFAULT_MODEL = 'xiaomi-coding/mimo-v2.5-pro'
 const MAX_DEMO_MESSAGES = 10
 
 // In-memory rate limiter (per IP, 10 requests per hour)
@@ -46,6 +47,13 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  if (!OPENROUTER_KEY) {
+    return NextResponse.json(
+      { error: 'Demo is being configured. Try again shortly.' },
+      { status: 503 }
+    )
+  }
+
   const body = await request.json().catch(() => ({}))
   const messages = body.messages as { role: string; content: string }[] | undefined
 
@@ -53,22 +61,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Messages array required' }, { status: 400 })
   }
 
-  // Only allow user/assistant roles
+  // Only allow user/assistant roles, limit to last 20 messages
   const sanitized = messages
     .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-    .slice(-20) // Last 20 messages max
-    .map(m => ({ role: m.role, content: m.content.slice(0, 2000) })) // Truncate long messages
+    .slice(-20)
+    .map(m => ({ role: m.role, content: m.content.slice(0, 2000) }))
 
   if (sanitized.length === 0) {
     return NextResponse.json({ error: 'No valid messages' }, { status: 400 })
   }
 
   try {
-    const gwRes = await fetch(`${MIMO_BASE_URL}/chat/completions`, {
+    const res = await fetch(`${OPENROUTER_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MIMO_API_KEY}`,
+        'Authorization': `Bearer ${OPENROUTER_KEY}`,
+        'HTTP-Referer': 'https://agentbot.sh',
+        'X-Title': 'Agentbot Demo',
       },
       body: JSON.stringify({
         model: DEFAULT_MODEL,
@@ -82,16 +92,16 @@ export async function POST(request: NextRequest) {
       signal: AbortSignal.timeout(30_000),
     })
 
-    if (!gwRes.ok) {
-      const errText = await gwRes.text().catch(() => 'Gateway error')
-      console.error('[Demo Chat] Gateway error:', gwRes.status, errText)
+    if (!res.ok) {
+      const errText = await res.text().catch(() => 'Provider error')
+      console.error('[Demo Chat] OpenRouter error:', res.status, errText)
       return NextResponse.json(
         { error: 'AI is temporarily unavailable. Try again in a moment.' },
         { status: 502 }
       )
     }
 
-    const data = await gwRes.json()
+    const data = await res.json()
     const reply = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.'
 
     return NextResponse.json({
