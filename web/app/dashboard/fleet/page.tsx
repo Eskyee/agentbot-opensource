@@ -159,7 +159,7 @@ export default function FleetPage() {
               <Radio className="h-4 w-4 text-orange-400" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Live Traces</span>
             </div>
-            <span className="text-[10px] font-mono text-zinc-600">v2.1.0-alpha</span>
+            <span className="text-[10px] font-mono text-zinc-600">v2.0</span>
           </div>
 
           {/* Execution Trace Feed */}
@@ -215,7 +215,7 @@ export default function FleetPage() {
                     rel="noopener noreferrer"
                     className="mb-3 flex items-center justify-center border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-500"
                   >
-                    Open Borg Dashboard
+                    Open Fleet Dashboard
                   </a>
                 )}
                 <CloneButton

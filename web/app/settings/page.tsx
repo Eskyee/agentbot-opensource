@@ -26,7 +26,7 @@ const TABS = [
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
   { id: 'basefm', label: 'baseFM', icon: '📻' },
   { id: 'integrations', label: 'Integrations', icon: '🔌' },
-  { id: 'byok', label: 'BYOK', icon: '⚡' },
+  { id: 'byok', label: 'API Keys', icon: '⚡' },
 ]
 
 export default function SettingsPage() {
@@ -133,7 +133,7 @@ export default function SettingsPage() {
     <div className="flex min-h-screen bg-black">
       <DashboardSidebar
         userName={userName}
-        plan="Solo"
+        plan={session?.user?.plan || 'Solo'}
         isAdmin={session?.user?.isAdmin === true}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}

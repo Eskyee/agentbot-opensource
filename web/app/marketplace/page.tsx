@@ -58,7 +58,7 @@ export default async function MarketplacePage() {
           </p>
         </div>
 
-        <section className="mb-10 sm:mb-12 grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <section className="mb-10 sm:mb-12 grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
           <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600">Verified Templates</div>
             <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.templates)}</div>
