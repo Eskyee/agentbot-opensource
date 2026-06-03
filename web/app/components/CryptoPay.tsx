@@ -103,7 +103,7 @@ export function CryptoPay({ amount, onSuccess, onError }: CryptoPayProps) {
     // Ensure Base chain
     if (chain?.id !== base.id) {
       try {
-        await (window.ethereum as any)?.request({
+        await (window as any).ethereum?.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: `0x${base.id.toString(16)}` }],
         })

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/app/lib/prisma'
 
-const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://openclaw-production-a09d.up.railway.app'
-const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN || ''
-const DEFAULT_MODEL = 'xiaomi/mimo-v2.5-pro'
+const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
+const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
+const DEFAULT_MODEL = 'mimo-v2.5-pro'
 const MAX_DEMO_MESSAGES = 10
 
 // In-memory rate limiter (per IP, 10 requests per hour)
@@ -65,11 +64,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const gwRes = await fetch(`${GATEWAY_URL}/v1/chat/completions`, {
+    const gwRes = await fetch(`${MIMO_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GATEWAY_TOKEN}`,
+        'Authorization': `Bearer ${MIMO_API_KEY}`,
       },
       body: JSON.stringify({
         model: DEFAULT_MODEL,

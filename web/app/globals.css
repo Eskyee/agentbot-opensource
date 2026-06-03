@@ -128,7 +128,10 @@ a {
 }
 
 /* Scrollbar - Geist style */
-::-webkit-scrollbar {
+scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+
   width: 8px;
   height: 8px;
 }

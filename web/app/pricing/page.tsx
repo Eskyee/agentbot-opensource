@@ -1,10 +1,25 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Check } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
+
+function FAQItem({ question, answer, isFirst }: { question: string; answer: string; isFirst: boolean }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div>
+      {!isFirst && <Separator className="bg-zinc-800" />}
+      <button onClick={() => setOpen(!open)} className="w-full py-6 flex items-center justify-between text-left">
+        <dt className="text-sm font-bold text-white uppercase tracking-wider pr-4">{question}</dt>
+        <ChevronDown className={`h-4 w-4 text-zinc-500 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && <dd className="pb-6 text-sm text-zinc-400 leading-relaxed">{answer}</dd>}
+    </div>
+  )
+}
 
 const plans = [
   {
@@ -225,13 +240,7 @@ export default function PricingPage() {
 
             <div className="space-y-0">
               {faqs.map((faq, i) => (
-                <div key={i}>
-                  {i > 0 && <Separator className="bg-zinc-800" />}
-                  <div className="py-6">
-                    <dt className="text-sm font-bold text-white uppercase tracking-wider">{faq.q}</dt>
-                    <dd className="mt-2 text-sm text-zinc-400 leading-relaxed">{faq.a}</dd>
-                  </div>
-                </div>
+                <FAQItem key={i} question={faq.q} answer={faq.a} isFirst={i === 0} />
               ))}
             </div>
           </div>

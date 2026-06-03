@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 import { NotificationBell } from "@/app/social/_components/NotificationBell";
+import { CreditBadge } from "@/app/components/CreditBadge";
 
 // ─── Simplified nav: product-focused ─────────────────────────────────────────
 // LOGGED-OUT: Demo | Docs | Pricing → Sign in | Get Started
@@ -66,6 +67,7 @@ export default function Navbar() {
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
+              <CreditBadge />
               <NotificationBell />
             </>
           ) : (
