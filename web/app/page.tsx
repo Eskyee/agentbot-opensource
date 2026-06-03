@@ -226,32 +226,32 @@ export default async function Home() {
                 name: 'Free',
                 price: '0',
                 badge: 'BYOK',
-                features: ['1 agent', 'All channels', 'All 50+ skills', 'Full dashboard', 'Bring your own MiMo key'],
+                features: ['1 agent, 24/7 runtime', 'All channels', 'All 50+ skills', 'Full dashboard', 'Your own MiMo key (~$20/mo)'],
               },
               {
                 id: 'solo',
                 name: 'Solo',
                 price: '29',
-                features: ['1 agent', 'MiMo V2.5 Pro included', 'X + Telegram', 'Daily digests', 'No API key needed'],
+                features: ['1 agent, 24/7 runtime', 'MiMo V2.5 Pro included', 'All channels', 'All 50+ skills', 'No per-token charges'],
               },
               {
                 id: 'collective',
                 name: 'Collective',
                 price: '69',
                 popular: true,
-                features: ['3 agents', 'Everything in Solo', 'Thread drafting', 'Custom workflows', 'Priority support'],
+                features: ['3 agents, 24/7 runtime', 'MiMo V2.5 Pro — unlimited', 'Custom workflows', 'Thread drafting', 'Priority support'],
               },
               {
                 id: 'label',
                 name: 'Label',
                 price: '149',
-                features: ['10 agents', 'Everything in Collective', 'Team management', 'API access', 'White-label'],
+                features: ['10 agents, 24/7 runtime', 'Everything in Collective', 'Team management', 'API access', 'White-label'],
               },
               {
                 id: 'network',
                 name: 'Network',
                 price: '499',
-                features: ['Unlimited agents', 'Everything in Label', 'Dedicated infra', 'Custom models', 'SLA'],
+                features: ['Unlimited agents', 'Everything in Label', 'Dedicated infra', 'Custom models', '99.9% SLA'],
               },
             ].map((plan) => (
               <div key={plan.id} className="bg-black p-6 sm:p-8 flex flex-col">
