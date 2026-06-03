@@ -74,6 +74,8 @@ export default function Navbar() {
               <NavLink href="/partner/mimo" current={pathname}>MiMo</NavLink>
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
+              <NavLink href="/credits" current={pathname}>Credits</NavLink>
+              <NavLink href="/usage/global" current={pathname}>Usage</NavLink>
             </>
           )}
         </div>
@@ -177,6 +179,8 @@ export default function Navbar() {
                 <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
                 <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                 <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
+                <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
+                <MobileLink href="/usage/global" onClick={closeMenu}>Usage</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
                   <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">
                     Sign in

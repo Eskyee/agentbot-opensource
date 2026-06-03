@@ -45,6 +45,8 @@ export const navSections = [
       { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
       { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
       { label: 'Billing', href: '/billing', icon: '☆' },
+      { label: 'Credits', href: '/credits', icon: '💰' },
+      { label: 'Usage', href: '/usage/global', icon: '📊' },
     ],
   },
   {
