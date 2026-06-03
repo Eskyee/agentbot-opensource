@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
 
-// Route demo through the bridge (same as /chat) — uses local OpenClaw
-const BRIDGE_SECRET = process.env.BRIDGE_SECRET || ''
+// Demo uses MiMo/OpenRouter directly — NO bridge (bridge is only for /chat when logged in)
 const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
 const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
 const OPENROUTER_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
@@ -36,39 +34,6 @@ Key facts about Agentbot:
 
 Be helpful, concise, and show what an Agentbot agent can do. Keep responses under 200 words.
 If someone asks how to get started, point them to agentbot.sh/signup or agentbot.sh/pricing.`
-
-// Import bridge state for direct relay
-import { pendingRequests, pendingResponses } from '@/app/api/bridge/poll/route'
-
-async function callViaBridge(messages: { role: string; content: string }[]): Promise<string | null> {
-  if (!BRIDGE_SECRET) return null
-
-  const requestId = crypto.randomUUID()
-
-  pendingRequests.set(requestId, {
-    requestId,
-    userId: 'demo',
-    messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-    timestamp: Date.now(),
-  })
-
-  // Wait for bridge response (poll every 500ms, timeout 45s)
-  const timeout = 45_000
-  const start = Date.now()
-
-  while (Date.now() - start < timeout) {
-    const resp = pendingResponses.get(requestId)
-    if (resp && resp.done) {
-      pendingResponses.delete(requestId)
-      return resp.content
-    }
-    await new Promise(r => setTimeout(r, 500))
-  }
-
-  pendingRequests.delete(requestId)
-  pendingResponses.delete(requestId)
-  return null
-}
 
 async function callMiMo(messages: { role: string; content: string }[]): Promise<string> {
   const res = await fetch(`${MIMO_BASE_URL}/chat/completions`, {
@@ -138,25 +103,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No valid messages' }, { status: 400 })
   }
 
-  // Try bridge first (local OpenClaw), then MiMo, then OpenRouter
+  // Try MiMo direct first, then OpenRouter fallback
   try {
-    // 1. Try bridge (local OpenClaw)
-    const bridgeReply = await callViaBridge(sanitized)
-    if (bridgeReply) {
-      return NextResponse.json({ reply: bridgeReply, source: 'bridge' })
-    }
-
-    // 2. Try MiMo direct
     if (MIMO_API_KEY) {
       try {
         const reply = await callMiMo(sanitized)
         return NextResponse.json({ reply, source: 'mimo' })
       } catch (e) {
-        console.warn('[Demo] MiMo failed:', e)
+        console.warn('[Demo] MiMo failed, trying OpenRouter:', e)
       }
     }
 
-    // 3. Try OpenRouter
     if (OPENROUTER_KEY) {
       try {
         const reply = await callOpenRouter(sanitized)
@@ -167,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'AI is temporarily unavailable. Our bridge and API providers are offline. Try again shortly.' },
+      { error: 'AI is temporarily unavailable. Try again shortly.' },
       { status: 503 }
     )
   } catch (err) {

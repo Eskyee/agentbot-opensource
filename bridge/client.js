@@ -2,12 +2,9 @@
 
 /**
  * OpenClaw Bridge Client
+ * Polls agentbot.sh for pending chat requests, forwards to local OpenClaw.
  *
- * Runs on your Mac mini. Polls agentbot.sh for pending chat requests,
- * forwards them to local OpenClaw via CLI, and posts responses back.
- *
- * Usage:
- *   BRIDGE_SECRET=*** OPENCLAW_CMD=openclaw node client.js
+ * Usage: BRIDGE_SECRET=*** OPENCLAW_CMD=openclaw node client.js
  */
 
 const { execSync } = require('child_process')
@@ -15,12 +12,12 @@ const https = require('https')
 const http = require('http')
 
 const BRIDGE_URL = process.env.BRIDGE_URL || 'https://agentbot.sh'
-const BRIDGE_SECRET = process.env.BRIDGE_SECRET
+const BRIDGE_SECRET = process.env["BRIDGE_SECRET"]
 const OPENCLAW_CMD = process.env.OPENCLAW_CMD || 'openclaw'
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL || '3000', 10)
 
 if (!BRIDGE_SECRET) {
-  console.error('❌ BRIDGE_SECRET required. Set it in your environment or .env file.')
+  console.error('❌ BRIDGE_SECRET required.')
   process.exit(1)
 }
 
@@ -73,15 +70,13 @@ async function handleChat(request) {
   const { requestId, messages } = request
 
   try {
-    // Build the message from conversation history
     const lastUserMsg = messages.filter(m => m.role === 'user').pop()
     const message = lastUserMsg?.content || 'Hello'
 
     log(`📤 Sending to OpenClaw: "${message.slice(0, 50)}..."`)
 
-    // Use openclaw agent CLI to send message
     const result = execSync(
-      `${OPENCLAW_CMD} agent -m ${JSON.stringify(message)} --json --timeout 60`,
+      `${OPENCLAW_CMD} agent --session-key bridge -m ${JSON.stringify(message)} --json --timeout 60`,
       {
         encoding: 'utf-8',
         timeout: 65000,
@@ -89,7 +84,6 @@ async function handleChat(request) {
       }
     )
 
-    // Parse the response
     let response = ''
     try {
       const parsed = JSON.parse(result)
@@ -98,39 +92,28 @@ async function handleChat(request) {
       response = result.trim() || 'No response from OpenClaw.'
     }
 
-    // Post response back to bridge
     await httpFetch(`${BRIDGE_URL}/api/bridge/poll?secret=${encodeURIComponent(BRIDGE_SECRET)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        requestId,
-        content: response,
-        done: true,
-      }),
+      body: JSON.stringify({ requestId, content: response, done: true }),
     })
 
     log(`✅ Response sent: ${requestId} (${response.length} chars)`)
   } catch (err) {
     log(`❌ Chat error: ${err.message}`)
 
-    // Post error response
     await httpFetch(`${BRIDGE_URL}/api/bridge/poll?secret=${encodeURIComponent(BRIDGE_SECRET)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        requestId,
-        content: `Error: ${err.message}`,
-        done: true,
-      }),
+      body: JSON.stringify({ requestId, content: `Error: ${err.message}`, done: true }),
     }).catch(() => {})
   }
 }
 
-// Main loop
 async function main() {
   log('🦞 OpenClaw Bridge Client starting...')
   log(`   Bridge: ${BRIDGE_URL}`)
-  log(`   OpenClaw: ${OPENCLAW_CMD} agent`)
+  log(`   OpenClaw: ${OPENCLAW_CMD} agent --session-key bridge`)
   log(`   Polling every ${POLL_INTERVAL}ms`)
   log('')
 
@@ -140,13 +123,7 @@ async function main() {
   }
 }
 
-process.on('SIGINT', () => {
-  log('👋 Shutting down bridge...')
-  process.exit(0)
-})
-
-process.on('SIGTERM', () => {
-  process.exit(0)
-})
+process.on('SIGINT', () => { log('👋 Shutting down bridge...'); process.exit(0) })
+process.on('SIGTERM', () => { process.exit(0) })
 
 main()
