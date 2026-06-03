@@ -4,28 +4,23 @@
  * OpenClaw Bridge Client
  *
  * Runs on your Mac mini. Polls agentbot.sh for pending chat requests,
- * forwards them to local OpenClaw, and posts responses back.
+ * forwards them to local OpenClaw via CLI, and posts responses back.
  *
  * Usage:
- *   BRIDGE_SECRET=<secret> OPENCLAW_TOKEN=<token> node client.js
+ *   BRIDGE_SECRET=*** OPENCLAW_CMD=openclaw node client.js
  */
 
-const http = require('http')
+const { execSync } = require('child_process')
 const https = require('https')
+const http = require('http')
 
 const BRIDGE_URL = process.env.BRIDGE_URL || 'https://agentbot.sh'
 const BRIDGE_SECRET = process.env.BRIDGE_SECRET
-const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://localhost:18789'
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN
+const OPENCLAW_CMD = process.env.OPENCLAW_CMD || 'openclaw'
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL || '3000', 10)
 
 if (!BRIDGE_SECRET) {
-  console.error('❌ BRIDGE_SECRET required.')
-  process.exit(1)
-}
-
-if (!OPENCLAW_TOKEN) {
-  console.error('❌ OPENCLAW_TOKEN required. Get it from: openclaw gateway token')
+  console.error('❌ BRIDGE_SECRET required. Set it in your environment or .env file.')
   process.exit(1)
 }
 
@@ -34,7 +29,7 @@ function log(msg) {
   console.log(`[${ts}] ${msg}`)
 }
 
-function fetch(url, options = {}) {
+function httpFetch(url, options = {}) {
   return new Promise((resolve, reject) => {
     const parsed = new URL(url)
     const client = parsed.protocol === 'https:' ? https : http
@@ -56,7 +51,7 @@ function fetch(url, options = {}) {
 
 async function pollForRequests() {
   try {
-    const res = await fetch(`${BRIDGE_URL}/api/bridge/poll?secret=${encodeURIComponent(BRIDGE_SECRET)}`)
+    const res = await httpFetch(`${BRIDGE_URL}/api/bridge/poll?secret=${encodeURIComponent(BRIDGE_SECRET)}`)
 
     if (res.status !== 200) {
       log(`⚠️ Poll error: ${res.status}`)
@@ -78,10 +73,33 @@ async function handleChat(request) {
   const { requestId, messages } = request
 
   try {
-    const response = await callOpenClaw(messages)
+    // Build the message from conversation history
+    const lastUserMsg = messages.filter(m => m.role === 'user').pop()
+    const message = lastUserMsg?.content || 'Hello'
+
+    log(`📤 Sending to OpenClaw: "${message.slice(0, 50)}..."`)
+
+    // Use openclaw agent CLI to send message
+    const result = execSync(
+      `${OPENCLAW_CMD} agent -m ${JSON.stringify(message)} --json --timeout-ms 60000`,
+      {
+        encoding: 'utf-8',
+        timeout: 65000,
+        env: { ...process.env, FORCE_COLOR: '0' },
+      }
+    )
+
+    // Parse the response
+    let response = ''
+    try {
+      const parsed = JSON.parse(result)
+      response = parsed.reply || parsed.message || parsed.content || result.trim()
+    } catch {
+      response = result.trim() || 'No response from OpenClaw.'
+    }
 
     // Post response back to bridge
-    await fetch(`${BRIDGE_URL}/api/bridge/poll?secret=${encodeURIComponent(BRIDGE_SECRET)}`, {
+    await httpFetch(`${BRIDGE_URL}/api/bridge/poll?secret=${encodeURIComponent(BRIDGE_SECRET)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -96,7 +114,7 @@ async function handleChat(request) {
     log(`❌ Chat error: ${err.message}`)
 
     // Post error response
-    await fetch(`${BRIDGE_URL}/api/bridge/poll?secret=${encodeURIComponent(BRIDGE_SECRET)}`, {
+    await httpFetch(`${BRIDGE_URL}/api/bridge/poll?secret=${encodeURIComponent(BRIDGE_SECRET)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -108,59 +126,11 @@ async function handleChat(request) {
   }
 }
 
-function callOpenClaw(messages) {
-  return new Promise((resolve, reject) => {
-    const url = new URL('/v1/chat/completions', OPENCLAW_URL)
-    const isHttps = url.protocol === 'https:'
-    const client = isHttps ? https : http
-
-    const body = JSON.stringify({
-      model: 'xiaomi-coding/mimo-v2.5-pro',
-      messages,
-      max_tokens: 2000,
-    })
-
-    const req = client.request({
-      hostname: url.hostname,
-      port: url.port || (isHttps ? 443 : 80),
-      path: url.pathname,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENCLAW_TOKEN}`,
-        'Content-Length': Buffer.byteLength(body),
-      },
-      timeout: 60000,
-    }, (res) => {
-      let data = ''
-      res.on('data', (chunk) => { data += chunk })
-      res.on('end', () => {
-        try {
-          const json = JSON.parse(data)
-          const content = json.choices?.[0]?.message?.content || 'No response from OpenClaw.'
-          resolve(content)
-        } catch {
-          resolve(data || 'Empty response from OpenClaw.')
-        }
-      })
-    })
-
-    req.on('error', (err) => reject(new Error(`OpenClaw connection failed: ${err.message}`)))
-    req.on('timeout', () => {
-      req.destroy()
-      reject(new Error('OpenClaw request timed out'))
-    })
-
-    req.write(body)
-    req.end()
-  })
-}
-
 // Main loop
 async function main() {
   log('🦞 OpenClaw Bridge Client starting...')
   log(`   Bridge: ${BRIDGE_URL}`)
-  log(`   OpenClaw: ${OPENCLAW_URL}`)
+  log(`   OpenClaw: ${OPENCLAW_CMD} agent`)
   log(`   Polling every ${POLL_INTERVAL}ms`)
   log('')
 
