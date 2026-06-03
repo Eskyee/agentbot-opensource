@@ -81,7 +81,7 @@ async function handleChat(request) {
 
     // Use openclaw agent CLI to send message
     const result = execSync(
-      `${OPENCLAW_CMD} agent -m ${JSON.stringify(message)} --json --timeout-ms 60000`,
+      `${OPENCLAW_CMD} agent -m ${JSON.stringify(message)} --json --timeout 60`,
       {
         encoding: 'utf-8',
         timeout: 65000,
