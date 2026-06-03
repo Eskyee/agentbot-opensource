@@ -305,8 +305,69 @@ function DashboardContent() {
 
   const instanceName = instance.userId ? `Agent ${instance.userId.slice(0, 8)}` : 'Agent'
   const runtimeHealth = instance.status === 'running' ? 'healthy' : instance.status
+  const isUnreachable = instance.status !== 'running'
   const skillsManagerUrl = buildOpenClawControlUrl({ view: 'skills', gatewayUrl: instance.url, gatewayToken: instance.gatewayToken })
   const configManagerUrl = buildOpenClawControlUrl({ view: 'config', gatewayUrl: instance.url, gatewayToken: instance.gatewayToken })
+
+  // When Railway is down, show a clean view with local OpenClaw link
+  if (isUnreachable) {
+    return (
+      <div className="flex min-h-screen bg-black font-mono">
+        <DashboardSidebar userName={userName} credits={credits} plan={instance?.plan} runtimeUrl={instance?.url || bootstrap?.openclawUrl} runtimeGatewayToken={instance?.gatewayToken || bootstrap?.gatewayToken} runtimeInstanceId={instance?.userId || bootstrap?.openclawInstanceId} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="sticky top-14 z-30 bg-black/80 backdrop-blur-xl border-b border-zinc-900 px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors" aria-label="Open menu">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
+              <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Dashboard</span>
+            </div>
+            <Link href="/onboard?mode=deploy" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+              + New Agent
+            </Link>
+          </header>
+          <main className="flex-1 overflow-y-auto">
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
+              <div className="text-6xl mb-6">🦞</div>
+              <h1 className="text-2xl font-bold tracking-tighter uppercase mb-3">Agent Offline</h1>
+              <p className="text-zinc-500 text-sm mb-8">
+                Your managed runtime is suspended. You can still chat with your local OpenClaw instance running on your Mac mini.
+              </p>
+              <div className="space-y-4">
+                <a
+                  href="https://agentbot.sh/chat"
+                  className="block w-full bg-white text-black py-3 rounded-lg font-bold uppercase tracking-widest text-xs hover:bg-zinc-200 transition-colors"
+                >
+                  💬 Open Chat (Local OpenClaw)
+                </a>
+                <a
+                  href="https://agentbot.sh/demo"
+                  className="block w-full border border-zinc-800 py-3 rounded-lg font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  🤖 Try Demo
+                </a>
+                <Link
+                  href="/marketplace"
+                  className="block w-full border border-zinc-800 py-3 rounded-lg font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  🚀 Deploy New Agent
+                </Link>
+              </div>
+              <div className="mt-12 pt-8 border-t border-zinc-900">
+                <h3 className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <QuickAction icon="📊" label="Analytics" href="/dashboard/analytics" />
+                  <QuickAction icon="💰" label="Billing" href="/billing" />
+                  <QuickAction icon="🔧" label="Skills" href="/dashboard/skills" />
+                  <QuickAction icon="⚙️" label="Settings" href="/settings" />
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen bg-black font-mono">
