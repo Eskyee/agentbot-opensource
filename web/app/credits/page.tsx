@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'), { ssr: false })
+
+const CryptoPay = dynamic(
+  () => import('@/app/components/CryptoPay').then((m) => m.CryptoPay),
+  { ssr: false, loading: () => <div className="text-xs text-zinc-600 animate-pulse">Loading wallet…</div> }
+)
 
 interface CreditActivity {
   id: string
@@ -157,10 +165,9 @@ export default function CreditsPage() {
       {/* Pay with Crypto */}
       <section className="border-t border-zinc-900">
         <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Pay with Crypto · USDC on Base</div>
-          <button className="border border-zinc-800 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">
-            connect wallet
-          </button>
+          <WalletProvider>
+            <CryptoPay amount={topUpAmount} />
+          </WalletProvider>
         </div>
       </section>
 
