@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Route through OpenRouter (proxies MiMo globally, no cross-border 451 issues)
+// Try MiMo direct first, OpenRouter as fallback
+const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
+const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
 const OPENROUTER_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || ''
-const DEFAULT_MODEL = 'xiaomi-coding/mimo-v2.5-pro'
+const DEFAULT_MODEL = 'mimo-v2.5-pro'
 const MAX_DEMO_MESSAGES = 10
 
 // In-memory rate limiter (per IP, 10 requests per hour)
@@ -37,6 +39,58 @@ Key facts about Agentbot:
 Be helpful, concise, and show what an Agentbot agent can do. Keep responses under 200 words.
 If someone asks how to get started, point them to agentbot.sh/signup or agentbot.sh/pricing.`
 
+async function callMiMo(messages: { role: string; content: string }[]) {
+  const res = await fetch(`${MIMO_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${MIMO_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: DEFAULT_MODEL,
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+      max_tokens: 500,
+      temperature: 0.7,
+    }),
+    signal: AbortSignal.timeout(30_000),
+  })
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => 'MiMo error')
+    throw new Error(`MiMo ${res.status}: ${err.slice(0, 100)}`)
+  }
+
+  const data = await res.json()
+  return data.choices?.[0]?.message?.content || 'Sorry, no response.'
+}
+
+async function callOpenRouter(messages: { role: string; content: string }[]) {
+  const res = await fetch(`${OPENROUTER_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENROUTER_KEY}`,
+      'HTTP-Referer': 'https://agentbot.sh',
+      'X-Title': 'Agentbot Demo',
+    },
+    body: JSON.stringify({
+      model: 'xiaomi-coding/mimo-v2.5-pro',
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+      max_tokens: 500,
+      temperature: 0.7,
+    }),
+    signal: AbortSignal.timeout(30_000),
+  })
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => 'OpenRouter error')
+    throw new Error(`OpenRouter ${res.status}: ${err.slice(0, 100)}`)
+  }
+
+  const data = await res.json()
+  return data.choices?.[0]?.message?.content || 'Sorry, no response.'
+}
+
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
 
@@ -47,13 +101,6 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  if (!OPENROUTER_KEY) {
-    return NextResponse.json(
-      { error: 'Demo is being configured. Try again shortly.' },
-      { status: 503 }
-    )
-  }
-
   const body = await request.json().catch(() => ({}))
   const messages = body.messages as { role: string; content: string }[] | undefined
 
@@ -61,7 +108,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Messages array required' }, { status: 400 })
   }
 
-  // Only allow user/assistant roles, limit to last 20 messages
   const sanitized = messages
     .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
     .slice(-20)
@@ -71,49 +117,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No valid messages' }, { status: 400 })
   }
 
+  // Try MiMo direct first, then OpenRouter fallback
   try {
-    const res = await fetch(`${OPENROUTER_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENROUTER_KEY}`,
-        'HTTP-Referer': 'https://agentbot.sh',
-        'X-Title': 'Agentbot Demo',
-      },
-      body: JSON.stringify({
-        model: DEFAULT_MODEL,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          ...sanitized,
-        ],
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
-      signal: AbortSignal.timeout(30_000),
-    })
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => 'Provider error')
-      console.error('[Demo Chat] OpenRouter error:', res.status, errText)
-      return NextResponse.json(
-        { error: 'AI is temporarily unavailable. Try again in a moment.' },
-        { status: 502 }
-      )
+    if (MIMO_API_KEY) {
+      try {
+        const reply = await callMiMo(sanitized)
+        return NextResponse.json({ reply, model: 'mimo-v2.5-pro', source: 'mimo' })
+      } catch (mimoErr) {
+        console.warn('[Demo Chat] MiMo failed, trying OpenRouter:', mimoErr)
+      }
     }
 
-    const data = await res.json()
-    const reply = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.'
+    if (OPENROUTER_KEY) {
+      const reply = await callOpenRouter(sanitized)
+      return NextResponse.json({ reply, model: 'xiaomi-coding/mimo-v2.5-pro', source: 'openrouter' })
+    }
 
-    return NextResponse.json({
-      reply,
-      model: data.model || DEFAULT_MODEL,
-      usage: data.usage,
-    })
-  } catch (err) {
-    console.error('[Demo Chat] Error:', err)
     return NextResponse.json(
-      { error: 'Something went wrong. Try again.' },
-      { status: 500 }
+      { error: 'No AI provider configured. Please try again later.' },
+      { status: 503 }
+    )
+  } catch (err) {
+    console.error('[Demo Chat] All providers failed:', err)
+    return NextResponse.json(
+      { error: 'AI is temporarily unavailable. Try again in a moment.' },
+      { status: 502 }
     )
   }
 }
