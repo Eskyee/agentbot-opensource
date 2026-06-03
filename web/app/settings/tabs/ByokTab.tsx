@@ -161,7 +161,7 @@ export function ByokTab({ agents }: ByokTabProps) {
           ))}
         </div>
         <p className="text-[10px] text-zinc-600 mt-3">
-          82B credits/month • 20% off 9AM–5PM PDT • TTS models free
+          82B credits/month • 20% off 5PM–1AM GMT (off-peak) • TTS models free
         </p>
       </div>
 
