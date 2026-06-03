@@ -107,7 +107,7 @@ export default function Navbar() {
                     </div>
                     <UserMenuLink href="/dashboard" onClick={() => setUserMenuOpen(false)}>Dashboard</UserMenuLink>
                     <UserMenuLink href="/chat" onClick={() => setUserMenuOpen(false)}>Chat</UserMenuLink>
-                    <UserMenuLink href="/dashboard/agents" onClick={() => setUserMenuOpen(false)}>Agents</UserMenuLink>
+                    <UserMenuLink href="/agents" onClick={() => setUserMenuOpen(false)}>Agents</UserMenuLink>
                     <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
                     <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
                     {isAdmin && (
@@ -165,7 +165,7 @@ export default function Navbar() {
                 <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
                 <MobileLink href="/chat" onClick={closeMenu}>Chat</MobileLink>
                 <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
-                <MobileLink href="/dashboard/agents" onClick={closeMenu}>Agents</MobileLink>
+                <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-4">
                   {displayName && <div className="text-[10px] text-zinc-600 px-3 pb-2 uppercase tracking-widest">{displayName}</div>}
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
