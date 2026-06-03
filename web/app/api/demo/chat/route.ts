@@ -100,7 +100,7 @@ async function callOpenRouter(messages: { role: string; content: string }[]): Pr
       'X-Title': 'Agentbot Demo',
     },
     body: JSON.stringify({
-      model: 'xiaomi-coding/mimo-v2.5-pro',
+      model: 'xiaomi/mimo-v2.5-pro',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 500,
       temperature: 0.7,
