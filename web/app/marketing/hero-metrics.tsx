@@ -43,7 +43,7 @@ export function HeroMetrics() {
 
   return (
     <div
-      className="mt-11 grid grid-cols-4 border"
+      className="mt-11 grid grid-cols-2 sm:grid-cols-4 border"
       style={{ background: c.line, borderColor: c.line, gap: 1 }}
     >
       {metrics.map((m) => (

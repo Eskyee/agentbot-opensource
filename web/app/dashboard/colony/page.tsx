@@ -131,7 +131,7 @@ function SoulIndicators({ soul }: { soul: ColonyData['root']['soul'] }) {
           size="sm"
         />
       </div>
-      <div className="grid grid-cols-5 gap-4 text-[10px] font-mono">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 text-[10px] font-mono">
         <div>
           <div className="text-zinc-600 mb-0.5">Cycles</div>
           <div className="text-white">{soul.total_cycles}</div>

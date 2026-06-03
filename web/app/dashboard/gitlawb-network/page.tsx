@@ -374,7 +374,7 @@ export default function GitlawbNetworkPage() {
           </div>
 
           {/* Top Row - Status Indicators */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             <div className="text-center p-4 border border-zinc-800">
               <div className="text-2xl font-bold text-green-400">
                 {stats.nodesReachable}/{stats.totalNodes}
@@ -510,7 +510,7 @@ export default function GitlawbNetworkPage() {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                   <div className="text-center p-3 border border-zinc-800">
                     <div className="text-xl font-bold text-green-400">{node.repos.toLocaleString()}</div>
                     <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Repos</div>

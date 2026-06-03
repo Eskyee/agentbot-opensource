@@ -88,7 +88,7 @@ export default function ExpertSetupPage() {
             Select a Time Slot
           </h3>
 
-          <div className="grid grid-cols-5 gap-2 mb-6">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-6">
             {slots.map((slot) => (
               <div key={slot.date} className="text-center">
                 <div className="text-[10px] uppercase text-zinc-500 mb-1">{slot.day}</div>
