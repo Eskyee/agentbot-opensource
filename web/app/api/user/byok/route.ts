@@ -10,6 +10,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import bcrypt from 'bcryptjs'
 
 export const runtime = 'nodejs'
@@ -25,16 +26,27 @@ function extractBearer(req: NextRequest): string | null {
 }
 
 async function authenticate(req: NextRequest) {
+  // Try API key first
   const rawKey = extractBearer(req)
-  if (!rawKey) return null
-  const prefix = rawKey.slice(0, 18)
-  const candidate = await prisma.apiKey.findFirst({
-    where: { keyPrefix: prefix },
-    select: { id: true, userId: true, keyHash: true },
-  })
-  if (!candidate) return null
-  const valid = await bcrypt.compare(rawKey, candidate.keyHash)
-  return valid ? candidate : null
+  if (rawKey) {
+    const prefix = rawKey.slice(0, 18)
+    const candidate = await prisma.apiKey.findFirst({
+      where: { keyPrefix: prefix },
+      select: { id: true, userId: true, keyHash: true },
+    })
+    if (candidate) {
+      const valid = await bcrypt.compare(rawKey, candidate.keyHash)
+      if (valid) return candidate
+    }
+  }
+
+  // Fall back to session auth
+  const session = await getAuthSession()
+  if (session?.user?.id) {
+    return { id: session.user.id, userId: session.user.id, keyHash: '' }
+  }
+
+  return null
 }
 
 async function getUserSetting(userId: string, key: string) {
