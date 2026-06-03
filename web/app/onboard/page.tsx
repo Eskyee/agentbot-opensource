@@ -723,13 +723,9 @@ function OnboardContent() {
             <div className="space-y-6">
               <div className="space-y-3">
                 {[
-                  { id: 'vercel-gateway', name: 'Factory Master (AI Gateway)', desc: 'Ultra-high performance MiMo V2 Pro — Recommended for all agents', recommended: true },
-                  { id: 'openrouter', name: 'OpenRouter', desc: 'Llama, GPT, DeepSeek, and more — Fast and reliable' },
-                  { id: 'ollama', name: 'Ollama (Local)', desc: 'Run models locally on your own hardware — private & free', badge: 'PRIVATE' },
-                  { id: 'groq', name: 'Groq', desc: 'Llama 3 — Ultra fast free tier' },
-                  { id: 'gemini', name: 'Google Gemini', desc: 'Gemini 2.0 Flash — Direct from Google' },
-                  { id: 'anthropic', name: 'Anthropic', desc: 'Claude — Best quality (requires API key)' },
-                  { id: 'openai', name: 'OpenAI', desc: 'GPT-4 — Popular choice (requires API key)' }
+                  { id: 'xiaomi-direct', name: 'MiMo V2.5 Pro', desc: 'Best reasoning, 1M context. Included in your plan — no key needed.', recommended: true },
+                  { id: 'xiaomi-byok', name: 'Bring Your Own MiMo Key', desc: 'Have a MiMo subscription? Paste your key. 82B credits/month.' },
+                  { id: 'other', name: 'Other Providers', desc: 'OpenRouter, Anthropic, OpenAI, Groq — Advanced, higher cost' }
                 ].map((provider) => (
                   <button
                     key={provider.id}

@@ -44,12 +44,20 @@ export default async function Home() {
                 Open Dashboard
               </Link>
             ) : (
-              <Link
-                href="/signup"
-                className="inline-flex items-center justify-center bg-white text-black px-8 py-4 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-              >
-                Deploy Your Agent — £29/mo
-              </Link>
+              <>
+                <Link
+                  href="/signup?plan=free"
+                  className="inline-flex items-center justify-center bg-white text-black px-8 py-4 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                  Start Free — BYOK
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center justify-center border border-zinc-800 px-8 py-4 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  Deploy Agent — £29/mo
+                </Link>
+              </>
             )}
             <Link
               href="/demo"
