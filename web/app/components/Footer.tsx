@@ -52,7 +52,7 @@ const COLUMNS = [
 
 export default function Footer() {
   const [status, setStatus] = useState<'checking' | 'operational' | 'down'>('checking');
-  const [version, setVersion] = useState<string>('v0.0.0');
+  const [version, setVersion] = useState<string>('v1.1.0');
   const [openClawVersion, setOpenClawVersion] = useState<string>('2026.5.28');
 
   useEffect(() => {
@@ -145,7 +145,11 @@ export default function Footer() {
             </div>
             <span className="text-zinc-800 text-[10px]">|</span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-700">
-              Agentbot {version}
+              STABLE {version}
+            </span>
+            <span className="text-zinc-800 text-[10px]">|</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-800">
+              May 20, 2026 · 14 days ago
             </span>
             <span className="text-zinc-800 text-[10px]">|</span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-700">
