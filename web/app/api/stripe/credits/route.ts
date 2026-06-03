@@ -2,13 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import Stripe from 'stripe'
 
-const CREDIT_PACKS: Record<string, { amount: number; credits: number; name: string }> = {
-  starter: { amount: 500, credits: 1000, name: 'Starter Pack' },
-  growth: { amount: 2000, credits: 5000, name: 'Growth Pack' },
-  scale: { amount: 5000, credits: 15000, name: 'Scale Pack' },
-  enterprise: { amount: 15000, credits: 50000, name: 'Enterprise Pack' },
-}
-
 export async function POST(request: NextRequest) {
   const session = await getAuthSession()
   if (!session?.user?.id || !session?.user?.email) {
@@ -16,13 +9,6 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => ({}))
-  const packId = (body.packId || '').toLowerCase()
-  const pack = CREDIT_PACKS[packId]
-
-  if (!pack) {
-    return NextResponse.json({ error: 'Invalid credit pack' }, { status: 400 })
-  }
-
   const stripeKey = process.env.STRIPE_SECRET_KEY
   if (!stripeKey) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
@@ -33,30 +19,62 @@ export async function POST(request: NextRequest) {
   try {
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' })
 
+    // Subscription mode
+    if (body.subscription) {
+      const checkoutSession = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        customer_email: session.user.email,
+        metadata: {
+          userId: session.user.id,
+          type: 'credit_subscription',
+        },
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: 'Agentbot Pro',
+                description: '$10 of inference credits every month. Metered per token.',
+              },
+              unit_amount: 1000,
+              recurring: { interval: 'month' },
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: `${origin}/credits?success=1&type=subscription`,
+        cancel_url: `${origin}/credits?canceled=1`,
+      })
+
+      return NextResponse.json({ url: checkoutSession.url })
+    }
+
+    // One-time top-up
+    const amount = Math.max(5, Math.min(10000, Math.round(body.amount || 10)))
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       customer_email: session.user.email,
       metadata: {
         userId: session.user.id,
-        type: 'credit_pack',
-        packId,
-        credits: pack.credits.toString(),
+        type: 'credit_topup',
+        amount: amount.toString(),
       },
       line_items: [
         {
           price_data: {
-            currency: 'gbp',
+            currency: 'usd',
             product_data: {
-              name: pack.name,
-              description: `${pack.credits.toLocaleString()} credits for Agentbot`,
+              name: `$${amount} Credit Top-Up`,
+              description: `${amount} USD of inference credits for Agentbot`,
             },
-            unit_amount: pack.amount,
+            unit_amount: amount * 100,
           },
           quantity: 1,
         },
       ],
-      success_url: `${origin}/credits?success=1&credits=${pack.credits}`,
+      success_url: `${origin}/credits?success=1&amount=${amount}`,
       cancel_url: `${origin}/credits?canceled=1`,
     })
 
