@@ -80,7 +80,7 @@ function SetupInstructions() {
 }
 
 export default function ChatPage() {
-  const { data: session } = useCustomSession()
+  const { data: session, status } = useCustomSession()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -158,6 +158,17 @@ export default function ChatPage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     send()
+  }
+
+  if (status === 'loading') {
+    return (
+      <main className="min-h-screen bg-black text-white font-mono flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-5xl mb-4">🦞</div>
+          <p className="text-sm text-zinc-500">Loading...</p>
+        </div>
+      </main>
+    )
   }
 
   if (!session) {
