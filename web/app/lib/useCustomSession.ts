@@ -6,6 +6,7 @@ interface CustomSession {
     name: string | null;
     email: string | null;
     isAdmin?: boolean;
+    plan?: string;
   };
 }
 
