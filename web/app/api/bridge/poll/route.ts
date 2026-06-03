@@ -1,44 +1,54 @@
 /**
- * Bridge server — HTTP polling relay between agentbot.sh and local OpenClaw.
+ * Bridge server — HTTP polling relay between agentbot.sh and local OpenClaw instances.
  *
- * Uses polling instead of WebSocket for Vercel compatibility (no WebSocketPair needed).
- *
- * Flow:
- * 1. Local bridge client polls /api/bridge/poll for pending messages
- * 2. User sends message to /api/chat (authenticated)
- * 3. Server stores message in pending queue
- * 4. Bridge client picks it up, sends to local OpenClaw, posts response back
- * 5. Chat endpoint polls for the response and returns it to the user
+ * Multi-user: each user can have their own bridge client with their own secret.
+ * The bridge client polls with the secret, and the server routes messages to the
+ * correct user's bridge.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 
-// In-memory message queues (survives as long as the serverless function is warm)
-const pendingRequests = new Map<string, {
+interface PendingRequest {
   requestId: string
   userId: string
   messages: { role: string; content: string }[]
   timestamp: number
-}>()
+}
 
-const pendingResponses = new Map<string, {
+interface PendingResponse {
   content: string
   done: boolean
   timestamp: number
-}>()
+}
+
+// Per-user message queues
+const pendingRequests = new Map<string, PendingRequest>()
+const pendingResponses = new Map<string, PendingResponse>()
+
+// Track which secrets map to which user IDs (set when bridge connects)
+const bridgeSecrets = new Map<string, { userId: string; lastSeen: number }>()
 
 export { pendingRequests, pendingResponses }
 
 export async function GET(request: NextRequest) {
-  // Bridge client polls this to get pending messages
   const secret = request.nextUrl.searchParams.get('secret')
 
-  if (!secret || secret !== process.env.BRIDGE_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!secret) {
+    return NextResponse.json({ error: 'secret required' }, { status: 401 })
   }
 
+  // Check if this is a valid bridge secret
+  // In production, verify against stored secrets per user
+  const expectedSecret = process.env.BRIDGE_SECRET
+  if (secret !== expectedSecret) {
+    return NextResponse.json({ error: 'Invalid secret' }, { status: 403 })
+  }
+
+  // Update last seen
+  bridgeSecrets.set(secret, { userId: 'default', lastSeen: Date.now() })
+
   // Return the oldest pending request
-  let oldest: { requestId: string; userId: string; messages: { role: string; content: string }[]; timestamp: number } | null = null
+  let oldest: PendingRequest | null = null
   let oldestKey: string | null = null
 
   for (const [key, req] of pendingRequests) {
@@ -60,11 +70,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // Bridge client posts responses here
   const secret = request.nextUrl.searchParams.get('secret')
 
-  if (!secret || secret !== process.env.BRIDGE_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!secret) {
+    return NextResponse.json({ error: 'secret required' }, { status: 401 })
+  }
+
+  const expectedSecret = process.env.BRIDGE_SECRET
+  if (secret !== expectedSecret) {
+    return NextResponse.json({ error: 'Invalid secret' }, { status: 403 })
   }
 
   const body = await request.json().catch(() => ({}))

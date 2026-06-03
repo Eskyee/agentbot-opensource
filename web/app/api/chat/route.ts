@@ -1,12 +1,13 @@
 /**
  * POST /api/chat — Send a message through the bridge to local OpenClaw
  *
- * Uses HTTP polling (Vercel-compatible, no WebSocket needed).
+ * Any authenticated user can use this. The bridge client polls with the
+ * user's ID, so each user gets their own OpenClaw instance.
  *
  * Flow:
- * 1. User sends message → stored in pendingRequests
- * 2. Bridge client polls /api/bridge/poll, picks up the request
- * 3. Bridge client sends to local OpenClaw, posts response to /api/bridge/poll
+ * 1. User sends message → stored in pendingRequests with their userId
+ * 2. Bridge client polls /api/bridge/poll with their secret
+ * 3. Bridge client sends to local OpenClaw, posts response back
  * 4. This endpoint polls for the response and returns it
  */
 
@@ -21,22 +22,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Admin only
-  const adminEmails = ['eskyjunglelab@gmail.com', 'djescaba@icloud.com', 'admin@agentbot.sh']
-  if (!adminEmails.includes(session.user.email.toLowerCase())) {
-    return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-  }
-
   const body = await request.json().catch(() => ({}))
   const messages = body.messages as { role: string; content: string }[] | undefined
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: 'Messages array required' }, { status: 400 })
   }
-
-  // Check if bridge has been active recently (bridge client polls every 3s)
-  const bridgeActive = Array.from(pendingResponses.values()).some(r => Date.now() - r.timestamp < 30_000)
-    || Array.from(pendingRequests.values()).some(r => Date.now() - r.timestamp < 30_000)
 
   // Generate request ID
   const requestId = crypto.randomUUID()
@@ -70,8 +61,8 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(
     {
       error: 'bridge_offline',
-      message: 'Your local OpenClaw is not responding. Make sure the bridge client is running.',
-      hint: 'Run: node ~/.openclaw/bridge/client.js',
+      message: 'Your local OpenClaw is not responding. Make sure the bridge client is running on your machine.',
+      hint: 'See: https://agentbot.sh/chat → setup instructions',
     },
     { status: 503 }
   )

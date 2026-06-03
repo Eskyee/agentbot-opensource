@@ -10,7 +10,7 @@ import { CreditBadge } from "@/app/components/CreditBadge";
 
 // ─── Simplified nav: product-focused ─────────────────────────────────────────
 // LOGGED-OUT: Demo | Docs | Pricing → Sign in | Get Started
-// LOGGED-IN:  Dashboard | baseFM → user menu
+// LOGGED-IN:  Dashboard | Chat | baseFM → user menu
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Navbar() {
@@ -66,6 +66,7 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
+              <NavLink href="/chat" current={pathname}>Chat</NavLink>
               <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
               <CreditBadge />
               <NotificationBell />
@@ -105,6 +106,7 @@ export default function Navbar() {
                       <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{displayName}</span>
                     </div>
                     <UserMenuLink href="/dashboard" onClick={() => setUserMenuOpen(false)}>Dashboard</UserMenuLink>
+                    <UserMenuLink href="/chat" onClick={() => setUserMenuOpen(false)}>Chat</UserMenuLink>
                     <UserMenuLink href="/dashboard/agents" onClick={() => setUserMenuOpen(false)}>Agents</UserMenuLink>
                     <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
                     <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
@@ -161,6 +163,7 @@ export default function Navbar() {
             {isLoggedIn ? (
               <>
                 <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
+                <MobileLink href="/chat" onClick={closeMenu}>Chat</MobileLink>
                 <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
                 <MobileLink href="/dashboard/agents" onClick={closeMenu}>Agents</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-4">
