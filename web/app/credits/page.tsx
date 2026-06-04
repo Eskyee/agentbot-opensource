@@ -2,90 +2,50 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-import { toast } from 'sonner'
 
-const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'), { ssr: false })
+interface MimoUsage {
+  plan: string
+  planLimit: number
+  planName: string
+  totalCreditsUsed: number
+  monthlyCredits: number
+  monthlyInput: number
+  monthlyOutput: number
+  percentUsed: number
+}
 
-const CryptoPay = dynamic(
-  () => import('@/app/components/CryptoPay').then((m) => m.CryptoPay),
-  { ssr: false, loading: () => <div className="text-xs text-zinc-600 animate-pulse">Loading wallet…</div> }
-)
-
-interface CreditActivity {
-  id: string
-  type: 'topup' | 'usage' | 'subscription'
-  amount: number
-  description: string
-  created_at: string
+function formatCredits(n: number): string {
+  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(0)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`
+  return n.toString()
 }
 
 export default function CreditsPage() {
-  const [balance, setBalance] = useState<number | null>(null)
+  const [usage, setUsage] = useState<MimoUsage | null>(null)
   const [loading, setLoading] = useState(true)
-  const [topUpAmount, setTopUpAmount] = useState(10)
-  const [purchasing, setPurchasing] = useState(false)
-  const [activity, setActivity] = useState<CreditActivity[]>([])
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/credits').then((r) => {
-        if (r.status === 401) return { credits: 0, unauthorized: true }
+    fetch('/api/credits/mimo-usage')
+      .then((r) => {
+        if (r.status === 401) {
+          setError('unauthorized')
+          return null
+        }
         return r.json()
-      }).catch(() => ({ credits: 0 })),
-      fetch('/api/credits/balance').then((r) => {
-        if (r.status === 401) return { balance: 0, unauthorized: true }
-        return r.json()
-      }).catch(() => ({ balance: 0 })),
-    ]).then(([creditData, balanceData]) => {
-      setBalance(creditData.credits ?? balanceData.balance ?? 0)
-      setActivity([])
-    }).finally(() => setLoading(false))
+      })
+      .then((data) => {
+        if (data && !data.error) setUsage(data)
+      })
+      .catch(() => setError('failed'))
+      .finally(() => setLoading(false))
   }, [])
 
-  async function handleTopUp() {
-    setPurchasing(true)
-    try {
-      const res = await fetch('/api/stripe/credits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: topUpAmount }),
-      })
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        toast.error(data.error || 'Failed to create checkout')
-      }
-    } catch {
-      toast.error('Network error')
-    } finally {
-      setPurchasing(false)
-    }
-  }
-
-  async function handleSubscribe() {
-    setPurchasing(true)
-    try {
-      const res = await fetch('/api/stripe/credits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: true }),
-      })
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        toast.error(data.error || 'Failed to create subscription')
-      }
-    } catch {
-      toast.error('Network error')
-    } finally {
-      setPurchasing(false)
-    }
-  }
-
-  const outOfCredits = balance !== null && balance <= 0
+  const isUnauthorized = error === 'unauthorized'
+  const percentUsed = usage?.percentUsed ?? 0
+  const isHigh = percentUsed > 80
+  const isCritical = percentUsed > 95
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">
@@ -95,165 +55,161 @@ export default function CreditsPage() {
           Credits
         </div>
         <h1 className="text-3xl sm:text-5xl font-bold tracking-tighter uppercase leading-[0.9] mb-4">
-          Credits.
+          MiMo Credits
         </h1>
         <p className="text-zinc-400 text-sm max-w-lg leading-relaxed">
-          Pay-as-you-go inference, prepaid. Every request draws down your balance at the model's published per-token rate (see <Link href="/pricing" className="text-orange-500 hover:text-orange-400 underline underline-offset-4">pricing</Link>). When it hits zero, calls return 402 until you top up.
+          Your MiMo Token Plan usage. Credits are consumed per-request based on input/output tokens.
+          Cache hits cost 120x less than misses thanks to HiCache optimization.
         </p>
       </section>
 
-      {/* Current Balance */}
+      {/* Current Usage — Main Display */}
       <section className="border-t border-zinc-900">
         <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Current Balance</div>
-          <div className="flex items-baseline gap-3">
-            {loading ? (
-              <span className="text-4xl font-bold tracking-tighter text-zinc-700 animate-pulse">—</span>
-            ) : (
-              <>
-                <span className={`text-4xl font-bold tracking-tighter ${outOfCredits ? 'text-red-500' : 'text-white'}`}>
-                  ${(balance ?? 0).toFixed(2)}
-                </span>
-                <span className="text-xs text-zinc-500 uppercase tracking-widest">USD</span>
-              </>
-            )}
-          </div>
-          {outOfCredits && !loading && (
-            <div className="mt-3 text-xs text-red-400 flex items-center gap-2">
-              <span>⚠</span> out of credits — requests are blocked until you top up
+          {isUnauthorized ? (
+            <div className="text-center py-8">
+              <p className="text-zinc-500 text-sm mb-4">Sign in to view your MiMo credit usage</p>
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center bg-white text-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              >
+                Sign In
+              </Link>
             </div>
-          )}
-          {balance === 0 && !loading && (
-            <div className="mt-3">
-              <a href="/login" className="text-xs text-orange-500 hover:text-orange-400 underline underline-offset-4">
-                Sign in to manage credits →
-              </a>
+          ) : loading ? (
+            <div className="space-y-4">
+              <div className="h-8 w-48 bg-zinc-900 animate-pulse" />
+              <div className="h-4 w-96 max-w-full bg-zinc-900 animate-pulse" />
+              <div className="h-3 w-full bg-zinc-900 animate-pulse mt-6" />
+            </div>
+          ) : usage ? (
+            <>
+              <div className="flex items-baseline gap-3 mb-2">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">
+                  {usage.planName} Plan
+                </span>
+              </div>
+
+              {/* Big number */}
+              <div className="flex items-baseline gap-3 mb-6">
+                <span className={`text-4xl sm:text-5xl font-bold tracking-tighter ${isCritical ? 'text-red-500' : isHigh ? 'text-orange-500' : 'text-white'}`}>
+                  {percentUsed.toFixed(1)}%
+                </span>
+                <span className="text-xs text-zinc-500 uppercase tracking-widest">used</span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-3 bg-zinc-900 border border-zinc-800 mb-4">
+                <div
+                  className={`h-full transition-all duration-500 ${isCritical ? 'bg-red-500' : isHigh ? 'bg-orange-500' : 'bg-white'}`}
+                  style={{ width: `${Math.min(percentUsed, 100)}%` }}
+                />
+              </div>
+
+              {/* Numbers */}
+              <div className="grid grid-cols-2 gap-px bg-zinc-900 mb-4">
+                <div className="bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Used</div>
+                  <div className="text-lg font-bold tracking-tighter">{formatCredits(usage.monthlyCredits)}</div>
+                  <div className="text-[10px] text-zinc-600">credits this month</div>
+                </div>
+                <div className="bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Remaining</div>
+                  <div className="text-lg font-bold tracking-tighter">{formatCredits(Math.max(usage.planLimit - usage.monthlyCredits, 0))}</div>
+                  <div className="text-[10px] text-zinc-600">of {formatCredits(usage.planLimit)} included</div>
+                </div>
+              </div>
+
+              {/* Token breakdown */}
+              <div className="grid grid-cols-2 gap-px bg-zinc-900">
+                <div className="bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Input Tokens</div>
+                  <div className="text-sm font-bold">{formatCredits(usage.monthlyInput)}</div>
+                </div>
+                <div className="bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Output Tokens</div>
+                  <div className="text-sm font-bold">{formatCredits(usage.monthlyOutput)}</div>
+                </div>
+              </div>
+
+              {/* Warnings */}
+              {isCritical && (
+                <div className="mt-4 p-4 border border-red-500/30 bg-red-500/5 text-xs text-red-400">
+                  ⚠ Credits nearly exhausted. Upgrade your plan or purchase additional credits.
+                </div>
+              )}
+              {isHigh && !isCritical && (
+                <div className="mt-4 p-4 border border-orange-500/30 bg-orange-500/5 text-xs text-orange-400">
+                  ⚡ Credits running low. Consider upgrading before they run out.
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-zinc-500 text-sm">No usage data yet. Deploy an agent to start consuming credits.</p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Top Up */}
+      {/* Credit Rates */}
       <section className="border-t border-zinc-900">
         <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10">
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <button
-              onClick={handleSubscribe}
-              disabled={purchasing}
-              className="flex-1 bg-white text-black px-6 py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
-            >
-              subscribe $10/mo → $10 credits
-            </button>
-            <button
-              onClick={handleTopUp}
-              disabled={purchasing}
-              className="flex-1 border border-zinc-800 px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-            >
-              top up credits →
-            </button>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">MiMo V2.5 Pro — Credit Rates</div>
+          <div className="grid grid-cols-3 gap-px bg-zinc-900">
+            {[
+              { label: 'Input (cache hit)', value: '2.5', sub: 'credits/token' },
+              { label: 'Input (cache miss)', value: '300', sub: 'credits/token' },
+              { label: 'Output', value: '600', sub: 'credits/token' },
+            ].map((r) => (
+              <div key={r.label} className="bg-black p-4 text-center">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">{r.label}</div>
+                <div className="text-xl font-bold tracking-tighter">{r.value}</div>
+                <div className="text-[10px] text-zinc-600">{r.sub}</div>
+              </div>
+            ))}
           </div>
-          <p className="text-zinc-500 text-xs">
-            Subscribe for $10 credits every month, or top up any amount one-time — no subscription required.
+          <p className="mt-4 text-[11px] text-zinc-600">
+            With HiCache, typical cache hit rate is 50–80%. Your effective cost is much lower than the cache miss rate.
+            Token Plans offer 3–5x more credits at the same price. TTS is free for a limited time.
           </p>
+        </div>
+      </section>
 
-          {/* Custom amount */}
-          <div className="mt-6 flex items-center gap-3">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600">Amount:</span>
-            {[5, 10, 25, 50, 100].map((amt) => (
-              <button
-                key={amt}
-                onClick={() => setTopUpAmount(amt)}
-                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border transition-colors ${
-                  topUpAmount === amt
-                    ? 'border-orange-500 text-orange-500 bg-orange-500/10'
-                    : 'border-zinc-800 text-zinc-500 hover:text-white hover:border-zinc-600'
-                }`}
-              >
-                ${amt}
-              </button>
+      {/* Plan Limits Reference */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Token Plan Limits</div>
+          <div className="space-y-2">
+            {[
+              { name: 'Lite', price: '$6/mo', credits: '4.1B', usdPerB: '$1.46' },
+              { name: 'Standard', price: '$16/mo', credits: '11B', usdPerB: '$1.45' },
+              { name: 'Pro', price: '$50/mo', credits: '38B', usdPerB: '$1.32' },
+              { name: 'Max', price: '$100/mo', credits: '82B', usdPerB: '$1.22' },
+            ].map((plan) => (
+              <div key={plan.name} className="flex items-center justify-between py-2 border-b border-zinc-900/50">
+                <div className="flex items-center gap-3">
+                  <span className={`text-[10px] font-bold uppercase tracking-widest ${usage?.planName === plan.name ? 'text-orange-500' : 'text-zinc-500'}`}>
+                    {plan.name}
+                  </span>
+                  {usage?.planName === plan.name && (
+                    <span className="text-[9px] uppercase tracking-widest text-orange-500 border border-orange-500/30 px-1.5 py-0.5">
+                      current
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 text-xs text-zinc-500">
+                  <span>{plan.price}</span>
+                  <span className="font-bold text-white">{plan.credits}</span>
+                  <span className="text-zinc-700">{plan.usdPerB}/B</span>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pay with Crypto */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10">
-          <WalletProvider>
-            <CryptoPay amount={topUpAmount} />
-          </WalletProvider>
-        </div>
-      </section>
-
-      {/* Agentbot Pro — Monthly Plan */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10">
-          <div className="border border-zinc-800 bg-zinc-950/40 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="text-sm font-bold text-white uppercase tracking-wider">Agentbot Pro</div>
-                <div className="text-[10px] text-zinc-500 mt-0.5">monthly credit plan</div>
-              </div>
-              <div className="text-right">
-                <div className="text-xl font-bold tracking-tighter">$10<span className="text-xs font-normal text-zinc-600">/month</span></div>
-              </div>
-            </div>
-            <ul className="space-y-2 mb-6">
-              {[
-                '$10 of inference credits every month',
-                'Metered per token at published model rates',
-                'Works with every Agentbot model (MiMo, Claude, GPT)',
-                'Unused credits roll over while subscribed',
-                'Drop-in: same OpenAI-compatible endpoint + key',
-                'Cancel anytime from Stripe portal',
-              ].map((f, i) => (
-                <li key={i} className="text-zinc-400 text-xs flex items-start gap-2">
-                  <span className="text-orange-500 mt-0.5">[+]</span>
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={handleSubscribe}
-              disabled={purchasing}
-              className="w-full bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
-            >
-              {purchasing ? 'Loading…' : 'Subscribe'}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Activity */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Recent Activity</div>
-          {activity.length === 0 ? (
-            <p className="text-zinc-600 text-xs">No credit activity yet. Subscribe to grant your first $10.</p>
-          ) : (
-            <div className="space-y-2">
-              {activity.slice(0, 10).map((a) => (
-                <div key={a.id} className="flex items-center justify-between py-2 border-b border-zinc-900/50">
-                  <div className="flex items-center gap-3">
-                    <span className={`text-[10px] ${a.type === 'topup' || a.type === 'subscription' ? 'text-green-500' : 'text-zinc-500'}`}>
-                      {a.type === 'topup' ? '↑' : a.type === 'subscription' ? '★' : '↓'}
-                    </span>
-                    <span className="text-xs text-zinc-400">{a.description}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-mono tabular-nums ${a.amount > 0 ? 'text-green-500' : 'text-zinc-500'}`}>
-                      {a.amount > 0 ? '+' : ''}${Math.abs(a.amount).toFixed(2)}
-                    </span>
-                    <span className="text-[9px] text-zinc-700">{new Date(a.created_at).toLocaleDateString('en-GB')}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Footer links */}
+      {/* Footer */}
       <section className="border-t border-zinc-900">
         <div className="max-w-3xl mx-auto px-5 sm:px-6 py-8 flex flex-wrap gap-6">
           <div>
@@ -277,7 +233,7 @@ export default function CreditsPage() {
             <div className="flex flex-col gap-2">
               <Link href="/documentation" className="text-[10px] text-zinc-500 hover:text-white transition-colors">docs</Link>
               <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-[10px] text-zinc-500 hover:text-white transition-colors">github</a>
-              <Link href="/api/usage" className="text-[10px] text-zinc-500 hover:text-white transition-colors">api</Link>
+              <Link href="/partner/mimo" className="text-[10px] text-zinc-500 hover:text-white transition-colors">MiMo partner</Link>
             </div>
           </div>
         </div>
