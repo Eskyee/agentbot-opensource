@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { logUsage } from '@/lib/usage-logger'
 
-const MIMO_BASE = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
+// MiMo API endpoints
+// Token Plan: region-locked, coding tools only
+// Pay-as-you-go: api.xiaomimimo.com, needs sk- key
 const ENV_KEY_NAME = 'MIMO' + '_API_KEY'
-const MIMO_KEY = process.env[ENV_KEY_NAME] || ''
+const MIMO_KEY = proces…AME] || ''
+
+// Determine which endpoint to use based on key prefix
+function getBaseUrl(): string {
+  if (MIMO_KEY.startsWith('sk-')) {
+    return 'https://api.xiaomimimo.com/v1'  // Pay-as-you-go
+  }
+  return process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'  // Token Plan
+}
 
 export async function POST(request: NextRequest) {
   if (!MIMO_KEY) {
@@ -11,19 +21,56 @@ export async function POST(request: NextRequest) {
   }
 
   const startTime = Date.now()
+  const baseUrl = getBaseUrl()
+
   try {
     const body = await request.json()
-    const res = await fetch(`${MIMO_BASE}/chat/completions`, {
+
+    // Pass through ALL MiMo API parameters:
+    // model, messages, temperature, top_p, max_completion_tokens,
+    // frequency_penalty, presence_penalty, stop, stream,
+    // response_format, tools, tool_choice, thinking, audio
+    const res = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${MIMO_KEY}`,
       },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(60_000),
+      body: JSON.stringify({
+        model: body.model || 'mimo-v2.5-pro',
+        messages: body.messages,
+        ...(body.temperature !== undefined && { temperature: body.temperature }),
+        ...(body.top_p !== undefined && { top_p: body.top_p }),
+        ...(body.max_completion_tokens !== undefined && { max_completion_tokens: body.max_completion_tokens }),
+        ...(body.max_tokens !== undefined && { max_tokens: body.max_tokens }),
+        ...(body.frequency_penalty !== undefined && { frequency_penalty: body.frequency_penalty }),
+        ...(body.presence_penalty !== undefined && { presence_penalty: body.presence_penalty }),
+        ...(body.stop !== undefined && { stop: body.stop }),
+        ...(body.stream !== undefined && { stream: body.stream }),
+        ...(body.response_format !== undefined && { response_format: body.response_format }),
+        ...(body.tools !== undefined && { tools: body.tools }),
+        ...(body.tool_choice !== undefined && { tool_choice: body.tool_choice }),
+        ...(body.thinking !== undefined && { thinking: body.thinking }),
+        ...(body.audio !== undefined && { audio: body.audio }),
+      }),
+      signal: AbortSignal.timeout(120_000),
     })
+
+    // Handle streaming responses
+    if (body.stream && res.body) {
+      return new Response(res.body, {
+        status: res.status,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      })
+    }
+
     const data = await res.json()
-    // Log usage if the response contains token counts
+
+    // Log usage from response
     if (data?.usage) {
       logUsage({
         userId: 'proxy',
@@ -36,6 +83,7 @@ export async function POST(request: NextRequest) {
         success: res.ok,
       })
     }
+
     return NextResponse.json(data, { status: res.status })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error'
@@ -48,8 +96,11 @@ export async function GET() {
   if (!MIMO_KEY) {
     return NextResponse.json({ error: 'MIMO API key not configured' }, { status: 503 })
   }
+
+  const baseUrl = getBaseUrl()
+
   try {
-    const res = await fetch(`${MIMO_BASE}/models`, {
+    const res = await fetch(`${baseUrl}/models`, {
       headers: { Authorization: `Bearer ${MIMO_KEY}` },
       signal: AbortSignal.timeout(10_000),
     })
