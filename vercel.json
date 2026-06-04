@@ -1,7 +1,6 @@
 {
   "installCommand": "npm install --include=dev --legacy-peer-deps --no-audit --fund=false",
   "framework": "nextjs",
-  "rootDirectory": "web",
   "experimentalServices": {
     "agentbot-backend": {
       "root": "agentbot-backend",
