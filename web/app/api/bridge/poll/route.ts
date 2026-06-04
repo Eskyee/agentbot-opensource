@@ -1,12 +1,13 @@
 /**
  * Bridge server — HTTP polling relay between agentbot.sh and local OpenClaw instances.
  *
- * Multi-user: each user can have their own bridge client with their own secret.
- * The bridge client polls with the secret, and the server routes messages to the
- * correct user's bridge.
+ * Multi-user: each user has their own bridge secret stored in the User table.
+ * The bridge client polls with the secret, and the server routes messages to
+ * the correct user's bridge.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/app/lib/prisma'
 
 interface PendingRequest {
   requestId: string
@@ -21,14 +22,22 @@ interface PendingResponse {
   timestamp: number
 }
 
-// Per-user message queues
+// Per-user message queues (in-memory)
 const pendingRequests = new Map<string, PendingRequest>()
 const pendingResponses = new Map<string, PendingResponse>()
 
-// Track which secrets map to which user IDs (set when bridge connects)
-const bridgeSecrets = new Map<string, { userId: string; lastSeen: number }>()
+// Track connected bridges: secret → { userId, lastSeen }
+const connectedBridges = new Map<string, { userId: string; lastSeen: number }>()
 
-export { pendingRequests, pendingResponses }
+export { pendingRequests, pendingResponses, connectedBridges }
+
+async function userIdFromSecret(secret: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { bridgeSecret: secret },
+    select: { id: true },
+  })
+  return user?.id ?? null
+}
 
 export async function GET(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get('secret')
@@ -37,22 +46,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'secret required' }, { status: 401 })
   }
 
-  // Check if this is a valid bridge secret
-  // In production, verify against stored secrets per user
-  const expectedSecret = process.env.BRIDGE_SECRET
-  if (secret !== expectedSecret) {
+  const userId = await userIdFromSecret(secret)
+  if (!userId) {
     return NextResponse.json({ error: 'Invalid secret' }, { status: 403 })
   }
 
   // Update last seen
-  bridgeSecrets.set(secret, { userId: 'default', lastSeen: Date.now() })
+  connectedBridges.set(secret, { userId, lastSeen: Date.now() })
 
-  // Return the oldest pending request
+  // Return the oldest pending request for this user
   let oldest: PendingRequest | null = null
   let oldestKey: string | null = null
 
   for (const [key, req] of pendingRequests) {
-    if (!oldest || req.timestamp < oldest.timestamp) {
+    if (req.userId === userId && (!oldest || req.timestamp < oldest.timestamp)) {
       oldest = req
       oldestKey = key
     }
@@ -76,8 +83,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'secret required' }, { status: 401 })
   }
 
-  const expectedSecret = process.env.BRIDGE_SECRET
-  if (secret !== expectedSecret) {
+  const userId = await userIdFromSecret(secret)
+  if (!userId) {
     return NextResponse.json({ error: 'Invalid secret' }, { status: 403 })
   }
 
