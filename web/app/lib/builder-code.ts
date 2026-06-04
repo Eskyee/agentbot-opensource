@@ -1,19 +1,32 @@
 import { createConfig, http } from "wagmi";
 import { createWalletClient, http as viemHttp } from "viem";
-import { base } from "wagmi/chains";
+import { base, baseSepolia } from "wagmi/chains";
 import { base as baseChain } from "viem/chains";
+import { coinbaseWallet } from "wagmi/connectors";
 import { Attribution } from "ox/erc8021";
 
-const BUILDER_CODE = 'bc_upjlm3yl'
+const BUILDER_CODE = 'bc_i334o8qy'
 
 const DATA_SUFFIX = Attribution.toDataSuffix({
   codes: [BUILDER_CODE],
 });
 
+/**
+ * Shared wagmi config with ERC-8021 Builder Code attribution.
+ * All onchain transactions automatically include the dataSuffix.
+ */
 export const wagmiConfig = createConfig({
-  chains: [base],
+  ssr: true,
+  chains: [base, baseSepolia],
+  connectors: [
+    coinbaseWallet({
+      appName: 'Agentbot',
+      preference: 'smartWalletOnly',
+    }),
+  ],
   transports: {
     [base.id]: http(),
+    [baseSepolia.id]: http(),
   },
   dataSuffix: DATA_SUFFIX,
 });

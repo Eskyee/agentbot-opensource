@@ -1,28 +1,12 @@
 'use client'
 
-import { WagmiProvider, createConfig, http } from 'wagmi'
-import { base, baseSepolia } from 'viem/chains'
-import { coinbaseWallet } from 'wagmi/connectors'
+import { WagmiProvider } from 'wagmi'
 import { ReactNode } from 'react'
-
-const config = createConfig({
-  ssr: true,
-  chains: [base, baseSepolia],
-  connectors: [
-    coinbaseWallet({
-      appName: 'Agentbot',
-      preference: 'smartWalletOnly',
-    }),
-  ],
-  transports: {
-    [base.id]: http(),
-    [baseSepolia.id]: http(),
-  },
-})
+import { wagmiConfig } from '@/app/lib/builder-code'
 
 export default function WalletProvider({ children }: { children: ReactNode }) {
   return (
-    <WagmiProvider config={config}>
+    <WagmiProvider config={wagmiConfig}>
       {children}
     </WagmiProvider>
   )
