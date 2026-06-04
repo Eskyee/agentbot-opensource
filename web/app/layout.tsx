@@ -9,6 +9,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import { APP_URL } from '@/app/lib/app-url'
 import { DashboardDataProvider } from './dashboard/DashboardDataProvider'
+import AskAtlas from './components/AskAtlas'
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
@@ -169,6 +170,7 @@ export default function RootLayout({
             <ConditionalFooter />
             <StatusBar />
             <Toaster theme="dark" position="bottom-right" richColors closeButton />
+            <AskAtlas />
           </DashboardDataProvider>
         </Providers>
       </body>
