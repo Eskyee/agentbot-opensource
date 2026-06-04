@@ -5,7 +5,7 @@ import { logUsage } from '@/lib/usage-logger'
 // Token Plan: region-locked, coding tools only
 // Pay-as-you-go: api.xiaomimimo.com, needs sk- key
 const ENV_KEY_NAME = 'MIMO' + '_API_KEY'
-const MIMO_KEY = proces…AME] || ''
+const MIMO_KEY = (typeof process !== 'undefined' && process.env && process.env['MIMO_API_KEY']) || ''
 
 // Determine which endpoint to use based on key prefix
 function getBaseUrl(): string {
