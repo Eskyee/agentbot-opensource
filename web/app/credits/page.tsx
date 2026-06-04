@@ -29,11 +29,17 @@ export default function CreditsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/credits').then((r) => r.json()).catch(() => ({ credits: 0 })),
-      fetch('/api/credits/activity').then((r) => r.json()).catch(() => ({ activity: [] })),
-    ]).then(([creditData, activityData]) => {
-      setBalance(creditData.credits ?? 0)
-      setActivity(activityData.activity ?? [])
+      fetch('/api/credits').then((r) => {
+        if (r.status === 401) return { credits: 0, unauthorized: true }
+        return r.json()
+      }).catch(() => ({ credits: 0 })),
+      fetch('/api/credits/balance').then((r) => {
+        if (r.status === 401) return { balance: 0, unauthorized: true }
+        return r.json()
+      }).catch(() => ({ balance: 0 })),
+    ]).then(([creditData, balanceData]) => {
+      setBalance(creditData.credits ?? balanceData.balance ?? 0)
+      setActivity([])
     }).finally(() => setLoading(false))
   }, [])
 
@@ -115,6 +121,13 @@ export default function CreditsPage() {
           {outOfCredits && !loading && (
             <div className="mt-3 text-xs text-red-400 flex items-center gap-2">
               <span>⚠</span> out of credits — requests are blocked until you top up
+            </div>
+          )}
+          {balance === 0 && !loading && (
+            <div className="mt-3">
+              <a href="/login" className="text-xs text-orange-500 hover:text-orange-400 underline underline-offset-4">
+                Sign in to manage credits →
+              </a>
             </div>
           )}
         </div>
