@@ -69,6 +69,7 @@ export default function Navbar() {
               <NavLink href="/chat" current={pathname}>Chat</NavLink>
               <NavLink href="/credits" current={pathname}>Credits</NavLink>
               <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
+              <NavLink href="/vercel-gateway" current={pathname}>Gateway</NavLink>
               <CreditBadge />
               <NotificationBell />
             </>
@@ -78,6 +79,7 @@ export default function Navbar() {
               <NavLink href="/partner/mimo" current={pathname}>MiMo</NavLink>
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
+              <NavLink href="/vercel-gateway" current={pathname}>Gateway</NavLink>
               <NavLink href="/voice" current={pathname}>Voice</NavLink>
               <NavLink href="/credits" current={pathname}>Credits</NavLink>
               <NavLink href="/usage/global" current={pathname}>Usage</NavLink>
@@ -168,6 +170,7 @@ export default function Navbar() {
                 <MobileLink href="/chat" onClick={closeMenu}>Chat</MobileLink>
                 <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
                 <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
+                <MobileLink href="/vercel-gateway" onClick={closeMenu}>Gateway</MobileLink>
                 <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-4">
                   {displayName && <div className="text-[10px] text-zinc-600 px-3 pb-2 uppercase tracking-widest">{displayName}</div>}
@@ -187,6 +190,7 @@ export default function Navbar() {
                 <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
                 <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                 <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
+                <MobileLink href="/vercel-gateway" onClick={closeMenu}>Gateway</MobileLink>
                 <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
                 <MobileLink href="/usage/global" onClick={closeMenu}>Usage</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
