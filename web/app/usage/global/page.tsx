@@ -41,6 +41,16 @@ interface UsageData {
   daily: HourlyData[]
 }
 
+interface MimoUsage {
+  plan: string
+  planLimit: number
+  planName: string
+  monthlyCredits: number
+  monthlyInput: number
+  monthlyOutput: number
+  percentUsed: number
+}
+
 function formatNumber(n: number): string {
   if (n >= 1_000_000_000_000) return `${(n / 1_000_000_000_000).toFixed(1)}T`
   if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`
@@ -62,18 +72,20 @@ function formatDate(iso: string): string {
 
 export default function GlobalUsagePage() {
   const [data, setData] = useState<UsageData | null>(null)
+  const [mimo, setMimo] = useState<MimoUsage | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/usage')
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) throw new Error(d.error)
-        setData(d)
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false))
+    Promise.all([
+      fetch('/api/usage').then((r) => r.json()),
+      fetch('/api/credits/mimo-usage').then((r) => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([usageData, mimoData]) => {
+      if (usageData.error) throw new Error(usageData.error)
+      setData(usageData)
+      if (mimoData && !mimoData.error) setMimo(mimoData)
+    }).catch((e) => setError(e.message))
+    .finally(() => setLoading(false))
   }, [])
 
   if (loading) {
@@ -127,6 +139,52 @@ export default function GlobalUsagePage() {
           Live aggregate across every Agentbot agent. Counting since {formatDate(data.startedAt)}.
         </p>
       </section>
+
+      {/* MiMo Credits — if available */}
+      {mimo && mimo.planLimit > 0 && (
+        <section className="border-t border-zinc-900">
+          <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">
+              MiMo {mimo.planName} Plan · Credits This Month
+            </div>
+            <div className="flex items-baseline gap-3 mb-4">
+              <span className={`text-4xl sm:text-5xl font-bold tracking-tighter ${mimo.percentUsed > 95 ? 'text-red-500' : mimo.percentUsed > 80 ? 'text-orange-500' : 'text-white'}`}>
+                {mimo.percentUsed.toFixed(1)}%
+              </span>
+              <span className="text-xs text-zinc-500 uppercase tracking-widest">used</span>
+            </div>
+            <div className="w-full h-3 bg-zinc-900 border border-zinc-800 mb-4">
+              <div
+                className={`h-full transition-all duration-500 ${mimo.percentUsed > 95 ? 'bg-red-500' : mimo.percentUsed > 80 ? 'bg-orange-500' : 'bg-white'}`}
+                style={{ width: `${Math.min(mimo.percentUsed, 100)}%` }}
+              />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-900">
+              <div className="bg-black p-4">
+                <div className="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">Used</div>
+                <div className="text-lg font-bold tracking-tighter">{formatNumber(mimo.monthlyCredits)}</div>
+                <div className="text-[10px] text-zinc-600">credits</div>
+              </div>
+              <div className="bg-black p-4">
+                <div className="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">Remaining</div>
+                <div className="text-lg font-bold tracking-tighter">{formatNumber(Math.max(mimo.planLimit - mimo.monthlyCredits, 0))}</div>
+                <div className="text-[10px] text-zinc-600">of {formatNumber(mimo.planLimit)}</div>
+              </div>
+              <div className="bg-black p-4">
+                <div className="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">Input Tokens</div>
+                <div className="text-lg font-bold tracking-tighter">{formatNumber(mimo.monthlyInput)}</div>
+              </div>
+              <div className="bg-black p-4">
+                <div className="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">Output Tokens</div>
+                <div className="text-lg font-bold tracking-tighter">{formatNumber(mimo.monthlyOutput)}</div>
+              </div>
+            </div>
+            <a href="/credits" className="inline-block mt-4 text-[10px] uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors">
+              View full credit details →
+            </a>
+          </div>
+        </section>
+      )}
 
       {/* Top-level stats */}
       <section className="border-t border-zinc-900">
