@@ -21,6 +21,8 @@ export function DemoChat() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [playingIdx, setPlayingIdx] = useState<number | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -58,6 +60,33 @@ export function DemoChat() {
     } finally {
       setLoading(false)
       inputRef.current?.focus()
+    }
+  }
+
+  const speak = async (text: string, idx: number) => {
+    if (playingIdx === idx) {
+      audioRef.current?.pause()
+      setPlayingIdx(null)
+      return
+    }
+    audioRef.current?.pause()
+    setPlayingIdx(idx)
+    try {
+      const res = await fetch('/api/demo/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+      if (!res.ok) throw new Error('TTS failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      audioRef.current = audio
+      audio.onended = () => { setPlayingIdx(null); URL.revokeObjectURL(url) }
+      audio.onerror = () => { setPlayingIdx(null); URL.revokeObjectURL(url) }
+      audio.play()
+    } catch {
+      setPlayingIdx(null)
     }
   }
 
@@ -106,6 +135,23 @@ export function DemoChat() {
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Agentbot</div>
               )}
               <div className="whitespace-pre-wrap">{msg.content}</div>
+              {msg.role === 'assistant' && (
+                <button
+                  onClick={() => speak(msg.content, i)}
+                  className="mt-2 inline-flex items-center gap-1 text-zinc-600 hover:text-zinc-300 transition-colors text-xs"
+                  title="Listen"
+                >
+                  {playingIdx === i ? (
+                    <>
+                      <span className="animate-pulse">■</span> Stop
+                    </>
+                  ) : (
+                    <>
+                      <span>🔊</span> Speak
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         ))}
