@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logUsage } from '@/lib/usage-logger'
 
 const MIMO_BASE = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
 const ENV_KEY_NAME = 'MIMO' + '_API_KEY'
@@ -9,6 +10,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'MIMO API key not configured' }, { status: 503 })
   }
 
+  const startTime = Date.now()
   try {
     const body = await request.json()
     const res = await fetch(`${MIMO_BASE}/chat/completions`, {
@@ -18,11 +20,22 @@ export async function POST(request: NextRequest) {
         'Authorization': `Bearer ${MIMO_KEY}`,
       },
       body: JSON.stringify(body),
-      // MiMo HiCache hint: pass through cache_control if present
-      // This tells MiMo which tokens to cache as KV prefix
       signal: AbortSignal.timeout(60_000),
     })
     const data = await res.json()
+    // Log usage if the response contains token counts
+    if (data?.usage) {
+      logUsage({
+        userId: 'proxy',
+        agentId: body.model || 'unknown',
+        model: body.model || 'mimo-v2.5-pro',
+        inputTokens: data.usage.prompt_tokens || 0,
+        outputTokens: data.usage.completion_tokens || 0,
+        endpoint: '/api/mimo-proxy',
+        latencyMs: Date.now() - startTime,
+        success: res.ok,
+      })
+    }
     return NextResponse.json(data, { status: res.status })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error'

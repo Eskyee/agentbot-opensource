@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logUsage } from '@/lib/usage-logger'
 
 // Demo uses MiMo/OpenRouter directly — NO bridge (bridge is only for /chat when logged in)
 const OPENROUTER_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
@@ -109,10 +110,12 @@ export async function POST(request: NextRequest) {
   }
 
   // Try OpenRouter first (reliable), then MiMo proxy (intermittent geo-block)
+  const startTime = Date.now()
   try {
     if (OPENROUTER_KEY) {
       try {
         const reply = await callOpenRouter(sanitized)
+        logUsage({ userId: 'demo', agentId: 'demo', model: 'xiaomi/mimo-v2.5-pro', inputTokens: sanitized.length * 150, outputTokens: reply.length / 4, endpoint: '/api/demo/chat', latencyMs: Date.now() - startTime, success: true })
         return NextResponse.json({ reply, source: 'openrouter' })
       } catch (e) {
         console.warn('[Demo] OpenRouter failed, trying MiMo proxy:', e)
@@ -121,6 +124,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const reply = await callMiMo(sanitized)
+      logUsage({ userId: 'demo', agentId: 'demo', model: 'mimo-v2.5-pro', inputTokens: sanitized.length * 150, outputTokens: reply.length / 4, endpoint: '/api/demo/chat', latencyMs: Date.now() - startTime, success: true })
       return NextResponse.json({ reply, source: 'mimo' })
     } catch (e) {
       console.warn('[Demo] MiMo proxy also failed:', e)
