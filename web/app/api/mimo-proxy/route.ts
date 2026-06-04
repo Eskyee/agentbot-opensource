@@ -18,6 +18,8 @@ export async function POST(request: NextRequest) {
         'Authorization': `Bearer ${MIMO_KEY}`,
       },
       body: JSON.stringify(body),
+      // MiMo HiCache hint: pass through cache_control if present
+      // This tells MiMo which tokens to cache as KV prefix
       signal: AbortSignal.timeout(60_000),
     })
     const data = await res.json()

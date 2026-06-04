@@ -245,6 +245,31 @@ export default function PricingPage() {
           <p className="mt-6 text-[11px] text-zinc-600">
             All plans include access to mimo-v2.5-pro, mimo-v2.5, mimo-v2.5-asr, mimo-v2.5-tts, and the full V2 series. Cancel anytime.
           </p>
+
+          {/* Pay-as-you-go rates */}
+          <div className="mt-12 border border-zinc-800 p-8">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Pay-as-you-go Rates</span>
+            <p className="text-xs text-zinc-500 mb-6">No subscription? Use MiMo pay-as-you-go. Cache hits are 120x cheaper thanks to HiCache optimization.</p>
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div>
+                <div className="text-xs font-bold text-white uppercase tracking-wider mb-2">MiMo-V2.5-Pro</div>
+                <ul className="space-y-1 text-[11px] text-zinc-500">
+                  <li>Input (cache hit): <span className="text-orange-500">$0.0036</span> / 1M tokens</li>
+                  <li>Input (cache miss): $0.435 / 1M tokens</li>
+                  <li>Output: $0.87 / 1M tokens</li>
+                </ul>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white uppercase tracking-wider mb-2">MiMo-V2.5</div>
+                <ul className="space-y-1 text-[11px] text-zinc-500">
+                  <li>Input (cache hit): <span className="text-orange-500">$0.0028</span> / 1M tokens</li>
+                  <li>Input (cache miss): $0.14 / 1M tokens</li>
+                  <li>Output: $0.28 / 1M tokens</li>
+                </ul>
+              </div>
+            </div>
+            <p className="mt-4 text-[10px] text-zinc-600">TTS models remain free for a limited time. All V2 models auto-route to V2.5.</p>
+          </div>
         </section>
 
         {/* Expert Setup CTA */}

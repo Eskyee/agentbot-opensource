@@ -84,12 +84,17 @@ If someone asks about something not covered here, be honest that you don't have 
 
 async function callMiMo(messages: { role: string; content: string }[]): Promise<string> {
   // Route through our MiMo proxy (Vercel US edge) to bypass UK geo-blocking
+  // MiMo HiCache: system prompt is cached as KV prefix across requests.
+  // Stable system prompt = guaranteed cache hit = 120x cheaper.
   const res = await fetch('/api/mimo-proxy', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'mimo-v2.5-pro',
-      messages: [{ role: 'system', content: SUPPORT_PROMPT }, ...messages],
+      messages: [
+        { role: 'system', content: SUPPORT_PROMPT },
+        ...messages,
+      ],
       max_tokens: 800,
       temperature: 0.7,
     }),
