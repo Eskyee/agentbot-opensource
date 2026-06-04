@@ -26,7 +26,7 @@ const plans = [
     id: 'free',
     name: 'Free',
     price: '0',
-    features: ['1 agent, 24/7 runtime', 'All channels (Telegram, Discord, WhatsApp, X)', 'All 50+ skills', 'Full dashboard + approval queue', 'Your own MiMo key (~$20/mo at mimo.xiaomi.com)'],
+    features: ['1 agent, 24/7 runtime', 'All channels (Telegram, Discord, WhatsApp, X)', 'All 50+ skills', 'Full dashboard + approval queue', 'Bring your own MiMo key (plans from $6/mo)'],
     popular: false,
     badge: 'BYOK',
   },
@@ -65,7 +65,11 @@ const paymentMethods = ['Visa', 'Mastercard', 'Apple Pay', 'Google Pay', 'PayPal
 const faqs = [
   {
     q: 'What is the Free plan?',
-    a: 'The Free plan gives you a full Agentbot agent — all channels, all skills, full dashboard — for £0/mo. You just need to bring your own MiMo API key from mimo.xiaomi.com (~$20/mo for 82B credits). We charge nothing for the platform.',
+    a: 'The Free plan gives you a full Agentbot agent — all channels, all skills, full dashboard — for £0/mo. You just need to bring your own MiMo API key from mimo.xiaomi.com. MiMo Token Plans start at $6/mo (Lite, 4.1B credits) and go up to $100/mo (Max, 82B credits). We charge nothing for the platform.',
+  },
+  {
+    q: 'What MiMo plan should I buy for BYOK?',
+    a: 'For most users, the Standard plan ($16/mo, 11B credits) is plenty. If your agent runs heavy workloads (24/7 monitoring, multiple channels, code generation), go Pro ($50/mo, 38B credits). The Max plan ($100/mo, 82B credits) is for power users running multiple agents. The Lite plan ($6/mo, 4.1B credits) works for light use — a few messages per day. All plans include 20% off during off-peak hours (9AM-5PM PDT) and free TTS access for a limited time.',
   },
   {
     q: 'What is BYOK?',
@@ -137,8 +141,8 @@ export default function PricingPage() {
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">You Provide</span>
               <h4 className="text-xs font-bold uppercase tracking-wider mb-4">Your Own Keys</h4>
               <ul className="space-y-2 text-xs text-zinc-500">
-                <li>Your own AI API key</li>
-                <li>OpenAI, Anthropic, Ollama</li>
+                <li>MiMo Token Plan (from $6/mo)</li>
+                <li>Or use any OpenAI, Anthropic, Ollama key</li>
                 <li>No markup — wholesale rates</li>
                 <li>Switch models anytime</li>
               </ul>
@@ -189,6 +193,58 @@ export default function PricingPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* MiMo Token Plans (BYOK) */}
+        <section className="border-t border-zinc-800 pt-16 mb-16">
+          <div className="max-w-2xl mb-12">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Powered By</span>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-4">
+              Xiaomi MiMo Token Plans
+            </h2>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              All Agentbot agents run on MiMo V2.5 Pro. BYOK users buy a MiMo subscription directly — we never markup or resell. Choose the plan that fits your usage.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-800">
+            {[
+              { name: 'Lite', price: '$6', credits: '4.1B', use: 'Light use — a few messages/day', badge: '' },
+              { name: 'Standard', price: '$16', credits: '11B', use: 'Most users — plenty for daily agent use', badge: 'Popular' },
+              { name: 'Pro', price: '$50', credits: '38B', use: 'Heavy workloads — 24/7 monitoring, multi-channel', badge: '' },
+              { name: 'Max', price: '$100', credits: '82B', use: 'Power users — multiple agents, code generation', badge: 'Best Value' },
+            ].map((plan) => (
+              <div key={plan.name} className="bg-black p-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">MiMo {plan.name}</span>
+                  {plan.badge && (
+                    <span className="text-[9px] uppercase tracking-widest text-orange-500 border border-orange-500/30 px-2 py-0.5">
+                      {plan.badge}
+                    </span>
+                  )}
+                </div>
+                <div className="text-2xl font-bold tracking-tighter mb-1">
+                  {plan.price}<span className="text-sm font-normal text-zinc-600">/mo</span>
+                </div>
+                <div className="text-xs text-orange-500 font-bold mb-4">{plan.credits} credits</div>
+                <p className="text-xs text-zinc-500 mb-4">{plan.use}</p>
+                <ul className="space-y-1 text-[11px] text-zinc-600">
+                  <li>• All 9 MiMo models included</li>
+                  <li>• 20% off off-peak (9AM-5PM PDT)</li>
+                  <li>• Free TTS (limited time)</li>
+                </ul>
+                <Button
+                  variant="outline"
+                  className="w-full mt-6 border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 text-[10px] font-bold uppercase tracking-widest"
+                  onClick={() => window.open('https://mimo.xiaomi.com', '_blank')}
+                >
+                  Subscribe at mimo.xiaomi.com
+                </Button>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-[11px] text-zinc-600">
+            All plans include access to mimo-v2.5-pro, mimo-v2.5, mimo-v2.5-asr, mimo-v2.5-tts, and the full V2 series. Cancel anytime.
+          </p>
         </section>
 
         {/* Expert Setup CTA */}
