@@ -34,21 +34,21 @@ const plans = [
     id: 'solo',
     name: 'Solo',
     price: '29',
-    features: ['1 agent, 24/7 runtime', 'MiMo V2.5 Pro included — no key needed', 'All channels (Telegram, Discord, WhatsApp, X)', 'All 50+ skills + daily digests', 'Flat rate — no per-token charges, no surprise bills'],
+    features: ['1 agent, 24/7 runtime', 'MiMo Standard included — 11B credits/mo', 'All channels (Telegram, Discord, WhatsApp, X)', 'All 50+ skills + daily digests', 'Flat rate — no per-token charges, no surprise bills'],
     popular: false,
   },
   {
     id: 'collective',
     name: 'Collective',
     price: '69',
-    features: ['3 agents, 24/7 runtime', 'MiMo V2.5 Pro included — unlimited usage', 'All channels + custom workflows', 'Thread drafting + auto-replies', 'Priority support (24h response)'],
+    features: ['3 agents, 24/7 runtime', 'MiMo Pro included — 38B credits/mo', 'All channels + custom workflows', 'Thread drafting + auto-replies', 'Priority support (24h response)'],
     popular: true,
   },
   {
     id: 'label',
     name: 'Label',
     price: '149',
-    features: ['10 agents, 24/7 runtime', 'Everything in Collective', 'Team management (roles, permissions)', 'API access + webhooks', 'White-label (your brand, our infra)'],
+    features: ['10 agents, 24/7 runtime', 'MiMo Max included — 82B credits/mo', 'Team management (roles, permissions)', 'API access + webhooks', 'White-label (your brand, our infra)'],
     popular: false,
   },
   {
@@ -76,12 +76,12 @@ const faqs = [
     a: 'BYOK stands for Bring Your Own Key. You provide your own MiMo subscription API key, and your agent runs on your credits. This is how we offer the free plan — you pay MiMo directly, we handle the platform.',
   },
   {
-    q: 'What does "MiMo V2.5 Pro included" mean?',
-    a: 'You dont need to buy a MiMo subscription. We provide the API key from our platform subscription. Your agent runs on MiMo tokens from our pool — no per-token charges, no surprise bills. Flat monthly rate, unlimited usage within fair use.',
+    q: 'What does "MiMo included" mean?',
+    a: 'Each paid plan includes a specific MiMo Token Plan tier — you dont need to buy a separate subscription. Solo includes Standard (11B credits/mo), Collective includes Pro (38B credits/mo), and Label includes Max (82B credits/mo). Your agent runs on these credits — no per-token charges, no surprise bills.',
   },
   {
     q: 'What is the difference between Free and Solo?',
-    a: 'Free requires your own MiMo key (BYOK). Solo includes MiMo V2.5 Pro inference — no key needed, we handle everything. Both give you 1 agent with full features, all channels, all skills.',
+    a: 'Free requires your own MiMo key (BYOK). Solo includes MiMo Standard credits (11B/mo) — no key needed, we handle everything. Both give you 1 agent with full features, all channels, all skills.',
   },
   {
     q: 'What payment methods do you accept?',
