@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Demo uses MiMo/OpenRouter directly — NO bridge (bridge is only for /chat when logged in)
-const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
-const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
 const OPENROUTER_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || ''
 const MAX_DEMO_MESSAGES = 10
@@ -36,12 +34,10 @@ Be helpful, concise, and show what an Agentbot agent can do. Keep responses unde
 If someone asks how to get started, point them to agentbot.sh/signup or agentbot.sh/pricing.`
 
 async function callMiMo(messages: { role: string; content: string }[]): Promise<string> {
-  const res = await fetch(`${MIMO_BASE_URL}/chat/completions`, {
+  // Route through our MiMo proxy (Vercel US edge) to bypass UK geo-blocking
+  const res = await fetch('/api/mimo-proxy', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${MIMO_API_KEY}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'mimo-v2.5-pro',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
@@ -50,8 +46,9 @@ async function callMiMo(messages: { role: string; content: string }[]): Promise<
     }),
     signal: AbortSignal.timeout(30_000),
   })
-  if (!res.ok) throw new Error(`MiMo ${res.status}`)
+  if (!res.ok) throw new Error(`MiMo proxy ${res.status}`)
   const data = await res.json()
+  if (data.error) throw new Error(data.error.message || 'MiMo error')
   return data.choices?.[0]?.message?.content || 'Sorry, no response.'
 }
 
@@ -103,15 +100,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No valid messages' }, { status: 400 })
   }
 
-  // Try MiMo direct first, then OpenRouter fallback
+  // Try MiMo proxy first, then OpenRouter fallback
   try {
-    if (MIMO_API_KEY) {
-      try {
-        const reply = await callMiMo(sanitized)
-        return NextResponse.json({ reply, source: 'mimo' })
-      } catch (e) {
-        console.warn('[Demo] MiMo failed, trying OpenRouter:', e)
-      }
+    // Always try MiMo proxy (it handles the API key server-side)
+    try {
+      const reply = await callMiMo(sanitized)
+      return NextResponse.json({ reply, source: 'mimo' })
+    } catch (e) {
+      console.warn('[Demo] MiMo proxy failed, trying OpenRouter:', e)
     }
 
     if (OPENROUTER_KEY) {
