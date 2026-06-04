@@ -67,6 +67,7 @@ export default function Navbar() {
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href="/chat" current={pathname}>Chat</NavLink>
+              <NavLink href="/credits" current={pathname}>Credits</NavLink>
               <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
               <CreditBadge />
               <NotificationBell />
@@ -165,6 +166,7 @@ export default function Navbar() {
               <>
                 <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
                 <MobileLink href="/chat" onClick={closeMenu}>Chat</MobileLink>
+                <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
                 <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
                 <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-4">
