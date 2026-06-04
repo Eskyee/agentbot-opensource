@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
  */
 
 const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
-const MIMO_API_KEY = proces…_KEY || ''
+const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
 
 export async function POST(request: NextRequest) {
   if (!MIMO_API_KEY) {
