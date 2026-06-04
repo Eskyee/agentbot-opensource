@@ -1,22 +1,33 @@
 'use client'
 
-import { useState, useRef, useEffect, memo } from 'react'
+import { useState, useRef, useEffect, memo, type FormEvent } from 'react'
 import { useSession, signIn } from 'next-auth/react'
+import { useChat } from '@ai-sdk/react'
+import { DefaultChatTransport } from 'ai'
 
-interface Message {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  source?: string
+function getText(content: { parts: Array<{ type: string; text?: string }> }): string {
+  return content.parts
+    .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+    .map(p => p.text)
+    .join('')
 }
 
 export default memo(function AskAtlas() {
   const { data: session, status } = useSession()
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const { messages, sendMessage, status: chatStatus } = useChat({
+    transport: new DefaultChatTransport({ api: '/api/support/chat' }),
+    messages: [
+      {
+        id: 'welcome',
+        role: 'assistant',
+        parts: [{ type: 'text', text: `Hey there! I'm Atlas, your Agentbot support agent powered by MiMo V2.5 Pro. I can help with:\n\n• Getting started with Agentbot\n• Pricing and plans\n• Connecting channels (Telegram, Discord, WhatsApp, X)\n• BYOK setup with your MiMo subscription\n• Troubleshooting issues\n• OpenClaw configuration\n\nWhat do you need help with?` }],
+      },
+    ],
+  })
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -26,67 +37,13 @@ export default memo(function AskAtlas() {
     scrollToBottom()
   }, [messages])
 
-  // Set welcome message once session is confirmed
-  useEffect(() => {
-    if (session && messages.length === 0) {
-      const name = session.user?.name?.split(' ')[0] || 'there'
-      setMessages([
-        {
-          id: '1',
-          role: 'assistant',
-          content: `Hey ${name}! I'm Atlas, your Agentbot support agent powered by MiMo V2.5 Pro. I can help with:\n\n• Getting started with Agentbot\n• Pricing and plans\n• Connecting channels (Telegram, Discord, WhatsApp, X)\n• BYOK setup with your MiMo subscription\n• Troubleshooting issues\n• OpenClaw configuration\n\nWhat do you need help with?`,
-        },
-      ])
-    }
-  }, [session])
+  const isLoading = chatStatus === 'submitted' || chatStatus === 'streaming'
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading || !session) return
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input,
-    }
-
-    setMessages((prev) => [...prev, userMessage])
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
+    sendMessage({ text: input })
     setInput('')
-    setLoading(true)
-
-    try {
-      const res = await fetch('/api/support/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, userMessage]
-            .filter((m) => m.role === 'user' || m.role === 'assistant')
-            .map((m) => ({ role: m.role, content: m.content })),
-        }),
-      })
-
-      const data = await res.json()
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: data.reply || data.error || 'Sorry, something went wrong.',
-          source: data.source,
-        },
-      ])
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: "Couldn't reach support. Please email support@agentbot.sh",
-        },
-      ])
-    } finally {
-      setLoading(false)
-    }
   }
 
   // Don't render anything while loading session
@@ -159,28 +116,26 @@ export default memo(function AskAtlas() {
             <>
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
+                {messages.map((msg) => {
+                  const role = msg.role as string
+                  return (
                     <div
-                      className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                        msg.role === 'user'
-                          ? 'bg-orange-500 text-black'
-                          : 'bg-zinc-900 text-zinc-300 border border-zinc-800'
-                      }`}
+                      key={msg.id}
+                      className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                      {msg.source && msg.role === 'assistant' && (
-                        <p className="text-[9px] text-zinc-700 mt-1 uppercase tracking-wider">
-                          via {msg.source}
-                        </p>
-                      )}
+                      <div
+                        className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                          role === 'user'
+                            ? 'bg-orange-500 text-black'
+                            : 'bg-zinc-900 text-zinc-300 border border-zinc-800'
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap leading-relaxed">{getText(msg as any)}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {loading && (
+                  )
+                })}
+                {isLoading && (
                   <div className="flex justify-start">
                     <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2">
                       <div className="flex gap-1">
@@ -196,10 +151,7 @@ export default memo(function AskAtlas() {
 
               {/* Input */}
               <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  sendMessage()
-                }}
+                onSubmit={handleSubmit}
                 className="p-3 border-t border-zinc-800 flex gap-2"
               >
                 <input
@@ -208,11 +160,11 @@ export default memo(function AskAtlas() {
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask a question..."
                   className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500 font-mono"
-                  disabled={loading}
+                  disabled={isLoading}
                 />
                 <button
                   type="submit"
-                  disabled={loading || !input.trim()}
+                  disabled={isLoading || !input.trim()}
                   className="px-4 py-2 bg-orange-500 text-black rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-orange-400 disabled:opacity-30 transition-colors"
                 >
                   Send

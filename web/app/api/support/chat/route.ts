@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { streamText } from 'ai'
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { logUsage } from '@/lib/usage-logger'
 
-const OPENROUTER_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
-const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || ''
 const MAX_MESSAGES = 20
 
 const rateLimit = new Map<string, { count: number; resetAt: number }>()
@@ -83,59 +83,22 @@ Agentbot is built on OpenClaw — the open-source personal AI runtime. OpenClaw 
 
 If someone asks about something not covered here, be honest that you don't have that specific info and suggest they check the docs or email support@agentbot.sh.`
 
-async function callMiMo(messages: { role: string; content: string }[]): Promise<string> {
-  // Route through our MiMo proxy (Vercel US edge) to bypass UK geo-blocking
-  // MiMo HiCache: system prompt is cached as KV prefix across requests.
-  // Stable system prompt = guaranteed cache hit = 120x cheaper.
-  const res = await fetch('/api/mimo-proxy', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'mimo-v2.5-pro',
-      messages: [
-        { role: 'system', content: SUPPORT_PROMPT },
-        ...messages,
-      ],
-      max_tokens: 800,
-      temperature: 0.7,
-    }),
-    signal: AbortSignal.timeout(30_000),
-  })
-  if (!res.ok) throw new Error(`MiMo proxy ${res.status}`)
-  const data = await res.json()
-  if (data.error) throw new Error(data.error.message || 'MiMo error')
-  return data.choices?.[0]?.message?.content || 'Sorry, no response.'
-}
-
-async function callOpenRouter(messages: { role: string; content: string }[]): Promise<string> {
-  const res = await fetch(`${OPENROUTER_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENROUTER_KEY}`,
-      'HTTP-Referer': 'https://agentbot.sh',
-      'X-Title': 'Agentbot Support',
-    },
-    body: JSON.stringify({
-      model: 'xiaomi/mimo-v2.5-pro',
-      messages: [{ role: 'system', content: SUPPORT_PROMPT }, ...messages],
-      max_tokens: 800,
-      temperature: 0.7,
-    }),
-    signal: AbortSignal.timeout(30_000),
-  })
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}`)
-  const data = await res.json()
-  return data.choices?.[0]?.message?.content || 'Sorry, no response.'
-}
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY || '',
+  headers: {
+    'HTTP-Referer': 'https://agentbot.sh',
+    'X-OpenRouter-Title': 'Agentbot',
+    'X-OpenRouter-Categories': 'personal-agent,cloud-agent,general-chat',
+  },
+})
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
 
   if (!checkRateLimit(ip)) {
-    return NextResponse.json(
-      { error: 'Too many questions. Please wait a bit or email support@agentbot.sh for help.' },
-      { status: 429 }
+    return new Response(
+      JSON.stringify({ error: 'Too many questions. Please wait a bit or email support@agentbot.sh for help.' }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
     )
   }
 
@@ -143,48 +106,46 @@ export async function POST(request: NextRequest) {
   const messages = body.messages as { role: string; content: string }[] | undefined
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return NextResponse.json({ error: 'Messages array required' }, { status: 400 })
+    return new Response(JSON.stringify({ error: 'Messages array required' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
   }
 
   const sanitized = messages
     .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
     .slice(-MAX_MESSAGES)
-    .map(m => ({ role: m.role, content: m.content.slice(0, 3000) }))
+    .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content.slice(0, 3000) }))
 
   if (sanitized.length === 0) {
-    return NextResponse.json({ error: 'No valid messages' }, { status: 400 })
+    return new Response(JSON.stringify({ error: 'No valid messages' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
   }
 
-  // Try OpenRouter first (reliable), then MiMo proxy (intermittent geo-block)
+  if (!process.env.OPENROUTER_API_KEY) {
+    return new Response(
+      JSON.stringify({ error: 'Support AI is temporarily unavailable. Please email support@agentbot.sh' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+
   const startTime = Date.now()
-  try {
-    if (OPENROUTER_KEY) {
-      try {
-        const reply = await callOpenRouter(sanitized)
-        logUsage({ userId: 'support', agentId: 'atlas', model: 'xiaomi/mimo-v2.5-pro', inputTokens: sanitized.length * 200, outputTokens: reply.length / 4, endpoint: '/api/support/chat', latencyMs: Date.now() - startTime, success: true })
-        return NextResponse.json({ reply, source: 'openrouter' })
-      } catch (e) {
-        console.warn('[Support] OpenRouter failed, trying MiMo proxy:', e)
-      }
-    }
 
-    try {
-      const reply = await callMiMo(sanitized)
-      logUsage({ userId: 'support', agentId: 'atlas', model: 'mimo-v2.5-pro', inputTokens: sanitized.length * 200, outputTokens: reply.length / 4, endpoint: '/api/support/chat', latencyMs: Date.now() - startTime, success: true })
-      return NextResponse.json({ reply, source: 'mimo' })
-    } catch (e) {
-      console.warn('[Support] MiMo proxy also failed:', e)
-    }
+  const result = streamText({
+    model: openrouter.chat('xiaomi/mimo-v2.5-pro'),
+    system: SUPPORT_PROMPT,
+    messages: sanitized,
+    maxOutputTokens: 800,
+    temperature: 0.7,
+    onFinish: async ({ text, usage }) => {
+      logUsage({
+        userId: 'support',
+        agentId: 'atlas',
+        model: 'xiaomi/mimo-v2.5-pro',
+        inputTokens: usage.inputTokens ?? 0,
+        outputTokens: usage.outputTokens ?? 0,
+        endpoint: '/api/support/chat',
+        latencyMs: Date.now() - startTime,
+        success: true,
+      })
+    },
+  })
 
-    return NextResponse.json(
-      { error: 'Support AI is temporarily unavailable. Please email support@agentbot.sh' },
-      { status: 503 }
-    )
-  } catch (err) {
-    console.error('[Support] All providers failed:', err)
-    return NextResponse.json(
-      { error: 'Something went wrong. Please try again or email support@agentbot.sh' },
-      { status: 502 }
-    )
-  }
+  return result.toTextStreamResponse()
 }

@@ -1,11 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect, type FormEvent } from 'react'
-
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-}
+import { useChat } from '@ai-sdk/react'
+import { DefaultChatTransport } from 'ai'
 
 const SUGGESTIONS = [
   'What can you do?',
@@ -16,51 +13,41 @@ const SUGGESTIONS = [
   'How much does it cost?',
 ]
 
+function getText(content: { parts: Array<{ type: string; text?: string }> }): string {
+  return content.parts
+    .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+    .map(p => p.text)
+    .join('')
+}
+
 export function DemoChat() {
-  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
   const [playingIdx, setPlayingIdx] = useState<number | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({ api: '/api/demo/chat' }),
+  })
+
+  const isLoading = status === 'submitted' || status === 'streaming'
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages])
 
-  const send = async (text?: string) => {
-    const msg = (text || input).trim()
-    if (!msg || loading) return
+  const sendSuggestion = (text: string) => {
+    if (isLoading) return
+    sendMessage({ text })
+  }
 
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
+    sendMessage({ text: input })
     setInput('')
-    setError('')
-    const newMessages: Message[] = [...messages, { role: 'user', content: msg }]
-    setMessages(newMessages)
-    setLoading(true)
-
-    try {
-      const res = await fetch('/api/demo/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'Something went wrong')
-        return
-      }
-
-      setMessages([...newMessages, { role: 'assistant', content: data.reply }])
-    } catch {
-      setError('Network error. Try again.')
-    } finally {
-      setLoading(false)
-      inputRef.current?.focus()
-    }
+    inputRef.current?.focus()
   }
 
   const speak = async (text: string, idx: number) => {
@@ -90,11 +77,6 @@ export function DemoChat() {
     }
   }
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    send()
-  }
-
   return (
     <div className="border border-zinc-800 bg-zinc-950/60 flex flex-col h-[600px]">
       {/* Header */}
@@ -114,7 +96,7 @@ export function DemoChat() {
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
-                  onClick={() => send(s)}
+                  onClick={() => sendSuggestion(s)}
                   className="text-left text-xs text-zinc-500 border border-zinc-800 px-3 py-2 hover:border-zinc-600 hover:text-white transition-colors"
                 >
                   {s}
@@ -124,39 +106,42 @@ export function DemoChat() {
           </div>
         )}
 
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] px-4 py-3 text-sm leading-relaxed ${
-              msg.role === 'user'
-                ? 'bg-white text-black'
-                : 'bg-zinc-900 text-zinc-300 border border-zinc-800'
-            }`}>
-              {msg.role === 'assistant' && (
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Agentbot</div>
-              )}
-              <div className="whitespace-pre-wrap">{msg.content}</div>
-              {msg.role === 'assistant' && (
-                <button
-                  onClick={() => speak(msg.content, i)}
-                  className="mt-2 inline-flex items-center gap-1 text-zinc-600 hover:text-zinc-300 transition-colors text-xs"
-                  title="Listen"
-                >
-                  {playingIdx === i ? (
-                    <>
-                      <span className="animate-pulse">■</span> Stop
-                    </>
-                  ) : (
-                    <>
-                      <span>🔊</span> Speak
-                    </>
-                  )}
-                </button>
-              )}
+        {messages.map((msg, i) => {
+          const text = getText(msg as any)
+          return (
+            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] px-4 py-3 text-sm leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-white text-black'
+                  : 'bg-zinc-900 text-zinc-300 border border-zinc-800'
+              }`}>
+                {msg.role === 'assistant' && (
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Agentbot</div>
+                )}
+                <div className="whitespace-pre-wrap">{text}</div>
+                {msg.role === 'assistant' && !isLoading && text && (
+                  <button
+                    onClick={() => speak(text, i)}
+                    className="mt-2 inline-flex items-center gap-1 text-zinc-600 hover:text-zinc-300 transition-colors text-xs"
+                    title="Listen"
+                  >
+                    {playingIdx === i ? (
+                      <>
+                        <span className="animate-pulse">■</span> Stop
+                      </>
+                    ) : (
+                      <>
+                        <span>🔊</span> Speak
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
 
-        {loading && (
+        {isLoading && (
           <div className="flex justify-start">
             <div className="bg-zinc-900 border border-zinc-800 px-4 py-3">
               <div className="flex gap-1">
@@ -164,14 +149,6 @@ export function DemoChat() {
                 <div className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                 <div className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center">
-            <div className="inline-block bg-orange-500/10 border border-orange-500/30 text-red-400 text-xs px-4 py-2">
-              {error}
             </div>
           </div>
         )}
@@ -185,12 +162,12 @@ export function DemoChat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask Agentbot anything..."
-          disabled={loading}
+          disabled={isLoading}
           className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono disabled:opacity-50"
         />
         <button
           type="submit"
-          disabled={loading || !input.trim()}
+          disabled={isLoading || !input.trim()}
           className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Send

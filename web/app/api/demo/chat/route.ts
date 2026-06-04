@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { streamText } from 'ai'
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { logUsage } from '@/lib/usage-logger'
 
-// Demo uses MiMo/OpenRouter directly — NO bridge (bridge is only for /chat when logged in)
-const OPENROUTER_URL = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
-const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || ''
 const MAX_DEMO_MESSAGES = 10
 
 const rateLimit = new Map<string, { count: number; resetAt: number }>()
@@ -34,62 +33,22 @@ Key facts about Agentbot:
 Be helpful, concise, and show what an Agentbot agent can do. Keep responses under 200 words.
 If someone asks how to get started, point them to agentbot.sh/signup or agentbot.sh/pricing.`
 
-async function callMiMo(messages: { role: string; content: string }[]): Promise<string> {
-  // Route through our MiMo proxy (Vercel US edge) to bypass UK geo-blocking
-  // MiMo HiCache optimizes cache hits — system prompt is always first and stable,
-  // so the KV prefix is cached across requests (cache hit = 120x cheaper)
-  const res = await fetch('/api/mimo-proxy', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'mimo-v2.5-pro',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...messages,
-      ],
-      max_tokens: 500,
-      temperature: 0.7,
-      // MiMo HiCache: prefix tokens are cached across requests.
-      // Keep system prompt stable = guaranteed cache hit.
-      // Keep max_tokens reasonable = output doesn't bloat cache key.
-    }),
-    signal: AbortSignal.timeout(30_000),
-  })
-  if (!res.ok) throw new Error(`MiMo proxy ${res.status}`)
-  const data = await res.json()
-  if (data.error) throw new Error(data.error.message || 'MiMo error')
-  return data.choices?.[0]?.message?.content || 'Sorry, no response.'
-}
-
-async function callOpenRouter(messages: { role: string; content: string }[]): Promise<string> {
-  const res = await fetch(`${OPENROUTER_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENROUTER_KEY}`,
-      'HTTP-Referer': 'https://agentbot.sh',
-      'X-Title': 'Agentbot Demo',
-    },
-    body: JSON.stringify({
-      model: 'xiaomi/mimo-v2.5-pro',
-      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-      max_tokens: 500,
-      temperature: 0.7,
-    }),
-    signal: AbortSignal.timeout(30_000),
-  })
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}`)
-  const data = await res.json()
-  return data.choices?.[0]?.message?.content || 'Sorry, no response.'
-}
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY || '',
+  headers: {
+    'HTTP-Referer': 'https://agentbot.sh',
+    'X-OpenRouter-Title': 'Agentbot',
+    'X-OpenRouter-Categories': 'personal-agent,cloud-agent,general-chat',
+  },
+})
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
 
   if (!checkRateLimit(ip)) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded. Try again in an hour, or sign up at agentbot.sh/signup for unlimited access.' },
-      { status: 429 }
+    return new Response(
+      JSON.stringify({ error: 'Rate limit exceeded. Try again in an hour, or sign up at agentbot.sh/signup for unlimited access.' }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
     )
   }
 
@@ -97,48 +56,43 @@ export async function POST(request: NextRequest) {
   const messages = body.messages as { role: string; content: string }[] | undefined
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return NextResponse.json({ error: 'Messages array required' }, { status: 400 })
+    return new Response(JSON.stringify({ error: 'Messages array required' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
   }
 
   const sanitized = messages
     .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
     .slice(-20)
-    .map(m => ({ role: m.role, content: m.content.slice(0, 2000) }))
+    .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content.slice(0, 2000) }))
 
   if (sanitized.length === 0) {
-    return NextResponse.json({ error: 'No valid messages' }, { status: 400 })
+    return new Response(JSON.stringify({ error: 'No valid messages' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
   }
 
-  // Try OpenRouter first (reliable), then MiMo proxy (intermittent geo-block)
+  if (!process.env.OPENROUTER_API_KEY) {
+    return new Response(JSON.stringify({ error: 'AI is temporarily unavailable.' }), { status: 503, headers: { 'Content-Type': 'application/json' } })
+  }
+
   const startTime = Date.now()
-  try {
-    if (OPENROUTER_KEY) {
-      try {
-        const reply = await callOpenRouter(sanitized)
-        logUsage({ userId: 'demo', agentId: 'demo', model: 'xiaomi/mimo-v2.5-pro', inputTokens: sanitized.length * 150, outputTokens: reply.length / 4, endpoint: '/api/demo/chat', latencyMs: Date.now() - startTime, success: true })
-        return NextResponse.json({ reply, source: 'openrouter' })
-      } catch (e) {
-        console.warn('[Demo] OpenRouter failed, trying MiMo proxy:', e)
-      }
-    }
 
-    try {
-      const reply = await callMiMo(sanitized)
-      logUsage({ userId: 'demo', agentId: 'demo', model: 'mimo-v2.5-pro', inputTokens: sanitized.length * 150, outputTokens: reply.length / 4, endpoint: '/api/demo/chat', latencyMs: Date.now() - startTime, success: true })
-      return NextResponse.json({ reply, source: 'mimo' })
-    } catch (e) {
-      console.warn('[Demo] MiMo proxy also failed:', e)
-    }
+  const result = streamText({
+    model: openrouter.chat('xiaomi/mimo-v2.5-pro'),
+    system: SYSTEM_PROMPT,
+    messages: sanitized,
+    maxOutputTokens: 500,
+    temperature: 0.7,
+    onFinish: async ({ text, usage }) => {
+      logUsage({
+        userId: 'demo',
+        agentId: 'demo',
+        model: 'xiaomi/mimo-v2.5-pro',
+        inputTokens: usage.inputTokens ?? 0,
+        outputTokens: usage.outputTokens ?? 0,
+        endpoint: '/api/demo/chat',
+        latencyMs: Date.now() - startTime,
+        success: true,
+      })
+    },
+  })
 
-    return NextResponse.json(
-      { error: 'AI is temporarily unavailable. Try again shortly.' },
-      { status: 503 }
-    )
-  } catch (err) {
-    console.error('[Demo] All providers failed:', err)
-    return NextResponse.json(
-      { error: 'AI is temporarily unavailable. Try again in a moment.' },
-      { status: 502 }
-    )
-  }
+  return result.toTextStreamResponse()
 }
