@@ -26,7 +26,7 @@ const plans = [
     id: 'free',
     name: 'Free',
     price: '0',
-    features: ['1 agent, 24/7 runtime', 'All channels (Telegram, Discord, WhatsApp, X)', 'All 50+ skills', 'Full dashboard + approval queue', 'Your own MiMo key (~$20/mo at mimo.xiaomi.com)'],
+    features: ['1 agent, 24/7 runtime', 'All channels (Telegram, Discord, WhatsApp, X)', 'All 50+ skills', 'Full dashboard + approval queue', 'Your own MiMo key (~$100/mo Max Plan at mimo.xiaomi.com)'],
     popular: false,
     badge: 'BYOK',
   },
@@ -65,7 +65,7 @@ const paymentMethods = ['Visa', 'Mastercard', 'Apple Pay', 'Google Pay', 'PayPal
 const faqs = [
   {
     q: 'What is the Free plan?',
-    a: 'The Free plan gives you a full Agentbot agent — all channels, all skills, full dashboard — for £0/mo. You just need to bring your own MiMo API key from mimo.xiaomi.com (~$20/mo for 82B credits). We charge nothing for the platform.',
+    a: 'The Free plan gives you a full Agentbot agent — all channels, all skills, full dashboard — for £0/mo. You just need to bring your own MiMo API key from mimo.xiaomi.com (~$100/mo for the Max Monthly Plan with 82B credits). We charge nothing for the platform.',
   },
   {
     q: 'What is BYOK?',

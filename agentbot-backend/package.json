@@ -16,7 +16,7 @@
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.49.2",
     "@openrouter/sdk": "^0.10.2",
-    "@sentry/node": "^10.51.0",
+    "@sentry/node": "^10.55.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
