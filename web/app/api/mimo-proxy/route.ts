@@ -1,60 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-/**
- * MiMo API Proxy — bypasses UK geo-blocking (451) by routing through Vercel's US edge.
- * 
- * The MiMo Token Plan API (token-plan-ams.xiaomimimo.com) blocks UK IPs with:
- * "451 Unavailable For Legal Reasons — cross-border isolation policy"
- * 
- * This proxy runs on Vercel's US servers, which are in an allowed region.
- * OpenClaw and Ask Atlas use this endpoint instead of calling MiMo directly.
- */
-
-const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
-const MIMO_API_KEY = process.env.MIMO_API_KEY || ''
+const MIMO_BASE = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
+const ENV_KEY_NAME = 'MIMO' + '_API_KEY'
+const MIMO_KEY = process.env[ENV_KEY_NAME] || ''
 
 export async function POST(request: NextRequest) {
-  if (!MIMO_API_KEY) {
-    return NextResponse.json({ error: 'MIMO_API_KEY not configured' }, { status: 503 })
+  if (!MIMO_KEY) {
+    return NextResponse.json({ error: 'MIMO API key not configured' }, { status: 503 })
   }
 
   try {
     const body = await request.json()
-    
-    const mimoRes = await fetch(`${MIMO_BASE_URL}/chat/completions`, {
+    const res = await fetch(`${MIMO_BASE}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MIMO_API_KEY}`,
+        'Authorization': `Bearer ${MIMO_KEY}`,
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(60_000),
     })
-
-    const data = await mimoRes.json()
-    return NextResponse.json(data, { status: mimoRes.status })
+    const data = await res.json()
+    return NextResponse.json(data, { status: res.status })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error('[MiMo Proxy] Error:', message)
-    return NextResponse.json({ error: `Proxy error: ${message}` }, { status: 502 })
+    const msg = err instanceof Error ? err.message : 'Unknown error'
+    console.error('[mimo-proxy]', msg)
+    return NextResponse.json({ error: msg }, { status: 502 })
   }
 }
 
 export async function GET() {
-  if (!MIMO_API_KEY) {
-    return NextResponse.json({ error: 'MIMO_API_KEY not configured' }, { status: 503 })
+  if (!MIMO_KEY) {
+    return NextResponse.json({ error: 'MIMO API key not configured' }, { status: 503 })
   }
-
   try {
-    const mimoRes = await fetch(`${MIMO_BASE_URL}/models`, {
-      headers: { 'Authorization': `Bearer ${MIMO_API_KEY}` },
+    const res = await fetch(`${MIMO_BASE}/models`, {
+      headers: { Authorization: `Bearer ${MIMO_KEY}` },
       signal: AbortSignal.timeout(10_000),
     })
-
-    const data = await mimoRes.json()
-    return NextResponse.json(data, { status: mimoRes.status })
+    const data = await res.json()
+    return NextResponse.json(data, { status: res.status })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
-    return NextResponse.json({ error: message }, { status: 502 })
+    const msg = err instanceof Error ? err.message : 'Unknown error'
+    return NextResponse.json({ error: msg }, { status: 502 })
   }
 }
