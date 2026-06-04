@@ -154,23 +154,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No valid messages' }, { status: 400 })
   }
 
-  // Try MiMo first (primary), then OpenRouter (fallback)
+  // Try OpenRouter first (reliable), then MiMo proxy (intermittent geo-block)
   try {
-    // Always try MiMo proxy (it handles the API key server-side)
-    try {
-      const reply = await callMiMo(sanitized)
-      return NextResponse.json({ reply, source: 'mimo' })
-    } catch (e) {
-      console.warn('[Support] MiMo proxy failed, trying OpenRouter:', e)
-    }
-
     if (OPENROUTER_KEY) {
       try {
         const reply = await callOpenRouter(sanitized)
         return NextResponse.json({ reply, source: 'openrouter' })
       } catch (e) {
-        console.warn('[Support] OpenRouter failed:', e)
+        console.warn('[Support] OpenRouter failed, trying MiMo proxy:', e)
       }
+    }
+
+    try {
+      const reply = await callMiMo(sanitized)
+      return NextResponse.json({ reply, source: 'mimo' })
+    } catch (e) {
+      console.warn('[Support] MiMo proxy also failed:', e)
     }
 
     return NextResponse.json(
