@@ -53,7 +53,7 @@ const COLUMNS = [
 export default function Footer() {
   const [status, setStatus] = useState<'checking' | 'operational' | 'down'>('checking');
   const [version, setVersion] = useState<string>('v1.1.0');
-  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.5.28');
+  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.6.1');
 
   useEffect(() => {
     async function checkStatus() {
