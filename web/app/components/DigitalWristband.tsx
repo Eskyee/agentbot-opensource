@@ -1,11 +1,23 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useWalletClient } from 'wagmi';
+import { createPublicClient, http, parseAbi } from 'viem';
+import { base } from 'viem/chains';
+
+const publicClient = createPublicClient({
+  chain: base,
+  transport: http(),
+});
 
 export default function DigitalWristband() {
   const { address, isConnected } = useAccount();
   const [hasWristband, setHasWristband] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
+  const [minting, setMinting] = useState(false);
+  const [minted, setMinted] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { data: walletClient } = useWalletClient();
 
   const checkWristband = useCallback(async () => {
     if (!address) return;
@@ -25,6 +37,47 @@ export default function DigitalWristband() {
       checkWristband();
     }
   }, [address, checkWristband]);
+
+  const handleMint = async () => {
+    if (!address || !walletClient) return;
+    setMinting(true);
+    setError(null);
+    try {
+      // Get mint calldata from API
+      const res = await fetch('/api/wristband/mint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress: address }),
+      });
+      const data = await res.json();
+
+      if (!data.success) throw new Error(data.error || 'Failed to prepare mint');
+
+      // Send transaction via wallet client (user approves in wallet)
+      const hash = await walletClient.sendTransaction({
+        to: data.contract as `0x${string}`,
+        data: data.calldata as `0x${string}`,
+        account: address,
+        chain: base,
+      });
+
+      setTxHash(hash);
+
+      // Wait for confirmation
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      if (receipt.status === 'success') {
+        setMinted(true);
+        setHasWristband(true);
+      } else {
+        setError('Transaction failed onchain');
+      }
+    } catch (e: any) {
+      console.error('Mint error:', e);
+      setError(e.message || 'Mint failed');
+    } finally {
+      setMinting(false);
+    }
+  };
 
   if (!isConnected) {
     return (
@@ -55,7 +108,7 @@ export default function DigitalWristband() {
     );
   }
 
-  if (hasWristband) {
+  if (hasWristband && !minted) {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border-2 border-orange-500/50 text-white">
         <div className="flex items-center justify-between mb-4">
@@ -83,14 +136,38 @@ export default function DigitalWristband() {
 
         <div className="mt-4 pt-4 border-t border-zinc-800">
           <a 
-            href="https://opensea.io/collection/wristband"
+            href={`https://basescan.org/token/0x66519FCAee1Ed65bc9e0aCc25cCD900668D3eD49?a=${address}`}
             target="_blank"
             rel="noopener noreferrer"
             className="block text-center text-xs text-zinc-500 hover:text-orange-500 transition-colors"
           >
-            View on OpenSea →
+            View on BaseScan →
           </a>
         </div>
+      </div>
+    );
+  }
+
+  if (minted && txHash) {
+    return (
+      <div className="p-6 bg-zinc-900 rounded-xl border-2 border-green-500/50 text-white">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-3 h-3 rounded-full bg-green-500" />
+          <span className="text-xs font-mono text-green-500 uppercase tracking-wider">
+            WRISTBAND MINTED
+          </span>
+        </div>
+        <p className="text-zinc-400 text-sm mb-4">
+          Your digital wristband is now onchain. Welcome to baseFM.
+        </p>
+        <a 
+          href={`https://basescan.org/tx/${txHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-center text-xs text-zinc-500 hover:text-green-500 transition-colors"
+        >
+          View Transaction →
+        </a>
       </div>
     );
   }
@@ -101,22 +178,36 @@ export default function DigitalWristband() {
         <div className="w-3 h-3 rounded-full bg-zinc-600" />
         <span className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
           No Wristband
-        </span>
+               </span>
       </div>
       
       <p className="text-zinc-400 text-sm mb-4">
         Get your digital wristband to unlock access to baseFM streams and community.
       </p>
 
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <p className="text-red-400 text-xs font-mono">{error}</p>
+        </div>
+      )}
+
       <button 
-        onClick={() => window.open('https://opensea.io/collection/wristband', '_blank')}
-        className="w-full py-3 bg-red-600 hover:bg-orange-500 text-white rounded-lg font-mono text-sm transition-colors"
+        onClick={handleMint}
+        disabled={minting}
+        className="w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg font-mono text-sm transition-colors"
       >
-        Mint Wristband — 0.001 ETH
+        {minting ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Minting...
+          </span>
+        ) : (
+          'Mint Wristband — Free'
+        )}
       </button>
 
       <p className="text-xs text-zinc-600 text-center mt-3">
-        Powered by Base • ERC-721
+        Gas sponsored by CDP Paymaster • ERC-721 • Base
       </p>
     </div>
   );
