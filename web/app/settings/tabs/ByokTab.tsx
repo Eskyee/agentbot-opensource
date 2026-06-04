@@ -114,7 +114,7 @@ export function ByokTab({ agents }: ByokTabProps) {
           >
             mimo.xiaomi.com
           </a>
-          . Supports the Max Monthly Plan (82B credits, all models).
+          . Supports all Token Plan tiers ($6/mo Lite to $100/mo Max).
         </p>
         <div className="flex gap-2">
           <input

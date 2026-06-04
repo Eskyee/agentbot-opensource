@@ -18,7 +18,7 @@ export default function MimoPartnerPage() {
               Partnership
             </div>
             <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
-              MiMo Orbit
+              MiMo V2.5
             </div>
           </div>
 
@@ -76,19 +76,13 @@ export default function MimoPartnerPage() {
           </h2>
           <div className="space-y-6 text-zinc-400 text-sm leading-relaxed max-w-lg">
             <p>
-              When Xiaomi dropped MiMo V2.5 with a 99% price reduction, 82B token plans, and
-              1M context windows — we saw the future of AI agents. Flat-rate inference. No
-              per-token billing. Users just use their agent without thinking about cost.
+              When Xiaomi dropped MiMo V2.5 with a 99% price reduction, 3-5x more credits on Token Plans, and full credit resets — we saw the future of AI agents. Flat-rate inference. No per-token billing. Users just use their agent without thinking about cost.
             </p>
             <p>
-              We migrated from OpenRouter to direct MiMo integration in one day. Every agent
-              on the platform now runs on MiMo V2.5 Pro. Our users get faster inference, longer
-              context, and zero surprise bills.
+              We migrated from OpenRouter to direct MiMo integration in one day. Every agent on the platform now runs on MiMo V2.5 Pro. Our users get faster inference, longer context, and zero surprise bills.
             </p>
             <p>
-              MiMo isn't a budget model — it's a frontier model at frontier-beating prices.
-              Reasoning, multimodality, TTS, ASR — all included. This is the model that makes
-              always-on AI agents economically viable.
+              MiMo isn't a budget model — it's a frontier model at frontier-beating prices. Cache hits cost 120x less than misses thanks to HiCache optimization. TTS is free for a limited time. This is the model that makes always-on AI agents economically viable.
             </p>
           </div>
         </div>
@@ -97,12 +91,26 @@ export default function MimoPartnerPage() {
       {/* Platform Stats */}
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-10">Platform</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-10">Token Plan Tiers</div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-900">
             {[
+              { stat: '$6', label: 'Lite · 4.1B', sub: 'Light use' },
+              { stat: '$16', label: 'Standard · 11B', sub: 'Most users' },
+              { stat: '$50', label: 'Pro · 38B', sub: 'Heavy workloads' },
+              { stat: '$100', label: 'Max · 82B', sub: 'Power users' },
+            ].map((item) => (
+              <div key={item.label} className="bg-black p-6 text-center">
+                <div className="text-2xl font-bold text-orange-500">{item.stat}</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mt-2">{item.label}</div>
+                <div className="text-[9px] text-zinc-700 mt-1">{item.sub}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-900">
+            {[
               { stat: '100%', label: 'MiMo Native' },
-              { stat: '5', label: 'Agent Types' },
-              { stat: '4', label: 'Plan Tiers' },
+              { stat: '9', label: 'Models' },
+              { stat: '120x', label: 'Cache Savings' },
               { stat: '24/7', label: 'Always On' },
             ].map((item) => (
               <div key={item.label} className="bg-black p-6 text-center">

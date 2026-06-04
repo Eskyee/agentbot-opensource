@@ -207,12 +207,12 @@ export default async function Home() {
           </h2>
           <p className="text-zinc-400 text-sm max-w-lg leading-relaxed mb-8">
             Already have a Xiaomi MiMo subscription? Paste your API key and your
-            agent runs on your credits — zero platform cost. 82B tokens/month.
+            agent runs on your credits — zero platform cost. Plans from $6/mo.
             All MiMo V2.5 models. Your key, your usage, your relationship with Xiaomi.
           </p>
           <div className="grid sm:grid-cols-3 gap-px bg-zinc-900">
             {[
-              { num: '01', title: 'Get Key', body: 'Buy a MiMo Max Monthly Plan at mimo.xiaomi.com. 82B credits, all models.' },
+              { num: '01', title: 'Get Key', body: 'Subscribe at mimo.xiaomi.com. Plans from $6/mo (4.1B credits) to $100/mo (82B credits).' },
               { num: '02', title: 'Paste', body: 'Settings → BYOK → paste your key. We validate it live against the MiMo API.' },
               { num: '03', title: 'Run Free', body: 'Your agent uses your subscription. Zero platform charges. Full speed.' },
             ].map((step) => (
