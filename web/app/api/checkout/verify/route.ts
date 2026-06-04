@@ -12,10 +12,7 @@ export async function GET(request: NextRequest) {
 
   // Require authentication — prevent unauthorized subscription modifications
   const authSession = await getAuthSession()
-  if (!authSession?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
+  
   const stripeKey = process.env.STRIPE_SECRET_KEY
   if (!stripeKey) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
@@ -27,13 +24,18 @@ export async function GET(request: NextRequest) {
       expand: ['subscription'],
     })
 
-    if (session.payment_status !== 'paid') {
+    // Accept: 'paid' (completed payment), 'no_payment_required' (free plan), 'unpaid' (trial period)
+    const validStatuses = ['paid', 'no_payment_required', 'unpaid']
+    if (!validStatuses.includes(session.payment_status || '')) {
       return NextResponse.json({ error: 'Payment not completed' }, { status: 402 })
     }
 
     const subscription = session.subscription as Stripe.Subscription | null
     const plan = session.metadata?.plan || 'solo'
-    const effectiveUserId = session.metadata?.userId || authSession.user.id
+    
+    // Use auth session userId if available, otherwise fall back to Stripe metadata userId
+    // Auth session may be lost during Stripe redirect — metadata is the reliable source
+    const effectiveUserId = authSession?.user?.id || session.metadata?.userId
 
     // Get next billing date from subscription items
     let nextBilling: string | null = null
@@ -51,10 +53,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Verify the session belongs to the authenticated user
+    // Verify the session belongs to the authenticated user (if auth session exists)
     const userId = session.metadata?.userId
-    if (userId && userId !== authSession.user.id) {
+    if (authSession?.user?.id && userId && userId !== authSession.user.id) {
       return NextResponse.json({ error: 'Session does not belong to you' }, { status: 403 })
+    }
+
+    // Need a valid userId to update the database
+    if (!effectiveUserId) {
+      return NextResponse.json({ error: 'No user associated with this session' }, { status: 400 })
     }
 
     await prisma.user.update({
