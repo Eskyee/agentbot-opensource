@@ -40,7 +40,7 @@ export default function Post() {
           <h2 className="text-xl font-bold tracking-tighter uppercase mt-10 mb-4">How It Works</h2>
 
           <div className="bg-zinc-950 border border-zinc-800 rounded p-5 my-6 text-sm text-zinc-400 leading-loose">
-            <div className="text-zinc-600 mb-2">// A2A message flow</div>
+            <div className="text-zinc-600 mb-2">{'// A2A message flow'}</div>
             <div>Agent A (Booking)</div>
             <div className="pl-4 text-zinc-500">→ signs message with Ed25519 identity key</div>
             <div className="pl-4 text-zinc-500">→ delivers via SSRF-protected webhook bus</div>

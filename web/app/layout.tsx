@@ -143,7 +143,7 @@ export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="font-sans">
+    <html lang="en" className="font-sans" data-scroll-behavior="smooth">
       <head>
         <link rel="manifest" href="/manifest.json" />
         <script

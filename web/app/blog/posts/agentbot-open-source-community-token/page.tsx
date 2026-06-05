@@ -46,7 +46,7 @@ export default function Post() {
           </p>
 
           <div className="bg-zinc-950 border border-zinc-800 rounded p-5 my-6 text-sm text-zinc-400 leading-loose">
-            <div className="text-zinc-600 mb-2">// Architecture layers</div>
+            <div className="text-zinc-600 mb-2">{'// Architecture layers'}</div>
             <div>Agent Interface Layer</div>
             <div className="pl-4 text-zinc-500">CLI · API · Web UI · Discord · WhatsApp · Telegram</div>
             <div className="mt-2">Agent Runtime (OpenClaw)</div>

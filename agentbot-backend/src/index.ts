@@ -1,4 +1,5 @@
 import './lib/sentry';
+import { log } from './lib/logger';
 import express, { Request, Response, NextFunction } from 'express';
 import { initDatabase } from './services/db-init';
 import inviteRouter from './invite';
@@ -29,7 +30,6 @@ import { buildHealthSummary } from './lib/health-summary';
 import { getPoolStats } from './lib/db';
 import { signatureGuard } from './middleware/signature';
 import { snapshotAgentState } from './services/gitlawb';
-import { log } from './lib/logger';
 import { authenticate } from './middleware/authenticate';
 import { runCommand, runShellCommand } from './utils/run-command';
 import { createOpenClawConfig } from './lib/openclaw-config';
@@ -92,20 +92,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
   res.on('finish', () => {
     const duration = Date.now() - start;
-    const requestLog = {
-      timestamp: new Date().toISOString(),
-      requestId,
-      method: req.method,
-      path: req.originalUrl || req.url,
-      status: res.statusCode,
-      durationMs: duration,
-      ip: req.ip || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent']?.substring(0, 100),
-    };
-
-    if (res.statusCode >= 500) log.error(requestLog);
-    else if (res.statusCode >= 400) log.warn(requestLog);
-    else log.info(requestLog);
+    const logEntry = { requestId, method: req.method, path: req.originalUrl || req.url, status: res.statusCode, durationMs: duration, ip: req.ip || req.socket.remoteAddress, userAgent: req.headers['user-agent']?.substring(0, 100) };
+    if (res.statusCode >= 500) log.error('request', logEntry);
+    else if (res.statusCode >= 400) log.warn('request', logEntry);
+    else log.info('request', logEntry);
   });
 
   next();
@@ -162,7 +152,7 @@ const RUN_MODE = (process.env.AGENTBOT_RUN_MODE || 'all').toLowerCase();
 
 // API key — refuse to start without it
 if (!process.env.INTERNAL_API_KEY) {
-  console.error('FATAL: INTERNAL_API_KEY must be set. Refusing to start.');
+  log.error('FATAL: INTERNAL_API_KEY must be set. Refusing to start.');
   process.exit(1);
 }
 const API_KEY = process.env.INTERNAL_API_KEY;
@@ -429,7 +419,7 @@ const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
     try {
       await fs.unlink(lockFile);
     } catch (err) {
-      console.error('Failed to remove lock file:', err);
+      log.error('Failed to remove lock file', { error: err instanceof Error ? err.message : String(err) });
     }
   }
 };
@@ -787,13 +777,13 @@ async function checkForOpenClawUpdate(): Promise<string | null> {
     const latestVersion = release.tag_name?.replace(/^v/, '') || release.name?.replace(/^v/, '');
     
     if (latestVersion && latestVersion !== OPENCLAW_RUNTIME_VERSION) {
-      console.log(`[Auto-Update] New OpenClaw version available: ${latestVersion} (current: ${OPENCLAW_RUNTIME_VERSION})`);
+      log.info('[Auto-Update] New version available', { latestVersion, current: OPENCLAW_RUNTIME_VERSION });
       return latestVersion;
     }
     
     return null;
   } catch (error) {
-    console.error('[Auto-Update] Failed to check for updates:', error);
+    log.error('[Auto-Update] Failed to check for updates', { error: error instanceof Error ? error.message : String(error) });
     return null;
   }
 }
@@ -803,7 +793,7 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
   try {
     await runCommand('docker', ['version', '--format', '{{.Server.Version}}']);
   } catch (err: any) {
-    console.warn('[Auto-Update] Docker not available — skipping container updates');
+    log.warn('[Auto-Update] Docker not available — skipping container updates');
     return { success: 0, failed: 0, skipped: 0 };
   }
 
@@ -836,7 +826,7 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
       console.log(`[Auto-Update] Updating ${agentId} to ${newVersion}...`);
       const inspect = await getContainerInspect(containerName);
       if (inspect.Config.Image === newImage) {
-        console.log(`[Auto-Update] ${agentId} already on ${newVersion}; skipping`);
+        log.info('[Auto-Update] Agent already current', { agentId, version: newVersion });
         return 'skipped';
       }
 
@@ -871,7 +861,7 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
           results.success++;
         }
       } else {
-        console.error(`[Auto-Update] Batch failure:`, result.reason);
+        log.error('[Auto-Update] Batch failure', { reason: String(result.reason) });
         results.failed++;
       }
     }
@@ -881,16 +871,16 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
 }
 
 function startAutoUpdater() {
-  console.log(`[Auto-Update] Scheduler initialized (${AUTO_UPDATE_INTERVAL})`);
+  log.info('[Auto-Update] Scheduler initialized', { interval: AUTO_UPDATE_INTERVAL });
   
   const checkAndUpdate = async () => {
-    console.log('[Auto-Update] Checking for OpenClaw updates...');
+    log.info('[Auto-Update] Checking for updates...');
     const latestVersion = await checkForOpenClawUpdate();
     const targetVersion = latestVersion || OPENCLAW_RUNTIME_VERSION;
     
-    console.log(`[Auto-Update] Reconciling all containers to v${targetVersion}...`);
+    log.info('[Auto-Update] Reconciling containers', { targetVersion });
     const results = await updateAllContainers(targetVersion);
-    console.log(`[Auto-Update] Update complete: ${results.success} updated, ${results.skipped} already current, ${results.failed} failed`);
+    log.info('[Auto-Update] Update complete', { success: results.success, skipped: results.skipped, failed: results.failed });
   };
   
   const [hour, minute] = (process.env.AUTO_UPDATE_TIME || '03:00').split(':').map(Number);
@@ -900,7 +890,7 @@ function startAutoUpdater() {
   
   setTimeout(checkAndUpdate, 5000);
   
-  console.log('[Auto-Update] Auto-updater started');
+  log.info('[Auto-Update] Auto-updater started');
 }
 
 /**
@@ -948,7 +938,7 @@ app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Re
       activatedAt: new Date().toISOString(),
     }, null, 2));
 
-    console.log(`[Subscriptions] Activated tier "${tier}" for customer ${id} (sub: ${subscriptionId})`);
+    log.info('[Subscriptions] Tier activated', { tier, customerId: id, subscriptionId });
 
     res.json({
       success: true,
@@ -959,7 +949,7 @@ app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Re
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Subscription activation failed';
-    console.error('[Subscriptions] Deploy error:', message);
+    log.error('[Subscriptions] Deploy error', { message });
     res.status(500).json({ error: message });
   }
 });
@@ -975,7 +965,7 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   // users can quote it in support tickets and operators can correlate the 500
   // back to the structured log line.
   const requestId = (req as Request & { requestId?: string }).requestId;
-  console.error('[Unhandled Error]', requestId ?? '-', err.message, err.stack);
+  log.error('[Unhandled Error]', { requestId: requestId ?? '-', message: err.message, stack: err.stack });
 
   // Report to Sentry if configured
   try {
@@ -993,15 +983,15 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
 // Initialize database schema on startup.
 // In production, a DB failure is fatal — don't serve traffic with a broken schema.
 initDatabase().then(() => {
-  console.log('[DB] Ready');
+  log.info('[DB] Ready');
   // Start scheduler only after schema is confirmed ready — avoids 42P01 race on boot
   if (RUN_MODE === 'all' || RUN_MODE === 'worker') {
     startScheduler();
   }
 }).catch(err => {
-  console.error('[DB] Init error:', err.message);
+  log.error('[DB] Init error', { message: err.message });
   if (process.env.NODE_ENV === 'production') {
-    console.error('[DB] Refusing to serve in production with failed schema. Exiting.');
+    log.error('[DB] Refusing to serve in production with failed schema. Exiting.');
     process.exit(1);
   }
 });
@@ -1013,13 +1003,13 @@ const checkProvisioning = async () => {
   try {
     const ready = await isDockerReady();
     if (ready) {
-      console.log('[Provisioning] Railway API available — agent provisioning enabled');
+      log.info('[Provisioning] Railway API available — agent provisioning enabled');
       return true;
     }
-    console.warn('[Provisioning] Railway API unreachable — provisioning disabled');
+    log.warn('[Provisioning] Railway API unreachable — provisioning disabled');
     return false;
   } catch (err: any) {
-    console.warn('[Provisioning] Railway check failed:', err.message);
+    log.warn('[Provisioning] Railway check failed', { message: err.message });
     return false;
   }
 };
@@ -1069,7 +1059,7 @@ server.on('upgrade', (req, socket, head) => {
 // Permission WebSocket — real-time approval notifications
 import { setupWebSocket } from './lib/hooks/ws-handler';
 const permissionWss = setupWebSocket(server);
-console.log('[WS] Permission WebSocket registered at /ws/permissions');
+  log.info('[WS] Permission WebSocket registered at /ws/permissions');
 
 let serverStarted = false;
 
@@ -1077,10 +1067,8 @@ export function startServer() {
   if (serverStarted) return server;
 
   server.listen(PORT, () => {
-    console.log(`🦞 Agentbot API server running on port ${PORT} (mode=${RUN_MODE})`);
-    console.log(`Health check: http://localhost:${PORT}/health`);
-    console.log('Routes: /health, /api/metrics/*, /api/ai/*, /api/agents/*, /api/deployments');
-    console.log('OpenClaw proxy: /api/openclaw/proxy/:agentId/*');
+    log.info('🦞 Agentbot API server started', { port: PORT, mode: RUN_MODE });
+    log.info('Health check', { url: `http://localhost:${PORT}/health` });
 
     if (process.env.NODE_ENV === 'production' && RUN_MODE !== 'worker') {
       startAutoUpdater();
@@ -1097,16 +1085,16 @@ if (require.main === module) {
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('[API] Shutting down...');
+  log.info('[API] Shutting down...');
   stopScheduler();
   if (serverStarted) {
     server.close(() => {
-      console.log('[API] All connections drained. Exiting.');
+      log.info('[API] All connections drained. Exiting.');
       process.exit(0);
     });
     // Force exit after 10 seconds if connections don't drain
     setTimeout(() => {
-      console.warn('[API] Forced shutdown after timeout.');
+      log.warn('[API] Forced shutdown after timeout.');
       process.exit(1);
     }, 10_000).unref();
   } else {

@@ -17,7 +17,7 @@ export default async function Home() {
             <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest">
               Powered by MiMo
             </div>
-            <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-400 text-[10px] uppercase tracking-widest">
+            <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
               Built on OpenClaw
             </div>
           </div>
@@ -87,16 +87,16 @@ export default async function Home() {
             <div className="flex items-center gap-2">
               <div className="flex -space-x-2">
                 {['A','B','C','D','E'].map(i => (
-                  <div key={i} className="w-7 h-7 rounded-full bg-zinc-800 border-2 border-black flex items-center justify-center text-[10px] text-zinc-400">{i}</div>
+                  <div key={i} className="w-7 h-7 rounded-full bg-zinc-800 border-2 border-black flex items-center justify-center text-[10px] text-zinc-500">{i}</div>
                 ))}
               </div>
-              <span className="text-xs text-zinc-400">Join 11+ builders</span>
+              <span className="text-xs text-zinc-500">Join 11+ builders</span>
             </div>
             <div className="flex items-center gap-1.5">
               {[1,2,3,4,5].map(i => (
                 <svg key={i} className="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
               ))}
-              <span className="text-xs text-zinc-400 ml-1">4.9/5 from early adopters</span>
+              <span className="text-xs text-zinc-500 ml-1">4.9/5 from early adopters</span>
             </div>
           </div>
         </div>
@@ -109,8 +109,8 @@ export default async function Home() {
           <div className="grid sm:grid-cols-2 gap-px bg-zinc-900">
             <div className="bg-black p-6 sm:p-8">
               <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3">Xiaomi MiMo</div>
-              <h2 className="text-lg font-bold text-white tracking-tight mb-2">The Brain</h2>
-              <p className="text-zinc-400 text-sm leading-relaxed">
+              <h3 className="text-lg font-bold text-white tracking-tight mb-2">The Brain</h3>
+              <p className="text-zinc-500 text-sm leading-relaxed">
                 MiMo V2.5 Pro — 1M context window, built-in reasoning, multimodal.
                 99% cheaper than GPT-5.5. Token plans with 82B credits.
                 20% off during off-peak hours. TTS models included free.
@@ -118,8 +118,8 @@ export default async function Home() {
             </div>
             <div className="bg-black p-6 sm:p-8">
               <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3">OpenClaw</div>
-              <h2 className="text-lg font-bold text-white tracking-tight mb-2">The Body</h2>
-              <p className="text-zinc-400 text-sm leading-relaxed">
+              <h3 className="text-lg font-bold text-white tracking-tight mb-2">The Body</h3>
+              <p className="text-zinc-500 text-sm leading-relaxed">
                 Open-source personal AI runtime. Connects to Telegram, WhatsApp,
                 Discord, and X. Persistent memory, skills, heartbeats, cron jobs.
                 Your agent runs on your infra — not a walled garden.
@@ -163,7 +163,7 @@ export default async function Home() {
               <div key={step.num} className="bg-black p-6 sm:p-8">
                 <div className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-4">{step.num}</div>
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">{step.title}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed">{step.body}</p>
+                <p className="text-zinc-500 text-sm leading-relaxed">{step.body}</p>
               </div>
             ))}
           </div>
@@ -185,7 +185,7 @@ export default async function Home() {
             ].map((item) => (
               <div key={item.label} className="bg-black p-6 sm:p-8">
                 <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3">{item.label}</div>
-                <p className="text-zinc-400 text-sm leading-relaxed">{item.body}</p>
+                <p className="text-zinc-500 text-sm leading-relaxed">{item.body}</p>
               </div>
             ))}
           </div>
@@ -226,7 +226,7 @@ export default async function Home() {
               <div key={step.num} className="bg-black p-6 sm:p-8">
                 <div className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-4">{step.num}</div>
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">{step.title}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed">{step.body}</p>
+                <p className="text-zinc-500 text-sm leading-relaxed">{step.body}</p>
               </div>
             ))}
           </div>
@@ -240,7 +240,7 @@ export default async function Home() {
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mb-4">
             Start free. <span className="text-orange-500">Scale when ready.</span>
           </h2>
-          <p className="text-zinc-400 text-sm mb-12 max-w-md">
+          <p className="text-zinc-500 text-sm mb-12 max-w-md">
             Bring your own MiMo key and use Agentbot for free — forever.
             Or let us handle everything from £29/mo.
           </p>
@@ -281,7 +281,7 @@ export default async function Home() {
             ].map((plan) => (
               <div key={plan.id} className="bg-black p-6 sm:p-8 flex flex-col">
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-400">{plan.name}</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.badge && (
                     <span className="text-[8px] uppercase tracking-widest text-orange-500 border border-orange-500/30 px-1.5 py-0.5">{plan.badge}</span>
                   )}
@@ -294,7 +294,7 @@ export default async function Home() {
                 </div>
                 <ul className="space-y-2 mb-6 flex-1">
                   {plan.features.map((f) => (
-                    <li key={f} className="text-zinc-400 text-xs flex items-center gap-2">
+                    <li key={f} className="text-zinc-500 text-xs flex items-center gap-2">
                       <span className="text-orange-500">→</span> {f}
                     </li>
                   ))}

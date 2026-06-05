@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { DEFAULT_OPENCLAW_IMAGE } from './openclaw-version';
+import { log } from './logger';
 
 /**
  * Agentbot Container Manager — Railway API Edition
@@ -187,12 +188,15 @@ async function railwayGql<T = any>(
   variables: Record<string, unknown> = {}
 ): Promise<T> {
   const key = getApiKey();
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(getRailwayTokenType() === 'project'
-      ? { 'Project-Access-Token': key }
-      : { Authorization: `Bearer ${key}` }),
-  };
+  const headers = getRailwayTokenType() === 'project'
+    ? {
+        'Project-Access-Token': key,
+        'Content-Type': 'application/json',
+      }
+    : {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      };
 
   const res = await fetch(RAILWAY_API, {
     method: 'POST',
@@ -278,7 +282,7 @@ export async function createContainer(
     const existingUrl = existingDomain
       ? `https://${existingDomain}`
       : `https://${serviceName}.up.railway.app`;
-    console.log(`[ContainerManager/Railway] Reusing existing service ${existingId} (${serviceName}) for ${userId} → ${existingUrl}`);
+    log.info('[ContainerManager/Railway] Reusing existing service', { existingId, serviceName, userId, url: existingUrl });
     return {
       container: serviceName,
       status: 'deploying',
@@ -302,23 +306,23 @@ export async function createContainer(
   });
 
   const serviceId = created.serviceCreate.id;
-  console.log(`[ContainerManager/Railway] Created service ${serviceId} (${serviceName}) for ${userId}`);
+  log.info('[ContainerManager/Railway] Created service', { serviceId, serviceName, userId });
 
   // Compensation helper — delete the half-built service so a retry can
   // start clean rather than colliding on the unique service name.
   const compensate = async (failedStep: string, err: unknown) => {
     const message = err instanceof Error ? err.message : String(err);
-    console.error(`[ContainerManager/Railway] ${failedStep} failed for ${serviceName}: ${message}; rolling back service ${serviceId}`);
+    log.error('[ContainerManager/Railway] Step failed, rolling back', { failedStep, serviceName, message, serviceId });
     try {
       await railwayGql(`
         mutation ServiceDelete($id: String!) {
           serviceDelete(id: $id)
         }
       `, { id: serviceId });
-      console.log(`[ContainerManager/Railway] Compensated: deleted ${serviceId}`);
+      log.info('[ContainerManager/Railway] Compensated: deleted service', { serviceId });
     } catch (cleanupErr: unknown) {
       const cleanupMessage = cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr);
-      console.error(`[ContainerManager/Railway] Compensation failed for ${serviceId}: ${cleanupMessage}`);
+      log.error('[ContainerManager/Railway] Compensation failed', { serviceId, message: cleanupMessage });
     }
   };
 
@@ -423,7 +427,7 @@ export async function createContainer(
     await compensate('serviceInstanceUpdate', err);
     throw err;
   }
-  console.log(`[ContainerManager/Railway] Set startCommand + resources for ${serviceName}`);
+  log.info('[ContainerManager/Railway] Set startCommand + resources', { serviceName });
 
   // 4. Create service domain with targetPort 18789 (routes Railway HTTP proxy to Gateway)
   //    Without this, Railway's proxy defaults to port 3000 and the Gateway is unreachable.
@@ -449,7 +453,7 @@ export async function createContainer(
     throw err;
   }
   const serviceDomain = domainRes?.serviceDomainCreate;
-  console.log(`[ContainerManager/Railway] Created domain: ${serviceDomain?.domain} → port ${serviceDomain?.targetPort}`);
+  log.info('[ContainerManager/Railway] Created domain', { domain: serviceDomain?.domain, port: serviceDomain?.targetPort });
 
   // 5. Deploy
   try {
@@ -688,9 +692,9 @@ export function resetIdleTimer(userId: string, idleMinutes: number = 30): void {
   const timer = setTimeout(async () => {
     try {
       await pauseContainer(userId);
-      console.log(`[ContainerManager/Railway] Idle agent paused for ${userId}`);
+      log.info('[ContainerManager/Railway] Idle agent paused', { userId });
     } catch (err: any) {
-      console.error(`[ContainerManager/Railway] Failed to pause ${userId}:`, err.message);
+      log.error('[ContainerManager/Railway] Failed to pause', { userId, message: err.message });
     }
     idleTimers.delete(userId);
   }, idleMinutes * 60 * 1000);

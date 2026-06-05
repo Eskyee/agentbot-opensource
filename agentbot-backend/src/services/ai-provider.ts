@@ -12,6 +12,7 @@
 
 import dotenv from 'dotenv';
 import { pool } from '../lib/db';
+import { log } from '../lib/logger';
 
 dotenv.config();
 
@@ -185,7 +186,7 @@ export class AIProviderService {
       return parseInt(result.rows[0]?.total ?? '0', 10);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.warn('[AI] Monthly token usage query failed:', message);
+      log.warn('[AI] Monthly token usage query failed', { message });
       return 0; // fail open
     }
   }
@@ -242,7 +243,7 @@ export class AIProviderService {
       return { ok: true, used };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.warn('[AI] Quota reservation failed (failing open):', message);
+      log.warn('[AI] Quota reservation failed (failing open)', { message });
       // Fail open on DB outage — usage is still bounded by the underlying
       // model_metrics check on subsequent calls.
       return { ok: true, used };
@@ -286,7 +287,7 @@ export class AIProviderService {
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.warn('[AI] Quota settlement failed:', message);
+      log.warn('[AI] Quota settlement failed', { message });
     }
   }
 
@@ -322,7 +323,7 @@ export class AIProviderService {
         success,
         source,
       ]
-    ).catch((err: Error) => console.error('[AI] Usage logging failed:', err.message));
+    ).catch((err: Error) => log.error('[AI] Usage logging failed', { message: err.message }));
   }
 
   /**

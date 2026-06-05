@@ -1,44 +1,54 @@
-import util from 'util';
+/**
+ * Structured logger for agentbot-backend.
+ * Replaces raw console.* calls with JSON-structured output.
+ * Uses console under the hood (no pino dependency) but enforces structured format.
+ */
 
-type LogLevel = 'info' | 'warn' | 'error' | 'debug';
+type LogLevel = 'info' | 'warn' | 'error' | 'debug'
 
-function formatValue(value: unknown): string {
-  if (value instanceof Error) {
-    return `${value.name}: ${value.message}${value.stack ? `\n${value.stack}` : ''}`;
-  }
-  if (typeof value === 'string') {
-    return value;
-  }
-  return util.inspect(value, { depth: 5, colors: false, compact: true, breakLength: 120 });
+interface LogEntry {
+  level: LogLevel
+  msg: string
+  ts: string
+  [key: string]: unknown
 }
 
-function formatMessage(args: unknown[]): string {
-  if (args.length === 0) return '';
-  return args.map(formatValue).join(' ');
-}
-
-function write(level: LogLevel, ...args: unknown[]) {
-  const record = {
-    timestamp: new Date().toISOString(),
+function write(level: LogLevel, msg: string, meta?: Record<string, unknown>) {
+  const entry: LogEntry = {
     level,
-    pid: process.pid,
-    message: formatMessage(args),
-  };
+    msg,
+    ts: new Date().toISOString(),
+    ...meta,
+  }
 
-  const output = JSON.stringify(record);
+  const line = JSON.stringify(entry)
 
-  if (level === 'error') console.error(output);
-  else if (level === 'warn') console.warn(output);
-  else console.log(output);
+  switch (level) {
+    case 'error':
+      console.error(line)
+      break
+    case 'warn':
+      console.warn(line)
+      break
+    case 'debug':
+      if (process.env.LOG_LEVEL === 'debug') console.log(line)
+      break
+    default:
+      console.log(line)
+  }
 }
 
 export const log = {
-  info: (...args: unknown[]) => write('info', ...args),
-  warn: (...args: unknown[]) => write('warn', ...args),
-  error: (...args: unknown[]) => write('error', ...args),
-  debug: (...args: unknown[]) => {
-    if (process.env.DEBUG === 'true' || process.env.DEBUG === '1') {
-      write('debug', ...args);
-    }
-  },
-};
+  info: (msg: string, meta?: Record<string, unknown>) => write('info', msg, meta),
+  warn: (msg: string, meta?: Record<string, unknown>) => write('warn', msg, meta),
+  error: (msg: string, meta?: Record<string, unknown>) => write('error', msg, meta),
+  debug: (msg: string, meta?: Record<string, unknown>) => write('debug', msg, meta),
+
+  /** Child logger with preset context fields */
+  child: (ctx: Record<string, unknown>) => ({
+    info: (msg: string, meta?: Record<string, unknown>) => write('info', msg, { ...ctx, ...meta }),
+    warn: (msg: string, meta?: Record<string, unknown>) => write('warn', msg, { ...ctx, ...meta }),
+    error: (msg: string, meta?: Record<string, unknown>) => write('error', msg, { ...ctx, ...meta }),
+    debug: (msg: string, meta?: Record<string, unknown>) => write('debug', msg, { ...ctx, ...meta }),
+  }),
+}

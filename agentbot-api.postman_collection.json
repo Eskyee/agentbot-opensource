@@ -1,0 +1,283 @@
+{
+  "info": {
+    "name": "Agentbot API",
+    "description": "Full Agentbot API collection — agentbot-backend + web routes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://agentbot.sh" },
+    { "key": "backendUrl", "value": "https://agentbot-backend-production.up.railway.app" },
+    { "key": "gatewayUrl", "value": "https://openclaw-production-a09d.up.railway.app" },
+    { "key": "x402Url", "value": "https://x402-gateway-production.up.railway.app" },
+    { "key": "sessionToken", "value": "" },
+    { "key": "internalApiKey", "value": "" },
+    { "key": "bridgeSecret", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "🏥 Health & Status",
+      "item": [
+        { "name": "Web Health", "request": { "method": "GET", "url": "{{baseUrl}}/api/health" } },
+        { "name": "Backend Health", "request": { "method": "GET", "url": "{{backendUrl}}/health" } },
+        { "name": "Gateway Status", "request": { "method": "GET", "url": "{{gatewayUrl}}/api/status" } },
+        { "name": "x402 Health", "request": { "method": "GET", "url": "{{x402Url}}/health" } },
+        { "name": "AI Health", "request": { "method": "GET", "url": "{{backendUrl}}/api/ai/health" } },
+        { "name": "OpenClaw Version", "request": { "method": "GET", "url": "{{backendUrl}}/api/openclaw/version" } },
+        { "name": "Web Version", "request": { "method": "GET", "url": "{{baseUrl}}/api/version" } }
+      ]
+    },
+    {
+      "name": "🔐 Auth",
+      "item": [
+        { "name": "Get Session", "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/session" } },
+        { "name": "Get CSRF", "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/csrf" } },
+        { "name": "Sign In (NextAuth)", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/[...nextauth]", "header": [{ "key": "Content-Type", "value": "application/json" }] } },
+        { "name": "Login", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/login", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}" } } },
+        { "name": "Sign Out", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/signout" } },
+        { "name": "Forgot Password", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/forgot-password", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"\"\n}" } } },
+        { "name": "Reset Password", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/reset-password", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"token\": \"\",\n  \"password\": \"\"\n}" } } },
+        { "name": "Get Nonce (Wallet)", "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/nonce" } },
+        { "name": "Google OAuth", "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/google" } },
+        { "name": "Farcaster Refresh", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/farcaster/refresh" } },
+        { "name": "Token Gating Verify", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/token-gating/verify", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"address\": \"\",\n  \"chain\": \"base\"\n}" } } }
+      ]
+    },
+    {
+      "name": "👤 User & Settings",
+      "item": [
+        { "name": "Get Settings", "request": { "method": "GET", "url": "{{baseUrl}}/api/settings" } },
+        { "name": "Update Settings", "request": { "method": "PUT", "url": "{{baseUrl}}/api/settings", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{}" } } },
+        { "name": "Change Password", "request": { "method": "POST", "url": "{{baseUrl}}/api/settings/password", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"\",\n  \"newPassword\": \"\"\n}" } } },
+        { "name": "Update Email", "request": { "method": "PUT", "url": "{{baseUrl}}/api/settings/email", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"\"\n}" } } },
+        { "name": "Get User by ID", "request": { "method": "GET", "url": "{{baseUrl}}/api/user/{{userId}}" } },
+        { "name": "BYOK Settings", "request": { "method": "GET", "url": "{{baseUrl}}/api/user/byok" } },
+        { "name": "Update BYOK", "request": { "method": "PUT", "url": "{{baseUrl}}/api/user/byok", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"mimoApiKey\": \"\"\n}" } } },
+        { "name": "Storage Info", "request": { "method": "GET", "url": "{{baseUrl}}/api/user/storage" } },
+        { "name": "X Handle", "request": { "method": "GET", "url": "{{baseUrl}}/api/user/x-handle" } },
+        { "name": "baseFM Wallet", "request": { "method": "GET", "url": "{{baseUrl}}/api/user/basefm-wallet" } }
+      ]
+    },
+    {
+      "name": "🤖 Agents",
+      "item": [
+        { "name": "List Agents", "request": { "method": "GET", "url": "{{baseUrl}}/api/agents" } },
+        { "name": "Create Agent", "request": { "method": "POST", "url": "{{baseUrl}}/api/agents", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"\",\n  \"description\": \"\"\n}" } } },
+        { "name": "Get Agent", "request": { "method": "GET", "url": "{{baseUrl}}/api/agents/{{agentId}}" } },
+        { "name": "Update Agent", "request": { "method": "PUT", "url": "{{baseUrl}}/api/agents/{{agentId}}", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{}" } } },
+        { "name": "Delete Agent", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/agents/{{agentId}}" } },
+        { "name": "Agent Config", "request": { "method": "GET", "url": "{{baseUrl}}/api/agents/{{agentId}}/config" } },
+        { "name": "Agent Logs", "request": { "method": "GET", "url": "{{baseUrl}}/api/agents/{{agentId}}/logs" } },
+        { "name": "Agent Messages", "request": { "method": "GET", "url": "{{baseUrl}}/api/agents/{{agentId}}/messages" } },
+        { "name": "Agent Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/agents/{{agentId}}/stats" } },
+        { "name": "Sync Agent", "request": { "method": "POST", "url": "{{baseUrl}}/api/agents/{{agentId}}/sync" } },
+        { "name": "Verify Agent", "request": { "method": "POST", "url": "{{baseUrl}}/api/agents/{{agentId}}/verify" } },
+        { "name": "Clone Agent", "request": { "method": "POST", "url": "{{baseUrl}}/api/agents/clone", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"agentId\": \"\"\n}" } } },
+        { "name": "Agent Showcase", "request": { "method": "GET", "url": "{{baseUrl}}/api/agents/showcase" } },
+        { "name": "Agent Simulator", "request": { "method": "POST", "url": "{{baseUrl}}/api/agents/simulator" } },
+        { "name": "User Agents", "request": { "method": "GET", "url": "{{baseUrl}}/api/agents/user/{{userId}}" } }
+      ]
+    },
+    {
+      "name": "⚙️ Instance Management",
+      "item": [
+        { "name": "Get Instance", "request": { "method": "GET", "url": "{{baseUrl}}/api/instance/{{userId}}" } },
+        { "name": "Start Instance", "request": { "method": "POST", "url": "{{baseUrl}}/api/instance/{{userId}}/start" } },
+        { "name": "Stop Instance", "request": { "method": "POST", "url": "{{baseUrl}}/api/instance/{{userId}}/stop" } },
+        { "name": "Restart Instance", "request": { "method": "POST", "url": "{{baseUrl}}/api/instance/{{userId}}/restart" } },
+        { "name": "Update Instance", "request": { "method": "POST", "url": "{{baseUrl}}/api/instance/{{userId}}/update" } },
+        { "name": "Instance Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/instance/{{userId}}/stats" } },
+        { "name": "Instance Token", "request": { "method": "GET", "url": "{{baseUrl}}/api/instance/{{userId}}/token" } },
+        { "name": "Repair Instance", "request": { "method": "POST", "url": "{{baseUrl}}/api/instance/{{userId}}/repair" } },
+        { "name": "Reset Memory", "request": { "method": "POST", "url": "{{baseUrl}}/api/instance/{{userId}}/reset-memory" } }
+      ]
+    },
+    {
+      "name": "🚀 Provisioning",
+      "item": [
+        { "name": "Provision Agent", "request": { "method": "POST", "url": "{{baseUrl}}/api/provision", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"agentId\": \"\",\n  \"plan\": \"solo\"\n}" } } },
+        { "name": "Provision Team", "request": { "method": "POST", "url": "{{baseUrl}}/api/provision/team", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"\",\n  \"members\": []\n}" } } },
+        { "name": "Team Templates", "request": { "method": "GET", "url": "{{baseUrl}}/api/provision/team/templates" } },
+        { "name": "Provision Job Status", "request": { "method": "GET", "url": "{{baseUrl}}/api/provision/jobs/{{jobId}}" } },
+        { "name": "Provision Metrics", "request": { "method": "GET", "url": "{{baseUrl}}/api/provision/jobs/metrics" } },
+        { "name": "Backend Provision", "request": { "method": "POST", "url": "{{backendUrl}}/api/provision", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Internal-Api-Key", "value": "{{internalApiKey}}" }], "body": { "mode": "raw", "raw": "{\n  \"agentId\": \"\",\n  \"plan\": \"solo\"\n}" } } },
+        { "name": "Railway Provision", "request": { "method": "POST", "url": "{{backendUrl}}/api/railway/provision", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Internal-Api-Key", "value": "{{internalApiKey}}" }], "body": { "mode": "raw", "raw": "{\n  \"agentId\": \"\",\n  \"plan\": \"solo\"\n}" } } }
+      ]
+    },
+    {
+      "name": "🧠 AI & Chat",
+      "item": [
+        { "name": "Chat", "request": { "method": "POST", "url": "{{baseUrl}}/api/chat", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"messages\": [{\"role\": \"user\", \"content\": \"Hello\"}]\n}" } } },
+        { "name": "AI Chat (Backend)", "request": { "method": "POST", "url": "{{backendUrl}}/api/ai/chat", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"messages\": [{\"role\": \"user\", \"content\": \"Hello\"}],\n  \"model\": \"mimo-v2.5-pro\"\n}" } } },
+        { "name": "List Models", "request": { "method": "GET", "url": "{{backendUrl}}/api/ai/models" } },
+        { "name": "Models by Provider", "request": { "method": "GET", "url": "{{backendUrl}}/api/ai/models/openai" } },
+        { "name": "Select Model", "request": { "method": "POST", "url": "{{backendUrl}}/api/ai/models/select", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"model\": \"mimo-v2.5-pro\"\n}" } } },
+        { "name": "Estimate Cost", "request": { "method": "POST", "url": "{{backendUrl}}/api/ai/estimate-cost", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"messages\": [{\"role\": \"user\", \"content\": \"Hello\"}]\n}" } } },
+        { "name": "Gateway Chat", "request": { "method": "POST", "url": "{{baseUrl}}/api/gateway/chat", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"message\": \"Hello\"\n}" } } },
+        { "name": "Gateway Status", "request": { "method": "GET", "url": "{{baseUrl}}/api/gateway/status" } },
+        { "name": "MiMo Proxy", "request": { "method": "POST", "url": "{{baseUrl}}/api/mimo-proxy", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"model\": \"mimo-v2.5-pro\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"Hello\"}]\n}" } } },
+        { "name": "Demo Chat", "request": { "method": "POST", "url": "{{baseUrl}}/api/demo/chat", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"message\": \"Hello\"\n}" } } },
+        { "name": "Demo TTS", "request": { "method": "POST", "url": "{{baseUrl}}/api/demo/tts", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"text\": \"Hello world\"\n}" } } }
+      ]
+    },
+    {
+      "name": "💰 Wallet & Billing",
+      "item": [
+        { "name": "Get Wallet", "request": { "method": "GET", "url": "{{baseUrl}}/api/wallet" } },
+        { "name": "Create Wallet", "request": { "method": "POST", "url": "{{baseUrl}}/api/wallet/create" } },
+        { "name": "Wallet Address", "request": { "method": "GET", "url": "{{baseUrl}}/api/wallet/address" } },
+        { "name": "Wallet CDP", "request": { "method": "GET", "url": "{{baseUrl}}/api/wallet/cdp" } },
+        { "name": "Wallet Transactions", "request": { "method": "GET", "url": "{{baseUrl}}/api/wallet/transactions" } },
+        { "name": "Wallet Sessions", "request": { "method": "GET", "url": "{{baseUrl}}/api/wallet/sessions" } },
+        { "name": "Wallet Top Up", "request": { "method": "POST", "url": "{{baseUrl}}/api/wallet/top-up", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"amount\": 10\n}" } } },
+        { "name": "Wallet Auth", "request": { "method": "POST", "url": "{{baseUrl}}/api/wallet-auth" } },
+        { "name": "Billing Info", "request": { "method": "GET", "url": "{{baseUrl}}/api/billing" } },
+        { "name": "Credits Balance", "request": { "method": "GET", "url": "{{baseUrl}}/api/credits/balance" } },
+        { "name": "MiMo Usage", "request": { "method": "GET", "url": "{{baseUrl}}/api/credits/mimo-usage" } },
+        { "name": "Swap", "request": { "method": "POST", "url": "{{baseUrl}}/api/swap", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"from\": \"ETH\",\n  \"to\": \"USDC\",\n  \"amount\": \"0.01\"\n}" } } },
+        { "name": "Stripe Checkout", "request": { "method": "POST", "url": "{{baseUrl}}/api/stripe/checkout", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"priceId\": \"\"\n}" } } },
+        { "name": "Stripe Webhook", "request": { "method": "POST", "url": "{{baseUrl}}/api/stripe/webhook" } }
+      ]
+    },
+    {
+      "name": "📊 Dashboard & Metrics",
+      "item": [
+        { "name": "Dashboard Data", "request": { "method": "GET", "url": "{{baseUrl}}/api/dashboard/data" } },
+        { "name": "Dashboard Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/dashboard/stats" } },
+        { "name": "Dashboard Analytics", "request": { "method": "GET", "url": "{{baseUrl}}/api/dashboard/analytics" } },
+        { "name": "Dashboard Cost", "request": { "method": "GET", "url": "{{baseUrl}}/api/dashboard/cost" } },
+        { "name": "Dashboard Health", "request": { "method": "GET", "url": "{{baseUrl}}/api/dashboard/health" } },
+        { "name": "Dashboard Bootstrap", "request": { "method": "GET", "url": "{{baseUrl}}/api/dashboard/bootstrap" } },
+        { "name": "Usage", "request": { "method": "GET", "url": "{{baseUrl}}/api/usage" } },
+        { "name": "Platform Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/stats" } },
+        { "name": "Metrics", "request": { "method": "GET", "url": "{{baseUrl}}/api/metrics" } },
+        { "name": "Backend Historical Metrics", "request": { "method": "GET", "url": "{{backendUrl}}/api/metrics/{{userId}}/historical" } },
+        { "name": "Backend Performance", "request": { "method": "GET", "url": "{{backendUrl}}/api/metrics/{{userId}}/performance" } },
+        { "name": "Backend Summary", "request": { "method": "GET", "url": "{{backendUrl}}/api/metrics/{{userId}}/summary" } }
+      ]
+    },
+    {
+      "name": "🎵 baseFM",
+      "item": [
+        { "name": "Streams", "request": { "method": "GET", "url": "{{baseUrl}}/api/basefm/streams" } },
+        { "name": "Stream Status", "request": { "method": "GET", "url": "{{baseUrl}}/api/basefm/streams/status" } },
+        { "name": "Live", "request": { "method": "GET", "url": "{{baseUrl}}/api/basefm/live" } },
+        { "name": "Mixtapes", "request": { "method": "GET", "url": "{{baseUrl}}/api/basefm/mixtapes" } },
+        { "name": "DJ Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/basefm/dj-stats" } },
+        { "name": "Distribution", "request": { "method": "GET", "url": "{{baseUrl}}/api/basefm/distribution" } },
+        { "name": "Relays", "request": { "method": "GET", "url": "{{baseUrl}}/api/basefm/relays" } },
+        { "name": "Probe Relay", "request": { "method": "GET", "url": "{{baseUrl}}/api/basefm/relays/{{relayKey}}/probe" } }
+      ]
+    },
+    {
+      "name": "🔗 Bridge",
+      "item": [
+        { "name": "Bridge Health", "request": { "method": "GET", "url": "{{baseUrl}}/api/bridge/health" } },
+        { "name": "Bridge Status", "request": { "method": "GET", "url": "{{baseUrl}}/api/bridge/status" } },
+        { "name": "Bridge Setup", "request": { "method": "POST", "url": "{{baseUrl}}/api/bridge/setup" } },
+        { "name": "Bridge Send", "request": { "method": "POST", "url": "{{baseUrl}}/api/bridge/send", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Bridge-Secret", "value": "{{bridgeSecret}}" }], "body": { "mode": "raw", "raw": "{\n  \"channel\": \"general\",\n  \"message\": \"Hello from Postman\"\n}" } } },
+        { "name": "Bridge Inbox", "request": { "method": "GET", "url": "{{baseUrl}}/api/bridge/inbox?reader=atlas-agentbot&channel=general", "header": [{ "key": "X-Bridge-Secret", "value": "{{bridgeSecret}}" }] } },
+        { "name": "Bridge Poll", "request": { "method": "GET", "url": "{{baseUrl}}/api/bridge/poll", "header": [{ "key": "X-Bridge-Secret", "value": "{{bridgeSecret}}" }] } }
+      ]
+    },
+    {
+      "name": "🌐 Social",
+      "item": [
+        { "name": "Feed", "request": { "method": "GET", "url": "{{baseUrl}}/api/social/feed" } },
+        { "name": "Following Feed", "request": { "method": "GET", "url": "{{baseUrl}}/api/social/feed/following" } },
+        { "name": "Create Post", "request": { "method": "POST", "url": "{{baseUrl}}/api/social/posts", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"content\": \"\"\n}" } } },
+        { "name": "Get Post", "request": { "method": "GET", "url": "{{baseUrl}}/api/social/posts/{{postId}}" } },
+        { "name": "Vote Post", "request": { "method": "POST", "url": "{{baseUrl}}/api/social/posts/{{postId}}/vote" } },
+        { "name": "Post Comments", "request": { "method": "GET", "url": "{{baseUrl}}/api/social/posts/{{postId}}/comments" } },
+        { "name": "Notifications", "request": { "method": "GET", "url": "{{baseUrl}}/api/social/notifications" } },
+        { "name": "DMs", "request": { "method": "GET", "url": "{{baseUrl}}/api/social/dms" } },
+        { "name": "Communities", "request": { "method": "GET", "url": "{{baseUrl}}/api/social/communities" } },
+        { "name": "Register Agent (Social)", "request": { "method": "POST", "url": "{{baseUrl}}/api/social/agents/register" } },
+        { "name": "My Agents (Social)", "request": { "method": "GET", "url": "{{baseUrl}}/api/social/agents/mine" } }
+      ]
+    },
+    {
+      "name": "🪙 Bitcoin & Solana",
+      "item": [
+        { "name": "Bitcoin Backend Info", "request": { "method": "GET", "url": "{{baseUrl}}/api/bitcoin/backend/info" } },
+        { "name": "Bitcoin Liquid", "request": { "method": "GET", "url": "{{baseUrl}}/api/bitcoin/liquid" } },
+        { "name": "Bitcoin Greenlight", "request": { "method": "GET", "url": "{{baseUrl}}/api/bitcoin/greenlight" } },
+        { "name": "Bitcoin Wallets", "request": { "method": "GET", "url": "{{baseUrl}}/api/bitcoin/wallets" } },
+        { "name": "Solana Wallet", "request": { "method": "GET", "url": "{{baseUrl}}/api/solana/wallet" } },
+        { "name": "Solana Price", "request": { "method": "GET", "url": "{{baseUrl}}/api/solana/price" } },
+        { "name": "Solana RPC Config", "request": { "method": "GET", "url": "{{baseUrl}}/api/solana/rpc-config" } }
+      ]
+    },
+    {
+      "name": "🔧 OpenClaw Backend",
+      "item": [
+        { "name": "Instances", "request": { "method": "GET", "url": "{{backendUrl}}/api/openclaw/instances" } },
+        { "name": "Instance Stats", "request": { "method": "GET", "url": "{{backendUrl}}/api/openclaw/instances/{{instanceId}}/stats" } },
+        { "name": "Version", "request": { "method": "GET", "url": "{{backendUrl}}/api/openclaw/version" } },
+        { "name": "Permissions", "request": { "method": "GET", "url": "{{backendUrl}}/api/permissions" } },
+        { "name": "Set Permissions", "request": { "method": "POST", "url": "{{backendUrl}}/api/permissions", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"permissions\": {}\n}" } } },
+        { "name": "Deployments", "request": { "method": "POST", "url": "{{backendUrl}}/api/deployments", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"agentId\": \"\"\n}" } } },
+        { "name": "Install Page", "request": { "method": "GET", "url": "{{backendUrl}}/install" } },
+        { "name": "Link Page", "request": { "method": "GET", "url": "{{backendUrl}}/link" } }
+      ]
+    },
+    {
+      "name": "🔐 Registration & Keys",
+      "item": [
+        { "name": "Validate Key", "request": { "method": "POST", "url": "{{baseUrl}}/api/registration/token", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"token\": \"\"\n}" } } },
+        { "name": "Register Home", "request": { "method": "POST", "url": "{{baseUrl}}/api/register", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"token\": \"\",\n  \"name\": \"\"\n}" } } },
+        { "name": "Register Link", "request": { "method": "POST", "url": "{{baseUrl}}/api/registration/token", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"token\": \"\"\n}" } } },
+        { "name": "List Keys", "request": { "method": "GET", "url": "{{baseUrl}}/api/keys" } },
+        { "name": "Create Key", "request": { "method": "POST", "url": "{{baseUrl}}/api/keys", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"\"\n}" } } },
+        { "name": "Delete Key", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/keys/{{keyId}}" } },
+        { "name": "Generate Invite", "request": { "method": "POST", "url": "{{backendUrl}}/api/invite/generate", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Internal-Api-Key", "value": "{{internalApiKey}}" }], "body": { "mode": "raw", "raw": "{}" } } },
+        { "name": "Validate Invite", "request": { "method": "POST", "url": "{{backendUrl}}/api/invite/validate", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"code\": \"\"\n}" } } }
+      ]
+    },
+    {
+      "name": "🎪 Mission Control",
+      "item": [
+        { "name": "Fleet Graph", "request": { "method": "GET", "url": "{{backendUrl}}/api/mission-control/fleet/graph" } },
+        { "name": "Fleet Traces", "request": { "method": "GET", "url": "{{backendUrl}}/api/mission-control/fleet/traces" } },
+        { "name": "Fleet Costs", "request": { "method": "GET", "url": "{{backendUrl}}/api/mission-control/fleet/costs" } },
+        { "name": "Fleet Bookings", "request": { "method": "GET", "url": "{{backendUrl}}/api/mission-control/fleet/bookings" } }
+      ]
+    },
+    {
+      "name": "🔗 Webhooks",
+      "item": [
+        { "name": "Stripe Webhook", "request": { "method": "POST", "url": "{{baseUrl}}/api/webhooks/stripe" } },
+        { "name": "Discord Webhook", "request": { "method": "POST", "url": "{{baseUrl}}/api/webhooks/discord" } },
+        { "name": "Mux Webhook", "request": { "method": "POST", "url": "{{baseUrl}}/api/webhooks/mux" } },
+        { "name": "Railway Status", "request": { "method": "POST", "url": "{{baseUrl}}/api/webhooks/railway-status" } },
+        { "name": "Resend Webhook", "request": { "method": "POST", "url": "{{baseUrl}}/api/webhooks/resend" } },
+        { "name": "WhatsApp Webhook", "request": { "method": "POST", "url": "{{baseUrl}}/api/webhooks/whatsapp" } }
+      ]
+    },
+    {
+      "name": "🛠️ Admin",
+      "item": [
+        { "name": "Admin Stats", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/stats" } },
+        { "name": "Admin Users", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/users" } },
+        { "name": "Admin Summary", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/summary" } },
+        { "name": "Admin Activity", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/activity" } },
+        { "name": "Admin Security", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/security" } },
+        { "name": "Admin DB Health", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/db-health" } },
+        { "name": "Admin Invites", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/invites" } },
+        { "name": "Admin Agent Audit", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/agent-audit" } },
+        { "name": "Admin Seed Usage", "request": { "method": "POST", "url": "{{baseUrl}}/api/admin/seed-usage" } },
+        { "name": "Admin MiMo Config", "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/openclaw/mimo" } },
+        { "name": "Admin Update All", "request": { "method": "POST", "url": "{{baseUrl}}/api/admin/openclaw/update-all" } }
+      ]
+    },
+    {
+      "name": "🧪 Debug",
+      "item": [
+        { "name": "Debug", "request": { "method": "GET", "url": "{{baseUrl}}/api/debug" } },
+        { "name": "Debug DB", "request": { "method": "GET", "url": "{{baseUrl}}/api/debug-db" } },
+        { "name": "Debug OAuth", "request": { "method": "GET", "url": "{{baseUrl}}/api/debug-oauth" } },
+        { "name": "Debug Stripe", "request": { "method": "GET", "url": "{{baseUrl}}/api/debug-stripe" } },
+        { "name": "Test Env", "request": { "method": "GET", "url": "{{baseUrl}}/api/test-env" } }
+      ]
+    }
+  ]
+}

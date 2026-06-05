@@ -1,6 +1,7 @@
 import { keccak256, toUtf8Bytes, verifyMessage as ethersVerifyMessage } from 'ethers';
 import dotenv from 'dotenv';
 import { pool } from '../lib/db';
+import { log } from '../lib/logger';
 
 dotenv.config();
 
@@ -105,7 +106,7 @@ export class AgentBusService {
       const ok = recoveredAddress.toLowerCase() === message.from.walletAddress.toLowerCase();
       return ok ? { ok: true } : { ok: false, reason: 'invalid_signature' };
     } catch (error) {
-      console.error('Signature verification failed:', error);
+      log.error('Signature verification failed', { error: error instanceof Error ? error.message : String(error) });
       return { ok: false, reason: 'verify_error' };
     }
   }
@@ -133,7 +134,7 @@ export class AgentBusService {
       // If the table doesn't exist yet (race on first boot), let the message
       // through rather than blocking the whole bus. db-init.ts will create it
       // shortly. We log so the gap is visible.
-      console.warn('[Bus] claimNonce DB error (allowing message through):', error);
+      log.warn('[Bus] claimNonce DB error (allowing message through)', { error: error instanceof Error ? error.message : String(error) });
       return true;
     }
   }
@@ -145,7 +146,7 @@ export class AgentBusService {
         `DELETE FROM agent_message_nonces WHERE processed_at < NOW() - INTERVAL '1 hour'`
       );
     } catch (error) {
-      console.warn('[Bus] cleanupExpiredNonces failed:', error);
+      log.warn('[Bus] cleanupExpiredNonces failed', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 

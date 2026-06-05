@@ -12,6 +12,7 @@
  */
 
 import { Pool } from 'pg';
+import { log } from './logger';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -22,7 +23,7 @@ const pool = new Pool({
 
 // Catch idle client errors — don't crash, pool reconnects automatically.
 pool.on('error', (err) => {
-  console.error('[DB] Idle client error (non-fatal):', err.message);
+  log.error('[DB] Idle client error (non-fatal)', { message: err.message });
 });
 
 export { pool };

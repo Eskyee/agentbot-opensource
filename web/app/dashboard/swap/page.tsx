@@ -1,7 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
 
-const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'), { ssr: false });
 const TokenSwap = dynamic(() => import('@/app/components/TokenSwap'), { ssr: false });
 
 export default function SwapPage() {
@@ -17,9 +16,7 @@ export default function SwapPage() {
             Exchange tokens on Base with best-rate routing via CDP Trade API
           </p>
         </div>
-        <WalletProvider>
-          <TokenSwap />
-        </WalletProvider>
+        <TokenSwap />
       </div>
     </main>
   );

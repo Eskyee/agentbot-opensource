@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { randomBytes } from 'crypto';
 import { authenticate } from '../middleware/auth';
+import { log } from '../lib/logger';
 import { createContainer } from '../lib/container-manager';
 import type { PlanType } from '../lib/container-manager';
 import { getAgentCount } from '../lib/agent-queries';
-import { log } from '../lib/logger';
 
 /**
  * BASEFM Provision Endpoint
@@ -222,12 +222,12 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     };
 
     // Create Docker container for the agent
-    let containerInfo: Awaited<ReturnType<typeof createContainer>> | null = null;
+    let containerInfo = null;
     try {
       containerInfo = await createContainer(userId, plan as PlanType);
-      log.info('[Provision] Container created', { containerInfo });
+      log.info('[Provision] Container created', { containerId: containerInfo?.id });
     } catch (containerError: any) {
-      log.error('[Provision] Container creation failed', containerError);
+      log.error('[Provision] Container creation failed', { message: containerError.message });
       // Don't fail provisioning — agent can still use API-side processing
     }
 
@@ -246,7 +246,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     res.status(200).json(response);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Provision failed';
-    log.error('[Provision]', message);
+    log.error('[Provision]', { message });
     res.status(500).json({
       success: false,
       error: message,
