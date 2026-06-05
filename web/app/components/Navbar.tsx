@@ -69,6 +69,7 @@ export default function Navbar() {
               <NavLink href="/chat" current={pathname}>Chat</NavLink>
               <NavLink href="/credits" current={pathname}>Credits</NavLink>
               <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
+              <NavLink href="/wristband" current={pathname}>Wristband</NavLink>
               <NavLink href="/vercel-gateway" current={pathname}>Gateway</NavLink>
               <CreditBadge />
               <NotificationBell />
@@ -170,6 +171,7 @@ export default function Navbar() {
                 <MobileLink href="/chat" onClick={closeMenu}>Chat</MobileLink>
                 <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
                 <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
+                <MobileLink href="/wristband" onClick={closeMenu}>Wristband</MobileLink>
                 <MobileLink href="/vercel-gateway" onClick={closeMenu}>Gateway</MobileLink>
                 <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-4">
