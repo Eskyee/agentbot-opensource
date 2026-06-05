@@ -28,48 +28,49 @@ export const operatorNavSection = {
 };
 
 export const navSections = [
-  // CORE: What users actually need
+  // CORE: Daily essentials — 6-8 items max
   {
-    label: 'Agent',
+    label: null,
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: '◈' },
-      { label: 'X Agent', href: '/dashboard/x', icon: '𝕩' },
-      { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
-      { label: 'Workflows', href: '/dashboard/workflows', icon: '⊞' },
-      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '◉' },
+      { label: 'Chat', href: '/dashboard/chat', icon: '💬' },
+      { label: 'Search', href: '/search', icon: '⌕' },
     ],
   },
   {
-    label: 'Finance',
+    label: null,
     items: [
       { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
-      { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
-      { label: 'Robinhood', href: '/dashboard/robinhood', icon: '📈' },
-      { label: 'Billing', href: '/billing', icon: '☆' },
       { label: 'Credits', href: '/credits', icon: '💰' },
-      { label: 'Usage', href: '/usage/global', icon: '📊' },
     ],
   },
   {
-    label: 'Network',
+    label: null,
     items: [
-      { label: 'Gitlawb Network', href: '/dashboard/gitlawb-network', icon: '◉' },
-      { label: 'Community', href: '/dashboard/community', icon: '✦' },
-      { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '☼' },
+      { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
     ],
   },
   {
-    label: 'Account',
+    label: null,
     items: [
       { label: 'Settings', href: '/settings', icon: '⚙' },
-      { label: 'Support', href: '/dashboard/support', icon: '☰' },
     ],
   },
-  // ADVANCED: Collapsed by default, power users only
+  // ADVANCED: Everything else — collapsed by default
   {
     label: 'Advanced',
     collapsed: true,
     items: [
+      { label: 'X Agent', href: '/dashboard/x', icon: '𝕩' },
+      { label: 'Workflows', href: '/dashboard/workflows', icon: '⊞' },
+      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '◉' },
+      { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
+      { label: 'Robinhood', href: '/dashboard/robinhood', icon: '📈' },
+      { label: 'Billing', href: '/billing', icon: '☆' },
+      { label: 'Usage', href: '/usage/global', icon: '📊' },
+      { label: 'Gitlawb Network', href: '/dashboard/gitlawb-network', icon: '◉' },
+      { label: 'Community', href: '/dashboard/community', icon: '✦' },
+      { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '☼' },
       { label: 'Ops Center', href: '/dashboard/ops', icon: '◈' },
       { label: 'Team', href: '/dashboard/team', icon: '⬢' },
       { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
@@ -80,6 +81,7 @@ export const navSections = [
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
       { label: 'Devices', href: '/dashboard/devices', icon: '▪' },
       { label: 'Showcase', href: '/showcase', icon: '✧' },
+      { label: 'Support', href: '/dashboard/support', icon: '☰' },
       { label: 'Feedback', href: '/dashboard/feedback', icon: '💬' },
     ],
   },
@@ -145,7 +147,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
       if (window.innerWidth < 768) {
         const next = Object.fromEntries(
           visibleNavSections.map((section) => [
-            section.label,
+            section.label ?? '',
             !section.items.some(
               (item) => pathname === item.href || pathname.startsWith(item.href + '/')
             ),
@@ -360,26 +362,29 @@ export const DashboardSidebar = memo(function DashboardSidebar({
               (item) => pathname === item.href || pathname.startsWith(item.href + '/')
             );
             // Never collapse the section containing the current page
-            const isCollapsed = !sectionHasActive && !!collapsed[section.label];
+            const isCollapsed = !sectionHasActive && !!collapsed[section.label ?? ''];
+            const hasLabel = !!section.label;
 
             return (
-              <div key={section.label} className={i > 0 ? 'mt-3' : ''}>
-                <button
-                  onClick={() => toggleSection(section.label)}
-                  className="w-full flex items-center justify-between pl-4 pr-4 py-1 group"
-                  aria-expanded={!isCollapsed}
-                >
-                  <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-600 group-hover:text-zinc-300 transition-colors">
-                    {section.label}
-                  </span>
-                  <span
-                    className={`text-[8px] text-zinc-700 group-hover:text-zinc-300 transition-all duration-200 ${
-                      isCollapsed ? '' : 'rotate-180'
-                    }`}
+              <div key={section.label ?? `sec-${i}`} className={i > 0 ? 'mt-3' : ''}>
+                {hasLabel && (
+                  <button
+                    onClick={() => toggleSection(section.label!)}
+                    className="w-full flex items-center justify-between pl-4 pr-4 py-1 group"
+                    aria-expanded={!isCollapsed}
                   >
-                    ▲
-                  </span>
-                </button>
+                    <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-600 group-hover:text-zinc-300 transition-colors">
+                      {section.label}
+                    </span>
+                    <span
+                      className={`text-[8px] text-zinc-700 group-hover:text-zinc-300 transition-all duration-200 ${
+                        isCollapsed ? '' : 'rotate-180'
+                      }`}
+                    >
+                      ▲
+                    </span>
+                  </button>
+                )}
 
                 {!isCollapsed && (
                   <div className="mt-0.5 space-y-0.5">
