@@ -1,4 +1,4 @@
-import { createConfig, http } from "wagmi";
+import { createConfig, http, createStorage } from "wagmi";
 import { createWalletClient, http as viemHttp } from "viem";
 import { base, baseSepolia } from "wagmi/chains";
 import { base as baseChain } from "viem/chains";
@@ -29,6 +29,7 @@ export const wagmiConfig = createConfig({
     [baseSepolia.id]: http(),
   },
   dataSuffix: DATA_SUFFIX,
+  storage: createStorage({ storage: typeof window !== 'undefined' ? window.localStorage : undefined }),
 });
 
 export const walletClient = createWalletClient({

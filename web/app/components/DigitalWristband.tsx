@@ -21,27 +21,33 @@ export default function DigitalWristband() {
   const [minted, setMinted] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [manualAddress, setManualAddress] = useState<string | null>(null);
+  const [detectedAddress, setDetectedAddress] = useState<string | null>(null);
 
-  // Use connected address or manual detection
-  const walletAddress = address || manualAddress;
-  const userConnected = isConnected || !!manualAddress;
-
-  // Try to detect Coinbase Wallet directly
+  // Detect wallet via window.ethereum
   useEffect(() => {
-    const detectWallet = async () => {
-      if (isConnected) return;
+    const detect = async () => {
       try {
-        if (typeof window !== 'undefined' && (window as any).ethereum) {
+        if ((window as any).ethereum) {
           const accounts = await (window as any).ethereum.request({ method: 'eth_accounts' });
           if (accounts && accounts.length > 0) {
-            setManualAddress(accounts[0]);
+            setDetectedAddress(accounts[0]);
           }
         }
       } catch {}
     };
-    detectWallet();
-  }, [isConnected]);
+    detect();
+
+    // Also listen for account changes
+    if ((window as any).ethereum) {
+      (window as any).ethereum.on?.('accountsChanged', (accounts: string[]) => {
+        setDetectedAddress(accounts?.[0] || null);
+      });
+    }
+  }, []);
+
+  // Use wagmi address or detected address
+  const walletAddress = address || detectedAddress;
+  const userConnected = isConnected || !!detectedAddress;
 
   const checkWristband = useCallback(async () => {
     if (!walletAddress) return;
@@ -73,7 +79,6 @@ export default function DigitalWristband() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Failed to prepare mint');
 
-      // If wallet client available, use it. Otherwise prompt via window.ethereum
       if (walletClient) {
         const hash = await walletClient.sendTransaction({
           to: data.contract as `0x${string}`,
@@ -96,7 +101,7 @@ export default function DigitalWristband() {
             from: walletAddress,
             to: data.contract,
             data: data.calldata,
-            chainId: '0x2105', // Base chain ID
+            chainId: '0x2105',
           }],
         });
         setTxHash(hash);
@@ -119,11 +124,10 @@ export default function DigitalWristband() {
   };
 
   const handleConnect = async () => {
-    // Try wagmi connectors first
-    const cbConnector = connectors.find(c => c.id === 'coinbaseWallet');
-    if (cbConnector) {
+    // Try wagmi connectors
+    for (const connector of connectors) {
       try {
-        await connect({ connector: cbConnector });
+        await connect({ connector });
         return;
       } catch {}
     }
@@ -132,15 +136,17 @@ export default function DigitalWristband() {
       if ((window as any).ethereum) {
         const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
         if (accounts && accounts.length > 0) {
-          setManualAddress(accounts[0]);
+          setDetectedAddress(accounts[0]);
         }
+      } else {
+        setError('No wallet detected. Please install Coinbase Wallet or MetaMask.');
       }
     } catch (e: any) {
-      setError('Could not connect wallet. Please open Coinbase Wallet.');
+      setError('Could not connect wallet. Please open your wallet app.');
     }
   };
 
-  // State: Not connected
+  // Not connected
   if (!userConnected) {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800 text-white">
@@ -173,7 +179,7 @@ export default function DigitalWristband() {
     );
   }
 
-  // State: Checking
+  // Checking
   if (loading) {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800 text-white">
@@ -187,7 +193,7 @@ export default function DigitalWristband() {
     );
   }
 
-  // State: Has wristband
+  // Has wristband
   if (hasWristband && !minted) {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border-2 border-orange-500/50 text-white">
@@ -232,7 +238,7 @@ export default function DigitalWristband() {
     );
   }
 
-  // State: Just minted
+  // Just minted
   if (minted && txHash) {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border-2 border-green-500/50 text-white">
@@ -257,7 +263,7 @@ export default function DigitalWristband() {
     );
   }
 
-  // State: Ready to mint
+  // Ready to mint
   return (
     <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800 text-white">
       <div className="flex items-center justify-between mb-4">
