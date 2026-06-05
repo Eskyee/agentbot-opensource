@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 import { NotificationBell } from "@/app/social/_components/NotificationBell";
 import { CreditBadge } from "@/app/components/CreditBadge";
+import { WalletBadge } from "@/app/components/WalletBadge";
 
 // ─── Simplified nav: product-focused ─────────────────────────────────────────
 // LOGGED-OUT: Demo | Docs | Pricing → Sign in | Get Started
@@ -77,6 +78,7 @@ export default function Navbar() {
               <NavLink href="/vercel-gateway" current={pathname}>Gateway</NavLink>
 
               <CreditBadge />
+              <WalletBadge />
               <NotificationBell />
             </>
           ) : (
