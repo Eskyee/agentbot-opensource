@@ -25,7 +25,7 @@ const COLUMNS = [
       { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
       { href: 'https://mimo.xiaomi.com',                                 label: 'MiMo API', external: true },
       { href: 'https://openclaw.ai',                                     label: 'OpenClaw', external: true },
-      { href: 'https://release.bar/eskyee/agentbot-opensource',          label: 'Releases', external: true },
+      { href: 'https://release.bar/Eskyee',          label: 'Releases', external: true },
     ],
   },
   {
