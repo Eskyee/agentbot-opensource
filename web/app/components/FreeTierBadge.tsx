@@ -19,7 +19,7 @@ export default function FreeTierBadge() {
       try {
         if (typeof window === 'undefined') return
         const ethereum = (window as any).ethereum
-        if (!ethereum) return
+        if (!ethereum || typeof ethereum.request !== 'function') return
 
         const accounts = await ethereum.request({ method: 'eth_accounts' })
         if (accounts && accounts.length > 0) {
