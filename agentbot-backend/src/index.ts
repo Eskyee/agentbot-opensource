@@ -29,6 +29,7 @@ import { buildHealthSummary } from './lib/health-summary';
 import { getPoolStats } from './lib/db';
 import { signatureGuard } from './middleware/signature';
 import { snapshotAgentState } from './services/gitlawb';
+import { log } from './lib/logger';
 import { authenticate } from './middleware/authenticate';
 import { runCommand, runShellCommand } from './utils/run-command';
 import { createOpenClawConfig } from './lib/openclaw-config';
@@ -91,7 +92,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
   res.on('finish', () => {
     const duration = Date.now() - start;
-    const log = {
+    const requestLog = {
       timestamp: new Date().toISOString(),
       requestId,
       method: req.method,
@@ -101,10 +102,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       ip: req.ip || req.socket.remoteAddress,
       userAgent: req.headers['user-agent']?.substring(0, 100),
     };
-    // Use console.info for successful requests, console.warn for 4xx, console.error for 5xx
-    if (res.statusCode >= 500) console.error(JSON.stringify(log));
-    else if (res.statusCode >= 400) console.warn(JSON.stringify(log));
-    else console.info(JSON.stringify(log));
+
+    if (res.statusCode >= 500) log.error(requestLog);
+    else if (res.statusCode >= 400) log.warn(requestLog);
+    else log.info(requestLog);
   });
 
   next();

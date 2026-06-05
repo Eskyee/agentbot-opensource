@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { parseUnits, formatUnits } from 'viem';
 import { randomUUID } from 'crypto';
 import { pool } from '../lib/db';
+import { log } from '../lib/logger';
 
 dotenv.config();
 
@@ -88,13 +89,13 @@ export class WalletService {
 
       return { address: cdpAddress };
     } catch (error) {
-      console.error('Account creation failed:', error);
+      log.error('Account creation failed:', error);
 
       // Compensation: if we created a CDP account but the DB insert failed,
       // log the orphan so it can be reconciled. CDP accounts cannot be deleted
       // programmatically, so we record the failure for manual cleanup.
       if (cdpAddress && cdpAccountName) {
-        console.error(
+        log.error(
           `[WalletService] ORPHAN CDP ACCOUNT — address=${cdpAddress} name=${cdpAccountName} userId=${userId} agentId=${agentId}. ` +
           `DB insert failed after on-chain account creation. Record for manual reconciliation.`
         );
@@ -105,8 +106,8 @@ export class WalletService {
             [userId, JSON.stringify({ address: cdpAddress, name: cdpAccountName, agentId })]
           );
         } catch (logErr) {
-          // If even the audit log fails, we've done what we can — the console.error above is the fallback
-          console.error('[WalletService] Failed to log orphan wallet:', logErr);
+          // If even the audit log fails, we've done what we can — the log.error above is the fallback
+          log.error('[WalletService] Failed to log orphan wallet:', logErr);
         }
       }
 

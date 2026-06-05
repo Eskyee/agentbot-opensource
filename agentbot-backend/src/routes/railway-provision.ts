@@ -15,6 +15,7 @@
 import { Router, Request, Response } from 'express'
 import { authenticate } from '../middleware/auth'
 import * as crypto from 'crypto'
+import { log } from '../lib/logger'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
 type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
@@ -280,13 +281,13 @@ export async function provisionOnRailway(
       input: { projectId, name: serviceName, source: { image: openclawImage } },
     })
     serviceId = created.serviceCreate.id
-    console.log(`[RailwayProvision] Created service ${serviceId} (${serviceName}) for ${agentId}`)
+    log.info(`[RailwayProvision] Created service ${serviceId} (${serviceName}) for ${agentId}`)
   } catch (createErr: unknown) {
     const msg = createErr instanceof Error ? createErr.message : String(createErr)
     if (!msg.includes('already exists')) throw createErr
 
     // Service already exists (retry after partial failure) — look up its ID
-    console.warn(`[RailwayProvision] Service already exists, looking up ID for ${serviceName}`)
+    log.warn(`[RailwayProvision] Service already exists, looking up ID for ${serviceName}`)
     const lookup = await railwayGql<{ project: { services: { edges: { node: { id: string; name: string } }[] } } }>(`
       query ProjectServices($projectId: String!) {
         project(id: $projectId) { services { edges { node { id name } } } }
@@ -295,7 +296,7 @@ export async function provisionOnRailway(
     const match = lookup.project.services.edges.find(e => e.node.name === serviceName)
     if (!match) throw new Error(`Service ${serviceName} reported as existing but not found in project`)
     serviceId = match.node.id
-    console.log(`[RailwayProvision] Resuming with existing service ${serviceId}`)
+    log.info(`[RailwayProvision] Resuming with existing service ${serviceId}`)
   }
 
   // 2. Set start command — critical: writes OPENCLAW_CONFIG_JSON to disk before gateway starts.
@@ -312,9 +313,9 @@ export async function provisionOnRailway(
       serviceId, environmentId,
       input: { startCommand: startCmd },
     })
-    console.log(`[RailwayProvision] Set startCommand for ${serviceId}`)
+    log.info(`[RailwayProvision] Set startCommand for ${serviceId}`)
   } catch (startCmdErr) {
-    console.warn(`[RailwayProvision] startCommand update failed (non-fatal):`, startCmdErr)
+    log.warn(`[RailwayProvision] startCommand update failed (non-fatal):`, startCmdErr)
   }
 
   // 2b. Set resource limits — non-fatal (Railway may reject cpuLimit on some plans)
@@ -335,9 +336,9 @@ export async function provisionOnRailway(
         restartPolicyMaxRetries: 10,
       },
     })
-    console.log(`[RailwayProvision] Set resource limits for ${serviceId}`)
+    log.info(`[RailwayProvision] Set resource limits for ${serviceId}`)
   } catch (limitsErr) {
-    console.warn(`[RailwayProvision] Resource limits update failed (non-fatal):`, limitsErr)
+    log.warn(`[RailwayProvision] Resource limits update failed (non-fatal):`, limitsErr)
   }
 
   // 2b. Add persistent volume for config/conversations
@@ -349,9 +350,9 @@ export async function provisionOnRailway(
     `, {
       input: { projectId, environmentId, serviceId, mountPath: '/data' },
     })
-    console.log(`[RailwayProvision] Volume mounted at /data for ${serviceId}`)
+    log.info(`[RailwayProvision] Volume mounted at /data for ${serviceId}`)
   } catch (volErr) {
-    console.warn(`[RailwayProvision] Volume creation failed (non-fatal):`, volErr)
+    log.warn(`[RailwayProvision] Volume creation failed (non-fatal):`, volErr)
   }
 
   // 3. Inject env vars — retry once on failure (Railway occasionally rejects first upsert)
@@ -369,12 +370,12 @@ export async function provisionOnRailway(
       varsSet = true
       break
     } catch (varsErr) {
-      console.warn(`[RailwayProvision] variableCollectionUpsert attempt ${attempt} failed:`, varsErr)
+      log.warn(`[RailwayProvision] variableCollectionUpsert attempt ${attempt} failed:`, varsErr)
       if (attempt === 2) throw varsErr
       await new Promise(r => setTimeout(r, 2000))
     }
   }
-  console.log(`[RailwayProvision] Env vars set (varsSet=${varsSet}) for ${serviceId}`)
+  log.info(`[RailwayProvision] Env vars set (varsSet=${varsSet}) for ${serviceId}`)
 
   // 4. Generate public domain
   let url = `https://${serviceName}.up.railway.app`
@@ -387,7 +388,7 @@ export async function provisionOnRailway(
     const domain = domainResult.serviceDomainCreate.domain
     url = domain.startsWith('http') ? domain : `https://${domain}`
   } catch (err) {
-    console.warn(`[RailwayProvision] Domain generation failed, using default:`, err)
+    log.warn(`[RailwayProvision] Domain generation failed, using default:`, err)
   }
 
   // 5. Trigger deploy — non-fatal: Railway auto-deploys on env var change anyway
@@ -397,9 +398,9 @@ export async function provisionOnRailway(
         serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
       }
     `, { serviceId, environmentId })
-    console.log(`[RailwayProvision] Deploy triggered → ${url}`)
+    log.info(`[RailwayProvision] Deploy triggered → ${url}`)
   } catch (deployErr) {
-    console.warn(`[RailwayProvision] Deploy trigger failed (non-fatal — Railway will auto-deploy):`, deployErr)
+    log.warn(`[RailwayProvision] Deploy trigger failed (non-fatal — Railway will auto-deploy):`, deployErr)
   }
 
   return { agentId, url, serviceId, status: 'deploying' as const }
@@ -430,7 +431,7 @@ router.post('/provision', authenticate, async (req: Request, res: Response) => {
     return res.json({ success: true, ...result })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Railway provision failed'
-    console.error('[RailwayProxy] Provision error:', message)
+    log.error('[RailwayProxy] Provision error:', message)
     return res.status(502).json({ success: false, error: message })
   }
 })
