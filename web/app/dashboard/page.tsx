@@ -14,6 +14,7 @@ const InstanceControlPanel = dynamic(() => import('@/app/components/dashboard/In
 const ConfirmDialog = dynamic(() => import('@/app/components/shared/ConfirmDialog').then(m => m.ConfirmDialog))
 const PermissionGate = dynamic(() => import('@/app/components/shared/PermissionGate').then(m => m.PermissionGate))
 const RadioWidget = dynamic(() => import('@/app/components/RadioWidget'), { ssr: false })
+const BaseActivity = dynamic(() => import('@/app/components/BaseActivity'), { ssr: false })
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 import { buildOpenClawControlUrl, OPENCLAW_CONTROLS_ENABLED } from '@/app/lib/openclaw-control'
 
@@ -442,6 +443,11 @@ function DashboardContent() {
             {/* baseFM Radio Widget */}
             <section className="mb-8">
               <RadioWidget />
+            </section>
+
+            {/* Your Base Activity */}
+            <section className="mb-8">
+              <BaseActivity />
             </section>
 
             {/* Health checks */}

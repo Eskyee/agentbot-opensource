@@ -57,6 +57,13 @@ export default async function Home() {
                 >
                   Deploy Agent — £29/mo
                 </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center border border-orange-800 bg-orange-950/30 px-8 py-4 text-xs font-bold uppercase tracking-widest text-orange-400 hover:bg-orange-900/50 hover:text-orange-300 transition-colors gap-2"
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Free — Connect Base Wallet
+                </Link>
               </>
             )}
             <Link
@@ -329,6 +336,12 @@ export default async function Home() {
               className="inline-flex items-center justify-center bg-white text-black px-10 py-4 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors w-full sm:w-auto"
             >
               Deploy Your Agent →
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center border border-orange-800 bg-orange-950/30 px-10 py-4 text-xs font-bold uppercase tracking-widest text-orange-400 hover:bg-orange-900/50 hover:text-orange-300 transition-colors w-full sm:w-auto"
+            >
+              Free — Connect Base Wallet
             </Link>
             <a
               href="https://github.com/Eskyee/agentbot-opensource"

@@ -1,11 +1,35 @@
 {
   "name": "Agentbot",
   "short_name": "Agentbot",
-  "description": "Deploy AI Agents in 60 Seconds",
+  "description": "Deploy AI workers on Base. Swap tokens, mint NFTs, and manage your wallet with autonomous agents powered by MiMo V2.5. Free daily AI messages for Base wallet users.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a14",
   "theme_color": "#0a0a14",
+  "categories": ["ai", "defi", "tools"],
+  "keywords": ["AI", "Base", "agents", "swap", "NFT", "wristband", "radio"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "Your AI agent dashboard"
+    },
+    {
+      "name": "Swap",
+      "url": "/dashboard/swap",
+      "description": "Swap tokens on Base"
+    },
+    {
+      "name": "Wristband",
+      "url": "/wristband",
+      "description": "Mint your digital wristband"
+    },
+    {
+      "name": "Playground",
+      "url": "/playground",
+      "description": "Explore playground apps"
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
