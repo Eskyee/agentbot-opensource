@@ -69,16 +69,10 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <NavLink href="/search" current={pathname}>Search</NavLink>
               <NavLink href="/chat" current={pathname}>Chat</NavLink>
-              <NavLink href="/credits" current={pathname}>Credits</NavLink>
-              <NavLink href="/playground" current={pathname}>Playground</NavLink>
+              <NavLink href="/search" current={pathname}>Search</NavLink>
               <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
-              <NavLink href="/wristband" current={pathname}>Wristband</NavLink>
-              <NavLink href="/dashboard/swap" current={pathname}>Swap</NavLink>
-              <NavLink href="/dashboard/wallet" current={pathname}>Wallet</NavLink>
-              <NavLink href="/vercel-gateway" current={pathname}>Gateway</NavLink>
-              <a href="https://shop.basefm.space" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors">Shop</a>
+              <NavLink href="/playground" current={pathname}>Playground</NavLink>
 
               <CreditBadge />
               <WalletBadge />
@@ -120,8 +114,11 @@ export default function Navbar() {
                     <div className="px-4 py-2.5 border-b border-zinc-800/50">
                       <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{displayName}</span>
                     </div>
-                    <UserMenuLink href="/dashboard" onClick={() => setUserMenuOpen(false)}>Dashboard</UserMenuLink>
-                    <UserMenuLink href="/chat" onClick={() => setUserMenuOpen(false)}>Chat</UserMenuLink>
+                    <UserMenuLink href="/dashboard/wallet" onClick={() => setUserMenuOpen(false)}>Wallet</UserMenuLink>
+                    <UserMenuLink href="/credits" onClick={() => setUserMenuOpen(false)}>Credits</UserMenuLink>
+                    <UserMenuLink href="/dashboard/swap" onClick={() => setUserMenuOpen(false)}>Swap</UserMenuLink>
+                    <UserMenuLink href="/wristband" onClick={() => setUserMenuOpen(false)}>Wristband</UserMenuLink>
+                    <UserMenuLink href="/vercel-gateway" onClick={() => setUserMenuOpen(false)}>Gateway</UserMenuLink>
                     <UserMenuLink href="/agents" onClick={() => setUserMenuOpen(false)}>Agents</UserMenuLink>
                     <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
                     <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
@@ -179,15 +176,17 @@ export default function Navbar() {
               <>
                 <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
                 <MobileLink href="/chat" onClick={closeMenu}>Chat</MobileLink>
-                <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
-                <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
+                <MobileLink href="/search" onClick={closeMenu}>Search</MobileLink>
                 <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
-                <MobileLink href="/wristband" onClick={closeMenu}>Wristband</MobileLink>
-                <MobileLink href="/dashboard/swap" onClick={closeMenu}>Swap</MobileLink>
-                <MobileLink href="/vercel-gateway" onClick={closeMenu}>Gateway</MobileLink>
-                <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
+                <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-4">
                   {displayName && <div className="text-[10px] text-zinc-600 px-3 pb-2 uppercase tracking-widest">{displayName}</div>}
+                  <MobileLink href="/dashboard/wallet" onClick={closeMenu}>Wallet</MobileLink>
+                  <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
+                  <MobileLink href="/dashboard/swap" onClick={closeMenu}>Swap</MobileLink>
+                  <MobileLink href="/wristband" onClick={closeMenu}>Wristband</MobileLink>
+                  <MobileLink href="/vercel-gateway" onClick={closeMenu}>Gateway</MobileLink>
+                  <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
                   {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
