@@ -9,9 +9,10 @@
 [![Runtime](https://img.shields.io/badge/runtime-OpenClaw_2026.4.26-EF6F2E)](https://github.com/OpenClaw/openclaw)
 [![Website](https://img.shields.io/badge/site-agentbot.sh-black)](https://agentbot.sh)
 [![Docs](https://img.shields.io/badge/docs-live-EF6F2E)](https://agentbot.sh/documentation)
+[![Releases](https://img.shields.io/badge/releases-release.bar-EF6F2E)](https://release.bar/eskyee/agentbot-opensource)
 [![Discord](https://img.shields.io/badge/Discord-Join%20chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/vTPG4vdV6D)
 
-[**Website**](https://agentbot.sh) · [**Documentation**](https://agentbot.sh/documentation) · [**Discord**](https://discord.gg/vTPG4vdV6D) · [**Open Source Repo**](https://github.com/Eskyee/agentbot-opensource)
+[**Website**](https://agentbot.sh) · [**Documentation**](https://agentbot.sh/documentation) · [**Releases**](https://release.bar/eskyee/agentbot-opensource) · [**Discord**](https://discord.gg/vTPG4vdV6D) · [**Open Source Repo**](https://github.com/Eskyee/agentbot-opensource)
 
 </div>
 
