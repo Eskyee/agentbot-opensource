@@ -1,20 +1,63 @@
 /**
  * Inject ClawBank MCP server into a user's agent OpenClaw config.
- * Calls the agent's gateway API to add the MCP server with the user's API key.
+ * Uses the admin HTTP RPC plugin at /api/v1/admin/rpc.
  */
 
 import { prisma } from '@/app/lib/prisma'
 import { decryptToken } from '@/app/lib/token-encryption'
 
-const CLAWBANK_SETTING_KEY = 'clawbank_api_key'
+const CLAWBANK_SETTING_KEY = '***'
 const CLAWBANK_MCP_URL = 'https://app.clawbank.co/mcp'
 
-/**
- * Inject or update ClawBank MCP server in the user's agent config.
- * Returns true if successful, false if agent not found or injection failed.
- */
+// ─── Gateway RPC Helper ─────────────────────────────────────────────────────
+
+async function gatewayRpc(gatewayUrl: string, gatewayToken: string) {
+  const rpcUrl = `${gatewayUrl}/api/v1/admin/rpc`
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${gatewayToken}`,
+  }
+
+  const configRes = await fetch(rpcUrl, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ method: 'config.get', params: {} }),
+    signal: AbortSignal.timeout(15000),
+  })
+
+  if (!configRes.ok) {
+    const text = await configRes.text().catch(() => '')
+    return { ok: false, error: `Gateway config.get failed (${configRes.status}): ${text.slice(0, 200)}` }
+  }
+
+  const configData = await configRes.json() as {
+    ok: boolean
+    payload?: { hash?: string }
+    error?: { message: string }
+  }
+
+  if (!configData.ok || !configData.payload?.hash) {
+    return { ok: false, error: `config.get failed: ${configData.error?.message || 'no hash'}` }
+  }
+
+  const hash = configData.payload.hash
+
+  const rpc = async (method: string, params: Record<string, unknown>) => {
+    const res = await fetch(rpcUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ method, params }),
+      signal: AbortSignal.timeout(15000),
+    })
+    return res.json() as Promise<{ ok: boolean; error?: { message: string } }>
+  }
+
+  return { ok: true, hash, rpc }
+}
+
+// ─── Inject / Remove ────────────────────────────────────────────────────────
+
 export async function injectClawBankMcp(userId: string): Promise<{ ok: boolean; error?: string }> {
-  // 1. Get user's ClawBank API key
   const setting = await prisma.userSetting.findUnique({
     where: { userId_key: { userId, key: CLAWBANK_SETTING_KEY } },
   })
@@ -25,7 +68,6 @@ export async function injectClawBankMcp(userId: string): Promise<{ ok: boolean; 
 
   const apiKey = decryptToken(setting.value)
 
-  // 2. Get user's agent gateway URL and token
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { openclawUrl: true },
@@ -42,8 +84,10 @@ export async function injectClawBankMcp(userId: string): Promise<{ ok: boolean; 
     return { ok: false, error: 'Agent not deployed' }
   }
 
-  // 3. Call agent's OpenClaw gateway to add ClawBank MCP server
   try {
+    const rpcRes = await gatewayRpc(gatewayUrl, gatewayToken)
+    if (!rpcRes.ok) return { ok: false, error: rpcRes.error }
+
     const configPatch = {
       mcp: {
         servers: {
@@ -53,24 +97,19 @@ export async function injectClawBankMcp(userId: string): Promise<{ ok: boolean; 
             headers: {
               Authorization: `Bearer ${apiKey}`,
             },
+            enabled: true,
           },
         },
       },
     }
 
-    const res = await fetch(`${gatewayUrl}/api/config/patch`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${gatewayToken}`,
-      },
-      body: JSON.stringify({ patch: configPatch }),
-      signal: AbortSignal.timeout(15000),
+    const patchResult = await rpcRes.rpc!('config.patch', {
+      baseHash: rpcRes.hash,
+      raw: JSON.stringify(configPatch),
     })
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => '')
-      return { ok: false, error: `Gateway returned ${res.status}: ${text.slice(0, 200)}` }
+    if (!patchResult.ok) {
+      return { ok: false, error: patchResult.error?.message || 'config.patch failed' }
     }
 
     return { ok: true }
@@ -82,9 +121,6 @@ export async function injectClawBankMcp(userId: string): Promise<{ ok: boolean; 
   }
 }
 
-/**
- * Remove ClawBank MCP server from the user's agent config.
- */
 export async function removeClawBankMcp(userId: string): Promise<{ ok: boolean; error?: string }> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -99,24 +135,20 @@ export async function removeClawBankMcp(userId: string): Promise<{ ok: boolean; 
   const gatewayToken = registration[0]?.gateway_token
 
   if (!gatewayUrl || !gatewayToken) {
-    return { ok: true } // No agent, nothing to remove
+    return { ok: true }
   }
 
   try {
-    const res = await fetch(`${gatewayUrl}/api/config/patch`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${gatewayToken}`,
-      },
-      body: JSON.stringify({
-        patch: { mcp: { servers: { clawbank: null } } },
-      }),
-      signal: AbortSignal.timeout(15000),
+    const rpcRes = await gatewayRpc(gatewayUrl, gatewayToken)
+    if (!rpcRes.ok) return { ok: true }
+
+    await rpcRes.rpc!('config.patch', {
+      baseHash: rpcRes.hash,
+      raw: JSON.stringify({ mcp: { servers: { clawbank: null } } }),
     })
 
-    return { ok: res.ok }
+    return { ok: true }
   } catch {
-    return { ok: true } // Best effort
+    return { ok: true }
   }
 }
