@@ -491,6 +491,16 @@ export const blogPosts: BlogPostSummary[] = [
     track: 'Shipping',
   },
   {
+    slug: 'base-integration-ships',
+    dateLabel: '5 Jun',
+    isoDate: '2026-06-05',
+    title: 'Agentbot Goes Onchain: Builder Codes, NFT Wristbands, and Token Swaps',
+    excerpt:
+      'Builder Codes for onchain attribution. NFT wristbands for community access. Token swaps via CDP. Everything we built in one night on Base.',
+    tags: ['Base', 'Builder Codes', 'NFT', 'CDP', 'Token Swaps'],
+    track: 'Shipping',
+  },
+  {
     slug: 'agentbot-sdk-mcp-x402',
     dateLabel: '3 Jun',
     isoDate: '2026-06-03',
