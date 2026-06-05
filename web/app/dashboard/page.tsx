@@ -408,7 +408,7 @@ function DashboardContent() {
                 <div className="relative">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div>
-                      <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">MiMo V2.5 Pro · OpenClaw {instance.openclawVersion || '2026.5.28'}</p>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">MiMo V2.5 Pro · OpenClaw {instance.openclawVersion || '2026.6.1'}</p>
                       <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter text-white mb-2">{instanceName}</h1>
                       <p className="text-zinc-500 text-sm max-w-md">Your AI agent is {instance.status === 'running' ? 'live and processing tasks' : instance.status}. {instance.status === 'running' ? 'All systems nominal.' : 'Start it to resume.'}</p>
                     </div>

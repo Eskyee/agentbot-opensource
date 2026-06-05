@@ -25,6 +25,7 @@ const COLUMNS = [
       { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
       { href: 'https://mimo.xiaomi.com',                                 label: 'MiMo API', external: true },
       { href: 'https://openclaw.ai',                                     label: 'OpenClaw', external: true },
+      { href: 'https://release.bar/eskyee/agentbot-opensource',          label: 'Releases', external: true },
     ],
   },
   {
@@ -52,8 +53,8 @@ const COLUMNS = [
 
 export default function Footer() {
   const [status, setStatus] = useState<'checking' | 'operational' | 'down'>('checking');
-  const [version, setVersion] = useState<string>('v1.1.0');
-  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.5.28');
+  const [version, setVersion] = useState<string>('v2026.6.1');
+  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.6.1');
 
   useEffect(() => {
     async function checkStatus() {
