@@ -30,6 +30,7 @@ import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
 import { OPENCLAW_HOME, WRAPPER_ADMIN_PASSWORD } from '../config/index.js';
+import { log } from '../utils/log.js';
 
 const COOKIE_NAME = 'ocw_admin';
 const COOKIE_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 7 days
@@ -64,7 +65,7 @@ function loadSessionsFromDisk() {
   } catch (err) {
     // ENOENT on first boot is expected; anything else is best-effort.
     if (err && err.code !== 'ENOENT') {
-      console.warn(
+      log.warn(
         `[auth] could not hydrate sessions from ${SESSIONS_FILE}: ${err.message}`
       );
     }
@@ -80,7 +81,7 @@ async function writeSessionsToDisk() {
     await fsp.rename(tmp, SESSIONS_FILE);
   } catch (err) {
     // Persistence is best-effort — a write failure should not break login.
-    console.warn(
+    log.warn(
       `[auth] failed to persist sessions to ${SESSIONS_FILE}: ${err?.message || err}`
     );
   }

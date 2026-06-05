@@ -1,5 +1,10 @@
 {
-  "extends": ["next/core-web-vitals"],
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "@next/next/no-html-link-for-pages": "off"
   }

@@ -18,7 +18,7 @@
  */
 
 let pty = null;
-import('node-pty').then(m => { pty = m.default; }).catch(() => { console.warn('node-pty not available — terminal feature disabled'); });
+import('node-pty').then(m => { pty = m.default; }).catch(() => { log.warn('node-pty not available — terminal feature disabled'); });
 import { WebSocketServer } from 'ws';
 import { DATA_DIR, OPENCLAW_HOME, OPENCLAW_STATE_DIR } from '../config/index.js';
 import { log } from '../utils/log.js';

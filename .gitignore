@@ -6,6 +6,7 @@ agentbot-backend/node_modules/
 agentbot-worker/node_modules/
 
 # Build outputs
+out/
 dist/
 .next/
 agentbot-backend/dist/

@@ -221,7 +221,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     };
 
     // Create Docker container for the agent
-    let containerInfo = null;
+    let containerInfo: Awaited<ReturnType<typeof createContainer>> | null = null;
     try {
       containerInfo = await createContainer(userId, plan as PlanType);
       console.log(`[Provision] Container created: ${JSON.stringify(containerInfo)}`);

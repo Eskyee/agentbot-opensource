@@ -75,7 +75,7 @@ export class WalletService {
       // 1. Create Server Account
       const client = getCdpClient();
       const account = await client.evm.createAccount({ name: `agent-${agentId}` });
-      cdpAccountName = account.name;
+      cdpAccountName = account.name ?? null;
       cdpAddress = account.address;
 
       // 2. Encrypt and store metadata
