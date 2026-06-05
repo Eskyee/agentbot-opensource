@@ -3,6 +3,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCustomSession, customSignOut } from "@/app/lib/useCustomSession";
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+
+const FreeTierBadge = dynamic(() => import("@/app/components/FreeTierBadge"), { ssr: false });
 import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 import { NotificationBell } from "@/app/social/_components/NotificationBell";
@@ -73,6 +76,7 @@ export default function Navbar() {
               <NavLink href="/wristband" current={pathname}>Wristband</NavLink>
               <NavLink href="/dashboard/swap" current={pathname}>Swap</NavLink>
               <NavLink href="/vercel-gateway" current={pathname}>Gateway</NavLink>
+              <FreeTierBadge />
               <CreditBadge />
               <NotificationBell />
             </>

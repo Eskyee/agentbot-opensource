@@ -1509,3 +1509,15 @@ model TutorialProgress {
   @@unique([userId, tutorialKey])
   @@index([userId])
 }
+
+model FreeUsage {
+  id          String   @id @default(cuid())
+  walletAddress String
+  date        DateTime @db.Date
+  messagesUsed Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([walletAddress, date])
+  @@index([walletAddress, date])
+}

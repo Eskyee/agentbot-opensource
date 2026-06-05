@@ -159,6 +159,10 @@ function LoginForm() {
         <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Authentication</div>
         <h1 className="text-2xl font-bold tracking-tighter uppercase">Welcome to Agentbot</h1>
         <p className="text-zinc-500 text-xs mt-2">One click to sign in</p>
+        <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-green-950/30 border border-green-800/30">
+          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+          <span className="text-[10px] uppercase tracking-widest text-green-400">Free — 5 AI messages/day with Base wallet</span>
+        </div>
       </div>
 
       <div className="mb-4 space-y-3">
