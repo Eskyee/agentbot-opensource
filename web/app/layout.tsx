@@ -7,6 +7,7 @@ import { StatusBar } from "./components/StatusBar";
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
+import AskAtlas from './components/AskAtlas'
 import { APP_URL } from '@/app/lib/app-url'
 import { DashboardDataProvider } from './dashboard/DashboardDataProvider'
 
@@ -168,6 +169,7 @@ export default function RootLayout({
             </main>
             <ConditionalFooter />
             <StatusBar />
+            <AskAtlas />
             <Toaster theme="dark" position="bottom-right" richColors closeButton />
           </DashboardDataProvider>
         </Providers>

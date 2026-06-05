@@ -103,16 +103,29 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => ({}))
-  const messages = body.messages as { role: string; content: string }[] | undefined
+  const messages = body.messages as { role: string; content?: string; parts?: Array<{ type: string; text?: string }> }[] | undefined
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: 'Messages array required' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
   }
 
+  // Handle both v5 { role, content } and v6 { role, parts } formats
+  function extractContent(m: { role: string; content?: string; parts?: Array<{ type: string; text?: string }> }): string {
+    if (typeof m.content === 'string') return m.content
+    if (Array.isArray(m.parts)) {
+      return m.parts
+        .filter((p) => p.type === 'text' && typeof p.text === 'string')
+        .map((p) => p.text!)
+        .join('')
+    }
+    return ''
+  }
+
   const sanitized = messages
-    .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+    .filter(m => m.role === 'user' || m.role === 'assistant')
     .slice(-MAX_MESSAGES)
-    .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content.slice(0, 3000) }))
+    .map(m => ({ role: m.role as 'user' | 'assistant', content: extractContent(m).slice(0, 3000) }))
+    .filter(m => m.content.length > 0)
 
   if (sanitized.length === 0) {
     return new Response(JSON.stringify({ error: 'No valid messages' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
