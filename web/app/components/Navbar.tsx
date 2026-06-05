@@ -76,6 +76,7 @@ export default function Navbar() {
               <NavLink href="/wristband" current={pathname}>Wristband</NavLink>
               <NavLink href="/dashboard/swap" current={pathname}>Swap</NavLink>
               <NavLink href="/vercel-gateway" current={pathname}>Gateway</NavLink>
+              <a href="https://shop.basefm.space" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors">Shop</a>
 
               <CreditBadge />
               <WalletBadge />
