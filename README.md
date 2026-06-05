@@ -53,8 +53,6 @@ Base ecosystem integration, Model Context Protocol, and the crash that taught us
   High-performance Node/Hono services for identity and state management.
 - `gateway/`
   Managed multi-platform communication bridge (x402 protocol).
-- `mintlify-docs/`
-  Docs source for the Factory protocol.
 - `skills/`
   Managed skill library including Bitcoin, Liquid, and Social integrations.
 - `soul/`
@@ -142,11 +140,11 @@ The underground creator layer lives at:
 
 ## Key Documentation
 
-- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — The Fact-Based Backend
-- [docs/BASE_INTEGRATION.md](./docs/BASE_INTEGRATION.md) — Builder Codes, NFTs, swaps (900+ lines)
-- [docs/MCP_SETUP.md](./docs/MCP_SETUP.md) — Model Context Protocol integration
-- [SECURITY.md](./SECURITY.md) — SignatureGuard and DID Protocol
-- [PLATFORM_RULES.md](./PLATFORM_RULES.md) — Operational guidelines
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — System design and data flow
+- [docs/SECURITY.md](./docs/SECURITY.md) — SignatureGuard and DID Protocol
+- [docs/SECURITY_WHITE_PAPER.md](./docs/SECURITY_WHITE_PAPER.md) — Security deep-dive
+- [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) — How to contribute
+- [SECURITY.md](./SECURITY.md) — Top-level security policy
 
 ## Contributing
 
