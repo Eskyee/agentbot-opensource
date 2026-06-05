@@ -13,6 +13,7 @@ import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/compone
 import StatusPill from '@/app/components/shared/StatusPill'
 import SignInWithBase from '@/app/components/SignInWithBase'
 import WalletTabs from './WalletTabs'
+import { QRCode } from '@/app/components/QRCode'
 
 type WalletAsset = {
   address: string
@@ -568,28 +569,33 @@ export default function WalletPage() {
                     <p className="mt-3 text-sm text-zinc-400">
                       Use this address for inbound USDC or ETH on Base. If you want to buy with card, open Coinbase Onramp directly into this address.
                     </p>
-                    <div className="mt-4 border border-zinc-800 bg-black p-4 font-mono text-xs text-zinc-300 break-all">
-                      {effectiveAddress}
-                    </div>
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(effectiveAddress)
-                          setCopied(true)
-                          setTimeout(() => setCopied(false), 2000)
-                        }}
-                        className="border border-zinc-700 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white transition-colors hover:border-zinc-500"
-                      >
-                        Copy address
-                      </button>
-                      <a
-                        href={`https://onramp.coinbase.com/buy?preset=base&defaultFlow=wallet&walletAddress=${effectiveAddress}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="border border-zinc-700 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white transition-colors hover:border-zinc-500"
-                      >
-                        Buy on Base
-                      </a>
+                    <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+                      <QRCode value={effectiveAddress} size={160} />
+                      <div className="flex-1">
+                        <div className="border border-zinc-800 bg-black p-4 font-mono text-xs text-zinc-300 break-all">
+                          {effectiveAddress}
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(effectiveAddress)
+                              setCopied(true)
+                              setTimeout(() => setCopied(false), 2000)
+                            }}
+                            className="border border-zinc-700 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white transition-colors hover:border-zinc-500"
+                          >
+                            Copy address
+                          </button>
+                          <a
+                            href={`https://onramp.coinbase.com/buy?preset=base&defaultFlow=wallet&walletAddress=${effectiveAddress}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="border border-zinc-700 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white transition-colors hover:border-zinc-500"
+                          >
+                            Buy on Base
+                          </a>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
