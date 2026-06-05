@@ -65,6 +65,11 @@ function SetupInstructions({ onConnected }: { onConnected: () => void }) {
         <div className="text-3xl mb-3">✅</div>
         <h3 className="text-sm font-bold uppercase tracking-wider text-green-400 mb-2">Connected!</h3>
         <p className="text-xs text-zinc-400">Your OpenClaw bridge is live. Start chatting.</p>
+        <div className="mt-3 border-t border-green-500/20 pt-3">
+          <p className="text-[10px] uppercase tracking-widest text-green-500/70">
+            🦞 Every new session needs a fresh local OpenClaw running
+          </p>
+        </div>
       </div>
     )
   }
@@ -76,6 +81,12 @@ function SetupInstructions({ onConnected }: { onConnected: () => void }) {
         <p className="text-xs text-zinc-400 leading-relaxed">
           Chat with your local OpenClaw from any device. Runs on your machine — your data stays with you.
         </p>
+        <div className="mt-2 flex items-center gap-1.5">
+          <span className="text-orange-500 text-xs">⚠️</span>
+          <span className="text-[10px] uppercase tracking-widest text-orange-400">
+            Every new session needs a fresh local OpenClaw running
+          </span>
+        </div>
       </div>
 
       {error && (
