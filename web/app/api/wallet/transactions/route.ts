@@ -5,12 +5,12 @@ import { BASE_CHAIN, BASE_RPC_URL, BASE_USDC_ADDRESS, getBaseTxUrl } from '@/app
 const TRANSFER_EVENT = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)')
 const DEFAULT_LIMIT = 10
 const MAX_LIMIT = 25
-const USDC_LOOKBACK_BLOCKS = 50_000n
-const ETH_SCAN_MAX_BLOCKS = 180
+const USDC_LOOKBACK_BLOCKS = 10_000n
+const ETH_SCAN_MAX_BLOCKS = 50
 
 const client = createPublicClient({
   chain: BASE_CHAIN,
-  transport: http(BASE_RPC_URL),
+  transport: http(BASE_RPC_URL, { timeout: 8_000, retryCount: 2 }),
 })
 
 type WalletTransaction = {
@@ -37,38 +37,43 @@ async function getRecentNativeTransactions(address: Address, limit: number): Pro
   const target = address.toLowerCase()
   const results: WalletTransaction[] = []
 
-  for (let offset = 0; offset < ETH_SCAN_MAX_BLOCKS && results.length < limit; offset += 1) {
-    const blockNumber = currentBlock - BigInt(offset)
-    if (blockNumber < 0n) break
+  // Scan in batches of 10 for efficiency
+  const batchSize = 10
+  for (let offset = 0; offset < ETH_SCAN_MAX_BLOCKS && results.length < limit; offset += batchSize) {
+    const from = currentBlock - BigInt(offset + batchSize - 1)
+    const to = currentBlock - BigInt(offset)
 
-    const block = await client.getBlock({
-      blockNumber,
-      includeTransactions: true,
-    })
-
-    for (const tx of block.transactions as Transaction[]) {
-      if (!tx.to || tx.value <= 0n) continue
-
-      const from = tx.from.toLowerCase()
-      const to = tx.to.toLowerCase()
-      if (from !== target && to !== target) continue
-
-      results.push({
-        hash: tx.hash,
-        asset: 'ETH',
-        direction: to === target ? 'received' : 'sent',
-        amount: formatEther(tx.value),
-        amountRaw: tx.value.toString(),
-        from: tx.from,
-        to: tx.to,
-        blockNumber: block.number.toString(),
-        timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
-        status: 'confirmed',
-        explorerUrl: getBaseTxUrl(tx.hash),
-        source: 'recent-native-scan',
+    try {
+      const block = await client.getBlock({
+        blockNumber: to,
+        includeTransactions: true,
       })
 
-      if (results.length >= limit) break
+      for (const tx of block.transactions as Transaction[]) {
+        if (!tx.to || tx.value <= 0n) continue
+        const fromAddr = tx.from.toLowerCase()
+        const toAddr = tx.to.toLowerCase()
+        if (fromAddr !== target && toAddr !== target) continue
+
+        results.push({
+          hash: tx.hash,
+          asset: 'ETH',
+          direction: toAddr === target ? 'received' : 'sent',
+          amount: formatEther(tx.value),
+          amountRaw: tx.value.toString(),
+          from: tx.from,
+          to: tx.to,
+          blockNumber: block.number.toString(),
+          timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+          status: 'confirmed',
+          explorerUrl: getBaseTxUrl(tx.hash),
+          source: 'recent-native-scan',
+        })
+        if (results.length >= limit) break
+      }
+    } catch {
+      // Skip failed block fetches
+      continue
     }
   }
 
@@ -88,6 +93,7 @@ export async function GET(request: Request) {
     const currentBlock = await client.getBlockNumber()
     const fromBlock = currentBlock > USDC_LOOKBACK_BLOCKS ? currentBlock - USDC_LOOKBACK_BLOCKS : 0n
 
+    // Run USDC logs and native scan in parallel
     const [incomingLogs, outgoingLogs, nativeTransactions] = await Promise.all([
       client.getLogs({
         address: BASE_USDC_ADDRESS,
@@ -95,14 +101,14 @@ export async function GET(request: Request) {
         args: { to: address },
         fromBlock,
         toBlock: currentBlock,
-      }),
+      }).catch(() => []),
       client.getLogs({
         address: BASE_USDC_ADDRESS,
         event: TRANSFER_EVENT,
         args: { from: address },
         fromBlock,
         toBlock: currentBlock,
-      }),
+      }).catch(() => []),
       getRecentNativeTransactions(address, limit),
     ])
 
@@ -115,11 +121,16 @@ export async function GET(request: Request) {
       })
       .slice(0, limit)
 
+    // Batch fetch block timestamps
     const blockNumbers = [...new Set(usdcLogs.map((log) => log.blockNumber.toString()))]
     const blocks = await Promise.all(
       blockNumbers.map(async (blockNumber) => {
-        const block = await client.getBlock({ blockNumber: BigInt(blockNumber) })
-        return [blockNumber, block] as const
+        try {
+          const block = await client.getBlock({ blockNumber: BigInt(blockNumber) })
+          return [blockNumber, block] as const
+        } catch {
+          return [blockNumber, null] as const
+        }
       })
     )
     const blockMap = new Map(blocks)
