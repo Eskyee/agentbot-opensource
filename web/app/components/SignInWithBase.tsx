@@ -1,6 +1,7 @@
-'use client';
-
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useConnect } from 'wagmi';
+import { base } from 'wagmi/chains';
+import { useCustomSession } from '@/app/lib/useCustomSession';
 import { useRouter } from 'next/navigation';
 
 interface SignInWithBaseProps {
@@ -10,117 +11,54 @@ interface SignInWithBaseProps {
 
 export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: SignInWithBaseProps) {
   const router = useRouter();
-  const [isSigningIn, setIsSigningIn] = useState(false);
+  const { connectAsync, connectors, isPending } = useConnect();
+  const { status } = useCustomSession();
   const [error, setError] = useState<string | null>(null);
-  const [provider, setProvider] = useState<any>(null);
-  const hasSignedRef = useRef(false);
 
-  // Load SDK on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const { createBaseAccountSDK } = await import('@base-org/account');
-        const sdk = createBaseAccountSDK({ appName: 'Agentbot' });
-        setProvider(sdk.getProvider());
-      } catch (e) {
-        console.error('Failed to load Base Account SDK:', e);
-      }
-    })();
-  }, []);
+  const preferredConnector = connectors.find((c) => c.id === 'coinbaseWalletSDK') ?? connectors[0];
 
   const handleSignIn = useCallback(async () => {
-    if (!provider || hasSignedRef.current) return;
-    hasSignedRef.current = true;
-    setIsSigningIn(true);
+    if (!preferredConnector) {
+      setError('No Base wallet connector available. Make sure Coinbase Wallet is installed.');
+      return;
+    }
     setError(null);
-
     try {
-      // 1. Get nonce from server
-      const nonceRes = await fetch('/api/auth/nonce');
-      const { nonce } = await nonceRes.json();
-
-      // 2. Switch to Base chain
-      await provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x2105' }], // Base Mainnet
-      });
-
-      // 3. Connect + SIWE in one step (official Base SDK)
-      const { accounts } = await provider.request({
-        method: 'wallet_connect',
-        params: [{
-          version: '1',
-          capabilities: {
-            signInWithEthereum: {
-              nonce,
-              chainId: '0x2105',
-            },
-          },
-        }],
-      });
-
-      const { address } = accounts[0];
-      const { message, signature } = accounts[0].capabilities.signInWithEthereum;
-
-      // 4. Verify on server
-      const verifyRes = await fetch('/api/wallet-auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, message, signature }),
-      });
-
-      const result = await verifyRes.json();
-      if (result?.ok) {
+      const result = await connectAsync({ connector: preferredConnector, chainId: base.id });
+      if (result?.accounts?.[0]) {
+        // Wallet connected — reload to pick up session
         window.location.href = callbackUrl;
-      } else {
-        setError(result?.error || 'Sign-in failed');
-        hasSignedRef.current = false;
       }
     } catch (err: any) {
-      // Fallback for wallets that don't support wallet_connect
-      if (err?.message?.includes('method_not_supported') || err?.code === -32601) {
-        try {
-          const { useAccount, useConnect, useSignMessage } = await import('wagmi');
-          // Wallet doesn't support wallet_connect — user needs to use email/Google instead
-          setError('Your wallet doesn\'t support Sign in with Base. Please use email or Google.');
-        } catch {
-          setError('Sign-in not supported. Please use email or Google.');
-        }
-      } else {
-        const msg = err instanceof Error ? err.message : 'Sign-in failed';
-        setError(msg);
-        onError?.(msg);
-      }
-      hasSignedRef.current = false;
-    } finally {
-      setIsSigningIn(false);
+      const msg = err instanceof Error ? err.message : 'Connection failed';
+      setError(msg);
+      onError?.(msg);
     }
-  }, [provider, callbackUrl, onError]);
+  }, [preferredConnector, connectAsync, callbackUrl, onError]);
 
   return (
     <div className="space-y-4">
-      {isSigningIn && (
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent mb-2" />
-          <p className="text-zinc-400 text-sm">Check your wallet to sign in...</p>
-        </div>
-      )}
       {error && (
         <div className="text-red-400 text-sm text-center p-3 bg-red-900/20 rounded-lg border border-red-800">
           {error}
-          <button onClick={() => { hasSignedRef.current = false; handleSignIn(); }} className="block mx-auto mt-2 text-xs text-orange-500 hover:text-orange-500">
+          <button onClick={() => setError(null)} className="block mx-auto mt-2 text-xs text-orange-500 hover:text-orange-400">
             Try again
           </button>
         </div>
       )}
       <button
         onClick={handleSignIn}
-        disabled={isSigningIn || !provider}
+        disabled={isPending || !preferredConnector}
         className="w-full bg-white hover:bg-zinc-100 text-black font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        <div className="w-4 h-4 bg-red-600 rounded-sm" />
-        Sign in with Base
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121L8.32 13.617l-2.96-.924c-.64-.203-.658-.64.135-.954l11.57-4.458c.538-.196 1.006.128.832.941z" fill="#0052FF"/>
+        </svg>
+        {isPending ? 'Connecting...' : 'Connect Base Wallet'}
       </button>
+      <p className="text-[10px] text-zinc-600 text-center">
+        Requires Coinbase Wallet extension or mobile app
+      </p>
     </div>
   );
 }
