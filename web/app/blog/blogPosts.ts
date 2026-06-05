@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'base-integration-sprint',
+    dateLabel: '5 Jun',
+    isoDate: '2026-06-05',
+    title: 'Base Integration Sprint: Free AI, NFT Wristbands, Token Swaps',
+    excerpt:
+      'In 48 hours we shipped: free daily AI for Base wallet users, ERC-721 wristband NFTs, CDP Trade API swaps, radio widget, and full Base ecosystem integration. 52 files, 4,318 lines, 32 commits.',
+    tags: ['Base', 'NFT', 'AI', 'Sprint'],
+    track: 'Shipping',
+  },
+  {
     slug: 'openclaw-security-in-public',
     dateLabel: '1 May',
     isoDate: '2026-05-01',
