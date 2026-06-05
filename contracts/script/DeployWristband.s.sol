@@ -2,7 +2,7 @@
 pragma solidity ^0.8.34;
 
 import "forge-std/Script.sol";
-import "../src/BaseFMDigitalWristband.sol";
+import "../BaseFMDigitalWristband.sol";
 
 contract DeployWristband is Script {
     function run() external {
