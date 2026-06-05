@@ -58,7 +58,7 @@ By Eskyee · RaveCulture · June 2026
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.34;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
@@ -184,7 +184,7 @@ contract BaseFMDigitalWristband is ERC721, ERC721URIStorage, Ownable, Reentrancy
 7. **Verify on BaseScan:**
    - Go to `basescan.org` → paste contract address
    - Click "Contract" → "Verify and Publish"
-   - Compiler: Solidity `0.8.20`
+   - Compiler     0.8.34+commit.80d5c536`
    - Optimization: Yes, 200 runs
    - Paste source code → Verify
 
@@ -193,7 +193,7 @@ contract BaseFMDigitalWristband is ERC721, ERC721URIStorage, Ownable, Reentrancy
 | Parameter | Value |
 |-----------|-------|
 | Network | Base Mainnet (Chain ID: 8453) |
-| Compiler | Solidity 0.8.20+ |
+| Compiler | Solidity 0.8.34+ |
 | Optimizer | Yes, 200 runs |
 | License | MIT |
 | Gas estimate | ~0.003 ETH (~$0.50 on Base) |

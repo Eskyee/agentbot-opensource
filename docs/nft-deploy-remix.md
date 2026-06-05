@@ -50,7 +50,7 @@ Explorer:         https://basescan.org
 ## Step 5: Compile the Contract
 
 1. Click the **Solidity Compiler** icon (left sidebar, 3rd icon)
-2. Set compiler version: **0.8.20+commit.a1b79de6**
+2. Set compiler version: **0.8.34+commit.80d5c536**
 3. Enable optimization: **Yes** (200 runs)
 4. Click **"Compile BaseFMDigitalWristband.sol"**
 5. Wait for ✅ green checkmark
@@ -58,7 +58,7 @@ Explorer:         https://basescan.org
 ### Compiler Settings
 
 ```
-Compiler:     0.8.20+commit.a1b79de6
+Compiler:     0.8.34+commit.80d5c536
 EVM Version:  default
 Optimization: Yes
 Runs:         200
@@ -179,7 +179,7 @@ Always verify on BaseScan before sharing.
 | Parameter | Value |
 |-----------|-------|
 | Network | Base Mainnet (Chain ID: 8453) |
-| Compiler | Solidity 0.8.20 |
+| Compiler | Solidity 0.8.34 |
 | Optimizer | Yes, 200 runs |
 | License | MIT |
 | Max Supply | 10,000 |
