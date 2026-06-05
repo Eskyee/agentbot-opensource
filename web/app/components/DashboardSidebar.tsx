@@ -33,7 +33,7 @@ export const navSections = [
     label: null,
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: '◈' },
-      { label: 'Chat', href: '/dashboard/chat', icon: '💬' },
+      { label: 'Chat', href: '/chat', icon: '💬' },
       { label: 'Search', href: '/search', icon: '⌕' },
     ],
   },
