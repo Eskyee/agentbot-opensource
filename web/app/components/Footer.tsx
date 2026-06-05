@@ -149,7 +149,7 @@ export default function Footer() {
             </span>
             <span className="text-zinc-800 text-[10px]">|</span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-800">
-              May 20, 2026 · 14 days ago
+              June 5, 2026 · Today
             </span>
             <span className="text-zinc-800 text-[10px]">|</span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-700">
