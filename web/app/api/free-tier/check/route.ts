@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { verifyMessage } from 'viem'
 
 const FREE_DAILY_LIMIT = 5
 
@@ -44,10 +45,22 @@ export async function GET(req: NextRequest) {
  * "use" increments the counter, "check" just reads
  */
 export async function POST(req: NextRequest) {
-  const { wallet, action } = await req.json()
+  const { wallet, action, message, signature } = await req.json()
 
   if (!wallet) {
     return NextResponse.json({ error: 'wallet required' }, { status: 400 })
+  }
+
+  // Verify wallet ownership via signature
+  if (message && signature) {
+    try {
+      const recovered = await verifyMessage({ message, signature })
+      if (recovered.toLowerCase() !== wallet.toLowerCase()) {
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+      }
+    } catch {
+      return NextResponse.json({ error: 'Signature verification failed' }, { status: 401 })
+    }
   }
 
   const today = new Date()

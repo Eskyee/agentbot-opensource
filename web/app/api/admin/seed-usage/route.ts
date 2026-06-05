@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   const { secret } = await req.json();
   
   // Simple auth
-  if (secret !== 'agentbot-seed-2026') {
+  if (secret !== process.env.ADMIN_SEED_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

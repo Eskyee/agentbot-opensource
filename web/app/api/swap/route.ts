@@ -46,6 +46,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'CDP not configured' }, { status: 500 });
   }
 
+  // Auth check for swap execution
+  if (action === 'swap') {
+    // TODO: Add session auth check when next-auth is configured
+    // For now, require walletAddress to be provided
+    if (!walletAddress) {
+      return NextResponse.json({ error: 'walletAddress required for swap' }, { status: 400 });
+    }
+  }
+
   try {
     // Dynamically import CDP SDK to avoid SSR issues
     const { CdpClient } = await import('@coinbase/cdp-sdk');
