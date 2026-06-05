@@ -28,7 +28,9 @@ export async function GET(request: NextRequest) {
   // Smoke test — no auth required (just pings Robinhood's servers)
   if (action === 'smoke-test') {
     const result = await smokeTestRobinhoodMcp()
-    return NextResponse.json(result)
+    return NextResponse.json(result, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+    })
   }
 
   // Everything else requires auth
