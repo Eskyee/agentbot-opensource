@@ -121,3 +121,14 @@ The underground creator layer lives at:
 ## License
 
 MIT
+
+---
+
+**Mirrored on [gitlawb](https://gitlawb.com/z6MkpUq1)** — decentralized content-addressed storage
+
+| | |
+|---|---|
+| **DID** | `did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY` |
+| **Node** | https://node.gitlawb.com |
+| **Repo** | `gitlawb://z6MkpUq1.../agentbot-opensource` |
+| **Mirrored** | Every push to `main` auto-syncs via gitlawb remote |
