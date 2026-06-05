@@ -59,17 +59,15 @@ export default function MarketingPage() {
       >
         <Link href="/" className="flex items-center gap-[10px] tracking-[0.06em]">
           <span
-            className="inline-block h-[14px] w-[14px] border"
-            className="mk-glyph"
+            className="inline-block h-[14px] w-[14px] border mk-glyph"
           >
             <span
-              className="absolute"
-              className="mk-glyph-inner"
+              className="absolute mk-glyph-inner"
             />
           </span>
           <span className="text-xs font-semibold tracking-[0.16em]">
             AGENTBOT<span className="mk-accent">.</span>
-            <span className="font-medium" className="mk-accent">
+            <span className="font-medium mk-accent" >
               OPS
             </span>
           </span>
@@ -80,8 +78,7 @@ export default function MarketingPage() {
             <a
               key={t}
               href={`#${t}`}
-              className="transition-colors hover:text-[var(--mk-ink)]"
-              className="mk-mute"
+              className="transition-colors hover:text-[var(--mk-ink)] mk-mute"
             >
               {t}
             </a>
@@ -104,8 +101,8 @@ export default function MarketingPage() {
       >
         {/* Left */}
         <div>
-          <div className={eyeCls} className="mk-mute">
-            <span className="inline-block h-[7px] w-[7px]" className="mk-dot mk-dot-accent" />
+          <div className={eyeCls + " mk-mute"}>
+            <span className="inline-block h-[7px] w-[7px] mk-dot mk-dot-accent"  />
             v04 · 2026.04.30 · UTC
           </div>
           <h1
@@ -118,8 +115,7 @@ export default function MarketingPage() {
             Operator&#8209;grade.
           </h1>
           <p
-            className="mb-7 max-w-[50ch] text-[15px] leading-[1.55]"
-            className="mk-ink-2"
+            className="mb-7 max-w-[50ch] text-[15px] leading-[1.55] mk-ink-2"
           >
             A private-cloud runtime for fleets of autonomous agents — with
             cryptographic identity, durable workflows, and a fact mirror you can
@@ -144,8 +140,7 @@ export default function MarketingPage() {
 
       {/* ── Strap ──────────────────────────────────────────────── */}
       <section
-        className="flex flex-wrap gap-[18px] border-b px-9 py-[14px] text-[10.5px] tracking-[0.22em] uppercase"
-        className="mk-card"
+        className="flex flex-wrap gap-[18px] border-b px-9 py-[14px] text-[10.5px] tracking-[0.22em] uppercase mk-card"
       >
         {['FACT-BASED BACKEND', '·', 'RAILWAY-NATIVE', '·', 'X402 GATEWAY', '·', 'DID IDENTITY', '·', 'MERKLE AUDIT', '·', 'EU · US · APAC'].map(
           (t, i) => (
@@ -157,10 +152,9 @@ export default function MarketingPage() {
       {/* ── Pillars ────────────────────────────────────────────── */}
       <section
         id="platform"
-        className="border-b px-9 py-20"
-        className="mk-border"
+        className="border-b px-9 py-20 mk-border"
       >
-        <div className={eyeCls} className="mk-accent">
+        <div className={eyeCls + " mk-accent"}>
           <span>▸</span> PLATFORM
         </div>
         <h2 className={`${sectionH} mt-[10px] mb-9`}>
@@ -197,30 +191,25 @@ export default function MarketingPage() {
           ].map((p) => (
             <article
               key={p.no}
-              className="flex flex-col gap-[10px] p-[32px_28px]"
-              className="mk-bg"
+              className="flex flex-col gap-[10px] p-[32px_28px] mk-bg"
             >
               <div
-                className="text-[10.5px] tracking-[0.18em]"
-                className="mk-mute"
+                className="text-[10.5px] tracking-[0.18em] mk-mute"
               >
                 {p.no}
               </div>
               <h3
-                className="text-xl font-medium tracking-[-0.01em]"
-                className="mk-ink"
+                className="text-xl font-medium tracking-[-0.01em] mk-ink"
               >
                 {p.title}
               </h3>
               <p
-                className="text-[13px] leading-[1.55] max-w-[38ch]"
-                className="mk-ink-2"
+                className="text-[13px] leading-[1.55] max-w-[38ch] mk-ink-2"
               >
                 {p.desc}
               </p>
               <div
-                className="mt-[10px] flex flex-wrap gap-2 text-[10px] tracking-[0.14em] uppercase"
-                className="mk-mute"
+                className="mt-[10px] flex flex-wrap gap-2 text-[10px] tracking-[0.14em] uppercase mk-mute"
               >
                 {p.tags.map((t) => (
                   <span key={t}>{t}</span>
@@ -238,15 +227,14 @@ export default function MarketingPage() {
         style={{ gridTemplateColumns: '1fr 1fr', borderColor: c.line }}
       >
         <div>
-          <div className={eyeCls} className="mk-accent">
+          <div className={eyeCls + " mk-accent"}>
             <span>▸</span> RUNTIME
           </div>
           <h2 className={`${sectionH} mt-[10px] mb-9`}>
             Built for operators, not demos.
           </h2>
           <p
-            className="max-w-[46ch] text-sm leading-[1.55]"
-            className="mk-ink-2"
+            className="max-w-[46ch] text-sm leading-[1.55] mk-ink-2"
           >
             The console is the product. Watch fleets in real time, scrub workflow
             timelines, verify facts against root, decommission a node without
@@ -269,11 +257,10 @@ export default function MarketingPage() {
                 }}
               >
                 <span
-                  className="mt-[5px] inline-block h-2 w-2"
-                  className="mk-dot mk-dot-accent"
+                  className="mt-[5px] inline-block h-2 w-2 mk-dot mk-dot-accent"
                 />
                 <span>
-                  <span className="font-medium" className="mk-ink">
+                  <span className="font-medium mk-ink" >
                     {f.b}
                   </span>{' '}
                   — {f.t}
@@ -284,16 +271,14 @@ export default function MarketingPage() {
         </div>
         <div>
           <table
-            className="w-full border-collapse border text-[12.5px]"
-            className="mk-card"
+            className="w-full border-collapse border text-[12.5px] mk-card"
           >
             <thead>
               <tr>
                 {['component', 'spec'].map((h) => (
                   <th
                     key={h}
-                    className="border-b px-4 py-3 text-left font-normal text-[9.5px] tracking-[0.18em] uppercase"
-                    className="mk-spec-row"
+                    className="border-b px-4 py-3 text-left font-normal text-[9.5px] tracking-[0.18em] uppercase mk-spec-row"
                   >
                     {h}
                   </th>
@@ -345,10 +330,9 @@ export default function MarketingPage() {
       {/* ── Proof ──────────────────────────────────────────────── */}
       <section
         id="proof"
-        className="border-b px-9 py-20"
-        className="mk-border"
+        className="border-b px-9 py-20 mk-border"
       >
-        <div className={eyeCls} className="mk-accent">
+        <div className={eyeCls + " mk-accent"}>
           <span>▸</span> PROOF
         </div>
         <h2 className={`${sectionH} mt-[10px] mb-9`}>
@@ -364,10 +348,9 @@ export default function MarketingPage() {
           }}
         >
           {/* Card 1 */}
-          <div className="p-[18px]" className="mk-bg-1">
+          <div className="p-[18px] mk-bg-1" >
             <pre
-              className="m-0 whitespace-pre-wrap font-[family-name:var(--mk-mono)] text-[11.5px] leading-[1.5]"
-              className="mk-ink-2"
+              className="m-0 whitespace-pre-wrap font-[family-name:var(--mk-mono)] text-[11.5px] leading-[1.5] mk-ink-2"
             >
               {`$ agentbot fact verify tx/L-7f3a…`}
               {'\n'}
@@ -382,10 +365,9 @@ export default function MarketingPage() {
             </pre>
           </div>
           {/* Card 2 */}
-          <div className="p-[18px]" className="mk-bg-1">
+          <div className="p-[18px] mk-bg-1" >
             <pre
-              className="m-0 whitespace-pre-wrap font-[family-name:var(--mk-mono)] text-[11.5px] leading-[1.5]"
-              className="mk-ink-2"
+              className="m-0 whitespace-pre-wrap font-[family-name:var(--mk-mono)] text-[11.5px] leading-[1.5] mk-ink-2"
             >
               {`$ agentbot node pause settler-12 --drain`}
               {'\n'}
@@ -397,10 +379,9 @@ export default function MarketingPage() {
             </pre>
           </div>
           {/* Card 3 */}
-          <div className="p-[18px]" className="mk-bg-1">
+          <div className="p-[18px] mk-bg-1" >
             <pre
-              className="m-0 whitespace-pre-wrap font-[family-name:var(--mk-mono)] text-[11.5px] leading-[1.5]"
-              className="mk-ink-2"
+              className="m-0 whitespace-pre-wrap font-[family-name:var(--mk-mono)] text-[11.5px] leading-[1.5] mk-ink-2"
             >
               {`$ agentbot audit tail --since 1m\n14:08:21z  scout-04     intake.signed  ok\n14:08:22z  settler-12   tool.call      ok\n14:08:23z  courier-22   advisory      `}
               <span className="mk-warn">mem 92%</span>
@@ -412,15 +393,14 @@ export default function MarketingPage() {
 
       {/* ── Footer CTA ─────────────────────────────────────────── */}
       <section
-        className="border-b px-9 py-20 text-left"
-        className="mk-border"
+        className="border-b px-9 py-20 text-left mk-border"
       >
         <h2
           className="font-[family-name:var(--mk-mono)] text-[clamp(36px,5vw,56px)] font-medium tracking-[-0.02em] mb-3"
         >
           Open the console.
         </h2>
-        <p className="mb-7 text-sm" className="mk-ink-2">
+        <p className="mb-7 text-sm mk-ink-2" >
           Bring your DIDs, your skills, your policies. Or start with the
           archetypes.
         </p>
@@ -439,16 +419,14 @@ export default function MarketingPage() {
 
       {/* ── Footer ─────────────────────────────────────────────── */}
       <footer
-        className="flex items-center justify-between px-9 py-[22px] text-[10.5px] tracking-[0.06em]"
-        className="mk-mute"
+        className="flex items-center justify-between px-9 py-[22px] text-[10.5px] tracking-[0.06em] mk-mute"
       >
         <div>
           <span
-            className="mr-2 tracking-[0.18em]"
-            className="mk-ink-2"
+            className="mr-2 tracking-[0.18em] mk-ink-2"
           >
             AGENTBOT
-            <span className="font-medium" className="mk-accent">
+            <span className="font-medium mk-accent" >
               .OPS
             </span>
           </span>
@@ -477,17 +455,15 @@ function MiniConsole() {
 
   return (
     <div
-      className="border font-[family-name:var(--mk-mono)] text-xs"
-      className="mk-console"
+      className="border font-[family-name:var(--mk-mono)] text-xs mk-console"
     >
       {/* Bar */}
       <div
-        className="flex items-center gap-[6px] border-b px-[14px] py-2 text-[10.5px] tracking-[0.04em]"
-        className="mk-card-dark"
+        className="flex items-center gap-[6px] border-b px-[14px] py-2 text-[10.5px] tracking-[0.04em] mk-card-dark"
       >
-        <span className="inline-block h-[9px] w-[9px] border" className="mk-border" />
-        <span className="inline-block h-[9px] w-[9px] border" className="mk-border" />
-        <span className="inline-block h-[9px] w-[9px] border" className="mk-border" />
+        <span className="inline-block h-[9px] w-[9px] border mk-border"  />
+        <span className="inline-block h-[9px] w-[9px] border mk-border"  />
+        <span className="inline-block h-[9px] w-[9px] border mk-border"  />
         <span className="ml-[10px]">
           agentbot — settler-12 — wf_swap_0214
         </span>
@@ -511,7 +487,7 @@ function MiniConsole() {
                   : {}),
             }}
           >
-            <span className="text-[10.5px]" className="mk-mute">
+            <span className="text-[10.5px] mk-mute" >
               {l.t}
             </span>
             <span
@@ -543,8 +519,7 @@ function MiniConsole() {
               )}
             </span>
             <span
-              className="text-right text-[10.5px] tabular-nums"
-              className="mk-ink-2"
+              className="text-right text-[10.5px] tabular-nums mk-ink-2"
             >
               {l.ms}
             </span>
@@ -554,8 +529,7 @@ function MiniConsole() {
 
       {/* Footer */}
       <div
-        className="flex gap-[10px] border-t px-[14px] py-2 text-[10.5px]"
-        className="mk-card-dark"
+        className="flex gap-[10px] border-t px-[14px] py-2 text-[10.5px] mk-card-dark"
       >
         <span>
           SignatureGuard{' '}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
-import { verifyMessage } from 'viem'
+import { recoverMessageAddress } from 'viem'
 
 const FREE_DAILY_LIMIT = 5
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   // Verify wallet ownership via signature
   if (message && signature) {
     try {
-      const recovered = await verifyMessage({ message, signature })
+      const recovered = await recoverMessageAddress({ message, signature })
       if (recovered.toLowerCase() !== wallet.toLowerCase()) {
         return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
       }
