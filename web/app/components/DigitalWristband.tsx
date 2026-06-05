@@ -1,9 +1,8 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAccount, useWalletClient, useConnect } from 'wagmi';
+import { useAccount, useWalletClient, useConnect, useDisconnect } from 'wagmi';
 import { createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
-import { useCustomSession } from '@/app/lib/useCustomSession';
 
 const publicClient = createPublicClient({
   chain: base,
@@ -13,8 +12,8 @@ const publicClient = createPublicClient({
 export default function DigitalWristband() {
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
-  const { connectors, connect } = useConnect();
-  const { data: session, status: authStatus } = useCustomSession();
+  const { connectors, connect, isPending } = useConnect();
+  const { disconnect } = useDisconnect();
 
   const [hasWristband, setHasWristband] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,53 +21,94 @@ export default function DigitalWristband() {
   const [minted, setMinted] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [manualAddress, setManualAddress] = useState<string | null>(null);
 
-  const isLoggedIn = authStatus === 'authenticated' && session?.user;
+  // Use connected address or manual detection
+  const walletAddress = address || manualAddress;
+  const userConnected = isConnected || !!manualAddress;
+
+  // Try to detect Coinbase Wallet directly
+  useEffect(() => {
+    const detectWallet = async () => {
+      if (isConnected) return;
+      try {
+        if (typeof window !== 'undefined' && (window as any).ethereum) {
+          const accounts = await (window as any).ethereum.request({ method: 'eth_accounts' });
+          if (accounts && accounts.length > 0) {
+            setManualAddress(accounts[0]);
+          }
+        }
+      } catch {}
+    };
+    detectWallet();
+  }, [isConnected]);
 
   const checkWristband = useCallback(async () => {
-    if (!address) return;
+    if (!walletAddress) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/wristband/verify?address=${address}`);
+      const res = await fetch(`/api/wristband/verify?address=${walletAddress}`);
       const data = await res.json();
       setHasWristband(data.hasWristband);
     } catch (e) {
       console.error(e);
     }
     setLoading(false);
-  }, [address]);
+  }, [walletAddress]);
 
   useEffect(() => {
-    if (address) checkWristband();
-  }, [address, checkWristband]);
+    if (walletAddress) checkWristband();
+  }, [walletAddress, checkWristband]);
 
   const handleMint = async () => {
-    if (!address || !walletClient) return;
+    if (!walletAddress) return;
     setMinting(true);
     setError(null);
     try {
       const res = await fetch('/api/wristband/mint', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress: address }),
+        body: JSON.stringify({ walletAddress }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Failed to prepare mint');
 
-      const hash = await walletClient.sendTransaction({
-        to: data.contract as `0x${string}`,
-        data: data.calldata as `0x${string}`,
-        account: address,
-        chain: base,
-      });
-      setTxHash(hash);
-
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      if (receipt.status === 'success') {
-        setMinted(true);
-        setHasWristband(true);
+      // If wallet client available, use it. Otherwise prompt via window.ethereum
+      if (walletClient) {
+        const hash = await walletClient.sendTransaction({
+          to: data.contract as `0x${string}`,
+          data: data.calldata as `0x${string}`,
+          account: walletAddress as `0x${string}`,
+          chain: base,
+        });
+        setTxHash(hash);
+        const receipt = await publicClient.waitForTransactionReceipt({ hash });
+        if (receipt.status === 'success') {
+          setMinted(true);
+          setHasWristband(true);
+        } else {
+          setError('Transaction failed onchain');
+        }
+      } else if ((window as any).ethereum) {
+        const hash = await (window as any).ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: walletAddress,
+            to: data.contract,
+            data: data.calldata,
+            chainId: '0x2105', // Base chain ID
+          }],
+        });
+        setTxHash(hash);
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: hash });
+        if (receipt.status === 'success') {
+          setMinted(true);
+          setHasWristband(true);
+        } else {
+          setError('Transaction failed onchain');
+        }
       } else {
-        setError('Transaction failed onchain');
+        throw new Error('No wallet detected');
       }
     } catch (e: any) {
       console.error('Mint error:', e);
@@ -78,96 +118,62 @@ export default function DigitalWristband() {
     }
   };
 
-  const handleConnectWallet = () => {
-    const cbWallet = connectors.find(c => c.id === 'coinbaseWallet');
-    if (cbWallet) {
-      connect({ connector: cbWallet });
+  const handleConnect = async () => {
+    // Try wagmi connectors first
+    const cbConnector = connectors.find(c => c.id === 'coinbaseWallet');
+    if (cbConnector) {
+      try {
+        await connect({ connector: cbConnector });
+        return;
+      } catch {}
+    }
+    // Fallback to window.ethereum
+    try {
+      if ((window as any).ethereum) {
+        const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts.length > 0) {
+          setManualAddress(accounts[0]);
+        }
+      }
+    } catch (e: any) {
+      setError('Could not connect wallet. Please open Coinbase Wallet.');
     }
   };
 
-  // State 1: Not connected, not logged in
-  if (!isConnected && !isLoggedIn) {
+  // State: Not connected
+  if (!userConnected) {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800 text-white">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-3 h-3 rounded-full bg-zinc-600" />
+          <div className="w-3 h-3 rounded-full bg-zinc-600 animate-pulse" />
           <span className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
             Connect Wallet
           </span>
         </div>
         <p className="text-zinc-400 text-sm mb-5">
-          Sign in or connect your wallet to get your digital wristband.
+          Connect your wallet to check wristband status or mint.
         </p>
-        <div className="space-y-3">
-          <button
-            onClick={() => window.location.href = '/login'}
-            className="w-full py-3 bg-white text-black rounded-lg font-mono text-sm font-bold hover:bg-zinc-200 transition-colors"
-          >
-            Sign In with Email
-          </button>
-          <button
-            onClick={handleConnectWallet}
-            className="w-full py-3 bg-[#0052FF] hover:bg-[#0043CC] text-white rounded-lg font-mono text-sm font-bold transition-colors flex items-center justify-center gap-2"
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="white">
-              <circle cx="12" cy="12" r="12" fill="#0052FF"/>
-              <circle cx="8.5" cy="10" r="2" fill="white"/>
-              <circle cx="15.5" cy="10" r="2" fill="white"/>
-              <circle cx="12" cy="15.5" r="2" fill="white"/>
-            </svg>
-            Connect Base Wallet
-          </button>
-        </div>
+        <button
+          onClick={handleConnect}
+          disabled={isPending}
+          className="w-full py-3 bg-[#0052FF] hover:bg-[#0043CC] disabled:bg-zinc-700 text-white rounded-lg font-mono text-sm font-bold transition-colors flex items-center justify-center gap-2"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+            <circle cx="12" cy="12" r="11" fill="#0052FF" stroke="white" strokeWidth="1"/>
+            <circle cx="8.5" cy="10" r="1.5" fill="white"/>
+            <circle cx="15.5" cy="10" r="1.5" fill="white"/>
+            <circle cx="12" cy="15" r="1.5" fill="white"/>
+          </svg>
+          {isPending ? 'Connecting...' : 'Connect Coinbase Wallet'}
+        </button>
         <p className="text-xs text-zinc-600 text-center mt-3">
-          New to crypto? Sign in with email — we&apos;ll set up a wallet for you.
+          Works with Coinbase Wallet, MetaMask, or any Base-compatible wallet
         </p>
       </div>
     );
   }
 
-  // State 2: Logged in via email but no wallet connected
-  if (isLoggedIn && !isConnected) {
-    return (
-      <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800 text-white">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-3 h-3 rounded-full bg-green-500" />
-          <span className="text-xs font-mono text-green-500 uppercase tracking-wider">
-            Signed In as {session?.user?.name || session?.user?.email?.split('@')[0]}
-          </span>
-        </div>
-        <p className="text-zinc-400 text-sm mb-5">
-          Connect your Base wallet to mint your digital wristband onchain.
-        </p>
-        <div className="space-y-3">
-          <button
-            onClick={handleConnectWallet}
-            className="w-full py-3 bg-[#0052FF] hover:bg-[#0043CC] text-white rounded-lg font-mono text-sm font-bold transition-colors flex items-center justify-center gap-2"
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="white">
-              <circle cx="12" cy="12" r="12" fill="#0052FF"/>
-              <circle cx="8.5" cy="10" r="2" fill="white"/>
-              <circle cx="15.5" cy="10" r="2" fill="white"/>
-              <circle cx="12" cy="15.5" r="2" fill="white"/>
-            </svg>
-            Connect Base Wallet
-          </button>
-          <a
-            href="https://keys.coinbase.com/freecrypto"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg font-mono text-sm text-center transition-colors"
-          >
-            Get a Base Wallet →
-          </a>
-        </div>
-        <p className="text-xs text-zinc-600 text-center mt-3">
-          Don&apos;t have a wallet? Get one free from Coinbase.
-        </p>
-      </div>
-    );
-  }
-
-  // State 3: Wallet connected, checking status
+  // State: Checking
   if (loading) {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800 text-white">
@@ -181,7 +187,7 @@ export default function DigitalWristband() {
     );
   }
 
-  // State 4: Has wristband
+  // State: Has wristband
   if (hasWristband && !minted) {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border-2 border-orange-500/50 text-white">
@@ -193,7 +199,7 @@ export default function DigitalWristband() {
             </span>
           </div>
           <span className="text-xs font-mono text-zinc-500">
-            #{address?.slice(0, 6)}...{address?.slice(-4)}
+            #{walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
           </span>
         </div>
         <div className="space-y-2">
@@ -206,21 +212,27 @@ export default function DigitalWristband() {
             <span className="text-white font-mono">BASE</span>
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-zinc-800">
+        <div className="mt-4 pt-4 border-t border-zinc-800 flex gap-3">
           <a
-            href={`https://basescan.org/token/0x66519FCAee1Ed65bc9e0aCc25cCD900668D3eD49?a=${address}`}
+            href={`https://basescan.org/token/0x66519FCAee1Ed65bc9e0aCc25cCD900668D3eD49?a=${walletAddress}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="block text-center text-xs text-zinc-500 hover:text-orange-500 transition-colors"
+            className="flex-1 text-center text-xs text-zinc-500 hover:text-orange-500 transition-colors py-2"
           >
             View on BaseScan →
           </a>
+          <button
+            onClick={() => disconnect()}
+            className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors py-2"
+          >
+            Disconnect
+          </button>
         </div>
       </div>
     );
   }
 
-  // State 5: Just minted
+  // State: Just minted
   if (minted && txHash) {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border-2 border-green-500/50 text-white">
@@ -245,13 +257,18 @@ export default function DigitalWristband() {
     );
   }
 
-  // State 6: Wallet connected, no wristband — ready to mint
+  // State: Ready to mint
   return (
     <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800 text-white">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-3 h-3 rounded-full bg-zinc-600" />
-        <span className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
-          No Wristband
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded-full bg-zinc-600" />
+          <span className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
+            No Wristband
+          </span>
+        </div>
+        <span className="text-xs font-mono text-zinc-600">
+          {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
         </span>
       </div>
       <p className="text-zinc-400 text-sm mb-4">
@@ -277,8 +294,14 @@ export default function DigitalWristband() {
         )}
       </button>
       <p className="text-xs text-zinc-600 text-center mt-3">
-        Gas sponsored by CDP Paymaster • ERC-721 • Base
+        ERC-721 • Base • Gas ~$0.001
       </p>
+      <button
+        onClick={() => disconnect()}
+        className="w-full mt-3 py-2 text-zinc-600 hover:text-zinc-400 text-xs font-mono transition-colors"
+      >
+        Disconnect Wallet
+      </button>
     </div>
   );
 }

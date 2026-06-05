@@ -5,7 +5,7 @@ import { base as baseChain } from "viem/chains";
 import { coinbaseWallet } from "wagmi/connectors";
 import { Attribution } from "ox/erc8021";
 
-const BUILDER_CODE = 'bc_i334o8qy'
+const BUILDER_CODE = 'bc_4k0319ta'
 
 const DATA_SUFFIX = Attribution.toDataSuffix({
   codes: [BUILDER_CODE],
@@ -21,7 +21,7 @@ export const wagmiConfig = createConfig({
   connectors: [
     coinbaseWallet({
       appName: 'Agentbot',
-      preference: 'smartWalletOnly',
+      preference: 'eoaOnly',
     }),
   ],
   transports: {
