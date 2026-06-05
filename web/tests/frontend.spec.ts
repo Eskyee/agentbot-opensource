@@ -1,4 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
+import { attachNetworkCapture } from 'postman-playwright';
+const test = attachNetworkCapture(base);
 
 // These tests run against `BASE_URL` (defaults to http://localhost:3000 from
 // playwright.config.ts). In CI we boot `next start` against a stub Postgres

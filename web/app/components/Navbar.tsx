@@ -69,6 +69,7 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
+              <NavLink href="/search" current={pathname}>Search</NavLink>
               <NavLink href="/chat" current={pathname}>Chat</NavLink>
               <NavLink href="/credits" current={pathname}>Credits</NavLink>
               <NavLink href="/playground" current={pathname}>Playground</NavLink>

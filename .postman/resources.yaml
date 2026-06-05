@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: add11aac-6351-4923-854f-2a5ef6c79113
+
+localResources:
+  collections:
+    - ../agentbot-api.postman_collection.json

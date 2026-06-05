@@ -1,4 +1,6 @@
-import { expect, test } from '@playwright/test'
+import { test as base, expect } from '@playwright/test';
+import { attachNetworkCapture } from 'postman-playwright';
+const test = attachNetworkCapture(base);
 
 const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3007'
 const shouldRun = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/i.test(baseUrl)

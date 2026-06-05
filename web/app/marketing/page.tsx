@@ -55,27 +55,21 @@ export default function MarketingPage() {
       `}</style>
       {/* ── Header ─────────────────────────────────────────────── */}
       <header
-        className="mk-top sticky top-0 z-10 grid items-center gap-6 border-b px-9 py-[18px]"
-        style={{
-          gridTemplateColumns: 'auto 1fr auto',
-          borderColor: c.line,
-          background: 'rgba(0,0,0,0.92)',
-          backdropFilter: 'blur(6px)',
-        }}
+        className="mk-top sticky top-0 z-10 grid items-center gap-6 border-b px-9 py-[18px] mk-header-grid"
       >
         <Link href="/" className="flex items-center gap-[10px] tracking-[0.06em]">
           <span
             className="inline-block h-[14px] w-[14px] border"
-            style={{ borderColor: c.accent, position: 'relative' }}
+            className="mk-glyph"
           >
             <span
               className="absolute"
-              style={{ inset: 2, background: c.accent }}
+              className="mk-glyph-inner"
             />
           </span>
           <span className="text-xs font-semibold tracking-[0.16em]">
-            AGENTBOT<span style={{ color: c.accent }}>.</span>
-            <span className="font-medium" style={{ color: c.accent }}>
+            AGENTBOT<span className="mk-accent">.</span>
+            <span className="font-medium" className="mk-accent">
               OPS
             </span>
           </span>
@@ -87,7 +81,7 @@ export default function MarketingPage() {
               key={t}
               href={`#${t}`}
               className="transition-colors hover:text-[var(--mk-ink)]"
-              style={{ color: c.mute }}
+              className="mk-mute"
             >
               {t}
             </a>
@@ -106,23 +100,12 @@ export default function MarketingPage() {
 
       {/* ── Hero ───────────────────────────────────────────────── */}
       <section
-        className="grid gap-12 border-b px-9 pb-16 pt-20"
-        style={{
-          gridTemplateColumns: '1.05fr 1fr',
-          borderColor: c.line,
-          backgroundImage: `
-            linear-gradient(transparent 0, transparent calc(100% - 1px), ${c.lineSoft} 100%),
-            linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), ${c.lineSoft} 100%)
-          `,
-          backgroundSize: '40px 40px',
-          backgroundPosition: '0 0',
-          backgroundColor: c.bg,
-        }}
+        className="grid gap-12 border-b px-9 pb-16 pt-20 mk-hero-grid"
       >
         {/* Left */}
         <div>
-          <div className={eyeCls} style={{ color: c.mute }}>
-            <span className="inline-block h-[7px] w-[7px]" style={{ background: c.accent }} />
+          <div className={eyeCls} className="mk-mute">
+            <span className="inline-block h-[7px] w-[7px]" className="mk-dot mk-dot-accent" />
             v04 · 2026.04.30 · UTC
           </div>
           <h1
@@ -130,13 +113,13 @@ export default function MarketingPage() {
           >
             Autonomous agents.
             <br />
-            <span style={{ color: c.accent }}>Verifiable</span> state.
+            <span className="mk-accent">Verifiable</span> state.
             <br />
             Operator&#8209;grade.
           </h1>
           <p
             className="mb-7 max-w-[50ch] text-[15px] leading-[1.55]"
-            style={{ color: c.ink2 }}
+            className="mk-ink-2"
           >
             A private-cloud runtime for fleets of autonomous agents — with
             cryptographic identity, durable workflows, and a fact mirror you can
@@ -162,7 +145,7 @@ export default function MarketingPage() {
       {/* ── Strap ──────────────────────────────────────────────── */}
       <section
         className="flex flex-wrap gap-[18px] border-b px-9 py-[14px] text-[10.5px] tracking-[0.22em] uppercase"
-        style={{ borderColor: c.line, background: c.bg1, color: c.mute }}
+        className="mk-card"
       >
         {['FACT-BASED BACKEND', '·', 'RAILWAY-NATIVE', '·', 'X402 GATEWAY', '·', 'DID IDENTITY', '·', 'MERKLE AUDIT', '·', 'EU · US · APAC'].map(
           (t, i) => (
@@ -175,9 +158,9 @@ export default function MarketingPage() {
       <section
         id="platform"
         className="border-b px-9 py-20"
-        style={{ borderColor: c.line }}
+        className="mk-border"
       >
-        <div className={eyeCls} style={{ color: c.accent }}>
+        <div className={eyeCls} className="mk-accent">
           <span>▸</span> PLATFORM
         </div>
         <h2 className={`${sectionH} mt-[10px] mb-9`}>
@@ -215,29 +198,29 @@ export default function MarketingPage() {
             <article
               key={p.no}
               className="flex flex-col gap-[10px] p-[32px_28px]"
-              style={{ background: c.bg }}
+              className="mk-bg"
             >
               <div
                 className="text-[10.5px] tracking-[0.18em]"
-                style={{ color: c.mute }}
+                className="mk-mute"
               >
                 {p.no}
               </div>
               <h3
                 className="text-xl font-medium tracking-[-0.01em]"
-                style={{ color: c.ink }}
+                className="mk-ink"
               >
                 {p.title}
               </h3>
               <p
                 className="text-[13px] leading-[1.55] max-w-[38ch]"
-                style={{ color: c.ink2 }}
+                className="mk-ink-2"
               >
                 {p.desc}
               </p>
               <div
                 className="mt-[10px] flex flex-wrap gap-2 text-[10px] tracking-[0.14em] uppercase"
-                style={{ color: c.mute }}
+                className="mk-mute"
               >
                 {p.tags.map((t) => (
                   <span key={t}>{t}</span>
@@ -255,7 +238,7 @@ export default function MarketingPage() {
         style={{ gridTemplateColumns: '1fr 1fr', borderColor: c.line }}
       >
         <div>
-          <div className={eyeCls} style={{ color: c.accent }}>
+          <div className={eyeCls} className="mk-accent">
             <span>▸</span> RUNTIME
           </div>
           <h2 className={`${sectionH} mt-[10px] mb-9`}>
@@ -263,7 +246,7 @@ export default function MarketingPage() {
           </h2>
           <p
             className="max-w-[46ch] text-sm leading-[1.55]"
-            style={{ color: c.ink2 }}
+            className="mk-ink-2"
           >
             The console is the product. Watch fleets in real time, scrub workflow
             timelines, verify facts against root, decommission a node without
@@ -287,10 +270,10 @@ export default function MarketingPage() {
               >
                 <span
                   className="mt-[5px] inline-block h-2 w-2"
-                  style={{ background: c.accent }}
+                  className="mk-dot mk-dot-accent"
                 />
                 <span>
-                  <span className="font-medium" style={{ color: c.ink }}>
+                  <span className="font-medium" className="mk-ink">
                     {f.b}
                   </span>{' '}
                   — {f.t}
@@ -302,7 +285,7 @@ export default function MarketingPage() {
         <div>
           <table
             className="w-full border-collapse border text-[12.5px]"
-            style={{ borderColor: c.line, background: c.bg1 }}
+            className="mk-card"
           >
             <thead>
               <tr>
@@ -310,7 +293,7 @@ export default function MarketingPage() {
                   <th
                     key={h}
                     className="border-b px-4 py-3 text-left font-normal text-[9.5px] tracking-[0.18em] uppercase"
-                    style={{ borderColor: c.line, color: c.mute }}
+                    className="mk-spec-row"
                   >
                     {h}
                   </th>
@@ -363,9 +346,9 @@ export default function MarketingPage() {
       <section
         id="proof"
         className="border-b px-9 py-20"
-        style={{ borderColor: c.line }}
+        className="mk-border"
       >
-        <div className={eyeCls} style={{ color: c.accent }}>
+        <div className={eyeCls} className="mk-accent">
           <span>▸</span> PROOF
         </div>
         <h2 className={`${sectionH} mt-[10px] mb-9`}>
@@ -381,46 +364,46 @@ export default function MarketingPage() {
           }}
         >
           {/* Card 1 */}
-          <div className="p-[18px]" style={{ background: c.bg1 }}>
+          <div className="p-[18px]" className="mk-bg-1">
             <pre
               className="m-0 whitespace-pre-wrap font-[family-name:var(--mk-mono)] text-[11.5px] leading-[1.5]"
-              style={{ color: c.ink2 }}
+              className="mk-ink-2"
             >
               {`$ agentbot fact verify tx/L-7f3a…`}
               {'\n'}
-              <span style={{ color: c.accent }}>→</span>
+              <span className="mk-accent">→</span>
               {' leaf  0x9c1f…ae72\n'}
-              <span style={{ color: c.accent }}>→</span>
+              <span className="mk-accent">→</span>
               {' proof 3 sibling hashes\n'}
-              <span style={{ color: c.accent }}>→</span>
+              <span className="mk-accent">→</span>
               {' root  0xaa61…f1e0\n'}
-              <span style={{ color: c.ok }}>✓ verified</span>
+              <span className="mk-ok">✓ verified</span>
               {'  signed by did:key:z6Mk…1F2a'}
             </pre>
           </div>
           {/* Card 2 */}
-          <div className="p-[18px]" style={{ background: c.bg1 }}>
+          <div className="p-[18px]" className="mk-bg-1">
             <pre
               className="m-0 whitespace-pre-wrap font-[family-name:var(--mk-mono)] text-[11.5px] leading-[1.5]"
-              style={{ color: c.ink2 }}
+              className="mk-ink-2"
             >
               {`$ agentbot node pause settler-12 --drain`}
               {'\n'}
-              <span style={{ color: c.accent }}>draining…</span>
+              <span className="mk-accent">draining…</span>
               {' 11 → 6 → 2 → 0\n'}
-              <span style={{ color: c.ok }}>paused</span>
+              <span className="mk-ok">paused</span>
               {' facts committed=11  open=0\n'}
               {'       state=parked  resume=safe'}
             </pre>
           </div>
           {/* Card 3 */}
-          <div className="p-[18px]" style={{ background: c.bg1 }}>
+          <div className="p-[18px]" className="mk-bg-1">
             <pre
               className="m-0 whitespace-pre-wrap font-[family-name:var(--mk-mono)] text-[11.5px] leading-[1.5]"
-              style={{ color: c.ink2 }}
+              className="mk-ink-2"
             >
               {`$ agentbot audit tail --since 1m\n14:08:21z  scout-04     intake.signed  ok\n14:08:22z  settler-12   tool.call      ok\n14:08:23z  courier-22   advisory      `}
-              <span style={{ color: c.warn }}>mem 92%</span>
+              <span className="mk-warn">mem 92%</span>
               {'\n14:08:24z  auditor-07   verify         ok'}
             </pre>
           </div>
@@ -430,14 +413,14 @@ export default function MarketingPage() {
       {/* ── Footer CTA ─────────────────────────────────────────── */}
       <section
         className="border-b px-9 py-20 text-left"
-        style={{ borderColor: c.line }}
+        className="mk-border"
       >
         <h2
           className="font-[family-name:var(--mk-mono)] text-[clamp(36px,5vw,56px)] font-medium tracking-[-0.02em] mb-3"
         >
           Open the console.
         </h2>
-        <p className="mb-7 text-sm" style={{ color: c.ink2 }}>
+        <p className="mb-7 text-sm" className="mk-ink-2">
           Bring your DIDs, your skills, your policies. Or start with the
           archetypes.
         </p>
@@ -457,19 +440,19 @@ export default function MarketingPage() {
       {/* ── Footer ─────────────────────────────────────────────── */}
       <footer
         className="flex items-center justify-between px-9 py-[22px] text-[10.5px] tracking-[0.06em]"
-        style={{ color: c.mute }}
+        className="mk-mute"
       >
         <div>
           <span
             className="mr-2 tracking-[0.18em]"
-            style={{ color: c.ink2 }}
+            className="mk-ink-2"
           >
             AGENTBOT
-            <span className="font-medium" style={{ color: c.accent }}>
+            <span className="font-medium" className="mk-accent">
               .OPS
             </span>
           </span>
-          <span style={{ color: c.mute }}>
+          <span className="mk-mute">
             — autonomous agents, verifiable state.
           </span>
         </div>
@@ -495,20 +478,16 @@ function MiniConsole() {
   return (
     <div
       className="border font-[family-name:var(--mk-mono)] text-xs"
-      style={{
-        borderColor: c.line,
-        background: c.bg1,
-        boxShadow: '0 24px 80px rgba(0,0,0,0.4)',
-      }}
+      className="mk-console"
     >
       {/* Bar */}
       <div
         className="flex items-center gap-[6px] border-b px-[14px] py-2 text-[10.5px] tracking-[0.04em]"
-        style={{ borderColor: c.line, background: c.bg2, color: c.mute }}
+        className="mk-card-dark"
       >
-        <span className="inline-block h-[9px] w-[9px] border" style={{ borderColor: c.line }} />
-        <span className="inline-block h-[9px] w-[9px] border" style={{ borderColor: c.line }} />
-        <span className="inline-block h-[9px] w-[9px] border" style={{ borderColor: c.line }} />
+        <span className="inline-block h-[9px] w-[9px] border" className="mk-border" />
+        <span className="inline-block h-[9px] w-[9px] border" className="mk-border" />
+        <span className="inline-block h-[9px] w-[9px] border" className="mk-border" />
         <span className="ml-[10px]">
           agentbot — settler-12 — wf_swap_0214
         </span>
@@ -532,7 +511,7 @@ function MiniConsole() {
                   : {}),
             }}
           >
-            <span className="text-[10.5px]" style={{ color: c.mute }}>
+            <span className="text-[10.5px]" className="mk-mute">
               {l.t}
             </span>
             <span
@@ -565,7 +544,7 @@ function MiniConsole() {
             </span>
             <span
               className="text-right text-[10.5px] tabular-nums"
-              style={{ color: c.ink2 }}
+              className="mk-ink-2"
             >
               {l.ms}
             </span>
@@ -576,11 +555,11 @@ function MiniConsole() {
       {/* Footer */}
       <div
         className="flex gap-[10px] border-t px-[14px] py-2 text-[10.5px]"
-        style={{ borderColor: c.line, background: c.bg2, color: c.mute }}
+        className="mk-card-dark"
       >
         <span>
           SignatureGuard{' '}
-          <span style={{ color: c.ok }}>✓</span>
+          <span className="mk-ok">✓</span>
         </span>
         <span>·</span>
         <span>leaf 0x9c1f…ae72</span>

@@ -1,4 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
+import { attachNetworkCapture } from 'postman-playwright';
+const test = attachNetworkCapture(base);
 
 /**
  * Deployment E2E Tests
