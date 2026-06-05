@@ -91,6 +91,65 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    if (action === 'preview') {
+      // Dry-run: build calldata without submitting
+      const fromMeta = TOKEN_META[fromToken];
+      const toMeta = TOKEN_META[toToken];
+
+      if (!fromMeta || !toMeta) {
+        return NextResponse.json({ error: 'Unknown token' }, { status: 400 });
+      }
+
+      if (!walletAddress) {
+        return NextResponse.json({ error: 'walletAddress required for preview' }, { status: 400 });
+      }
+
+      const rawAmount = BigInt(Math.floor(parseFloat(fromAmount) * Math.pow(10, fromMeta.decimals)));
+
+      // Get quote first to verify liquidity
+      const swapPrice = await cdp.evm.getSwapPrice({
+        fromToken: fromToken,
+        toToken: toToken,
+        fromAmount: rawAmount,
+        network: 'base',
+        taker: walletAddress,
+      }) as any;
+
+      if (!swapPrice.liquidityAvailable) {
+        return NextResponse.json({
+          success: false,
+          dryRun: true,
+          error: 'Insufficient liquidity for this swap',
+          from: { ...fromMeta, address: fromToken, amount: fromAmount },
+          to: { ...toMeta, address: toToken },
+        });
+      }
+
+      // Build preview without executing
+      const account = await cdp.evm.getOrCreateAccount({ name: 'AgentbotSwap' });
+      const swapQuote = await account.quoteSwap({
+        network: 'base',
+        fromToken: fromToken,
+        toToken: toToken,
+        fromAmount: rawAmount,
+        slippageBps: slippageBps || 100,
+      });
+
+      return NextResponse.json({
+        success: true,
+        dryRun: true,
+        from: { ...fromMeta, address: fromToken, amount: fromAmount },
+        to: { ...toMeta, address: toToken, amount: swapPrice.toAmount ? String(Number(swapPrice.toAmount) / Math.pow(10, toMeta.decimals)) : null },
+        minToAmount: swapPrice.minToAmount ? String(Number(swapPrice.minToAmount) / Math.pow(10, toMeta.decimals)) : null,
+        priceImpact: swapPrice.priceImpact,
+        gas: swapPrice.gas,
+        slippageBps: slippageBps || 100,
+        network: 'base',
+        taker: walletAddress,
+        message: 'Dry run — no transaction submitted. Call action=swap to execute.',
+      });
+    }
+
     if (action === 'swap') {
       // Execute swap via CDP account
       const account = await cdp.evm.getOrCreateAccount({ name: 'AgentbotSwap' });
