@@ -68,6 +68,7 @@ export default function Navbar() {
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href="/chat" current={pathname}>Chat</NavLink>
               <NavLink href="/credits" current={pathname}>Credits</NavLink>
+              <NavLink href="/playground" current={pathname}>Playground</NavLink>
               <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
               <NavLink href="/wristband" current={pathname}>Wristband</NavLink>
               <NavLink href="/dashboard/swap" current={pathname}>Swap</NavLink>
@@ -171,6 +172,7 @@ export default function Navbar() {
                 <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
                 <MobileLink href="/chat" onClick={closeMenu}>Chat</MobileLink>
                 <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
+                <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
                 <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
                 <MobileLink href="/wristband" onClick={closeMenu}>Wristband</MobileLink>
                 <MobileLink href="/dashboard/swap" onClick={closeMenu}>Swap</MobileLink>
@@ -192,6 +194,7 @@ export default function Navbar() {
             ) : (
               <>
                 <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
+                <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
                 <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                 <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
                 <MobileLink href="/vercel-gateway" onClick={closeMenu}>Gateway</MobileLink>
