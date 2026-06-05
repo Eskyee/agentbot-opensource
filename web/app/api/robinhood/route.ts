@@ -22,20 +22,22 @@ import {
 } from '@/app/lib/robinhood-mcp'
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const action = searchParams.get('action')
+
+  // Smoke test — no auth required (just pings Robinhood's servers)
+  if (action === 'smoke-test') {
+    const result = await smokeTestRobinhoodMcp()
+    return NextResponse.json(result)
+  }
+
+  // Everything else requires auth
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const userId = session.user.id
-  const { searchParams } = new URL(request.url)
-  const action = searchParams.get('action')
-
-  // Smoke test (no auth needed)
-  if (action === 'smoke-test') {
-    const result = await smokeTestRobinhoodMcp()
-    return NextResponse.json(result)
-  }
 
   // Connection status
   const enabled = await isRobinhoodMcpEnabled(userId)
@@ -68,12 +70,24 @@ export async function POST(request: NextRequest) {
     case 'connect': {
       const result = await injectRobinhoodMcp(userId)
       if (!result.ok) {
-        return NextResponse.json({ error: result.error }, { status: 400 })
+        // If gateway is unreachable, provide manual setup command
+        const isGatewayError =
+          result.error?.includes('404') ||
+          result.error?.includes('Application not found') ||
+          result.error?.includes('Failed to reach') ||
+          result.error?.includes('Agent not deployed')
+
+        return NextResponse.json({
+          error: result.error,
+          manualSetup: isGatewayError,
+          manualCommand:
+            'openclaw config patch --stdin <<< \'{"mcp":{"servers":{"robinhood-trading":{"url":"https://agent.robinhood.com/mcp/trading","transport":"streamable-http","enabled":true}}}}\'',
+        })
       }
       return NextResponse.json({
         success: true,
         message: 'Robinhood Trading MCP connected to your agent',
-        nextStep: 'Authenticate in your agent by running /mcp and selecting robinhood-trading',
+        nextStep: 'In your agent, run /mcp → select robinhood-trading → authenticate with Robinhood',
       })
     }
 

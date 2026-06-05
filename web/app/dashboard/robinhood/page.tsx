@@ -59,6 +59,18 @@ export default function RobinhoodPage() {
     },
   })
 
+  // Manual command state
+  const [manualCommand, setManualCommand] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const copyCommand = () => {
+    if (manualCommand) {
+      navigator.clipboard.writeText(manualCommand)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   // Connect mutation
   const connectMutation = useMutation({
     mutationFn: async () => {
@@ -70,16 +82,23 @@ export default function RobinhoodPage() {
       return res.json()
     },
     onSuccess: (data) => {
-      if (data.error) {
+      if (data.manualSetup && data.manualCommand) {
+        setManualCommand(data.manualCommand)
+        setActionMessage({
+          type: 'error',
+          text: data.error || 'Gateway unreachable — use manual setup below',
+        })
+      } else if (data.error) {
         setActionMessage({ type: 'error', text: data.error })
       } else {
         setActionMessage({
           type: 'success',
           text: data.message || 'Connected! Authenticate in your agent with /mcp',
         })
+        setManualCommand(null)
         queryClient.invalidateQueries({ queryKey: ['robinhood-status'] })
       }
-      setTimeout(() => setActionMessage(null), 8000)
+      setTimeout(() => setActionMessage(null), 10000)
     },
     onError: () => {
       setActionMessage({ type: 'error', text: 'Failed to connect Robinhood' })
@@ -152,6 +171,36 @@ export default function RobinhoodPage() {
             >
               {actionMessage.text}
             </span>
+          </div>
+        )}
+
+        {/* Manual Setup Command */}
+        {manualCommand && (
+          <div className="border border-yellow-800 bg-zinc-950 p-6 mb-px">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertCircle className="h-4 w-4 text-yellow-400" />
+              <h3 className="text-xs font-bold uppercase tracking-widest text-yellow-400">
+                Manual Setup — Gateway Unreachable
+              </h3>
+            </div>
+            <p className="text-[11px] text-zinc-500 mb-4">
+              Your agent gateway couldn&apos;t be reached. Run this command in your terminal to
+              add Robinhood Trading MCP directly to your OpenClaw config:
+            </p>
+            <div className="flex gap-2">
+              <code className="flex-1 bg-black border border-zinc-800 p-3 text-[11px] text-green-400 font-mono break-all">
+                {manualCommand}
+              </code>
+              <button
+                onClick={copyCommand}
+                className="border border-zinc-700 hover:border-zinc-500 px-3 text-[10px] font-bold uppercase tracking-widest transition-colors shrink-0"
+              >
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+            <p className="text-[10px] text-zinc-600 mt-3">
+              After running the command, restart your gateway: <code className="text-zinc-400">openclaw gateway restart</code>
+            </p>
           </div>
         )}
 
