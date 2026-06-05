@@ -25,7 +25,7 @@ const COLUMNS = [
       { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
       { href: 'https://mimo.xiaomi.com',                                 label: 'MiMo API', external: true },
       { href: 'https://openclaw.ai',                                     label: 'OpenClaw', external: true },
-      { href: 'https://release.bar/eskyee/agentbot-opensource',          label: 'Releases', external: true },
+      { href: 'https://github.com/Eskyee/agentbot-opensource/releases/tag/v1.2.0',          label: 'Releases v1.2.0', external: true },
     ],
   },
   {
@@ -156,6 +156,15 @@ export default function Footer() {
             <span className="text-[10px] uppercase tracking-widest text-zinc-700">
               OpenClaw {openClawVersion}
             </span>
+            <span className="text-zinc-800 text-[10px]">|</span>
+            <a
+              href="https://github.com/Eskyee/agentbot-opensource/releases/tag/v1.2.0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors"
+            >
+              Releases v1.2.0
+            </a>
           </div>
         </div>
 
