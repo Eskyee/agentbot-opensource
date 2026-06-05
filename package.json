@@ -69,9 +69,9 @@
     }
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.198",
+    "@ai-sdk/react": "^3.0.199",
     "@openrouter/ai-sdk-provider": "^2.9.0",
-    "ai": "^6.0.196",
+    "ai": "^6.0.197",
     "ox": "^0.13.2"
   }
 }
