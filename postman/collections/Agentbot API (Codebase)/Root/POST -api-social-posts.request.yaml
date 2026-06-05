@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//social/posts
+url: "{{baseUrl}}/api//social/posts"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 238000

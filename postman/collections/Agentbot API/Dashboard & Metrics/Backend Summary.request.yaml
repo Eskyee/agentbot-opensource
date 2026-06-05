@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/metrics/{{userId}}/summary"
+method: GET
+order: 12000

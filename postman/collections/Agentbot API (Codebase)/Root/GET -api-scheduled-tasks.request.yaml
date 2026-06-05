@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//scheduled-tasks
+url: "{{baseUrl}}/api//scheduled-tasks"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 35000

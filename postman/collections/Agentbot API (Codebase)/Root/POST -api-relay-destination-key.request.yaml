@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api//relay/destination-key
+url: "{{baseUrl}}/api//relay/destination-key"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 442000

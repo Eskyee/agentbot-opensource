@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//social/agents/[id]/follow
+url: "{{baseUrl}}/api//social/agents/[id]/follow"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 261000

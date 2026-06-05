@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api/platform-jobs/provision
+url: "{{baseUrl}}/api/platform-jobs/provision"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 1000

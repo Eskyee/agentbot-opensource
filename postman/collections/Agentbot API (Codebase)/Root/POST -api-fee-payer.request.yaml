@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//fee-payer
+url: "{{baseUrl}}/api//fee-payer"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 45000

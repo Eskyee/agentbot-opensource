@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/skills/demo-submitter
+url: "{{baseUrl}}/api/skills/demo-submitter"
+method: GET
+order: 8000

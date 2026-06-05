@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/agents/[id]/sync
+url: "{{baseUrl}}/api/agents/[id]/sync"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 23000

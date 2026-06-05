@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/init-deep
+url: "{{baseUrl}}/api/init-deep"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

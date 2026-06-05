@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/underground/bitcoin/wallets/:walletId/address/unused
+url: "{{baseUrl}}/api/underground/bitcoin/wallets/:walletId/address/unused"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 11000

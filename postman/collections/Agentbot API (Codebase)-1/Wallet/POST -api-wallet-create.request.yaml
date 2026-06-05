@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/wallet/create
+url: "{{baseUrl}}/api/wallet/create"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 12000

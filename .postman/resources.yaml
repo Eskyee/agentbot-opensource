@@ -5,3 +5,12 @@ workspace:
 localResources:
   collections:
     - ../agentbot-api.postman_collection.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  environments:
+    ../postman/environments/Agentbot Environment.environment.yaml: ded0e66f-c976-5a82-b128-503a498689df
+  collections:
+    ../postman/collections/New Collection: 53112924-18832355-fead-4c9e-9634-c3196deac7f3
+    ../postman/collections/Agentbot API (Captured): 53112924-825e43d1-8033-48d5-a59a-1dbce9fe0d44

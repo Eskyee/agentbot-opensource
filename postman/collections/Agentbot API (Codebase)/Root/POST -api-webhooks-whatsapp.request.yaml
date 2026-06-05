@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//webhooks/whatsapp
+url: "{{baseUrl}}/api//webhooks/whatsapp"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 460000

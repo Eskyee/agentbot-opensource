@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//checkout
+url: "{{baseUrl}}/api//checkout"
+method: GET
+order: 209000

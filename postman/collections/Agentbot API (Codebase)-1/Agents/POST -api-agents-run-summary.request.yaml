@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/agents/run-summary
+url: "{{baseUrl}}/api/agents/run-summary"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 5000

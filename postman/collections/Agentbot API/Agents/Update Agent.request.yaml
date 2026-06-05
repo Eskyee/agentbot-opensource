@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseUrl}}/api/agents/{{agentId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{}"
+order: 4000

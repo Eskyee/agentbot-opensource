@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//managed-agents/vault
+url: "{{baseUrl}}/api//managed-agents/vault"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 413000

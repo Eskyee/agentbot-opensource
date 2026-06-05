@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api/skills/visual-synthesizer
+url: "{{baseUrl}}/api/skills/visual-synthesizer"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 7000

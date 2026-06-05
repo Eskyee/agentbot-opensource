@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//vercel-gateway/health
+url: "{{baseUrl}}/api//vercel-gateway/health"
+method: GET
+order: 315000

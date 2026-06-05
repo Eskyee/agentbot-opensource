@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api/user/github-bot
+url: "{{baseUrl}}/api/user/github-bot"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 9000

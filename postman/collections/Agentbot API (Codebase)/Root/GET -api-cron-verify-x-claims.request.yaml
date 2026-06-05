@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//cron/verify-x-claims
+url: "{{baseUrl}}/api//cron/verify-x-claims"
+method: GET
+order: 515000

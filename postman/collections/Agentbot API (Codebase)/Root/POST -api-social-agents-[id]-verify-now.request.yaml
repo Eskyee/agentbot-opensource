@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//social/agents/[id]/verify-now
+url: "{{baseUrl}}/api//social/agents/[id]/verify-now"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 264000

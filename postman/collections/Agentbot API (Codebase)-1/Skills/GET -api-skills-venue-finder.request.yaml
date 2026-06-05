@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/skills/venue-finder
+url: "{{baseUrl}}/api/skills/venue-finder"
+method: GET
+order: 17000

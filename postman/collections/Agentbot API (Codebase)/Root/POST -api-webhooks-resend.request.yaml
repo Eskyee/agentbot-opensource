@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//webhooks/resend
+url: "{{baseUrl}}/api//webhooks/resend"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 461000

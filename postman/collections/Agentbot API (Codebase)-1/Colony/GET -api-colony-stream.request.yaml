@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/colony/stream
+url: "{{baseUrl}}/api/colony/stream"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

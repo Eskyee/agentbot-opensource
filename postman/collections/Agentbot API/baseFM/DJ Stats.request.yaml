@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/basefm/dj-stats"
+method: GET
+order: 5000

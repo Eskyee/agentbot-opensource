@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//relay/auth
+url: "{{baseUrl}}/api//relay/auth"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 441000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/auth/google/callback
+url: "{{baseUrl}}/api/auth/google/callback"
+method: GET
+order: 6000

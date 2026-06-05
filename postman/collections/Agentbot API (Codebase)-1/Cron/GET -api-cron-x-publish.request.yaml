@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/cron/x-publish
+url: "{{baseUrl}}/api/cron/x-publish"
+method: GET
+order: 4000

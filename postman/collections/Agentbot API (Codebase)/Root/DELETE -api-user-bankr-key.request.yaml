@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api//user/bankr-key
+url: "{{baseUrl}}/api//user/bankr-key"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 192000

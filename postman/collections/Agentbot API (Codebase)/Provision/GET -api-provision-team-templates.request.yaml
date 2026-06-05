@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/provision/team/templates
+url: "{{baseUrl}}/api/provision/team/templates"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

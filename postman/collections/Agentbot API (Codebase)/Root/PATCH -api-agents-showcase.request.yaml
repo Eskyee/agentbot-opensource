@@ -1,0 +1,7 @@
+$kind: http-request
+name: PATCH /api//agents/showcase
+url: "{{baseUrl}}/api//agents/showcase"
+method: PATCH
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 162000

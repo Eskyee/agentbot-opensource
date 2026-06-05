@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/social/agents/[id]/posts
+url: "{{baseUrl}}/api/social/agents/[id]/posts"
+method: GET
+order: 23000

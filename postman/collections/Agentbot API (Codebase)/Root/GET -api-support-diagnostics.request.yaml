@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//support/diagnostics
+url: "{{baseUrl}}/api//support/diagnostics"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 302000

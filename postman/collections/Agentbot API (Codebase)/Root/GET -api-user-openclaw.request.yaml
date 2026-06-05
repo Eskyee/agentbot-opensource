@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//user/openclaw
+url: "{{baseUrl}}/api//user/openclaw"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 178000

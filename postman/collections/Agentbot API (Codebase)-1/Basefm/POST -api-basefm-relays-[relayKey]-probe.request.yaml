@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/basefm/relays/[relayKey]/probe
+url: "{{baseUrl}}/api/basefm/relays/[relayKey]/probe"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

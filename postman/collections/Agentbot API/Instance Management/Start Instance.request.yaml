@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/instance/{{userId}}/start"
+method: POST
+order: 2000

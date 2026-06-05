@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api/social/communities/[id]/follow
+url: "{{baseUrl}}/api/social/communities/[id]/follow"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 14000

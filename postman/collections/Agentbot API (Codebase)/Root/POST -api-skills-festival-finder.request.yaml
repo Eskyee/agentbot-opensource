@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//skills/festival-finder
+url: "{{baseUrl}}/api//skills/festival-finder"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 395000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//dashboard/analytics
+url: "{{baseUrl}}/api//dashboard/analytics"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 232000

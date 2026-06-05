@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/skills/setlist-oracle
+url: "{{baseUrl}}/api/skills/setlist-oracle"
+method: GET
+order: 12000

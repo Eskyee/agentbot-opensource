@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api//cron
+url: "{{baseUrl}}/api//cron"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 509000

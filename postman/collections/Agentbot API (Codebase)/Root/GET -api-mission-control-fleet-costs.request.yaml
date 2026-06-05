@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//mission-control/fleet/costs
+url: "{{baseUrl}}/api//mission-control/fleet/costs"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 445000

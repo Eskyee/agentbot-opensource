@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api//wallet/sessions
+url: "{{baseUrl}}/api//wallet/sessions"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 341000

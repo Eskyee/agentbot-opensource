@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//openclaw/dreams
+url: "{{baseUrl}}/api//openclaw/dreams"
+method: GET
+order: 62000

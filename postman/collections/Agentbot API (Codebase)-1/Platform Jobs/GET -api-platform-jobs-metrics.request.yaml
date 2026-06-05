@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/platform-jobs/metrics
+url: "{{baseUrl}}/api/platform-jobs/metrics"
+method: GET
+order: 3000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/colony/status
+url: "{{baseUrl}}/api/colony/status"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

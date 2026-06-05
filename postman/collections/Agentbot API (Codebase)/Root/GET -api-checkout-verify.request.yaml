@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//checkout/verify
+url: "{{baseUrl}}/api//checkout/verify"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 211000

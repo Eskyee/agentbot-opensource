@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//channels
+url: "{{baseUrl}}/api//channels"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 532000

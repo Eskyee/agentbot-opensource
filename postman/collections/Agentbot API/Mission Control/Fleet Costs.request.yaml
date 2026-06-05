@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/mission-control/fleet/costs"
+method: GET
+order: 3000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/webhooks/discord
+url: "{{baseUrl}}/api/webhooks/discord"
+method: GET
+order: 1000

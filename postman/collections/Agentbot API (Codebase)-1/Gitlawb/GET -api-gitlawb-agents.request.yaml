@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/gitlawb/agents
+url: "{{baseUrl}}/api/gitlawb/agents"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

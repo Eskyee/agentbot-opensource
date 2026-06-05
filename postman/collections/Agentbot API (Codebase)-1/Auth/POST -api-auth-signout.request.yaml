@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/auth/signout
+url: "{{baseUrl}}/api/auth/signout"
+method: POST
+order: 8000

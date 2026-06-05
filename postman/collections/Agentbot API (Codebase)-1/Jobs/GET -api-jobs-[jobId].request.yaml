@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/jobs/[jobId]
+url: "{{baseUrl}}/api/jobs/[jobId]"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 11000

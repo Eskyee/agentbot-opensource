@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/registration/installations
+url: "{{baseUrl}}/api/registration/installations"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 5000

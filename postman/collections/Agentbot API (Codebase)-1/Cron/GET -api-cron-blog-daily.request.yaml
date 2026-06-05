@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/cron/blog-daily
+url: "{{baseUrl}}/api/cron/blog-daily"
+method: GET
+order: 5000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/auth/farcaster/refresh
+url: "{{baseUrl}}/api/auth/farcaster/refresh"
+method: GET
+order: 11000

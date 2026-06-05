@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api//webhooks/discord/interactions
+url: "{{baseUrl}}/api//webhooks/discord/interactions"
+method: POST
+order: 455000

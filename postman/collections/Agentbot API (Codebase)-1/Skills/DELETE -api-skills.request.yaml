@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api/skills
+url: "{{baseUrl}}/api/skills"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

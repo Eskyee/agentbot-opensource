@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/init-deep
+url: "{{baseUrl}}/api/init-deep"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

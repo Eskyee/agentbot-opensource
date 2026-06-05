@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api//clawbank
+url: "{{baseUrl}}/api//clawbank"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 436000

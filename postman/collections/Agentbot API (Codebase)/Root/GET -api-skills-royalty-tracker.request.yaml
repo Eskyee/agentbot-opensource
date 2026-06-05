@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//skills/royalty-tracker
+url: "{{baseUrl}}/api//skills/royalty-tracker"
+method: GET
+order: 398000

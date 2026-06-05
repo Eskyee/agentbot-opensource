@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/skills/visual-synthesizer
+url: "{{baseUrl}}/api/skills/visual-synthesizer"
+method: GET
+order: 6000

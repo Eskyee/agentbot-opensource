@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//wallet/sessions
+url: "{{baseUrl}}/api//wallet/sessions"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 339000

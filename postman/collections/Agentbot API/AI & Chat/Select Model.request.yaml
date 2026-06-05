@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{backendUrl}}/api/ai/models/select"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "model": "mimo-v2.5-pro"
+    }
+order: 5000

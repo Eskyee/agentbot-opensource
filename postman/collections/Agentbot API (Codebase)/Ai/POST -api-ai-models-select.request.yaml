@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api/ai/models/select
+url: "{{baseUrl}}/api/ai/models/select"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 4000

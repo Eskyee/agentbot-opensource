@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/models
+url: "{{baseUrl}}/api/models"
+method: GET
+order: 1000

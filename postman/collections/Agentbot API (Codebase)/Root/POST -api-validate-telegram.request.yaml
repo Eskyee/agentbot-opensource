@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//validate-telegram
+url: "{{baseUrl}}/api//validate-telegram"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 8000

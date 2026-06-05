@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/underground/events
+url: "{{baseUrl}}/api/underground/events"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

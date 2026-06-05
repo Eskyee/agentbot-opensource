@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api//security/risc
+url: "{{baseUrl}}/api//security/risc"
+method: POST
+order: 81000

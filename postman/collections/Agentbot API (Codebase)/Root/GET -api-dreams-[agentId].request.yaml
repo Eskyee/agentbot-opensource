@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//dreams/[agentId]
+url: "{{baseUrl}}/api//dreams/[agentId]"
+method: GET
+order: 410000

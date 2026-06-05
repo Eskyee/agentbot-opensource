@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//buddies
+url: "{{baseUrl}}/api//buddies"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 499000

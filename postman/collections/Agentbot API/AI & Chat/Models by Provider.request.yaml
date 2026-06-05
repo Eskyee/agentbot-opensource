@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/ai/models/openai"
+method: GET
+order: 4000

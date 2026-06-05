@@ -1,0 +1,9 @@
+$kind: collection
+description: Auto-generated from codebase. 600 endpoints.
+variables:
+  baseUrl: https://agentbot.sh
+  backendUrl: https://agentbot-backend-production.up.railway.app
+  gatewayUrl: https://openclaw-production-a09d.up.railway.app
+  sessionToken: ""
+  internalApiKey: ""
+  bridgeSecret: ""

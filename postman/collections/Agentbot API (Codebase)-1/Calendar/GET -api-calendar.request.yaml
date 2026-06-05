@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/calendar
+url: "{{baseUrl}}/api/calendar"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

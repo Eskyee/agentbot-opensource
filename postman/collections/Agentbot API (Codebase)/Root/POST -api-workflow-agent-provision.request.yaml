@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//workflow/agent-provision
+url: "{{baseUrl}}/api//workflow/agent-provision"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 314000

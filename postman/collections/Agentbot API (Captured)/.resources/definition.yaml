@@ -1,0 +1,4 @@
+$kind: collection
+description: Auto-generated from Playwright traffic capture on 2026-06-05T18:26:24.560Z
+variables:
+  baseUrl: http://localhost:3000

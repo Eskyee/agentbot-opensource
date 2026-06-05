@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//wristband/metadata/[tokenId]
+url: "{{baseUrl}}/api//wristband/metadata/[tokenId]"
+method: GET
+order: 297000

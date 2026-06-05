@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api//admin/seed-usage
+url: "{{baseUrl}}/api//admin/seed-usage"
+method: POST
+order: 136000

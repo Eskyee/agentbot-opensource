@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/wallet-auth"
+method: POST
+order: 8000

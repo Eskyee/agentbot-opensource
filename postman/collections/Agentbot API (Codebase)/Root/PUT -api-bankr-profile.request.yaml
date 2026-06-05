@@ -1,0 +1,7 @@
+$kind: http-request
+name: PUT /api//bankr/profile
+url: "{{baseUrl}}/api//bankr/profile"
+method: PUT
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 492000

@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/bridge/inbox?reader=atlas-agentbot&channel=general"
+method: GET
+headers:
+  X-Bridge-Secret: "{{bridgeSecret}}"
+order: 5000

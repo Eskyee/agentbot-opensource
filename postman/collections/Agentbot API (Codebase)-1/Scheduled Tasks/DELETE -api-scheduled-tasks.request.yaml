@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api/scheduled-tasks
+url: "{{baseUrl}}/api/scheduled-tasks"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 4000

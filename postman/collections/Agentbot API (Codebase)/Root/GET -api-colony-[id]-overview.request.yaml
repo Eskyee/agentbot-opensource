@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//colony/[id]/overview
+url: "{{baseUrl}}/api//colony/[id]/overview"
+method: GET
+order: 120000

@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api/invites/verify
+url: "{{baseUrl}}/api/invites/verify"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 1000

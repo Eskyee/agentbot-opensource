@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//user/bankr-key
+url: "{{baseUrl}}/api//user/bankr-key"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 191000

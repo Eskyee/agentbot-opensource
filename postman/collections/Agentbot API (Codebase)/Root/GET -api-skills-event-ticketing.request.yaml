@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//skills/event-ticketing
+url: "{{baseUrl}}/api//skills/event-ticketing"
+method: GET
+order: 385000

@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/gateway/chat"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "message": "Hello"
+    }
+order: 7000

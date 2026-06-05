@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//passkey/register/options
+url: "{{baseUrl}}/api//passkey/register/options"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 75000

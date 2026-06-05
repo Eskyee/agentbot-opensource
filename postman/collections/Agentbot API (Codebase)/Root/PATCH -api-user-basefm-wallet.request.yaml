@@ -1,0 +1,7 @@
+$kind: http-request
+name: PATCH /api//user/basefm-wallet
+url: "{{baseUrl}}/api//user/basefm-wallet"
+method: PATCH
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 195000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/gateway/chat
+url: "{{baseUrl}}/api/gateway/chat"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

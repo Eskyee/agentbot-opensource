@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/debug-stripe
+url: "{{baseUrl}}/api/debug-stripe"
+method: GET
+order: 1000

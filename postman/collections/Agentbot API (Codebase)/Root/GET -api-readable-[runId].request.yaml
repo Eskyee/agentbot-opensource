@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//readable/[runId]
+url: "{{baseUrl}}/api//readable/[runId]"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 417000

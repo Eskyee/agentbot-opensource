@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//wallet-monitor/status
+url: "{{baseUrl}}/api//wallet-monitor/status"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 298000

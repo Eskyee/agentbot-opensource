@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/basefm/streams/status"
+method: GET
+order: 2000

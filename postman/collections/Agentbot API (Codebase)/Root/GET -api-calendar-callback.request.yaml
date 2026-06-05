@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//calendar/callback
+url: "{{baseUrl}}/api//calendar/callback"
+method: GET
+order: 43000

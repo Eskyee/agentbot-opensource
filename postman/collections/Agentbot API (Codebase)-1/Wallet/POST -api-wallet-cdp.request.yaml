@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/wallet/cdp
+url: "{{baseUrl}}/api/wallet/cdp"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

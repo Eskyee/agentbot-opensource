@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//user/basefm-wallet
+url: "{{baseUrl}}/api//user/basefm-wallet"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 194000

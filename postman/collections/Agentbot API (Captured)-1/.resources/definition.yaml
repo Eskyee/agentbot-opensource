@@ -1,0 +1,5 @@
+$kind: collection
+name: Agentbot API (Captured)
+description: Auto-generated from Playwright traffic capture on 2026-06-05T18:29:20.514Z
+variables:
+  baseUrl: http://localhost:3000

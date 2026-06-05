@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/agents/:id/verification
+url: "{{baseUrl}}/api/agents/:id/verification"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 6000

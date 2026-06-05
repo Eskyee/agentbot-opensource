@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//mcp/[skillId]/call/[toolName]
+url: "{{baseUrl}}/api//mcp/[skillId]/call/[toolName]"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 203000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/openclaw/character-qa
+url: "{{baseUrl}}/api/openclaw/character-qa"
+method: POST
+order: 3000

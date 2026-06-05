@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api/admin/openclaw/update-all
+url: "{{baseUrl}}/api/admin/openclaw/update-all"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 2000

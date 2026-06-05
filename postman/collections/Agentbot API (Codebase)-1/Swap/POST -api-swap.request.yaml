@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/swap
+url: "{{baseUrl}}/api/swap"
+method: POST
+order: 2000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//credits/balance
+url: "{{baseUrl}}/api//credits/balance"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 465000

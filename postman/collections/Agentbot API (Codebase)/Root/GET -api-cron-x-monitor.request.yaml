@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//cron/x-monitor
+url: "{{baseUrl}}/api//cron/x-monitor"
+method: GET
+order: 514000

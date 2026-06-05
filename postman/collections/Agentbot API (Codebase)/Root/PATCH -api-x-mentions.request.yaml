@@ -1,0 +1,11 @@
+$kind: http-request
+name: PATCH /api//x/mentions
+url: "{{baseUrl}}/api//x/mentions"
+method: PATCH
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 475000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//cron/broadcast
+url: "{{baseUrl}}/api//cron/broadcast"
+method: GET
+order: 516000

@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/stats"
+method: GET
+order: 8000

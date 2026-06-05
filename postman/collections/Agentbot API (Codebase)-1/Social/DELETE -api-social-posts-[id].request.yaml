@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api/social/posts/[id]
+url: "{{baseUrl}}/api/social/posts/[id]"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 4000

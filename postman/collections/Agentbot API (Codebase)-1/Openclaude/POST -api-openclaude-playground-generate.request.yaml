@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api/openclaude/playground/generate
+url: "{{baseUrl}}/api/openclaude/playground/generate"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 2000

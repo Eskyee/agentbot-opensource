@@ -1,0 +1,7 @@
+$kind: http-request
+name: PATCH /api/user/x-handle
+url: "{{baseUrl}}/api/user/x-handle"
+method: PATCH
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

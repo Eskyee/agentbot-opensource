@@ -1,0 +1,7 @@
+$kind: http-request
+name: PUT /api/heartbeat
+url: "{{baseUrl}}/api/heartbeat"
+method: PUT
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

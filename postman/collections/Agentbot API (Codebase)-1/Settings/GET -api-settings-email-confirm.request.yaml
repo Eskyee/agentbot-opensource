@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/settings/email/confirm
+url: "{{baseUrl}}/api/settings/email/confirm"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 6000

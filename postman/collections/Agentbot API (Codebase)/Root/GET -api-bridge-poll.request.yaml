@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//bridge/poll
+url: "{{baseUrl}}/api//bridge/poll"
+method: GET
+order: 107000

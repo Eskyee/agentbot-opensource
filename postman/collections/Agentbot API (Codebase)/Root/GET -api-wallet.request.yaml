@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//wallet
+url: "{{baseUrl}}/api//wallet"
+method: GET
+order: 335000

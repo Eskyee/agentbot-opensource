@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//skills/track-archaeologist
+url: "{{baseUrl}}/api//skills/track-archaeologist"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 391000

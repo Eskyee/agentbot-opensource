@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/ops/identity/generate
+url: "{{baseUrl}}/api/ops/identity/generate"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

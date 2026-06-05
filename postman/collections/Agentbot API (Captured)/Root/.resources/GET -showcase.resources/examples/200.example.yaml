@@ -1,0 +1,27 @@
+$kind: http-example
+request:
+  url: ""
+  method: GET
+response:
+  statusCode: 200
+  statusText: "200"
+  headers:
+    cache-control: no-cache, must-revalidate
+    connection: keep-alive
+    content-encoding: gzip
+    content-security-policy: "worker-src 'self' blob:; default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://selfclaw.ai https://platform.twitter.com https://*.twitter.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://selfclaw.ai; img-src 'self' data: https:; media-src 'self' blob: data: https://*.mux.com; connect-src 'self' https://api.openrouter.ai https://api.stripe.com https://m.stripe.com https://vitals.vercel-insights.com https://*.base.org https://*.coinbase.com https://*.mux.com https://selfclaw.ai https://*.self.xyz wss: ws:; font-src 'self' data:; frame-src https://keys.coinbase.com https://selfclaw.ai https://*.self.xyz https://platform.twitter.com; frame-ancestors 'none'; upgrade-insecure-requests;"
+    content-type: text/html; charset=utf-8
+    cross-origin-opener-policy: same-origin-allow-popups
+    date: Fri, 05 Jun 2026 18:25:54 GMT
+    keep-alive: timeout=5
+    permissions-policy: camera=(), microphone=(), geolocation=()
+    referrer-policy: strict-origin-when-cross-origin
+    transfer-encoding: chunked
+    vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+    x-content-type-options: nosniff
+    x-frame-options: DENY
+    link: </_next/static/chunks/web_app_globals_0zmrod1.css>; rel=preload; as="style"
+  body:
+    type: text
+    content: ""
+order: 1000

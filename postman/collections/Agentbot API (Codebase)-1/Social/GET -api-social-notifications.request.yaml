@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/social/notifications
+url: "{{baseUrl}}/api/social/notifications"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 36000

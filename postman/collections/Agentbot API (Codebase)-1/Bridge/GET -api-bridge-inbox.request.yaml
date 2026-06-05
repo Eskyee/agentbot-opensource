@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/bridge/inbox
+url: "{{baseUrl}}/api/bridge/inbox"
+method: GET
+order: 1000

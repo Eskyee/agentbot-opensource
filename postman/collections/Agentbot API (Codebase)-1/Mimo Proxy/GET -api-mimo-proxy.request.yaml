@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/mimo-proxy
+url: "{{baseUrl}}/api/mimo-proxy"
+method: GET
+order: 1000

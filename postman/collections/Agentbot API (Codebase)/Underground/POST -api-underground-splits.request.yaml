@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api/underground/splits
+url: "{{baseUrl}}/api/underground/splits"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 14000

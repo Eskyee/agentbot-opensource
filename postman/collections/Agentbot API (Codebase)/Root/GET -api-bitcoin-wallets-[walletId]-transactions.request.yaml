@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//bitcoin/wallets/[walletId]/transactions
+url: "{{baseUrl}}/api//bitcoin/wallets/[walletId]/transactions"
+method: GET
+order: 224000

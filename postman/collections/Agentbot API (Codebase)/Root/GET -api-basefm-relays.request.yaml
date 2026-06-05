@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//basefm/relays
+url: "{{baseUrl}}/api//basefm/relays"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 276000

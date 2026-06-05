@@ -1,0 +1,25 @@
+$kind: http-example
+request:
+  url: ""
+  method: GET
+response:
+  statusCode: 200
+  statusText: "200"
+  headers:
+    transfer-encoding: chunked
+    content-security-policy: "worker-src 'self' blob:; default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://selfclaw.ai https://platform.twitter.com https://*.twitter.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://selfclaw.ai; img-src 'self' data: https:; media-src 'self' blob: data: https://*.mux.com; connect-src 'self' https://api.openrouter.ai https://api.stripe.com https://m.stripe.com https://vitals.vercel-insights.com https://*.base.org https://*.coinbase.com https://*.mux.com https://selfclaw.ai https://*.self.xyz wss: ws:; font-src 'self' data:; frame-src https://keys.coinbase.com https://selfclaw.ai https://*.self.xyz https://platform.twitter.com; frame-ancestors 'none'; upgrade-insecure-requests;"
+    cache-control: no-cache, no-store, must-revalidate, proxy-revalidate, max-age=0
+    cross-origin-opener-policy: same-origin-allow-popups
+    connection: keep-alive
+    referrer-policy: strict-origin-when-cross-origin
+    x-content-type-options: nosniff
+    permissions-policy: camera=(), microphone=(), geolocation=()
+    keep-alive: timeout=5
+    date: Fri, 05 Jun 2026 18:24:39 GMT
+    content-type: application/json
+    vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+    x-frame-options: DENY
+  body:
+    type: text
+    content: '{"token":"6767549b9ba05c4bb8794cd3be892c4e2a5b9af5d27546fa7c6ff127a4db00bb","signed":"043ca1577fd95a0e99c609ed622fbf4cd2c4be25b3099ebb786bfc0e740c6585","header":"6767549b9ba05c4bb8794cd3be892c4e2a5b9af5d27546fa7c6ff127a4db00bb:043ca1577fd95a0e99c609ed622fbf4cd2c4be25b3099ebb786bfc0e740c6585"}'
+order: 1000

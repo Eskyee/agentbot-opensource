@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api//skills/create
+url: "{{baseUrl}}/api//skills/create"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 404000

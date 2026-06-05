@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//skills/booking-settlement
+url: "{{baseUrl}}/api//skills/booking-settlement"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 401000

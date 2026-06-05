@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api//settings/email
+url: "{{baseUrl}}/api//settings/email"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 22000

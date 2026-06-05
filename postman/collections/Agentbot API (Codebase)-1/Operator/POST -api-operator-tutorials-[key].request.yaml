@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/operator/tutorials/[key]
+url: "{{baseUrl}}/api/operator/tutorials/[key]"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 7000

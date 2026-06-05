@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//cron/cleanup
+url: "{{baseUrl}}/api//cron/cleanup"
+method: GET
+order: 513000

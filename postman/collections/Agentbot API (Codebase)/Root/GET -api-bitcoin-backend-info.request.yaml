@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//bitcoin/backend/info
+url: "{{baseUrl}}/api//bitcoin/backend/info"
+method: GET
+order: 220000

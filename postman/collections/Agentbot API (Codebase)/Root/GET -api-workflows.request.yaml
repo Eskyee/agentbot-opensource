@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//workflows
+url: "{{baseUrl}}/api//workflows"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 141000

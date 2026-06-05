@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//managed-agents/transcript
+url: "{{baseUrl}}/api//managed-agents/transcript"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 411000

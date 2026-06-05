@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/ops/fleet
+url: "{{baseUrl}}/api/ops/fleet"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 10000
