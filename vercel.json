@@ -1,21 +1,4 @@
 {
   "installCommand": "npm install --include=dev --legacy-peer-deps --no-audit --fund=false",
-  "framework": "nextjs",
-  "experimentalServices": {
-    "agentbot-backend": {
-      "root": "agentbot-backend",
-      "routePrefix": "/_/agentbot-backend",
-      "framework": "nodejs"
-    },
-    "gateway": {
-      "root": "gateway",
-      "routePrefix": "/_/gateway",
-      "framework": "nodejs"
-    },
-    "web-summarizer": {
-      "root": "x402-services/web-summarizer",
-      "routePrefix": "/_/web-summarizer",
-      "framework": "nodejs"
-    }
-  }
+  "framework": "nextjs"
 }
