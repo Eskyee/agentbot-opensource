@@ -3,8 +3,9 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Check, Copy } from 'lucide-react'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
-import { coinbaseWallet } from 'wagmi/connectors'
+import { useAccount, useDisconnect } from 'wagmi'
+import dynamic from 'next/dynamic'
+const SignInWithBase = dynamic(() => import('@/app/components/SignInWithBase'), { ssr: false })
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
 import { SectionHeader } from '@/app/components/shared/SectionHeader'
 import StatusPill from '@/app/components/shared/StatusPill'
@@ -147,7 +148,6 @@ function EncoderModeButton({
 
 export default function DJStreamPage() {
   const { address, isConnected } = useAccount()
-  const { connect } = useConnect()
   const { disconnect } = useDisconnect()
   const [basefmBalance, setBasefmBalance] = useState<string | null>(null)
   const [stream, setStream] = useState<any>(null)
@@ -181,9 +181,6 @@ export default function DJStreamPage() {
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null)
   const [encoderMode, setEncoderMode] = useState<EncoderMode>('audio')
 
-  const handleConnect = () => {
-    connect({ connector: coinbaseWallet({ appName: 'Agentbot', preference: 'smartWalletOnly' }) })
-  }
 
   useEffect(() => {
     if (address) checkBASEFMBalance(address)
@@ -822,14 +819,9 @@ export default function DJStreamPage() {
 
             {!isConnected ? (
               <div>
-                <button
-                  onClick={handleConnect}
-                  className="border border-zinc-700 hover:border-zinc-500 text-white text-xs font-bold uppercase tracking-widest py-3 px-6 transition-colors"
-                >
-                  Connect Wallet
-                </button>
+                <SignInWithBase callbackUrl="/dashboard/dj-stream" />
                 <p className="mt-4 text-zinc-600 text-[10px] uppercase tracking-widest">
-                  Base network · Coinbase Smart Wallet
+                  Base network · Sign in with Base
                 </p>
 
                 {hasCommunityPass && claimedWallet && (

@@ -1,8 +1,13 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAccount, useWalletClient, useConnect, useDisconnect } from 'wagmi';
-import { createPublicClient, http } from 'viem';
+import { useAccount, useWalletClient, useDisconnect } from 'wagmi';
+import { createPublicClient, http, parseEther } from 'viem';
 import { base } from 'viem/chains';
+import dynamic from 'next/dynamic';
+import { WRISTBAND_ABI } from '@/app/lib/wristband-abi';
+import { useMintWristband, useGaslessMint, useTotalMinted, useRemainingSupply, useMintPrice } from '@/app/lib/use-wristband';
+
+const SignInWithBase = dynamic(() => import('@/app/components/SignInWithBase'), { ssr: false });
 
 const publicClient = createPublicClient({
   chain: base,
@@ -12,7 +17,6 @@ const publicClient = createPublicClient({
 export default function DigitalWristband() {
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
-  const { connectors, connect, isPending } = useConnect();
   const { disconnect } = useDisconnect();
 
   const [hasWristband, setHasWristband] = useState<boolean | null>(null);
@@ -123,28 +127,6 @@ export default function DigitalWristband() {
     }
   };
 
-  const handleConnect = async () => {
-    // Try wagmi connectors
-    for (const connector of connectors) {
-      try {
-        await connect({ connector });
-        return;
-      } catch {}
-    }
-    // Fallback to window.ethereum
-    try {
-      if ((window as any).ethereum) {
-        const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
-        if (accounts && accounts.length > 0) {
-          setDetectedAddress(accounts[0]);
-        }
-      } else {
-        setError('No wallet detected. Please install Coinbase Wallet or MetaMask.');
-      }
-    } catch (e: any) {
-      setError('Could not connect wallet. Please open your wallet app.');
-    }
-  };
 
   // Not connected
   if (!userConnected) {
@@ -159,21 +141,9 @@ export default function DigitalWristband() {
         <p className="text-zinc-400 text-sm mb-5">
           Connect your wallet to check wristband status or mint.
         </p>
-        <button
-          onClick={handleConnect}
-          disabled={isPending}
-          className="w-full py-3 bg-[#0052FF] hover:bg-[#0043CC] disabled:bg-zinc-700 text-white rounded-lg font-mono text-sm font-bold transition-colors flex items-center justify-center gap-2"
-        >
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-            <circle cx="12" cy="12" r="11" fill="#0052FF" stroke="white" strokeWidth="1"/>
-            <circle cx="8.5" cy="10" r="1.5" fill="white"/>
-            <circle cx="15.5" cy="10" r="1.5" fill="white"/>
-            <circle cx="12" cy="15" r="1.5" fill="white"/>
-          </svg>
-          {isPending ? 'Connecting...' : 'Connect Coinbase Wallet'}
-        </button>
+        <SignInWithBase callbackUrl="/wristband" />
         <p className="text-xs text-zinc-600 text-center mt-3">
-          Works with Coinbase Wallet, MetaMask, or any Base-compatible wallet
+          Sign in with Base — works with Coinbase Wallet, MetaMask, or any Base-compatible wallet
         </p>
       </div>
     );
