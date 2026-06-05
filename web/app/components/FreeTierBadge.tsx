@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAccount } from 'wagmi'
 
 interface FreeTierStatus {
   used: number
@@ -11,36 +10,35 @@ interface FreeTierStatus {
 }
 
 export default function FreeTierBadge() {
-  const { address, isConnected } = useAccount()
   const [status, setStatus] = useState<FreeTierStatus | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [wallet, setWallet] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!isConnected || !address) {
-      setStatus(null)
-      return
-    }
-
-    const check = async () => {
-      setLoading(true)
+    // Safely check for connected wallet without wagmi dependency
+    const checkWallet = async () => {
       try {
-        const res = await fetch(`/api/free-tier/check?wallet=${address}`)
-        const data = await res.json()
-        setStatus(data)
+        if (typeof window === 'undefined') return
+        const ethereum = (window as any).ethereum
+        if (!ethereum) return
+
+        const accounts = await ethereum.request({ method: 'eth_accounts' })
+        if (accounts && accounts.length > 0) {
+          setWallet(accounts[0])
+          const res = await fetch(`/api/free-tier/check?wallet=${accounts[0]}`)
+          const data = await res.json()
+          setStatus(data)
+        }
       } catch {
-        // silently fail
-      } finally {
-        setLoading(false)
+        // silently fail — wagmi not available
       }
     }
 
-    check()
-    // Re-check every 30s
-    const interval = setInterval(check, 30000)
+    checkWallet()
+    const interval = setInterval(checkWallet, 30000)
     return () => clearInterval(interval)
-  }, [address, isConnected])
+  }, [])
 
-  if (!isConnected || !status) return null
+  if (!wallet || !status) return null
 
   const isLow = status.remaining <= 2
   const isOut = status.remaining === 0
