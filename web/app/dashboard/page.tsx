@@ -262,10 +262,12 @@ function DashboardContent() {
 
   if (status !== 'authenticated' || loading) return <DashboardLoadingShell />
 
+  const fadeIn = { animation: 'fadeIn 0.4s ease-out' }
+
   if (error) {
     const isAuthError = error.includes('sign in') || error.includes('Unauthorized')
     return (
-      <div className="flex h-screen bg-black font-mono">
+      <div className="flex h-screen bg-black font-mono" style={fadeIn}>
         <DashboardSidebar userName={userName} plan={instance?.plan} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center max-w-md">
@@ -283,7 +285,7 @@ function DashboardContent() {
 
   if (!instance) {
     return (
-      <div className="flex min-h-screen bg-black font-mono">
+      <div className="flex min-h-screen bg-black font-mono" style={fadeIn}>
         <DashboardSidebar userName={userName} credits={credits} plan={undefined} runtimeUrl={undefined} runtimeGatewayToken={undefined} runtimeInstanceId={undefined} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="max-w-md text-center space-y-6">
@@ -313,7 +315,7 @@ function DashboardContent() {
   // When Railway is down, show a clean view with local OpenClaw link
   if (isUnreachable) {
     return (
-      <div className="flex min-h-screen bg-black font-mono">
+      <div className="flex min-h-screen bg-black font-mono" style={fadeIn}>
         <DashboardSidebar userName={userName} credits={credits} plan={instance?.plan} runtimeUrl={instance?.url || bootstrap?.openclawUrl} runtimeGatewayToken={instance?.gatewayToken || bootstrap?.gatewayToken} runtimeInstanceId={instance?.userId || bootstrap?.openclawInstanceId} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex-1 flex flex-col min-w-0">
           <header className="sticky top-14 z-30 bg-black/80 backdrop-blur-xl border-b border-zinc-900 px-4 sm:px-6 py-3 flex items-center justify-between">
@@ -371,7 +373,9 @@ function DashboardContent() {
   }
 
   return (
-    <div className="flex min-h-screen bg-black font-mono">
+    <>
+    <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+    <div className="flex min-h-screen bg-black font-mono" style={fadeIn}>
       <DashboardSidebar userName={userName} credits={credits} plan={instance?.plan} runtimeUrl={instance?.url || bootstrap?.openclawUrl} runtimeGatewayToken={instance?.gatewayToken || bootstrap?.gatewayToken} runtimeInstanceId={instance?.userId || bootstrap?.openclawInstanceId} isAdmin={session?.user?.isAdmin === true} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -484,6 +488,7 @@ function DashboardContent() {
         <ConfirmDialog open={!!confirmDialog} onOpenChange={(open: boolean) => { if (!open) setConfirmDialog(null) }} title={confirmDialog.title} description={confirmDialog.description} confirmLabel={confirmDialog.confirmLabel} pendingLabel={confirmDialog.pendingLabel} variant={confirmDialog.variant} onConfirm={async () => { setConfirmDialog(null); await performAction(confirmDialog.action) }} />
       )}
     </div>
+    </>
   )
 }
 
