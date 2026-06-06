@@ -49,14 +49,10 @@ export async function GET() {
     const plan = user.plan || 'free'
     const planLimit = PLAN_LIMITS[plan] || 0
 
-    // Sum all MiMo usage for this user
+    // Sum all MiMo usage for this user only
     const usage = await prisma.usage_logs.findMany({
       where: {
-        OR: [
-          { user_id: session.user.id },
-          { user_id: 'demo' },   // Demo usage counts toward platform
-          { user_id: 'proxy' },  // Proxy usage counts toward platform
-        ],
+        user_id: session.user.id,
         model: { contains: 'mimo' },
       },
       select: {
@@ -84,11 +80,7 @@ export async function GET() {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
     const monthlyUsage = await prisma.usage_logs.findMany({
       where: {
-        OR: [
-          { user_id: session.user.id },
-          { user_id: 'demo' },
-          { user_id: 'proxy' },
-        ],
+        user_id: session.user.id,
         model: { contains: 'mimo' },
         created_at: { gte: monthStart },
       },
@@ -111,11 +103,11 @@ export async function GET() {
       monthlyCredits += estimateCredits(log.model || '', input, output)
     }
 
-    // Use fallback data if no real usage exists
-    const hasUsage = monthlyCredits > 0
-    const displayCredits = hasUsage ? monthlyCredits : 2_847_000_000
-    const displayInput = hasUsage ? monthlyInput : 142_000_000
-    const displayOutput = hasUsage ? monthlyOutput : 52_000_000
+    // Fetch real credit balance
+    const creditBalance = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { referralCredits: true },
+    })
 
     return NextResponse.json({
       plan,
@@ -124,10 +116,11 @@ export async function GET() {
       totalCreditsUsed,
       totalInputTokens,
       totalOutputTokens,
-      monthlyCredits: displayCredits,
-      monthlyInput: displayInput,
-      monthlyOutput: displayOutput,
-      percentUsed: planLimit > 0 ? Math.round((displayCredits / planLimit) * 1000) / 10 : 0,
+      monthlyCredits,
+      monthlyInput,
+      monthlyOutput,
+      percentUsed: planLimit > 0 ? Math.round((monthlyCredits / planLimit) * 1000) / 10 : 0,
+      creditBalance: creditBalance?.referralCredits ?? 0,
       // Static info from MiMo
       cacheHitCreditsPerToken: 2.5,
       cacheMissCreditsPerToken: 300,

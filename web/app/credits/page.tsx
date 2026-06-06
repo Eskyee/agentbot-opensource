@@ -12,6 +12,7 @@ interface MimoUsage {
   monthlyInput: number
   monthlyOutput: number
   percentUsed: number
+  creditBalance: number
 }
 
 function formatCredits(n: number): string {
@@ -107,7 +108,7 @@ export default function CreditsPage() {
               </div>
 
               {/* Numbers */}
-              <div className="grid grid-cols-2 gap-px bg-zinc-900 mb-4">
+              <div className="grid grid-cols-3 gap-px bg-zinc-900 mb-4">
                 <div className="bg-black p-4">
                   <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Used</div>
                   <div className="text-lg font-bold tracking-tighter">{formatCredits(usage.monthlyCredits)}</div>
@@ -117,6 +118,11 @@ export default function CreditsPage() {
                   <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Remaining</div>
                   <div className="text-lg font-bold tracking-tighter">{formatCredits(Math.max(usage.planLimit - usage.monthlyCredits, 0))}</div>
                   <div className="text-[10px] text-zinc-600">of {formatCredits(usage.planLimit)} included</div>
+                </div>
+                <div className="bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Balance</div>
+                  <div className="text-lg font-bold tracking-tighter">{formatCredits(usage.creditBalance)}</div>
+                  <div className="text-[10px] text-zinc-600">referral credits</div>
                 </div>
               </div>
 
@@ -146,7 +152,8 @@ export default function CreditsPage() {
             </>
           ) : (
             <div className="text-center py-8">
-              <p className="text-zinc-500 text-sm">No usage data yet. Deploy an agent to start consuming credits.</p>
+              <p className="text-zinc-500 text-sm mb-2">No MiMo usage recorded yet.</p>
+              <p className="text-zinc-600 text-xs">Usage appears once your agent starts processing requests.</p>
             </div>
           )}
         </div>
