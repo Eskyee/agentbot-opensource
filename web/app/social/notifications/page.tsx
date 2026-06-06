@@ -5,24 +5,28 @@ import Link from 'next/link'
 
 interface Notification {
   id: string
+  source: 'social' | 'system'
   type: string
-  payload: {
-    actorAgentName?: string
-    postId?: string
-  }
-  readAt: string | null
+  title: string
+  message: string
+  read: boolean
+  link: string | null
   createdAt: string
 }
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     fetch('/api/social/notifications')
-      .then((r) => r.json())
+      .then((r) => {
+        if (r.status === 401) { setError('unauthorized'); return null }
+        return r.json()
+      })
       .then((data) => {
-        setNotifications(data.notifications ?? [])
+        if (data) setNotifications(data.notifications ?? [])
         setLoading(false)
         return fetch('/api/social/notifications', { method: 'POST' })
       })
@@ -42,13 +46,26 @@ export default function NotificationsPage() {
         Notifications
       </h1>
 
+      {error === 'unauthorized' && (
+        <div className="border border-zinc-800 p-12 text-center">
+          <p className="text-zinc-500 text-sm mb-4">Sign in to view your notifications</p>
+          <Link
+            href="/login?callbackUrl=/social/notifications"
+            className="inline-flex items-center justify-center bg-white text-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+          >
+            Sign In
+          </Link>
+        </div>
+      )}
+
       {loading && (
         <p className="text-zinc-600 text-sm">Loading…</p>
       )}
 
-      {!loading && notifications.length === 0 && (
-        <div className="border border-zinc-800 p-12 flex items-center justify-center">
-          <p className="text-zinc-500 text-sm">No notifications yet.</p>
+      {!loading && !error && notifications.length === 0 && (
+        <div className="border border-zinc-800 p-12 text-center">
+          <p className="text-zinc-500 text-sm mb-2">No notifications yet.</p>
+          <p className="text-zinc-600 text-xs">Notifications appear when someone interacts with your posts or agent.</p>
         </div>
       )}
 
@@ -57,44 +74,26 @@ export default function NotificationsPage() {
           {notifications.map((n) => (
             <div
               key={n.id}
-              className={`border border-zinc-800 p-4 flex items-start gap-3 ${!n.readAt ? 'bg-zinc-900' : 'bg-black'}`}
+              className={`border border-zinc-800 p-4 flex items-start gap-3 ${!n.read ? 'bg-zinc-900' : 'bg-black'}`}
             >
               <div className="flex-shrink-0 w-5 flex items-center justify-center pt-1">
-                {!n.readAt && (
-                  <span className="w-2 h-2 bg-amber-500 inline-block" />
+                {!n.read && (
+                  <span className={`w-2 h-2 inline-block ${n.source === 'system' ? 'bg-blue-500' : 'bg-amber-500'}`} />
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                {n.type === 'reply' && (
-                  <p className="text-sm text-white">
-                    <span className="font-bold">{n.payload.actorAgentName}</span>{' '}
-                    replied to your post
-                    {n.payload.postId && (
-                      <>
-                        {' — '}
-                        <Link
-                          href={`/social/p/${n.payload.postId}`}
-                          className="text-amber-400 hover:text-amber-300 underline"
-                        >
-                          view post
-                        </Link>
-                      </>
-                    )}
-                  </p>
+                <p className="text-sm text-white">{n.title}</p>
+                {n.message && (
+                  <p className="text-xs text-zinc-500 mt-0.5">{n.message}</p>
                 )}
-
-                {n.type === 'follow' && (
-                  <p className="text-sm text-white">
-                    <span className="font-bold">{n.payload.actorAgentName}</span>{' '}
-                    followed your agent
-                  </p>
-                )}
-
-                {n.type !== 'reply' && n.type !== 'follow' && (
-                  <p className="text-sm text-zinc-400 uppercase tracking-widest">
-                    {n.type}
-                  </p>
+                {n.link && (
+                  <Link
+                    href={n.link}
+                    className="text-xs text-amber-400 hover:text-amber-300 underline mt-1 inline-block"
+                  >
+                    view
+                  </Link>
                 )}
               </div>
 
