@@ -321,6 +321,131 @@ export default function RobinhoodPage() {
           ))}
         </div>
 
+        {/* What Your Agent Can Do */}
+        <div className="border border-zinc-800 bg-zinc-950 p-6 mb-px">
+          <h2 className="text-sm font-bold tracking-tight uppercase mb-4">
+            What Your Agent Can Do
+          </h2>
+          <p className="text-[11px] text-zinc-500 mb-4 leading-relaxed">
+            Once connected, your agent can build portfolios, automate trading strategies, analyze
+            market data, and manage your investments — all through natural language.
+          </p>
+          <div className="space-y-3">
+            {[
+              {
+                label: 'Build portfolios',
+                prompt:
+                  '"Look through news and industry reports to build a portfolio that represents little-known tickers across the AI supply chain."',
+              },
+              {
+                label: 'Automate strategies',
+                prompt:
+                  '"Buy $100 of ROAR every time the price decreases 2% or more in 1 day."',
+              },
+              {
+                label: 'Rebalance',
+                prompt:
+                  '"Rebalance my portfolio to achieve a 20% allocation in ROAR and 80% allocation in HMNI."',
+              },
+              {
+                label: 'Analyze risk',
+                prompt:
+                  '"Look at my portfolio and tell me what risks I\'m exposed to."',
+              },
+              {
+                label: 'Market analysis',
+                prompt:
+                  '"Why is ROAR up today?" or "Look at news, social sentiment, and recent quotes to build a bull and bear thesis for ROAR."',
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="border border-zinc-800 p-3 flex flex-col gap-1"
+              >
+                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                  {item.label}
+                </div>
+                <div className="text-[11px] text-zinc-500 italic leading-relaxed">
+                  {item.prompt}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-zinc-600 mt-4">
+            These examples are for informational purposes only and should not be construed as
+            recommendations.
+          </p>
+        </div>
+
+        {/* Data Access & Agentic Account */}
+        <div className="grid gap-px bg-zinc-800 md:grid-cols-2 mb-px">
+          <div className="bg-zinc-950 border border-zinc-800 p-6">
+            <h2 className="text-sm font-bold tracking-tight uppercase mb-4">
+              What Your Agent Can Access
+            </h2>
+            <p className="text-[11px] text-zinc-500 mb-4 leading-relaxed">
+              When connected, your agent has{' '}<strong className="text-zinc-300">read access</strong> to:
+            </p>
+            <ul className="space-y-2">
+              {[
+                'All your Robinhood accounts (including account numbers)',
+                'Positions and balances',
+                'Transactions and order history',
+              ].map((item) => (
+                <li
+                  key={item}
+                  className="text-[11px] text-zinc-400 flex items-start gap-2"
+                >
+                  <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 border border-zinc-800 p-3">
+              <p className="text-[10px] text-yellow-400 font-bold uppercase tracking-widest mb-1">
+                Important
+              </p>
+              <p className="text-[11px] text-zinc-500 leading-relaxed">
+                Your agent can only place trades in your{' '}
+                <strong className="text-zinc-300">Agentic account</strong> — not your main
+                Robinhood account.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-zinc-950 border border-zinc-800 p-6">
+            <h2 className="text-sm font-bold tracking-tight uppercase mb-4">
+              Agentic Account
+            </h2>
+            <p className="text-[11px] text-zinc-500 mb-4 leading-relaxed">
+              A Robinhood Agentic account is a self-directed, individual investing account
+              designed for AI agent trading. You can have up to 10 self-directed individual
+              accounts, including your Agentic account.
+            </p>
+            <div className="space-y-3">
+              <div className="border border-zinc-800 p-3">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">
+                  Requirements
+                </div>
+                <ul className="text-[11px] text-zinc-500 space-y-1">
+                  <li>• Primary individual account in good standing</li>
+                  <li>• Complete onboarding after MCP connection</li>
+                  <li>• Desktop device for authentication</li>
+                </ul>
+              </div>
+              <div className="border border-zinc-800 p-3">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">
+                  Supported Platforms
+                </div>
+                <p className="text-[11px] text-zinc-500">
+                  Claude Code, Claude Desktop, ChatGPT, Codex, Codex CLI, Cursor, Grok, and
+                  any MCP-compatible platform.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* How It Works + Smoke Test */}
         <div className="grid gap-px bg-zinc-800 md:grid-cols-2">
           {/* How It Works */}
@@ -333,22 +458,22 @@ export default function RobinhoodPage() {
                 {
                   step: '01',
                   title: 'Connect',
-                  desc: 'Click "Connect Robinhood" to add the MCP server to your agent. Or run: openclaw mcp set robinhood-trading ...',
+                  desc: 'Click "Connect Robinhood" above to add the MCP server to your agent config.',
                 },
                 {
                   step: '02',
-                  title: 'Login',
-                  desc: 'Run in terminal: openclaw mcp login robinhood-trading — opens Robinhood OAuth in your browser.',
+                  title: 'Authenticate',
+                  desc: 'Ask your agent something like "Check my Robinhood portfolio" — it triggers Robinhood OAuth automatically.',
                 },
                 {
                   step: '03',
-                  title: 'Approve',
-                  desc: 'Sign in to Robinhood, approve access. Copy the code, run: openclaw mcp login robinhood-trading --code <code>',
+                  title: 'Open Agentic Account',
+                  desc: 'Sign in to Robinhood, then follow the on-screen steps to open your Agentic trading account. Desktop only.',
                 },
                 {
                   step: '04',
-                  title: 'Ask Your Agent',
-                  desc: 'Say "Check my Robinhood portfolio" — your agent will use the MCP tools to query your account.',
+                  title: 'Trade',
+                  desc: 'Your agent can now query portfolios, analyze markets, and place trades in your Agentic account.',
                 },
               ].map((item) => (
                 <div key={item.step} className="flex gap-3">
@@ -434,16 +559,30 @@ export default function RobinhoodPage() {
           </div>
         </div>
 
-        {/* Disclaimer */}
-        <div className="border border-zinc-800 bg-zinc-950 p-4 mt-px">
-          <p className="text-[10px] text-zinc-600 leading-relaxed">
-            <strong className="text-zinc-500">Disclaimer:</strong> Robinhood Agentic
-            Trading involves significant risk, including possible loss of your entire
-            investment. AI agents can make errors, misinterpret instructions, and act on
-            incomplete information. You are responsible for all trades executed by your
-            agent. Brokerage services by Robinhood Financial LLC (member SIPC). This
-            integration uses the official Robinhood Trading MCP endpoint.
-          </p>
+        {/* Risks & Disclaimer */}
+        <div className="border border-zinc-800 bg-zinc-950 p-6 mt-px">
+          <h2 className="text-sm font-bold tracking-tight uppercase mb-4">Risks</h2>
+          <div className="space-y-3 mb-4">
+            {[
+              'You are ultimately responsible for all trades your AI agent places in your account.',
+              'AI agents can make errors, misinterpret instructions, and act on incomplete information.',
+              'If you\'ve asked your agent to act without approval, it can place trades without your confirmation.',
+              'Before your agent takes action, you can review what it\'s about to do.',
+            ].map((risk) => (
+              <div key={risk} className="flex items-start gap-2">
+                <AlertCircle className="h-3 w-3 text-red-400 mt-0.5 shrink-0" />
+                <p className="text-[11px] text-zinc-400 leading-relaxed">{risk}</p>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-zinc-800 pt-4">
+            <p className="text-[10px] text-zinc-600 leading-relaxed">
+              <strong className="text-zinc-500">Disclaimer:</strong> Robinhood Agentic
+              Trading involves significant risk, including possible loss of your entire
+              investment. Brokerage services by Robinhood Financial LLC (member SIPC). This
+              integration uses the official Robinhood Trading MCP endpoint.
+            </p>
+          </div>
         </div>
       </DashboardContent>
     </DashboardShell>
