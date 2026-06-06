@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
@@ -488,9 +488,5 @@ function DashboardContent() {
 }
 
 export default function Dashboard() {
-  return (
-    <Suspense fallback={<DashboardLoadingShell />}>
-      <DashboardContent />
-    </Suspense>
-  )
+  return <DashboardContent />
 }
