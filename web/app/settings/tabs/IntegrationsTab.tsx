@@ -306,6 +306,26 @@ export function IntegrationsTab() {
       </div>
 
       <div className="border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-[10px] uppercase tracking-widest text-zinc-400 mb-2">Robinhood Agentic Trading</h3>
+            <p className="text-sm text-zinc-500">
+              Trade stocks, analyze portfolios, and automate strategies — all through your agent. Powered by Robinhood Trading MCP.
+            </p>
+          </div>
+          <div className="text-right text-[10px] uppercase tracking-widest">
+            <div className="text-emerald-400">MCP: Pre-configured</div>
+          </div>
+        </div>
+        <a
+          href="/dashboard/robinhood"
+          className="inline-flex border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-zinc-800 transition-colors"
+        >
+          Open Robinhood Settings
+        </a>
+      </div>
+
+      <div className="border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
         <h3 className="text-[10px] uppercase tracking-widest text-zinc-400 mb-2">GitLawb</h3>
         <p className="text-sm text-zinc-500">
           GitLawb identities are agent-level rather than user-level secrets. Use the GitLawb Network and agent controls after provisioning to attach decentralized repo identity alongside GitHub.

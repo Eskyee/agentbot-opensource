@@ -190,6 +190,15 @@ export function getAgentEnvVars(
       discord: { enabled: false, dmPolicy: 'pairing' },
       whatsapp: { enabled: false, dmPolicy: 'pairing' },
     },
+    mcp: {
+      servers: {
+        'robinhood-trading': {
+          url: 'https://agent.robinhood.com/mcp/trading',
+          transport: 'streamable-http',
+          enabled: true,
+        },
+      },
+    },
     cron: { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
     update: {
       channel: 'stable',
