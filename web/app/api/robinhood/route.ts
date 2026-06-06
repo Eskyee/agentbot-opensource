@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
           error: result.error,
           manualSetup: isGatewayError,
           manualCommand:
-            'openclaw config patch --stdin <<< \'{"mcp":{"servers":{"robinhood-trading":{"url":"https://agent.robinhood.com/mcp/trading","transport":"streamable-http","enabled":true}}}}\'',
+            'openclaw mcp set robinhood-trading \'{"url":"https://agent.robinhood.com/mcp/trading","transport":"streamable-http","auth":"oauth","enabled":true}\'',
         })
       }
       return NextResponse.json({

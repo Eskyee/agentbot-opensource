@@ -333,22 +333,22 @@ export default function RobinhoodPage() {
                 {
                   step: '01',
                   title: 'Connect',
-                  desc: 'Click "Connect Robinhood" to add the MCP server to your agent config.',
+                  desc: 'Click "Connect Robinhood" to add the MCP server to your agent. Or run: openclaw mcp set robinhood-trading ...',
                 },
                 {
                   step: '02',
-                  title: 'Authenticate',
-                  desc: 'In your agent, run /mcp → select robinhood-trading → authenticate with Robinhood.',
+                  title: 'Login',
+                  desc: 'Run in terminal: openclaw mcp login robinhood-trading — opens Robinhood OAuth in your browser.',
                 },
                 {
                   step: '03',
-                  title: 'Open Agentic Account',
-                  desc: 'Robinhood will prompt you to open a dedicated Agentic account for AI trading.',
+                  title: 'Approve',
+                  desc: 'Sign in to Robinhood, approve access. Copy the code, run: openclaw mcp login robinhood-trading --code <code>',
                 },
                 {
                   step: '04',
-                  title: 'Trade',
-                  desc: 'Ask your agent to analyze portfolios, place orders, or automate strategies.',
+                  title: 'Ask Your Agent',
+                  desc: 'Say "Check my Robinhood portfolio" — your agent will use the MCP tools to query your account.',
                 },
               ].map((item) => (
                 <div key={item.step} className="flex gap-3">

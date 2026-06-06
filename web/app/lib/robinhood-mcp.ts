@@ -112,6 +112,7 @@ export async function injectRobinhoodMcp(userId: string): Promise<{ ok: boolean;
           'robinhood-trading': {
             url: ROBINHOOD_MCP_URL,
             transport: 'streamable-http',
+            auth: 'oauth',
             enabled: true,
           },
         },
