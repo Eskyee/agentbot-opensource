@@ -3,20 +3,21 @@
 import { useState, useEffect } from 'react'
 
 const activities = [
-  { channel: 'telegram', action: 'received message from @promoter', time: '2s ago' },
-  { channel: 'discord', action: 'posted update in #announcements', time: '14s ago' },
-  { channel: 'whatsapp', action: 'replied to group "Label Team"', time: '28s ago' },
-  { channel: 'agent', action: 'completed task: morning briefing', time: '1m ago' },
-  { channel: 'telegram', action: 'forwarded invoice to accounting', time: '2m ago' },
-  { channel: 'discord', action: 'moderated spam in #general', time: '3m ago' },
-  { channel: 'agent', action: 'started scheduled task: check mentions', time: '4m ago' },
-  { channel: 'whatsapp', action: 'sent reminder: event in 2 hours', time: '5m ago' },
+  { channel: 'telegram', action: 'Found 3 urgent messages in your group', time: '2s ago' },
+  { channel: 'whatsapp', action: 'Replied to a customer asking about the event', time: '14s ago' },
+  { channel: 'discord', action: 'Posted your daily update in #announcements', time: '28s ago' },
+  { channel: 'email', action: 'Drafted a reply to the venue about Saturday', time: '1m ago' },
+  { channel: 'telegram', action: 'Sent you a summary of overnight messages', time: '2m ago' },
+  { channel: 'whatsapp', action: 'Reminded your team about the deadline in 2 hours', time: '3m ago' },
+  { channel: 'discord', action: 'Removed spam from #general', time: '4m ago' },
+  { channel: 'agent', action: 'Finished your morning briefing — 4 things need attention', time: '5m ago' },
 ]
 
 const channelColors: Record<string, string> = {
   telegram: 'text-blue-400',
   discord: 'text-purple-400',
   whatsapp: 'text-green-400',
+  email: 'text-yellow-400',
   agent: 'text-orange-400',
 }
 
