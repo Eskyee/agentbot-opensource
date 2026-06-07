@@ -232,3 +232,134 @@ a {
 .typing-dot:nth-child(1) { animation-delay: 0ms; }
 .typing-dot:nth-child(2) { animation-delay: 150ms; }
 .typing-dot:nth-child(3) { animation-delay: 300ms; }
+
+/* ━━━ AGENTBOT — Beautiful Layer ━━━ */
+
+/* Hero glow — subtle orange pulse behind heading */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.03; transform: scale(1); }
+  50% { opacity: 0.06; transform: scale(1.05); }
+}
+.hero-glow {
+  position: absolute;
+  top: -50%;
+  right: -30%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #f97316 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(100px);
+  animation: glow-pulse 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Staggered fade-in for tiles */
+@keyframes fade-in-stagger {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.stagger-1 { animation: fade-in-stagger 0.6s ease-out 0.1s both; }
+.stagger-2 { animation: fade-in-stagger 0.6s ease-out 0.2s both; }
+.stagger-3 { animation: fade-in-stagger 0.6s ease-out 0.3s both; }
+.stagger-4 { animation: fade-in-stagger 0.6s ease-out 0.4s both; }
+.stagger-5 { animation: fade-in-stagger 0.6s ease-out 0.5s both; }
+.stagger-6 { animation: fade-in-stagger 0.6s ease-out 0.6s both; }
+
+/* Card hover — subtle lift + border glow */
+.card-hover {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: #333;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Button press — satisfying click */
+.btn-press {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* Breathing status dot */
+@keyframes breathe {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+}
+.status-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* Gradient border for hero section */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.gradient-border {
+  background: linear-gradient(135deg, #1a1a1a, #262626, #1a1a1a);
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Smooth page transitions */
+.page-enter {
+  animation: fade-in-up 0.4s ease-out;
+}
+
+/* Text selection — brand orange */
+::selection {
+  background: rgba(249, 115, 22, 0.3);
+  color: #fff;
+}
+
+/* Link underline animation */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #f97316;
+  transition: width 0.3s ease;
+}
+.link-underline:hover::after {
+  width: 100%;
+}
+
+/* Metric number animation */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.metric-animate {
+  animation: count-up 0.5s ease-out;
+}
+
+/* Subtle noise texture overlay */
+.noise-overlay {
+  position: relative;
+}
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Pricing card popular glow */
+@keyframes popular-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.1); }
+  50% { box-shadow: 0 0 20px 1px rgba(249, 115, 22, 0.08); }
+}
+.popular-glow {
+  animation: popular-glow 4s ease-in-out infinite;
+}

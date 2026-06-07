@@ -90,7 +90,7 @@ function DashboardLoadingShell() {
 
 function MetricCard({ label, value, sub, trend }: { label: string; value: string; sub?: string; trend?: 'up' | 'down' | 'neutral' }) {
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-zinc-800/50 bg-zinc-950 p-5 transition-all hover:border-zinc-700/50 hover:bg-zinc-900/50">
+    <div className="group relative overflow-hidden rounded-xl border border-zinc-800/50 bg-zinc-950 p-5 card-hover">
       <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 mb-2">{label}</p>
       <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
@@ -111,7 +111,7 @@ function StatusDot({ status }: { status: 'ok' | 'degraded' | 'down' }) {
     <span className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] font-bold ${
       status === 'ok' ? 'text-emerald-500' : status === 'degraded' ? 'text-yellow-500' : 'text-red-500'
     }`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${
+      <span className={`h-1.5 w-1.5 rounded-full status-breathe ${
         status === 'ok' ? 'bg-emerald-500' : status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'
       }`} />
       {status === 'ok' ? 'Online' : status === 'degraded' ? 'Degraded' : 'Down'}
@@ -389,7 +389,7 @@ function DashboardContent() {
 
             {/* Hero */}
             <section className="mb-8">
-              <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 bg-gradient-to-br from-zinc-950 via-zinc-950 to-zinc-900 p-6 sm:p-8">
+              <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 gradient-border p-6 sm:p-8">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                 <div className="relative">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">

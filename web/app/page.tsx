@@ -5,11 +5,12 @@ export default async function Home() {
   const session = await getAuthSession()
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono overflow-x-hidden">
+    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden page-enter">
 
       {/* ━━━ HERO — one sentence, one truth ━━━ */}
       <section className="relative max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36 md:py-48">
-        <div className="space-y-8">
+        <div className="hero-glow" />
+        <div className="relative space-y-8">
           <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest">
             Always on
           </div>
@@ -78,8 +79,8 @@ export default async function Home() {
                 title: 'It remembers everything',
                 body: 'Every conversation, every decision, every preference. Your agent learns your style and gets sharper over time. Your server, your data, your agent.',
               },
-            ].map((item) => (
-              <div key={item.title} className="bg-black p-6 sm:p-8">
+            ].map((item, i) => (
+              <div key={item.title} className={`bg-black p-6 sm:p-8 card-hover stagger-${i + 1}`}>
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">{item.title}</h3>
                 <p className="text-zinc-500 text-sm leading-relaxed">{item.body}</p>
               </div>
@@ -109,8 +110,8 @@ export default async function Home() {
                 title: 'Walk away',
                 body: 'Your agent runs 24/7 on its own server. It will message you when something needs attention. Everything else, it handles.',
               },
-            ].map((step) => (
-              <div key={step.num} className="bg-black p-6 sm:p-8">
+            ].map((step, i) => (
+              <div key={step.num} className={`bg-black p-6 sm:p-8 card-hover stagger-${i + 1}`}>
                 <div className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-4">{step.num}</div>
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">{step.title}</h3>
                 <p className="text-zinc-500 text-sm leading-relaxed">{step.body}</p>
@@ -146,8 +147,8 @@ export default async function Home() {
                 contrast: 'Open source',
                 body: 'The runtime is OpenClaw. The code is on GitHub. Fork it, inspect it, self-host it. We earn your trust by showing you everything.',
               },
-            ].map((item) => (
-              <div key={item.label} className="bg-black p-6 sm:p-8">
+            ].map((item, i) => (
+              <div key={item.label} className={`bg-black p-6 sm:p-8 card-hover stagger-${i + 1}`}>
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">{item.label}</div>
                 <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3">{item.contrast}</div>
                 <p className="text-zinc-500 text-sm leading-relaxed">{item.body}</p>
@@ -183,7 +184,7 @@ export default async function Home() {
                 features: ['10 agents, always on', 'Team roles and permissions', 'Full API access', 'Your brand, our infrastructure'],
               },
             ].map((plan) => (
-              <div key={plan.name} className="bg-black p-6 sm:p-8 flex flex-col">
+              <div key={plan.name} className={`bg-black p-6 sm:p-8 flex flex-col card-hover ${plan.popular ? 'popular-glow' : ''}`}>
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
@@ -202,7 +203,7 @@ export default async function Home() {
                 </ul>
                 <Link
                   href={`/api/stripe/checkout?plan=${plan.name.toLowerCase()}`}
-                  className={`mt-auto block w-full py-3 text-center text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                  className={`mt-auto block w-full py-3 text-center text-[10px] font-bold uppercase tracking-widest transition-colors btn-press ${
                     plan.popular
                       ? 'bg-white text-black hover:bg-zinc-200'
                       : 'border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'

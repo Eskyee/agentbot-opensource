@@ -100,7 +100,7 @@ export default function PricingPage() {
         <section className="border-t border-zinc-800 pt-16 mb-16">
           <div className="grid sm:grid-cols-3 gap-px bg-zinc-800">
             {plans.map((plan) => (
-              <div key={plan.name} className="bg-black p-6 sm:p-8 flex flex-col">
+              <div key={plan.name} className={`bg-black p-6 sm:p-8 flex flex-col card-hover ${plan.popular ? 'popular-glow' : ''}`}>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
@@ -120,7 +120,7 @@ export default function PricingPage() {
                 </ul>
                 <Link
                   href={`/api/stripe/checkout?plan=${plan.name.toLowerCase()}`}
-                  className={`mt-auto block w-full py-3 text-center text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                  className={`mt-auto block w-full py-3 text-center text-[10px] font-bold uppercase tracking-widest transition-colors btn-press ${
                     plan.popular
                       ? 'bg-white text-black hover:bg-zinc-200'
                       : 'border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
