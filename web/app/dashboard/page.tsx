@@ -387,60 +387,41 @@ function DashboardContent() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <PermissionGate agentId={instance?.userId} />
 
-            {/* Hero */}
-            <section className="mb-8">
-              <div className="relative overflow-hidden rounded-2xl border border-zinc-800/50 gradient-border p-6 sm:p-8">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <div className="relative">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div>
-                      <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter text-white mb-2">{instanceName}</h1>
-                      <p className="text-zinc-500 text-sm max-w-md">{instance.status === 'running' ? 'Live and working. Check back when you want — it handles the rest.' : `Agent is ${instance.status}. Start it to get back online.`}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {instance.controlUiUrl && (
-                        <a href={instance.controlUiUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
-                          Open Chat ↗
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mt-5">
-                    <span className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{instance.plan || 'Solo'}</span>
-                  </div>
+            {/* Stats row */}
+            <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {[
+                { label: 'Status', value: instance.status === 'running' ? 'Online' : instance.status, sub: runtimeHealth === 'healthy' ? 'All systems go' : undefined },
+                { label: 'Messages', value: stats?.messages?.toLocaleString() || '—', sub: 'Today' },
+                { label: 'Uptime', value: stats?.uptime || '—', sub: '30-day' },
+                { label: 'Plan', value: instance.plan || 'Solo', sub: instanceName },
+              ].map((stat) => (
+                <div key={stat.label} className="border border-zinc-800 p-3">
+                  <div className="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">{stat.label}</div>
+                  <div className="text-lg font-bold text-white font-mono">{stat.value}</div>
+                  {stat.sub && <div className="text-[8px] text-zinc-700">{stat.sub}</div>}
                 </div>
-              </div>
+              ))}
             </section>
 
-            {/* Metrics */}
-            <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-              <MetricCard label="Status" value={instance.status === 'running' ? 'Online' : instance.status} sub={runtimeHealth === 'healthy' ? 'All systems go' : undefined} />
-              <MetricCard label="Messages" value={stats?.messages?.toLocaleString() || '—'} sub="Today" />
-              <MetricCard label="Uptime" value={stats?.uptime || '—'} sub="30-day" />
-              <MetricCard label="Plan" value={instance.plan || 'Solo'} />
-            </section>
-
-
-
-            {/* Health checks */}
-            {statusChecks.length > 0 && (
-              <section className="mb-8">
-                <h2 className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-3">System Health</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {statusChecks.map((check) => (
-                    <div key={check.name} className="flex items-center justify-between px-4 py-3 rounded-xl border border-zinc-800/50 bg-zinc-950">
-                      <span className="text-xs text-zinc-400">{check.name}</span>
-                      <StatusDot status={check.status} />
-                    </div>
-                  ))}
+            {/* Recent Activity */}
+            <section className="border border-zinc-800 p-4 mb-6">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Recent Activity</div>
+              {stats?.messages ? (
+                <div className="text-[9px] text-zinc-500 font-mono py-2">Agent is active — {stats.messages} messages today</div>
+              ) : (
+                <div className="text-[9px] text-zinc-500 font-mono py-2">No recent activity</div>
+              )}
+              {statusChecks.length > 0 && statusChecks.map((check, i) => (
+                <div key={check.name} className="flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0">
+                  <div className={`w-1 h-1 rounded-full ${check.status === 'ok' ? 'bg-green-500' : check.status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                  <span className="text-[9px] text-zinc-500 font-mono flex-1">{check.name}</span>
+                  <span className={`text-[9px] font-mono ${check.status === 'ok' ? 'text-green-500' : check.status === 'degraded' ? 'text-yellow-500' : 'text-red-500'}`}>{check.status}</span>
                 </div>
-              </section>
-            )}
+              ))}
+            </section>
 
             {/* Actions */}
-            <section className="mb-8">
-              <h2 className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-3">Control</h2>
+            <section className="mb-6">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {instance.controlUiUrl && <QuickAction icon="💬" label="Chat" href={instance.controlUiUrl} variant="primary" />}
                 <QuickAction icon="🔧" label="Skills" href={skillsManagerUrl} />
