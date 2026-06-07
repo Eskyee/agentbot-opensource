@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { sendWelcomeEmail } from "@/lib/email/welcome";
+import { sendWelcomeEmail } from '@/app/lib/email'
 import { prisma } from "@/app/lib/prisma";
 import { isRateLimited, getClientIP } from "@/app/lib/security-middleware";
 import { alertNewUser } from "@/app/lib/alerts";
