@@ -2,7 +2,6 @@
 
 import { Suspense } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { OnboardProvider, useOnboard } from './components/OnboardContext'
 import { StepTelegram } from './components/StepTelegram'
 import { StepToken } from './components/StepToken'
@@ -103,28 +102,17 @@ function OnboardContent() {
       <ModeSelector />
 
       <div className="mb-12">
-        <div className="text-5xl mb-4">🦞</div>
         {isPaid && (
-          <div className="mb-4 bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-2 inline-block">
-            ✓ Payment successful! Your {plan.charAt(0).toUpperCase() + plan.slice(1)} plan is activated.
+          <div className="mb-4 bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-2 inline-block text-xs uppercase tracking-widest">
+            ✓ {plan.charAt(0).toUpperCase() + plan.slice(1)} plan activated
           </div>
         )}
         <h1 className="text-3xl font-bold tracking-tighter uppercase">
-          {mode === 'link' && 'Link Existing OpenClaw'}
-          {mode === 'create' && 'Create Agentbot'}
-          {mode === 'deploy' && 'Deploy OpenClaw with One Click'}
+          Deploy your agent
         </h1>
         <p className="text-sm text-zinc-400 mt-2">
-          {mode === 'link' && 'Connect your existing OpenClaw instance'}
-          {mode === 'create' && 'Build your custom AI agent from scratch'}
-          {mode === 'deploy' && 'Provision your first Factory AI agent instantly'}
+          One click. Your agent is live in under 2 minutes.
         </p>
-        <p className="text-xs text-zinc-500 mt-1">
-          {plan === 'free' ? 'Starter plan' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
-        </p>
-        <div className="aspect-video w-full bg-zinc-900 border border-zinc-800 rounded mt-8 flex items-center justify-center overflow-hidden">
-          <Image src="/hero-image.webp" alt="Agent Factory" width={600} height={337} className="opacity-40 grayscale hover:grayscale-0 transition-all duration-700" />
-        </div>
       </div>
 
       <ProgressSteps />

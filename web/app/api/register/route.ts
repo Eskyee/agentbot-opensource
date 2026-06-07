@@ -5,6 +5,7 @@ import { prisma } from "@/app/lib/prisma";
 import { isRateLimited, getClientIP } from "@/app/lib/security-middleware";
 import { alertNewUser } from "@/app/lib/alerts";
 import { checkPasswordPolicy, isPasswordPwned } from "@/lib/password-policy";
+import { createUserSession, attachSessionCookie } from '@/app/lib/session';
 
 export async function POST(request: NextRequest) {
   // BotID protection
@@ -94,5 +95,9 @@ export async function POST(request: NextRequest) {
   sendWelcomeEmail(email, user.name || 'there').catch(console.error);
   alertNewUser(email, 'email').catch(() => {});
 
-  return NextResponse.json({ id: user.id, email: user.email, name: user.name });
+  // Auto-login after signup — no redirect to login page
+  const sessionToken = await createUserSession(user.id);
+  const response = NextResponse.json({ id: user.id, email: user.email, name: user.name });
+  attachSessionCookie(response, sessionToken);
+  return response;
 }

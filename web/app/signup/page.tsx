@@ -44,15 +44,15 @@ export default function SignupPage() {
     }
     
     setLoading(false);
-    window.location.href = "/login?registered=1";
+    window.location.href = "/dashboard";
   };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-orange-500/30 font-mono">
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
         <div className="mb-6">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Create Account</div>
-          <h1 className="text-2xl font-bold tracking-tighter uppercase">Sign up for Agentbot</h1>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Deploy</div>
+          <h1 className="text-2xl font-bold tracking-tighter uppercase">Deploy your agent</h1>
         </div>
         {showReferralBadge && (
           <div className="mb-6">

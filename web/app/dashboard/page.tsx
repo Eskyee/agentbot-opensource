@@ -295,8 +295,8 @@ function DashboardContent() {
               Deploy your first agent. It takes about 2 minutes.
             </p>
             <Link
-              href="/signup"
-              className="inline-block bg-white text-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              href="/onboard?mode=deploy"
+              className="inline-block bg-white text-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
             >
               Deploy Agent →
             </Link>
