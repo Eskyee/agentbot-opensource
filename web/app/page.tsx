@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import dynamic from 'next/dynamic'
-import { HeroActivity } from '@/app/components/HeroActivity'
-
 const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
 
 export default async function Home() {
@@ -63,7 +61,7 @@ export default async function Home() {
             <div><span className="text-orange-500">2 min</span> to deploy</div>
           </div>
 
-          <HeroActivity />
+          <DashboardPreview />
         </div>
       </section>
 
@@ -119,14 +117,6 @@ export default async function Home() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ━━━ DASHBOARD PREVIEW ━━━ */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Your Dashboard</div>
-          <DashboardPreview />
         </div>
       </section>
 
