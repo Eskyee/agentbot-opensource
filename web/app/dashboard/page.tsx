@@ -292,13 +292,13 @@ function DashboardContent() {
             <div className="text-4xl">🤖</div>
             <h2 className="text-xl font-bold uppercase tracking-tight">No Agent Deployed</h2>
             <p className="text-zinc-500 text-sm leading-relaxed">
-              You haven't deployed an agent yet. Head to the marketplace to deploy your first AI agent — it takes about 2 minutes.
+              Deploy your first agent. It takes about 2 minutes.
             </p>
             <Link
-              href="/marketplace"
+              href="/signup"
               className="inline-block bg-white text-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
             >
-              Deploy Your First Agent →
+              Deploy Agent →
             </Link>
           </div>
         </div>
@@ -334,34 +334,21 @@ function DashboardContent() {
               <div className="text-6xl mb-6">🦞</div>
               <h1 className="text-2xl font-bold tracking-tighter uppercase mb-3">Agent Offline</h1>
               <p className="text-zinc-500 text-sm mb-8">
-                Your managed runtime is suspended. You can still chat with your local OpenClaw instance running on your Mac mini.
+                Your agent is currently offline. Start it to resume.
               </p>
               <div className="space-y-4">
-                <a
-                  href="https://agentbot.sh/chat"
-                  className="block w-full bg-white text-black py-3 rounded-lg font-bold uppercase tracking-widest text-xs hover:bg-zinc-200 transition-colors"
-                >
-                  💬 Open Chat (Local OpenClaw)
-                </a>
-                <a
-                  href="https://agentbot.sh/demo"
-                  className="block w-full border border-zinc-800 py-3 rounded-lg font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                >
-                  🤖 Try Demo
-                </a>
-                <Link
-                  href="/marketplace"
-                  className="block w-full border border-zinc-800 py-3 rounded-lg font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                >
-                  🚀 Deploy New Agent
-                </Link>
+                {instance.controlUiUrl && (
+                  <a href={instance.controlUiUrl} target="_blank" rel="noopener noreferrer" className="block w-full bg-white text-black py-3 rounded-lg font-bold uppercase tracking-widest text-xs hover:bg-zinc-200 transition-colors">
+                    Open Chat
+                  </a>
+                )}
+                <button onClick={() => performAction('start')} className="block w-full border border-zinc-800 py-3 rounded-lg font-bold uppercase tracking-widest text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">
+                  Start Agent
+                </button>
               </div>
               <div className="mt-12 pt-8 border-t border-zinc-900">
-                <h3 className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <QuickAction icon="📊" label="Analytics" href="/dashboard/analytics" />
                   <QuickAction icon="💰" label="Billing" href="/billing" />
-                  <QuickAction icon="🔧" label="Skills" href="/dashboard/skills" />
                   <QuickAction icon="⚙️" label="Settings" href="/settings" />
                 </div>
               </div>
@@ -391,14 +378,9 @@ function DashboardContent() {
               <StatusDot status={instance.status === 'running' ? 'ok' : instance.status === 'stopped' ? 'down' : 'degraded'} />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/dashboard/wallet" className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-800 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white hover:border-zinc-600 transition-all">
-              ◎ Wallet
-            </Link>
-            <Link href="/onboard?mode=deploy" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
-              + New Agent
-            </Link>
-          </div>
+          <Link href="/onboard?mode=deploy" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+            + New Agent
+          </Link>
         </header>
 
         <main className="flex-1 overflow-y-auto">
@@ -412,9 +394,8 @@ function DashboardContent() {
                 <div className="relative">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div>
-                      <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-1">MiMo V2.5 Pro · OpenClaw {instance.openclawVersion || '2026.6.1'}</p>
                       <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter text-white mb-2">{instanceName}</h1>
-                      <p className="text-zinc-500 text-sm max-w-md">Your AI agent is {instance.status === 'running' ? 'live and processing tasks' : instance.status}. {instance.status === 'running' ? 'All systems nominal.' : 'Start it to resume.'}</p>
+                      <p className="text-zinc-500 text-sm max-w-md">{instance.status === 'running' ? 'Your agent is live. Working while you sleep.' : `Agent is ${instance.status}. Start it to resume.`}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {instance.controlUiUrl && (
@@ -425,11 +406,8 @@ function DashboardContent() {
                     </div>
                   </div>
 
-                  {/* Tags */}
                   <div className="flex flex-wrap gap-2 mt-5">
-                    {[instance.plan || 'Solo', '1 vCPU · 2 GB', '10 GB SSD', instance.openclawVersion ? `v${instance.openclawVersion}` : null].filter(Boolean).map((tag) => (
-                      <span key={tag} className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{tag}</span>
-                    ))}
+                    <span className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{instance.plan || 'Solo'}</span>
                   </div>
                 </div>
               </div>
@@ -437,16 +415,13 @@ function DashboardContent() {
 
             {/* Metrics */}
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-              <MetricCard label="Status" value={instance.status === 'running' ? 'Live' : instance.status} sub={runtimeHealth === 'healthy' ? 'All systems nominal' : undefined} />
-              <MetricCard label="Messages" value={stats?.messages?.toLocaleString() || '—'} sub="Processed today" />
-              <MetricCard label="Uptime" value={stats?.uptime || '—'} sub="Last 30 days" />
-              <MetricCard label="Credits" value={credits > 0 ? credits.toLocaleString() : '—'} sub={credits > 0 ? 'Remaining' : 'Unlimited (BYOK)'} />
+              <MetricCard label="Status" value={instance.status === 'running' ? 'Live' : instance.status} />
+              <MetricCard label="Messages" value={stats?.messages?.toLocaleString() || '—'} />
+              <MetricCard label="Uptime" value={stats?.uptime || '—'} />
+              <MetricCard label="Plan" value={instance.plan || 'Solo'} />
             </section>
 
-            {/* Your Base Activity */}
-            <section className="mb-8">
-              <BaseActivity />
-            </section>
+
 
             {/* Health checks */}
             {statusChecks.length > 0 && (
@@ -463,17 +438,15 @@ function DashboardContent() {
               </section>
             )}
 
-            {/* Quick actions */}
+            {/* Actions */}
             <section className="mb-8">
-              <h2 className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-3">Quick Actions</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              <h2 className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-3">Actions</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {instance.controlUiUrl && <QuickAction icon="💬" label="Chat" href={instance.controlUiUrl} variant="primary" />}
                 <QuickAction icon="🔧" label="Skills" href={skillsManagerUrl} />
-                <QuickAction icon="⚙️" label="Config" href={configManagerUrl} />
-                <QuickAction icon="📊" label="Analytics" href="/dashboard/analytics" />
+                <QuickAction icon="⚙️" label="Settings" href="/settings" />
                 <QuickAction icon="🔄" label="Restart" onClick={() => performAction('restart')} />
                 <QuickAction icon="⏹" label="Stop" onClick={() => performAction('stop')} variant="danger" />
-                <QuickAction icon="📡" label="Probe" onClick={() => handleRuntimeProbeAction('probe')} />
                 <QuickAction icon="💰" label="Billing" href="/billing" />
               </div>
             </section>
