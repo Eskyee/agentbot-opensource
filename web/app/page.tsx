@@ -13,15 +13,14 @@ export default async function Home() {
         <div className="hero-glow" />
         <div className="relative max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
-            You have<br />
-            too much<br />
-            <span className="text-orange-500">to do.</span>
+            Your agent<br />
+            works while<br />
+            <span className="text-orange-500">you sleep.</span>
           </h1>
 
           <p className="text-zinc-400 text-sm sm:text-base max-w-md leading-relaxed mt-6">
-            Agentbot gives you an AI worker that handles the repetitive stuff.
-            Messages, updates, reminders, monitoring — it does it all,
-            every day, even when you're not online.
+            Not a chatbot. An agent that wakes up, handles your tasks,
+            and reports back — 24/7, on its own server.
           </p>
 
           <div className="mt-8">
