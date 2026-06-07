@@ -12,12 +12,6 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { email } = await req.json();
-
-    if (!email) {
-      return NextResponse.json({ error: 'Email required' }, { status: 400 });
-    }
-
     if (!CDP_PROJECT_ID) {
       return NextResponse.json({ 
         error: 'CDP not configured',
@@ -25,8 +19,9 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const CdpClient = require('@coinbase/cdp-sdk').CdpClient;
-    
+
     const client = new CdpClient({
       projectId: CDP_PROJECT_ID,
       name: CDP_API_KEY_NAME,

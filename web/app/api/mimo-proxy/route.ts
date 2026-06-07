@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { logUsage } from '@/lib/usage-logger'
 
 // MiMo API endpoints
@@ -16,6 +17,11 @@ function getBaseUrl(): string {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   if (!MIMO_KEY) {
     return NextResponse.json({ error: 'MIMO API key not configured' }, { status: 503 })
   }
@@ -73,7 +79,7 @@ export async function POST(request: NextRequest) {
     // Log usage from response
     if (data?.usage) {
       logUsage({
-        userId: 'proxy',
+        userId: session.user.id,
         agentId: body.model || 'unknown',
         model: body.model || 'mimo-v2.5-pro',
         inputTokens: data.usage.prompt_tokens || 0,
@@ -93,6 +99,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   if (!MIMO_KEY) {
     return NextResponse.json({ error: 'MIMO API key not configured' }, { status: 503 })
   }

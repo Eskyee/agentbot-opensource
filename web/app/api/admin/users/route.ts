@@ -32,14 +32,17 @@ export async function GET() {
       },
     });
 
-    // Enrich with admin status and agent count
-    const enriched = await Promise.all(users.map(async (u) => {
-      const agentCount = await prisma.agent.count({ where: { userId: u.id } });
-      return {
-        ...u,
-        isAdmin: isAdminEmail(u.email),
-        agentCount,
-      };
+    // Single aggregate query for agent counts (avoids N+1)
+    const agentCounts = await prisma.agent.groupBy({
+      by: ['userId'],
+      _count: { id: true },
+    });
+    const countMap = new Map(agentCounts.map(a => [a.userId, a._count.id]));
+
+    const enriched = users.map(u => ({
+      ...u,
+      isAdmin: isAdminEmail(u.email),
+      agentCount: countMap.get(u.id) ?? 0,
     }));
 
     return NextResponse.json({ users: enriched });
