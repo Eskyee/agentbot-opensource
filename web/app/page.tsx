@@ -51,16 +51,16 @@ export default async function Home() {
           <div className="grid sm:grid-cols-3 gap-px bg-zinc-900">
             {[
               {
-                title: 'It checks your messages for you',
-                body: 'Wake up to a summary of what happened overnight. No more scrolling through 200 unread messages to find the ones that matter.',
+                title: 'It wakes up before you',
+                body: 'Checks messages. Reviews overnight activity. Flags what matters. Sends you a briefing before your coffee.',
               },
               {
-                title: 'It replies so you don\'t have to',
-                body: 'Set rules once. Your worker handles the rest — answering questions, sending updates, posting to your groups. You approve anything important.',
+                title: 'It handles the routine',
+                body: 'Replies to messages. Posts updates. Manages tasks. You set the rules once. It follows them every day.',
               },
               {
-                title: 'It learns how you work',
-                body: 'The more you use it, the smarter it gets. It remembers your tone, your preferences, your contacts. It becomes yours.',
+                title: 'It remembers everything',
+                body: 'Every conversation, every decision, every preference. Your agent learns your style. Your server, your data.',
               },
             ].map((item, i) => (
               <div key={item.title} className={`bg-black p-6 sm:p-8 card-hover stagger-${i + 1}`}>
@@ -78,9 +78,9 @@ export default async function Home() {
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Pricing</div>
           <div className="grid sm:grid-cols-3 gap-px bg-zinc-900">
             {[
-              { name: 'Solo', price: '29', tagline: '1 worker. Enough for most people.' },
-              { name: 'Collective', price: '69', tagline: '3 workers. For teams and crews.', popular: true },
-              { name: 'Label', price: '149', tagline: '10 workers. For labels and agencies.' },
+              { name: 'Solo', price: '29', tagline: '1 agent, always on' },
+              { name: 'Collective', price: '69', tagline: '3 agents, workflows', popular: true },
+              { name: 'Label', price: '149', tagline: '10 agents, API access' },
             ].map((plan) => (
               <div key={plan.name} className={`bg-black p-6 sm:p-8 flex flex-col card-hover ${plan.popular ? 'popular-glow' : ''}`}>
                 <div className="flex items-center gap-2 mb-2">
@@ -107,7 +107,7 @@ export default async function Home() {
             ))}
           </div>
           <p className="text-zinc-600 text-[10px] uppercase tracking-widest mt-6">
-            Every plan includes everything. No hidden tiers. No surprises. <Link href="/pricing" className="text-orange-500 hover:text-orange-400">Full details →</Link>
+            Every plan includes all channels, all skills, your own server. <Link href="/pricing" className="text-orange-500 hover:text-orange-400">Full details →</Link>
           </p>
         </div>
       </section>
@@ -116,7 +116,7 @@ export default async function Home() {
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-20 sm:py-28 text-center space-y-6">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter uppercase">
-            Stop doing<br /><span className="text-orange-500">everything yourself.</span>
+            Your agent.<br /><span className="text-orange-500">Always working.</span>
           </h2>
           <div className="pt-4">
             <Link
