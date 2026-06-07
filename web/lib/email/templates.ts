@@ -2,7 +2,7 @@ import { buildAppUrl } from '@/app/lib/app-url'
 
 const BRAND = {
   name: 'Agentbot',
-  from: 'Agentbot <noreply@agentbot.raveculture.xyz>',
+  from: 'Agentbot <noreply@agentbot.sh>',
   logo: '🦞',
   url: 'https://agentbot.sh',
   support: 'rbasefm@icloud.com',
