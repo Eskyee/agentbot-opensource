@@ -395,7 +395,7 @@ function DashboardContent() {
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div>
                       <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter text-white mb-2">{instanceName}</h1>
-                      <p className="text-zinc-500 text-sm max-w-md">{instance.status === 'running' ? 'Your agent is live. Working while you sleep.' : `Agent is ${instance.status}. Start it to resume.`}</p>
+                      <p className="text-zinc-500 text-sm max-w-md">{instance.status === 'running' ? 'Live and working. Check back when you want — it handles the rest.' : `Agent is ${instance.status}. Start it to get back online.`}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {instance.controlUiUrl && (
@@ -415,9 +415,9 @@ function DashboardContent() {
 
             {/* Metrics */}
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-              <MetricCard label="Status" value={instance.status === 'running' ? 'Live' : instance.status} />
-              <MetricCard label="Messages" value={stats?.messages?.toLocaleString() || '—'} />
-              <MetricCard label="Uptime" value={stats?.uptime || '—'} />
+              <MetricCard label="Status" value={instance.status === 'running' ? 'Online' : instance.status} sub={runtimeHealth === 'healthy' ? 'All systems go' : undefined} />
+              <MetricCard label="Messages" value={stats?.messages?.toLocaleString() || '—'} sub="Today" />
+              <MetricCard label="Uptime" value={stats?.uptime || '—'} sub="30-day" />
               <MetricCard label="Plan" value={instance.plan || 'Solo'} />
             </section>
 
@@ -440,7 +440,7 @@ function DashboardContent() {
 
             {/* Actions */}
             <section className="mb-8">
-              <h2 className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-3">Actions</h2>
+              <h2 className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-3">Control</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {instance.controlUiUrl && <QuickAction icon="💬" label="Chat" href={instance.controlUiUrl} variant="primary" />}
                 <QuickAction icon="🔧" label="Skills" href={skillsManagerUrl} />

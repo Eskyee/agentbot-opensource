@@ -14,57 +14,57 @@ export const metadata: Metadata = {
 
 const sections = [
   {
-    title: 'Getting Started',
+    title: 'Get your agent running',
     items: [
-      'Sign up and deploy your agent — under 2 minutes',
+      'Sign up — your agent deploys in under 2 minutes',
       'Connect Telegram, Discord, or WhatsApp from the dashboard',
-      'Give your agent its first task',
-      'Your agent runs 24/7 on its own server',
+      'Give your agent its first task — try "check my inbox" or "summarise this"',
+      'Your agent runs 24/7 on its own server. Check back when you want.',
     ],
   },
   {
-    title: 'Channels',
+    title: 'Connect your channels',
     items: [
-      'Telegram — connect via bot token',
-      'Discord — connect via bot token',
-      'WhatsApp — connect via QR code pairing',
-      'All channels share one brain — your agent remembers everything',
+      'Telegram — paste your bot token',
+      'Discord — paste your bot token',
+      'WhatsApp — scan a QR code',
+      'One brain, multiple channels — your agent remembers everything across all of them',
     ],
   },
   {
-    title: 'Skills',
+    title: 'What your agent can do',
     items: [
-      'Skills are what your agent can do — email, web search, crypto, and more',
-      'All skills included on every plan — no tiers, no paywalls',
+      'Skills are capabilities — email, web search, crypto, file management, and more',
+      'Every skill is included on every plan. No tiers. No paywalls.',
       'Install skills from the dashboard or the skill library',
       'Create custom skills with the skill creator',
     ],
   },
   {
-    title: 'Workflows',
+    title: 'Automate repetitive work',
     items: [
-      'Automate repetitive tasks — daily briefings, monitoring, scheduled posts',
-      'Set up cron jobs for recurring work',
-      'Chain actions together — "when X happens, do Y"',
-      'Your agent executes workflows autonomously',
+      'Set up automations — daily briefings, monitoring, scheduled posts',
+      'Cron jobs for recurring work — your agent runs them on schedule',
+      'Chain actions: "when X happens, do Y"',
+      'Your agent executes everything autonomously. You set the rules once.',
     ],
   },
   {
-    title: 'Dashboard',
+    title: 'Monitor and manage',
     items: [
-      'See your agent\'s status, activity, and health',
+      'Dashboard shows your agent\'s status, activity, and health at a glance',
       'View conversation history and task results',
-      'Manage channels, skills, and settings',
-      'Monitor resource usage and uptime',
+      'Manage channels, skills, and settings from one place',
+      'Health checks and uptime monitoring built in',
     ],
   },
   {
-    title: 'Billing',
+    title: 'Plans and pricing',
     items: [
-      'Solo £29/mo — 1 agent',
-      'Collective £69/mo — 3 agents',
-      'Label £149/mo — 10 agents',
-      'All plans include everything — no hidden tiers',
+      'Solo £29/mo — 1 agent, always on',
+      'Collective £69/mo — 3 agents, custom workflows',
+      'Label £149/mo — 10 agents, API access, white-label',
+      'All plans include every feature. No hidden tiers. No surprises.',
     ],
   },
 ]

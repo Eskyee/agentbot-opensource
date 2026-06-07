@@ -23,11 +23,11 @@ export const navSections = [
     ],
   },
   {
-    label: 'Agent',
+    label: 'Configure',
     items: [
       { label: 'Channels', href: '/dashboard/channels', icon: '◎' },
       { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
-      { label: 'Workflows', href: '/dashboard/workflows', icon: '⊞' },
+      { label: 'Automations', href: '/dashboard/workflows', icon: '⊞' },
     ],
   },
   {
@@ -159,9 +159,9 @@ export const DashboardSidebar = memo(function DashboardSidebar({
           <div className="mx-4 mb-5 border border-zinc-800 bg-zinc-950 p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-zinc-500">Agent</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500">Status</div>
                 <div className={`mt-1 text-xs font-bold uppercase tracking-widest ${runtimeTone}`}>
-                  {runtimeStatus === 'paired' ? 'Running' : runtimeStatus === 'live' ? 'Unpaired' : 'Not Deployed'}
+                  {runtimeStatus === 'paired' ? 'Online' : runtimeStatus === 'live' ? 'Unpaired' : 'No Agent'}
                 </div>
               </div>
               <span className={`h-2.5 w-2.5 rounded-full ${runtimeDot}`} />

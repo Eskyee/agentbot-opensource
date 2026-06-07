@@ -138,10 +138,10 @@ export default function PricingPage() {
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Every plan includes</div>
           <div className="grid sm:grid-cols-2 gap-px bg-zinc-800">
             {[
-              { title: 'Agent runtime', body: 'Your own server, 24/7. Not shared. Not throttled. Yours.' },
-              { title: 'All channels', body: 'Telegram, Discord, WhatsApp. Connect one or all three.' },
-              { title: 'All skills', body: 'Every skill in the library. No tiers. No paywalls.' },
-              { title: 'Dashboard', body: 'Monitor your agent, view activity, manage settings.' },
+              { title: 'Always on', body: 'Your agent runs on its own server, 24/7. Not shared. Not throttled. Not sleeping.' },
+              { title: 'Every channel', body: 'Telegram, Discord, WhatsApp. Connect one or all three. One brain, multiple channels.' },
+              { title: 'Every skill', body: 'Full skill library on every plan. No tiers. No paywalls. No upgrade to unlock.' },
+              { title: 'Full control', body: 'Dashboard, activity feed, health checks. See what your agent sees. Manage everything.' },
             ].map((item) => (
               <div key={item.title} className="bg-black p-6">
                 <div className="text-xs font-bold text-white uppercase tracking-wider mb-2">{item.title}</div>

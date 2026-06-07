@@ -11,7 +11,7 @@ export default async function Home() {
       <section className="relative max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36 md:py-48">
         <div className="space-y-8">
           <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest">
-            Agents that work
+            Always on
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:6xl lg:7xl font-bold tracking-tighter uppercase leading-[0.9]">
@@ -21,9 +21,9 @@ export default async function Home() {
           </h1>
 
           <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed">
-            Not a chatbot. Not a dashboard. An autonomous AI agent that
-            runs 24/7, connects to Telegram, Discord, and WhatsApp,
-            and does things on your behalf — even when you're not there.
+            Deploy an autonomous AI agent. It connects to Telegram, Discord,
+            and WhatsApp. It handles your tasks, monitors your channels, and
+            reports back — 24/7, on its own server, without you lifting a finger.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -67,16 +67,16 @@ export default async function Home() {
           <div className="grid sm:grid-cols-3 gap-px bg-zinc-900">
             {[
               {
-                title: 'It wakes up',
-                body: 'Your agent starts its day before you do. Checks messages, monitors feeds, reviews what happened overnight. Sends you a briefing.',
+                title: 'It wakes up before you',
+                body: 'Checks messages. Reviews overnight activity. Flags what matters. Sends you a briefing before your morning coffee.',
               },
               {
-                title: 'It acts',
-                body: 'Replies to messages. Posts updates. Manages tasks. Handles routine work without asking permission. You set the rules, it follows them.',
+                title: 'It handles the routine',
+                body: 'Replies to messages. Posts updates. Manages tasks. You set the rules once — it follows them every day, without asking.',
               },
               {
-                title: 'It learns',
-                body: 'Remembers every conversation. Adapts to your style. Gets better at your tasks over time. Your agent is yours — not a shared service.',
+                title: 'It remembers everything',
+                body: 'Every conversation, every decision, every preference. Your agent learns your style and gets sharper over time. Your server, your data, your agent.',
               },
             ].map((item) => (
               <div key={item.title} className="bg-black p-6 sm:p-8">
@@ -97,17 +97,17 @@ export default async function Home() {
               {
                 num: '01',
                 title: 'Deploy',
-                body: 'Sign up. Your agent is live in under 2 minutes. It already knows how to connect to Telegram, Discord, and WhatsApp.',
+                body: 'Sign up. Pick a name. Your agent is live in under 2 minutes — no code, no config, no infrastructure.',
               },
               {
                 num: '02',
                 title: 'Connect',
-                body: 'Link your channels. Give your agent its first task. Watch it work.',
+                body: 'Link Telegram, Discord, or WhatsApp. Give your agent its first task. Watch it start working immediately.',
               },
               {
                 num: '03',
                 title: 'Walk away',
-                body: 'Your agent runs 24/7 on its own server. Check in when you want. It handles the rest.',
+                body: 'Your agent runs 24/7 on its own server. It will message you when something needs attention. Everything else, it handles.',
               },
             ].map((step) => (
               <div key={step.num} className="bg-black p-6 sm:p-8">
@@ -129,22 +129,22 @@ export default async function Home() {
               {
                 label: 'Chatbots wait',
                 contrast: 'Agents act',
-                body: 'A chatbot waits for you to type. Your agent wakes up, checks things, makes decisions, and sends you the results. It works while you sleep.',
+                body: 'A chatbot sits there until you type. Your agent wakes up, checks your channels, makes decisions, and sends you results. It starts the conversation, not you.',
               },
               {
-                label: 'Shared services',
+                label: 'Shared infra',
                 contrast: 'Your server',
-                body: 'Other platforms run your agent on shared infrastructure. You get your own container, your own server, your own memory. Nobody else touches it.',
+                body: 'Other platforms put your agent on shared servers with shared memory. You get your own container, your own database, your own process. Nobody else touches it.',
               },
               {
-                label: 'Web2 auth',
-                contrast: 'Wallet auth',
-                body: 'Sign in with your Base wallet. No passwords, no email verification, no middlemen. Your identity is onchain.',
+                label: 'Email + password',
+                contrast: 'Wallet sign-in',
+                body: 'Sign in with your Base wallet. One signature. No passwords to remember, no emails to verify, no accounts to create. Your wallet is your identity.',
               },
               {
-                label: 'Centralised',
+                label: 'Black box',
                 contrast: 'Open source',
-                body: 'The runtime is OpenClaw. The code is on GitHub. You can self-host, inspect, or fork. No lock-in. No black box.',
+                body: 'The runtime is OpenClaw. The code is on GitHub. Fork it, inspect it, self-host it. We earn your trust by showing you everything.',
               },
             ].map((item) => (
               <div key={item.label} className="bg-black p-6 sm:p-8">
@@ -169,18 +169,18 @@ export default async function Home() {
               {
                 name: 'Solo',
                 price: '29',
-                features: ['1 agent, 24/7 runtime', 'All channels', 'All skills', 'Your own server'],
+                features: ['1 agent, always on', 'Telegram, Discord, WhatsApp', 'Every skill in the library', 'Your own isolated server'],
               },
               {
                 name: 'Collective',
                 price: '69',
                 popular: true,
-                features: ['3 agents, 24/7 runtime', 'Custom workflows', 'Thread drafting', 'Priority support'],
+                features: ['3 agents, always on', 'Custom workflows and automations', 'Draft threads and auto-replies', 'Priority support — 24h response'],
               },
               {
                 name: 'Label',
                 price: '149',
-                features: ['10 agents, 24/7 runtime', 'Team management', 'API access', 'White-label'],
+                features: ['10 agents, always on', 'Team roles and permissions', 'Full API access', 'Your brand, our infrastructure'],
               },
             ].map((plan) => (
               <div key={plan.name} className="bg-black p-6 sm:p-8 flex flex-col">
