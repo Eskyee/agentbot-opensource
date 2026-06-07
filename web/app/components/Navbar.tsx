@@ -3,17 +3,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCustomSession, customSignOut } from "@/app/lib/useCustomSession";
 import { useState, useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
-
 import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
-import { NotificationBell } from "@/app/social/_components/NotificationBell";
-import { CreditBadge } from "@/app/components/CreditBadge";
-import { WalletBadge } from "@/app/components/WalletBadge";
 
-// ─── Simplified nav: product-focused ─────────────────────────────────────────
-// LOGGED-OUT: Demo | Docs | Pricing → Sign in | Get Started
-// LOGGED-IN:  Dashboard | Chat | baseFM → user menu
+// ─── Focused nav ─────────────────────────────────────────────────────────────
+// LOGGED-OUT: Docs | Pricing → Sign In | Deploy Your Agent
+// LOGGED-IN:  Dashboard → user menu (Settings, Sign Out)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Navbar() {
@@ -69,25 +64,11 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <NavLink href="/chat" current={pathname}>Chat</NavLink>
-              <NavLink href="/search" current={pathname}>Search</NavLink>
-              <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
-              <NavLink href="/playground" current={pathname}>Playground</NavLink>
-
-              <CreditBadge />
-              <WalletBadge />
-              <NotificationBell />
             </>
           ) : (
             <>
-              <NavLink href="/demo" current={pathname}>Demo</NavLink>
-              <NavLink href="/partner/mimo" current={pathname}>MiMo</NavLink>
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
-              <NavLink href="/vercel-gateway" current={pathname}>Gateway</NavLink>
-              <NavLink href="/voice" current={pathname}>Voice</NavLink>
-              <NavLink href="/credits" current={pathname}>Credits</NavLink>
-              <NavLink href="/usage/global" current={pathname}>Usage</NavLink>
             </>
           )}
         </div>
@@ -114,12 +95,7 @@ export default function Navbar() {
                     <div className="px-4 py-2.5 border-b border-zinc-800/50">
                       <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{displayName}</span>
                     </div>
-                    <UserMenuLink href="/dashboard/wallet" onClick={() => setUserMenuOpen(false)}>Wallet</UserMenuLink>
-                    <UserMenuLink href="/credits" onClick={() => setUserMenuOpen(false)}>Credits</UserMenuLink>
-                    <UserMenuLink href="/dashboard/swap" onClick={() => setUserMenuOpen(false)}>Swap</UserMenuLink>
-                    <UserMenuLink href="/wristband" onClick={() => setUserMenuOpen(false)}>Wristband</UserMenuLink>
-                    <UserMenuLink href="/vercel-gateway" onClick={() => setUserMenuOpen(false)}>Gateway</UserMenuLink>
-                    <UserMenuLink href="/agents" onClick={() => setUserMenuOpen(false)}>Agents</UserMenuLink>
+                    <UserMenuLink href="/dashboard" onClick={() => setUserMenuOpen(false)}>Dashboard</UserMenuLink>
                     <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
                     <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
                     {isAdmin && (
@@ -142,10 +118,10 @@ export default function Navbar() {
           ) : (
             <>
               <Link href="/login" className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider">
-                Sign in
+                Sign In
               </Link>
               <Link href="/signup" className="text-[11px] bg-white text-black px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
-                Get Started
+                Deploy Agent
               </Link>
             </>
           )}
@@ -175,44 +151,26 @@ export default function Navbar() {
             {isLoggedIn ? (
               <>
                 <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
-                <MobileLink href="/chat" onClick={closeMenu}>Chat</MobileLink>
-                <MobileLink href="/search" onClick={closeMenu}>Search</MobileLink>
-                <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
-                <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
-                <div className="border-t border-zinc-900 mt-4 pt-4">
-                  {displayName && <div className="text-[10px] text-zinc-600 px-3 pb-2 uppercase tracking-widest">{displayName}</div>}
-                  <MobileLink href="/dashboard/wallet" onClick={closeMenu}>Wallet</MobileLink>
-                  <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
-                  <MobileLink href="/dashboard/swap" onClick={closeMenu}>Swap</MobileLink>
-                  <MobileLink href="/wristband" onClick={closeMenu}>Wristband</MobileLink>
-                  <MobileLink href="/vercel-gateway" onClick={closeMenu}>Gateway</MobileLink>
-                  <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
-                  <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
-                  <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
-                  {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
-                  <button
-                    onClick={() => { closeMenu(); customSignOut(); }}
-                    className="text-left text-xs py-2.5 px-3 text-zinc-500 hover:text-white w-full uppercase tracking-wider"
-                  >
-                    Sign out
-                  </button>
-                </div>
+                <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
+                <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
+                {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
+                <button
+                  onClick={() => { closeMenu(); customSignOut(); }}
+                  className="text-left text-xs py-2.5 px-3 text-zinc-500 hover:text-white w-full uppercase tracking-wider"
+                >
+                  Sign out
+                </button>
               </>
             ) : (
               <>
-                <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
-                <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
                 <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                 <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
-                <MobileLink href="/vercel-gateway" onClick={closeMenu}>Gateway</MobileLink>
-                <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
-                <MobileLink href="/usage/global" onClick={closeMenu}>Usage</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
                   <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">
-                    Sign in
+                    Sign In
                   </Link>
                   <Link href="/signup" onClick={closeMenu} className="block text-center py-3 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
-                    Get Started
+                    Deploy Agent
                   </Link>
                 </div>
               </>
@@ -226,11 +184,9 @@ export default function Navbar() {
 
 function NavLink({ href, current, children }: { href: string; current: string; children: React.ReactNode }) {
   const isActive = current === href || current.startsWith(href + '/');
-  const isExternal = href.startsWith('http');
   return (
     <Link
       href={href}
-      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className={`text-[11px] uppercase tracking-widest transition-colors ${
         isActive ? 'text-white' : 'text-zinc-500 hover:text-white'
       }`}
@@ -252,12 +208,11 @@ function UserMenuLink({ href, onClick, children }: { href: string; onClick: () =
   );
 }
 
-function MobileLink({ href, onClick, children, external }: { href: string; onClick: () => void; children: React.ReactNode; external?: boolean }) {
+function MobileLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   return (
     <Link
       href={href}
       onClick={onClick}
-      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className="block text-xs py-2.5 px-3 text-zinc-400 hover:text-white uppercase tracking-wider transition-colors"
     >
       {children}
