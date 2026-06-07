@@ -233,7 +233,21 @@ a {
 .typing-dot:nth-child(2) { animation-delay: 150ms; }
 .typing-dot:nth-child(3) { animation-delay: 300ms; }
 
-/* ━━━ AGENTBOT — Beautiful Layer ━━━ */
+/* ━━━ AGENTBOT DESIGN SYSTEM ━━━ */
+/* Typography:
+   H1: text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter uppercase leading-[0.9]
+   H2: text-2xl sm:text-3xl font-bold tracking-tighter uppercase
+   H3: text-sm font-bold uppercase tracking-wider
+   Label: text-[10px] uppercase tracking-widest
+   Body: text-sm leading-relaxed
+   Colors: bg-black, text-white, text-zinc-400 (secondary), text-zinc-500 (body), text-zinc-600 (muted)
+   Accent: text-orange-500, bg-orange-500/10 (active), border-orange-500/30 (badge)
+   Border: border-zinc-800 (card), border-zinc-900 (section)
+   Button primary: bg-white text-black px-8 py-4 text-xs font-bold uppercase tracking-widest
+   Button secondary: border border-zinc-800 px-8 py-4 text-xs font-bold uppercase tracking-widest text-zinc-400
+*/
+
+/* ━━━ Beautiful Layer ━━━ */
 
 /* Hero glow — subtle orange pulse behind heading */
 @keyframes glow-pulse {

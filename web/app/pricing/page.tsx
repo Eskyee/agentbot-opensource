@@ -88,7 +88,7 @@ export default function PricingPage() {
         {/* Hero */}
         <section className="mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Pricing</span>
-          <h1 className="text-4xl sm:5xl md:6xl font-bold tracking-tighter uppercase leading-[0.9]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter uppercase leading-[0.9]">
             One agent.<br /><span className="text-orange-500">One price.</span>
           </h1>
           <p className="text-zinc-400 text-sm max-w-md leading-relaxed mt-8">
@@ -163,7 +163,7 @@ export default function PricingPage() {
 
         {/* CTA */}
         <section className="border-t border-zinc-800 pt-16 text-center">
-          <h2 className="text-2xl sm:3xl font-bold tracking-tighter uppercase mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mb-4">
             Your agent.<br /><span className="text-orange-500">Works while you sleep.</span>
           </h2>
           <Link

@@ -76,7 +76,7 @@ export default function DocumentationPage() {
 
         <section className="mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Docs</span>
-          <h1 className="text-4xl sm:5xl font-bold tracking-tighter uppercase leading-[0.9]">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter uppercase leading-[0.9]">
             Your agent.<br /><span className="text-orange-500">Everything you need.</span>
           </h1>
           <p className="text-zinc-400 text-sm max-w-md leading-relaxed mt-8">

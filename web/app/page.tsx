@@ -14,7 +14,7 @@ export default async function Home() {
       <section className="relative min-h-screen flex items-center">
         <div className="hero-glow" />
         <div className="relative max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
-          <h1 className="text-4xl sm:text-5xl md:6xl lg:7xl font-bold tracking-tighter uppercase leading-[0.9]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
             You have<br />
             too much<br />
             <span className="text-orange-500">to do.</span>
@@ -118,7 +118,7 @@ export default async function Home() {
       {/* ━━━ CTA ━━━ */}
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-20 sm:py-28 text-center space-y-6">
-          <h2 className="text-3xl sm:4xl font-bold tracking-tighter uppercase">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter uppercase">
             Stop doing<br /><span className="text-orange-500">everything yourself.</span>
           </h2>
           <div className="pt-4">
