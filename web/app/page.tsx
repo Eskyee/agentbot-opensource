@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import dynamic from 'next/dynamic'
 import { HeroActivity } from '@/app/components/HeroActivity'
+
+const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
 
 export default async function Home() {
   const session = await getAuthSession()
@@ -64,6 +67,34 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ━━━ MiMo + OpenClaw ━━━ */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-10">Powered by MiMo + OpenClaw</div>
+          <div className="grid sm:grid-cols-3 gap-px bg-zinc-900">
+            {[
+              {
+                label: 'MiMo v2.5',
+                body: "Xiaomi's open-source reasoning model. Enterprise-grade intelligence at a fraction of the cost — your agent thinks for pennies, not dollars.",
+              },
+              {
+                label: 'OpenClaw Runtime',
+                body: 'The agent runtime that keeps your worker alive 24/7. Memory, skills, channels, heartbeat — all handled. Your agent never sleeps.',
+              },
+              {
+                label: 'Your Server',
+                body: 'Each agent runs on its own isolated server. Your data, your memory, your rules. No shared tenants. No compromised context.',
+              },
+            ].map((item) => (
+              <div key={item.label} className="bg-black p-6 sm:p-8">
+                <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3">{item.label}</div>
+                <p className="text-zinc-500 text-sm leading-relaxed">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ━━━ THREE TRUTHS ━━━ */}
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
@@ -88,6 +119,14 @@ export default async function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ━━━ DASHBOARD PREVIEW ━━━ */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Your Dashboard</div>
+          <DashboardPreview />
         </div>
       </section>
 
