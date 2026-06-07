@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
@@ -466,5 +466,9 @@ function DashboardContent() {
 }
 
 export default function Dashboard() {
-  return <DashboardContent />
+  return (
+    <Suspense fallback={<DashboardLoadingShell />}>
+      <DashboardContent />
+    </Suspense>
+  )
 }
