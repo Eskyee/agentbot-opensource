@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-import dynamic from 'next/dynamic'
-
-const HeroActivity = dynamic(() => import('@/app/components/HeroActivity').then(m => ({ default: m.HeroActivity })), { ssr: false })
+import { HeroActivity } from '@/app/components/HeroActivity'
 
 export default async function Home() {
   const session = await getAuthSession()
