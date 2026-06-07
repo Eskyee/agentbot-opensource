@@ -231,4 +231,4 @@ export function weeklyDigestEmail(name: string, stats: {
   }
 }
 
-export { BRAND }
+export { BRAND, layout }

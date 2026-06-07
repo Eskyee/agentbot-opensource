@@ -61,19 +61,33 @@ export async function sendPaymentReceiptEmail(
   amount: number,
   plan: string
 ) {
+  const { layout, BRAND } = await import('@/lib/email/templates')
   return sendEmail({
     to: email,
-    subject: `Payment received for ${plan} plan`,
-    html: `
-      <h1>Payment Confirmation</h1>
-      <p>Thank you for your payment!</p>
-      <ul>
-        <li><strong>Amount:</strong> £${(amount / 100).toFixed(2)}</li>
-        <li><strong>Plan:</strong> ${plan}</li>
-      </ul>
-      <p>Your subscription is now active.</p>
-      <hr />
-      <p>Best,<br>The Agentbot Team</p>
-    `,
+    subject: `Payment received — ${plan} plan`,
+    html: layout(`
+      <p style="font-size:15px;line-height:1.7;color:#ccc;margin:0 0 24px;">
+        Payment confirmed.
+      </p>
+      <div style="background:#111;border:1px solid #222;padding:20px;margin-bottom:24px;">
+        <table width="100%" style="font-size:13px;">
+          <tr>
+            <td style="padding:6px 0;color:#666;text-transform:uppercase;letter-spacing:0.1em;font-size:11px;">Amount</td>
+            <td style="padding:6px 0;color:#fff;font-weight:700;text-align:right;">£${(amount / 100).toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#666;text-transform:uppercase;letter-spacing:0.1em;font-size:11px;">Plan</td>
+            <td style="padding:6px 0;color:#fff;text-transform:capitalize;text-align:right;">${plan}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#666;text-transform:uppercase;letter-spacing:0.1em;font-size:11px;">Status</td>
+            <td style="padding:6px 0;color:#22c55e;font-weight:700;text-align:right;">Active</td>
+          </tr>
+        </table>
+      </div>
+      <p style="font-size:13px;color:#888;margin:0;">
+        &mdash; ${BRAND.name}
+      </p>
+    `),
   });
 }
