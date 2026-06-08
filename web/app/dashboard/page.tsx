@@ -432,6 +432,25 @@ function DashboardContent() {
               </div>
             </section>
 
+            {/* Platform Features */}
+            <section className="mb-6">
+              <h3 className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 mb-3 font-bold">Platform</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                <QuickAction icon="💓" label="Health" href="/dashboard/health" />
+                <QuickAction icon="👁" label="Observability" href="/dashboard/observability" />
+                <QuickAction icon="📋" label="Changelog" href="/dashboard/changelog" />
+                <QuickAction icon="📚" label="Knowledge" href="/dashboard/knowledge" />
+                <QuickAction icon="🔗" label="Webhooks" href="/dashboard/webhooks" />
+                <QuickAction icon="✅" label="Approvals" href="/dashboard/approvals" />
+                <QuickAction icon="🛡" label="Permissions" href="/dashboard/rbac" />
+                <QuickAction icon="⊞" label="Workflows" href="/dashboard/workflows" />
+                <QuickAction icon="🎙" label="Voice" href="/dashboard/voice" />
+                <QuickAction icon="💰" label="Stablecoins" href="/dashboard/stablecoins" />
+                <QuickAction icon="📱" label="Mobile" href="/dashboard/mobile" />
+                <QuickAction icon="📊" label="Pricing" href="/dashboard/pricing-model" />
+              </div>
+            </section>
+
             {/* Control panel */}
             <InstanceControlPanel instance={instance} stats={stats} controlsEnabled={controlsEnabled} autoPairHealth={autoPairHealth} probeActionLoading={probeActionLoading} actionLoading={actionLoading} communityRewards={{ connected: false, walletAddress: null, claimed: false, currentTier: null, balanceUi: null, creditsClaimed: 0 }} onCopyToken={() => { const token = instance?.gatewayToken || bootstrap?.gatewayToken; if (token) { navigator.clipboard.writeText(token); toast.success('Token copied!') } else { toast.error('Token not available') } }} onRefreshPairing={() => { setAutoPairHealth('loading'); fetchEverything() }} onProbeAction={handleRuntimeProbeAction} onAction={performAction} skillsManagerUrl={skillsManagerUrl} configManagerUrl={configManagerUrl} />
           </div>
