@@ -75,6 +75,7 @@ export default function Navbar() {
             <>
               <NavLink href="/demo" current={pathname}>Demo</NavLink>
               <NavLink href="/partner/mimo" current={pathname}>MiMo</NavLink>
+              <NavLink href="/openclaw" current={pathname}>OpenClaw</NavLink>
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
               <NavLink href="/credits" current={pathname}>Credits</NavLink>
@@ -182,6 +183,7 @@ export default function Navbar() {
             ) : (
               <>
                 <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
+                <MobileLink href="/openclaw" onClick={closeMenu}>OpenClaw</MobileLink>
                 <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                 <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
                 <MobileLink href="/credits" onClick={closeMenu}>Credits</MobileLink>
