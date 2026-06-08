@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Mic, Volume2, Phone, Radio, Play, Pause, Settings,
-  CheckCircle, AlertTriangle, Waves, MessageSquare,
+  CheckCircle, AlertTriangle, Waves, MessageSquare, Zap,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -15,7 +15,11 @@ import {
 
 interface VoiceConfig {
   ttsEnabled: boolean
+  ttsReachable: boolean
   asrEnabled: boolean
+  hasMimoKey: boolean
+  hasBYOK: boolean
+  plan: string
   defaultVoice: string
   availableVoices: { id: string; name: string; language: string; gender: string }[]
   callEnabled: boolean
@@ -35,6 +39,8 @@ export default function VoicePage() {
   const [selectedVoice, setSelectedVoice] = useState('mimo-tts-1')
   const [testText, setTestText] = useState('Hello, I am your AI agent. How can I help you today?')
   const [isPlaying, setIsPlaying] = useState(false)
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
+  const [ttsError, setTtsError] = useState('')
 
   const { data: config } = useQuery<VoiceConfig>({
     queryKey: ['voice-config'],
@@ -46,9 +52,37 @@ export default function VoicePage() {
   })
 
   const handleTestVoice = async () => {
+    if (!testText.trim()) return
     setIsPlaying(true)
-    // Simulate playback
-    setTimeout(() => setIsPlaying(false), 3000)
+    setTtsError('')
+    setAudioUrl(null)
+
+    try {
+      const res = await fetch('/api/demo/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: testText }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setTtsError(data.error || 'TTS failed')
+        setIsPlaying(false)
+        return
+      }
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      setAudioUrl(url)
+
+      const audio = new Audio(url)
+      audio.onended = () => setIsPlaying(false)
+      audio.onerror = () => { setIsPlaying(false); setTtsError('Audio playback failed') }
+      await audio.play()
+    } catch (err) {
+      setTtsError('Network error — TTS unavailable')
+      setIsPlaying(false)
+    }
   }
 
   return (
@@ -60,13 +94,47 @@ export default function VoicePage() {
       />
 
       <DashboardContent className="space-y-6">
+        {/* MiMo subscription status */}
+        {config && !config.ttsEnabled && (
+          <div className="border border-red-500/20 bg-zinc-950 p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <AlertTriangle className="h-5 w-5 text-red-400" />
+              <h2 className="text-sm font-bold text-red-400 uppercase tracking-tight">MiMo TTS Not Available</h2>
+            </div>
+            <div className="space-y-3 text-sm text-zinc-400 leading-relaxed max-w-lg">
+              <p>
+                Voice & TTS requires a MiMo API key. Your agent uses MiMo TTS to convert text responses
+                into natural speech for voice notes and phone calls.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="border border-zinc-800 bg-black p-3">
+                  <div className="text-[10px] text-zinc-600 uppercase tracking-widest mb-1">Platform Key</div>
+                  <div className={cn('text-xs font-bold', config.hasMimoKey ? 'text-emerald-400' : 'text-red-400')}>
+                    {config.hasMimoKey ? 'Configured' : 'Not Found'}
+                  </div>
+                </div>
+                <div className="border border-zinc-800 bg-black p-3">
+                  <div className="text-[10px] text-zinc-600 uppercase tracking-widest mb-1">BYOK Key</div>
+                  <div className={cn('text-xs font-bold', config.hasBYOK ? 'text-emerald-400' : 'text-zinc-500')}>
+                    {config.hasBYOK ? 'Active' : 'Not Set'}
+                  </div>
+                </div>
+              </div>
+              <p className="text-[10px] text-zinc-600">
+                To enable TTS: set MIMO_API_KEY in your environment, or configure BYOK in Settings.
+                Your MiMo subscription includes TTS at no extra cost.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Status cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800">
           {[
-            { label: 'TTS', value: config?.ttsEnabled ? 'Active' : 'Inactive', icon: Volume2, color: config?.ttsEnabled ? 'text-emerald-400' : 'text-zinc-500' },
-            { label: 'ASR', value: config?.asrEnabled ? 'Active' : 'Inactive', icon: Mic, color: config?.asrEnabled ? 'text-emerald-400' : 'text-zinc-500' },
-            { label: 'Voice Notes', value: config?.voiceNotesEnabled ? 'Enabled' : 'Disabled', icon: MessageSquare, color: config?.voiceNotesEnabled ? 'text-orange-400' : 'text-zinc-500' },
-            { label: 'Phone Calls', value: config?.callEnabled ? 'Enabled' : 'Disabled', icon: Phone, color: config?.callEnabled ? 'text-purple-400' : 'text-zinc-500' },
+            { label: 'TTS', value: config?.ttsEnabled ? (config?.ttsReachable ? 'Active' : 'Unreachable') : 'No Key', icon: Volume2, color: config?.ttsEnabled && config?.ttsReachable ? 'text-emerald-400' : config?.ttsEnabled ? 'text-amber-400' : 'text-red-400' },
+            { label: 'ASR', value: config?.asrEnabled ? 'Active' : 'No Key', icon: Mic, color: config?.asrEnabled ? 'text-emerald-400' : 'text-red-400' },
+            { label: 'MiMo Plan', value: config?.plan?.toUpperCase() ?? 'FREE', icon: Zap, color: 'text-orange-400' },
+            { label: 'Phone Calls', value: config?.callEnabled ? 'Enabled' : 'Coming Soon', icon: Phone, color: config?.callEnabled ? 'text-purple-400' : 'text-zinc-500' },
           ].map((s) => (
             <div key={s.label} className="bg-zinc-950 p-5 border border-zinc-800">
               <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-zinc-600 mb-1">
@@ -147,8 +215,19 @@ export default function VoicePage() {
               )}
             </button>
           </div>
-          <p className="text-[10px] text-zinc-600">
-            MiMo TTS generates natural speech in real-time. Free during the trial period.
+          {ttsError && (
+            <div className="mt-3 text-xs text-red-400 border border-red-500/20 p-3">
+              {ttsError}
+            </div>
+          )}
+          {audioUrl && !isPlaying && (
+            <div className="mt-3 text-xs text-emerald-400">
+              ✓ Voice generated successfully
+            </div>
+          )}
+          <p className="text-[10px] text-zinc-600 mt-3">
+            MiMo TTS generates natural speech in real-time. Uses your MiMo subscription —
+            {config?.hasMimoKey ? ' platform key is configured.' : config?.hasBYOK ? ' BYOK key is active.' : ' no key found.'}
           </p>
         </div>
 
