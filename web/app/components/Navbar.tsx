@@ -67,6 +67,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              <NavLink href="/openclaw" current={pathname}>OpenClaw</NavLink>
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
             </>
@@ -163,6 +164,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                <MobileLink href="/openclaw" onClick={closeMenu}>OpenClaw</MobileLink>
                 <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                 <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
