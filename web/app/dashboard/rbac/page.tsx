@@ -117,10 +117,10 @@ export default function RBACPage() {
   const { data: agents } = useQuery<{ id: string; name: string; status: string }[]>({
     queryKey: ['rbac-agents'],
     queryFn: async () => {
-      const res = await fetch('/api/dashboard/stats')
+      const res = await fetch('/api/agents')
       if (!res.ok) return []
       const data = await res.json()
-      return data.agents ?? []
+      return Array.isArray(data) ? data : (data.agents ?? [])
     },
   })
 
