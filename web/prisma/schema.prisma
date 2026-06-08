@@ -71,6 +71,7 @@ model User {
   webhooks             UserWebhook[]
   knowledgeDocs        KnowledgeDocument[]
   approvalRequests     ApprovalRequest[]
+  workflows            Workflow[]
   pairedDevices        PairedDevice[]
   userSettings         UserSetting[]
   managedAgentSessions ManagedAgentSession[]
@@ -79,7 +80,6 @@ model User {
   scheduledTasks       ScheduledTask[]
   sessions             Session[]
   wallets              Wallet[]
-  workflows            Workflow[]
   passkeyCredentials   PasskeyCredential[]
   passkeyChallenges    PasskeyChallenge[]
   notifications        Notification[]
@@ -361,8 +361,9 @@ model WorkflowNode {
   id         String   @id @default(cuid())
   workflowId String
   type       String
-  config     String
-  position   String
+  label      String?
+  config     Json     @default("{}")
+  position   Json     @default("{}")
   createdAt  DateTime @default(now())
   workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
@@ -374,13 +375,19 @@ model Workflow {
   userId      String
   name        String
   description String?
+  status      String         @default("draft") // draft, active, paused
   enabled     Boolean        @default(true)
+  edges       Json           @default("[]")
+  config      Json?
+  lastRun     DateTime?
+  runCount    Int            @default(0)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   nodes       WorkflowNode[]
 
   @@index([userId])
+  @@index([userId, status])
 }
 
 model Wallet {

@@ -1,3 +1,20 @@
+-- AlterTable: Add new fields to existing Workflow table
+ALTER TABLE "Workflow" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'draft';
+ALTER TABLE "Workflow" ADD COLUMN "edges" JSONB NOT NULL DEFAULT '[]';
+ALTER TABLE "Workflow" ADD COLUMN "config" JSONB;
+ALTER TABLE "Workflow" ADD COLUMN "lastRun" TIMESTAMP(3);
+ALTER TABLE "Workflow" ADD COLUMN "runCount" INTEGER NOT NULL DEFAULT 0;
+
+-- AlterTable: Add label and change config/position to JSON on WorkflowNode
+ALTER TABLE "WorkflowNode" ADD COLUMN "label" TEXT;
+ALTER TABLE "WorkflowNode" ALTER COLUMN "config" SET DATA TYPE JSONB USING config::jsonb;
+ALTER TABLE "WorkflowNode" ALTER COLUMN "config" SET DEFAULT '{}';
+ALTER TABLE "WorkflowNode" ALTER COLUMN "position" SET DATA TYPE JSONB USING position::jsonb;
+ALTER TABLE "WorkflowNode" ALTER COLUMN "position" SET DEFAULT '{}';
+
+-- CreateIndex
+CREATE INDEX "Workflow_userId_status_idx" ON "Workflow"("userId", "status");
+
 -- CreateTable
 CREATE TABLE "UserWebhook" (
     "id" TEXT NOT NULL,
@@ -18,21 +35,17 @@ CREATE TABLE "UserWebhook" (
 );
 
 -- CreateTable
-CREATE TABLE "ApprovalRequest" (
+CREATE TABLE "AuditLog" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "agentId" TEXT NOT NULL,
+    "agentId" TEXT,
     "action" TEXT NOT NULL,
-    "category" TEXT NOT NULL DEFAULT 'config',
-    "description" TEXT NOT NULL,
-    "payload" JSONB,
-    "risk" TEXT NOT NULL DEFAULT 'medium',
-    "status" TEXT NOT NULL DEFAULT 'pending',
-    "resolvedAt" TIMESTAMP(3),
-    "resolvedBy" TEXT,
+    "category" TEXT NOT NULL DEFAULT 'agent',
+    "detail" TEXT,
+    "metadata" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ApprovalRequest_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -54,36 +67,25 @@ CREATE TABLE "KnowledgeDocument" (
 );
 
 -- CreateTable
-CREATE TABLE "AuditLog" (
+CREATE TABLE "ApprovalRequest" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "agentId" TEXT,
+    "agentId" TEXT NOT NULL,
     "action" TEXT NOT NULL,
-    "category" TEXT NOT NULL DEFAULT 'agent',
-    "detail" TEXT,
-    "metadata" JSONB,
+    "category" TEXT NOT NULL DEFAULT 'config',
+    "description" TEXT NOT NULL,
+    "payload" JSONB,
+    "risk" TEXT NOT NULL DEFAULT 'medium',
+    "status" TEXT NOT NULL DEFAULT 'pending',
+    "resolvedAt" TIMESTAMP(3),
+    "resolvedBy" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ApprovalRequest_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE INDEX "UserWebhook_userId_idx" ON "UserWebhook"("userId");
-
--- CreateIndex
-CREATE INDEX "ApprovalRequest_userId_status_idx" ON "ApprovalRequest"("userId", "status");
-
--- CreateIndex
-CREATE INDEX "ApprovalRequest_agentId_status_idx" ON "ApprovalRequest"("agentId", "status");
-
--- CreateIndex
-CREATE INDEX "ApprovalRequest_status_idx" ON "ApprovalRequest"("status");
-
--- CreateIndex
-CREATE INDEX "KnowledgeDocument_userId_idx" ON "KnowledgeDocument"("userId");
-
--- CreateIndex
-CREATE INDEX "KnowledgeDocument_agentId_idx" ON "KnowledgeDocument"("agentId");
 
 -- CreateIndex
 CREATE INDEX "AuditLog_userId_createdAt_idx" ON "AuditLog"("userId", "createdAt");
@@ -94,8 +96,29 @@ CREATE INDEX "AuditLog_agentId_createdAt_idx" ON "AuditLog"("agentId", "createdA
 -- CreateIndex
 CREATE INDEX "AuditLog_category_idx" ON "AuditLog"("category");
 
+-- CreateIndex
+CREATE INDEX "KnowledgeDocument_userId_idx" ON "KnowledgeDocument"("userId");
+
+-- CreateIndex
+CREATE INDEX "KnowledgeDocument_agentId_idx" ON "KnowledgeDocument"("agentId");
+
+-- CreateIndex
+CREATE INDEX "ApprovalRequest_userId_status_idx" ON "ApprovalRequest"("userId", "status");
+
+-- CreateIndex
+CREATE INDEX "ApprovalRequest_agentId_status_idx" ON "ApprovalRequest"("agentId", "status");
+
+-- CreateIndex
+CREATE INDEX "ApprovalRequest_status_idx" ON "ApprovalRequest"("status");
+
 -- AddForeignKey
 ALTER TABLE "UserWebhook" ADD CONSTRAINT "UserWebhook_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "Agent"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ApprovalRequest" ADD CONSTRAINT "ApprovalRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -108,9 +131,3 @@ ALTER TABLE "KnowledgeDocument" ADD CONSTRAINT "KnowledgeDocument_userId_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "KnowledgeDocument" ADD CONSTRAINT "KnowledgeDocument_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "Agent"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "Agent"("id") ON DELETE SET NULL ON UPDATE CASCADE;
