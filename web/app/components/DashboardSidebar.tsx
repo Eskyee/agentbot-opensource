@@ -27,7 +27,33 @@ export const navSections = [
     items: [
       { label: 'Channels', href: '/dashboard/channels', icon: '◎' },
       { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
-      { label: 'Automations', href: '/dashboard/workflows', icon: '⊞' },
+      { label: 'Workflows', href: '/dashboard/workflows', icon: '⊞' },
+      { label: 'Permissions', href: '/dashboard/rbac', icon: '🛡' },
+    ],
+  },
+  {
+    label: 'Monitor',
+    items: [
+      { label: 'Health', href: '/dashboard/health', icon: '💓' },
+      { label: 'Observability', href: '/dashboard/observability', icon: '👁' },
+      { label: 'Changelog', href: '/dashboard/changelog', icon: '📋' },
+    ],
+  },
+  {
+    label: 'Data & Integrations',
+    items: [
+      { label: 'Knowledge Base', href: '/dashboard/knowledge', icon: '📚' },
+      { label: 'Webhooks', href: '/dashboard/webhooks', icon: '🔗' },
+      { label: 'Approvals', href: '/dashboard/approvals', icon: '✅' },
+    ],
+  },
+  {
+    label: 'Platform',
+    items: [
+      { label: 'Voice & TTS', href: '/dashboard/voice', icon: '🎙' },
+      { label: 'Stablecoins', href: '/dashboard/stablecoins', icon: '💰' },
+      { label: 'Mobile', href: '/dashboard/mobile', icon: '📱' },
+      { label: 'Pricing Models', href: '/dashboard/pricing-model', icon: '📊' },
     ],
   },
   {
