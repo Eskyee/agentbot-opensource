@@ -67,6 +67,10 @@ model User {
   calendarToken        CalendarToken?
   installedSkills      InstalledSkill[]
   skillRatings         SkillRating[]
+  auditLogs            AuditLog[]
+  webhooks             UserWebhook[]
+  knowledgeDocs        KnowledgeDocument[]
+  approvalRequests     ApprovalRequest[]
   pairedDevices        PairedDevice[]
   userSettings         UserSetting[]
   managedAgentSessions ManagedAgentSession[]
@@ -145,6 +149,9 @@ model Agent {
   memories            AgentMemory[]
   installedSkills     InstalledSkill[]
   scheduledTasks      ScheduledTask[]
+  auditLogs           AuditLog[]
+  knowledgeDocs       KnowledgeDocument[]
+  approvalRequests    ApprovalRequest[]
   showcaseOptIn       Boolean          @default(false)
   showcaseDescription String           @default("")
 
@@ -1520,4 +1527,85 @@ model FreeUsage {
 
   @@unique([walletAddress, date])
   @@index([walletAddress, date])
+}
+
+model ApprovalRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  agentId     String
+  action      String
+  category    String   @default("config") // payment, message, api_call, config, external
+  description String   @db.Text
+  payload     Json?
+  risk        String   @default("medium") // low, medium, high, critical
+  status      String   @default("pending") // pending, approved, denied, expired
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  createdAt   DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([agentId, status])
+  @@index([status])
+}
+
+model KnowledgeDocument {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String?
+  name      String
+  type      String   // pdf, md, txt, csv, json, docx
+  size      Int
+  chunks    Int      @default(0)
+  status    String   @default("processing") // processing, ready, error
+  path      String?  @db.Text
+  error     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([agentId])
+}
+
+model UserWebhook {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  templateId   String?
+  url          String   @db.Text
+  event        String
+  secret       String?
+  enabled      Boolean  @default(true)
+  lastTriggered DateTime?
+  lastStatus   Int?
+  lastError    String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String?
+  action    String   // e.g. "config_changed", "skill_installed", "model_switched", "status_changed"
+  category  String   @default("agent") // agent, skill, config, deployment
+  detail    String?  @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([agentId, createdAt])
+  @@index([category])
 }
