@@ -61,6 +61,7 @@ export const navSections = [
     items: [
       { label: 'Billing', href: '/billing', icon: '☆' },
       { label: 'Settings', href: '/settings', icon: '⚙' },
+      { label: 'OpenClaw', href: '/openclaw', icon: '🦞' },
     ],
   },
 ];

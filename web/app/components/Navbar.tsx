@@ -64,6 +64,7 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
+              <NavLink href="/openclaw" current={pathname}>OpenClaw</NavLink>
             </>
           ) : (
             <>
@@ -152,6 +153,7 @@ export default function Navbar() {
             {isLoggedIn ? (
               <>
                 <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
+                <MobileLink href="/openclaw" onClick={closeMenu}>OpenClaw</MobileLink>
                 <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                 <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
                 {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
