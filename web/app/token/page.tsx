@@ -1,17 +1,10 @@
-import { Metadata } from 'next'
+'use client'
+
 import Link from 'next/link'
 import { ArrowUpRight, Coins, TrendingUp, Shield, Zap } from 'lucide-react'
 import { COMMUNITY_TOKEN } from '@/app/lib/communityTokenStats'
 
-export const metadata: Metadata = {
-  title: '$AGENTBOT Token | Base',
-  description: '$AGENTBOT on Base — the official Agentbot token. 0x986b41c76ab8b7350079613340ee692773b34ba3',
-  openGraph: {
-    title: '$AGENTBOT Token | Base',
-    description: 'The official $AGENTBOT token on Base. Trade on Uniswap, track on Basescan.',
-    images: ['/og-image.svg'],
-  },
-}
+const BASEFM_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
 
 const features = [
   { icon: Coins, label: 'Governance', desc: 'Vote on protocol upgrades and feature priorities' },
@@ -154,7 +147,9 @@ export default function TokenPage() {
         <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
             { label: 'Uniswap', href: COMMUNITY_TOKEN.uniswapUrl, color: 'text-pink-400 border-pink-400/30 bg-pink-400/5' },
-            { label: 'Bankr', href: COMMUNITY_TOKEN.bankrUrl, color: 'text-blue-400 border-blue-400/30 bg-blue-400/5' },
+            { label: 'Coinbase', href: `https://www.coinbase.com/price/basefm-base-${BASEFM_ADDRESS}-token`, color: 'text-blue-400 border-blue-400/30 bg-blue-400/5' },
+            { label: 'CoinMarketCap DEX', href: `https://dex.coinmarketcap.com/token/base/${BASEFM_ADDRESS}`, color: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5' },
+            { label: 'Bankr', href: COMMUNITY_TOKEN.bankrUrl, color: 'text-blue-300 border-blue-300/30 bg-blue-300/5' },
             { label: 'DexScreener', href: COMMUNITY_TOKEN.dexScreenerUrl, color: 'text-cyan-400 border-cyan-400/30 bg-cyan-400/5' },
             { label: 'GeckoTerminal', href: COMMUNITY_TOKEN.geckoTerminalUrl, color: 'text-green-400 border-green-400/30 bg-green-400/5' },
             { label: 'Basescan', href: COMMUNITY_TOKEN.basescanUrl, color: 'text-zinc-400 border-zinc-700 bg-zinc-900' },
