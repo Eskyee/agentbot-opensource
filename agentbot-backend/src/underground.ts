@@ -186,7 +186,7 @@ router.post('/wallets', authenticate, async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Agent not found or not owned by you' });
     }
 
-    const wallet = await WalletService.createAgentWallet(userId, agentId);
+    const wallet = await WalletService.createAgentWallet(Number(userId), Number(agentId));
     res.status(201).json(wallet);
   } catch (error: any) {
     log.error('[Wallets] Create error', { userId, agentId, error: error?.message });
