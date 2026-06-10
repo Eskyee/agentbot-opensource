@@ -17,40 +17,39 @@ import orchestrationRouter from './routes/orchestration';
 import railwayProvisionRouter from './routes/railway-provision';
 import platformJobsRouter from './routes/platform-jobs';
 import cronRouter from './routes/cron';
+import deploymentsRouter from './routes/deployments';
+import subscriptionsRouter from './routes/subscriptions';
 import http from 'http';
-import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
 import { startScheduler, stopScheduler } from './scheduler';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { timingSafeEqual, randomBytes } from 'crypto';
+import { randomBytes, timingSafeEqual } from 'crypto';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION } from './lib/openclaw-version';
 import { buildHealthSummary } from './lib/health-summary';
 import { getPoolStats } from './lib/db';
 import { signatureGuard } from './middleware/signature';
-import { snapshotAgentState } from './services/gitlawb';
 import { authenticate } from './middleware/authenticate';
-import { SecureExec, runCommand } from './utils/secure-exec';
-import { createOpenClawConfig } from './lib/openclaw-config';
 import openaiCompatRouter from './routes/openai-compat';
+import { startAutoUpdater } from './lib/auto-update';
 
 dotenv.config();
 
-// Deployment version: track app changes for cache busting
-const DEPLOYMENT_VERSION = '2026.03.14.002';
+const PORT = process.env.PORT || 3001;
+const RUN_MODE = (process.env.AGENTBOT_RUN_MODE || 'all').toLowerCase();
+const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const OPENCLAW_HOME_DIR = '/root/.openclaw';
-const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`;
-const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`;
 
-// Plan resources — matches pricing tiers (Solo £29, Collective £69, Label £149, Network £499)
-const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
+if (!process.env.INTERNAL_API_KEY) {
+  log.error('FATAL: INTERNAL_API_KEY must be set. Refusing to start.');
+  process.exit(1);
+}
+const API_KEY = process.env.INTERNAL_API_KEY;
+
+export const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
   solo: { memory: '2g', cpus: '1' },
   collective: { memory: '4g', cpus: '2' },
   label: { memory: '8g', cpus: '4' },
   network: { memory: '16g', cpus: '4' },
-  // Legacy aliases
   underground: { memory: '2g', cpus: '1' },
   starter: { memory: '2g', cpus: '1' },
   pro: { memory: '4g', cpus: '2' },
@@ -59,18 +58,12 @@ const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
   white_glove: { memory: '32g', cpus: '8' },
 };
 
-const getPlanResources = (plan: string) => {
-  return PLAN_RESOURCES[plan] || PLAN_RESOURCES.starter;
-};
+export const getPlanResources = (plan: string) => PLAN_RESOURCES[plan] || PLAN_RESOURCES.starter;
 
 const app = express();
-
-// Trust proxy for accurate client IPs behind Render/Vercel load balancers
-// Set to 1 (trust only the first proxy hop) to prevent IP spoofing via X-Forwarded-For
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
-// Security: strip IIS/Express bypass headers
 app.use((req, res, next) => {
   delete req.headers['x-original-url'];
   delete req.headers['x-rewrite-url'];
@@ -79,38 +72,25 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '1mb' }));
-
-// Identity is a Fact: Use cryptographic signatures when provided
 app.use(signatureGuard);
 
-// Structured request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   const requestId = randomBytes(8).toString('hex');
-
-  // Attach request ID for downstream use
-  (req as Request & { requestId: string }).requestId = requestId;
-
+  (req as any).requestId = requestId;
   res.on('finish', () => {
     const duration = Date.now() - start;
-    const logEntry = { requestId, method: req.method, path: req.originalUrl || req.url, status: res.statusCode, durationMs: duration, ip: req.ip || req.socket.remoteAddress, userAgent: req.headers['user-agent']?.substring(0, 100) };
-    if (res.statusCode >= 500) log.error('request', logEntry);
-    else if (res.statusCode >= 400) log.warn('request', logEntry);
-    else log.info('request', logEntry);
+    const entry = { requestId, method: req.method, path: req.originalUrl || req.url, status: res.statusCode, durationMs: duration };
+    if (res.statusCode >= 500) log.error('request', entry);
+    else if (res.statusCode >= 400) log.warn('request', entry);
+    else log.info('request', entry);
   });
-
   next();
 });
 
-// L-3: order matters here — the structured request logger above runs first
-// (so 4xx/5xx from CORS are still logged), then CORS, then per-route
-// rate limiters and authentication. Don't reorder unless you also re-check
-// that error responses still get a request id attached.
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.sh,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
   origin: (origin, callback) => {
-    // Reject null-origin requests in production (file://, Electron-style attacks)
-    // Only permit null origin in non-production for local dev convenience
     if (!origin) {
       if (process.env.NODE_ENV !== 'production') return callback(null, true);
       return callback(new Error('Null origin not permitted'));
@@ -121,416 +101,12 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting — applied globally, with tighter limits on expensive endpoints
-const generalLimiter = rateLimit({
-  windowMs: 60 * 1000,       // 1 minute window
-  max: 120,                   // 120 req/min per IP on general routes
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please slow down.' },
-  keyGenerator: (req) => ipKeyGenerator(req.ip || req.headers['x-forwarded-for']?.toString() || '0.0.0.0'),
-});
-const deployLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,                     // 5 deploys/min per IP — prevents container spam
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Deployment rate limit exceeded.' },
-  keyGenerator: (req) => ipKeyGenerator(req.ip || req.headers['x-forwarded-for']?.toString() || '0.0.0.0'),
-});
-const aiChatLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,                    // 30 AI chat req/min per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'AI rate limit exceeded.' },
-  keyGenerator: (req) => ipKeyGenerator(req.ip || req.headers['x-forwarded-for']?.toString() || '0.0.0.0'),
-});
+const generalLimiter = rateLimit({ windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many requests' }, keyGenerator: (req) => ipKeyGenerator(req.ip || '0.0.0.0') });
+const deployLimiter = rateLimit({ windowMs: 60_000, max: 5, standardHeaders: true, legacyHeaders: false, message: { error: 'Deployment rate limit exceeded' }, keyGenerator: (req) => ipKeyGenerator(req.ip || '0.0.0.0') });
+const aiChatLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false, message: { error: 'AI rate limit exceeded' }, keyGenerator: (req) => ipKeyGenerator(req.ip || '0.0.0.0') });
 app.use('/api/', generalLimiter);
 
-const PORT = process.env.PORT || 3001;
-const RUN_MODE = (process.env.AGENTBOT_RUN_MODE || 'all').toLowerCase();
-
-// API key — refuse to start without it
-if (!process.env.INTERNAL_API_KEY) {
-  log.error('FATAL: INTERNAL_API_KEY must be set. Refusing to start.');
-  process.exit(1);
-}
-const API_KEY = process.env.INTERNAL_API_KEY;
-
-const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
-const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
-const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE;
-const BASE_PORT = Number(process.env.AGENTS_BASE_PORT || '19000');
-const UPDATE_BACKUP_DIR = path.join(DATA_DIR, 'backups', 'openclaw-updates');
-const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
-const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
-
-type AgentMetadata = {
-  agentId: string;
-  createdAt: string;
-  plan: string;
-  aiProvider?: string;
-  port?: number;
-  subdomain?: string;
-  url?: string;
-  status?: string;
-  openclawVersion?: string;
-  botUsername?: string;
-  metadata?: Record<string, unknown>;
-  gatewayToken?: string;
-  config?: Record<string, unknown>;
-  // Verification fields for Verified Human Badge
-  verified?: boolean;
-  verificationType?: string;
-  attestationUid?: string;
-  verifierAddress?: string;
-  verifiedAt?: string;
-  verificationMetadata?: Record<string, unknown>;
-};
-
-type ContainerMount = {
-  Type: string;
-  Name?: string;
-  Source?: string;
-  Destination: string;
-};
-
-type ContainerInspect = {
-  Config: {
-    Image: string;
-  };
-  HostConfig: {
-    Memory: number;
-    NanoCpus: number;
-  };
-  Mounts: ContainerMount[];
-  NetworkSettings: {
-    Ports: {
-      '18789/tcp'?: Array<{ HostPort: string }>;
-    };
-  };
-};
-
-// runCommand and SecureExec patterns in ./utils/secure-exec
-
-const LEGACY_MODEL_MAP: Record<string, string> = {
-  'openrouter/google/gemini-2.0-flash-exp:free': 'openrouter/openai/gpt-4o-mini',
-};
-
-const healLegacyModelInContainer = async (containerName: string): Promise<{ healed: boolean; message: string }> => {
-  try {
-    const script = `
-const fs=require('fs');
-const p='${OPENCLAW_CONFIG_PATH}';
-const legacy={"openrouter/google/gemini-2.0-flash-exp:free":"openrouter/openai/gpt-4o-mini"};
-if(!fs.existsSync(p)){console.log('skip:no-config');process.exit(0)}
-const c=JSON.parse(fs.readFileSync(p,'utf8'));
-const current=c?.agents?.defaults?.model?.primary;
-if(!current||!legacy[current]){console.log('skip:no-legacy');process.exit(0)}
-c.agents=c.agents||{};
-c.agents.defaults=c.agents.defaults||{};
-c.agents.defaults.model={primary:legacy[current]};
-fs.writeFileSync(p,JSON.stringify(c,null,2));
-console.log('healed:'+current+'->'+legacy[current]);
-`;
-
-    const encoded = Buffer.from(script, 'utf8').toString('base64');
-    // Using runCommand for security, but we still need sh inside the container
-    const { stdout } = await runCommand('docker', [
-      'exec', 
-      containerName, 
-      'sh', 
-      '-lc', 
-      `echo "${encoded}" | base64 -d > /tmp/heal-model.js && node /tmp/heal-model.js`
-    ]);
-
-    if (stdout.startsWith('healed:')) {
-      return { healed: true, message: stdout };
-    }
-    return { healed: false, message: stdout || 'skip' };
-  } catch {
-    return { healed: false, message: 'skip:container-not-running' };
-  }
-};
-
-const getContainerInspect = async (containerName: string): Promise<ContainerInspect> => {
-  const { stdout } = await runCommand('docker', ['inspect', containerName]);
-  let parsed: ContainerInspect[];
-  try {
-    parsed = JSON.parse(stdout) as ContainerInspect[];
-  } catch (e) {
-    throw new Error(`Failed to parse docker inspect output: ${e instanceof Error ? e.message : String(e)}`);
-  }
-  if (!parsed[0]) {
-    throw new Error('Container inspect returned no data');
-  }
-  return parsed[0];
-};
-
-const backupContainerData = async (containerName: string, inspect: ContainerInspect): Promise<string | null> => {
-  const instanceId = containerName.replace('openclaw-', '');
-  const mount = inspect.Mounts.find((m) => m.Destination === OPENCLAW_HOME_DIR);
-  if (!mount) {
-    return null;
-  }
-
-  const ts = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '-');
-  const backupDir = path.join(UPDATE_BACKUP_DIR, instanceId);
-  const backupFile = path.join(backupDir, `${ts}.tar.gz`);
-  await fs.mkdir(backupDir, { recursive: true });
-
-  if (mount.Type === 'volume' && mount.Name) {
-    if (!DOCKER_VOLUME_NAME_REGEX.test(mount.Name)) {
-      throw new Error(`Unsafe docker volume name for backup: ${mount.Name}`);
-    }
-
-    // Use SecureExec to prevent injection via volume names or backup paths
-    await SecureExec.dockerBackup(mount.Name, backupFile);
-    return backupFile;
-  }
-
-  if (mount.Type === 'bind' && mount.Source) {
-    return null;
-  }
-
-  return null;
-};
-
-const recreateContainerWithImage = async (containerName: string, inspect: ContainerInspect, image: string, plan: string = 'starter'): Promise<void> => {
-  const portMapping = inspect.NetworkSettings.Ports['18789/tcp'];
-  const hostPort = portMapping && portMapping[0]?.HostPort;
-  if (!hostPort) {
-    throw new Error('Could not determine host port');
-  }
-
-  const mount = inspect.Mounts.find((m) => m.Destination === OPENCLAW_HOME_DIR);
-  if (!mount) {
-    throw new Error('Could not determine data mount');
-  }
-
-  const mountType = mount.Type === 'volume' && mount.Name ? 'volume' : (mount.Type === 'bind' && mount.Source ? 'bind' : '');
-  if (!mountType) {
-    throw new Error('Unsupported mount configuration');
-  }
-
-  const mountSource = mountType === 'volume' ? mount.Name : mount.Source;
-  const resources = getPlanResources(plan);
-  
-  const args: string[] = [
-    'run', '-d',
-    '--name', containerName,
-    '--restart', 'unless-stopped',
-    '-p', `${hostPort}:18789`,
-    `--memory=${resources.memory}`,
-    `--cpus=${resources.cpus}`,
-    '-v', `${mountSource}:${OPENCLAW_HOME_DIR}`,
-    image
-  ];
-
-  await runCommand('docker', args);
-};
-
-const getContainerRuntimeVersion = async (containerName: string): Promise<string> => {
-  try {
-    const script = `
-const fs=require('fs');
-const p='${OPENCLAW_CONFIG_PATH}';
-if(!fs.existsSync(p)){console.log('');process.exit(0)}
-const c=JSON.parse(fs.readFileSync(p,'utf8'));
-console.log(c?.meta?.lastTouchedVersion||'');
-`;
-    const encoded = Buffer.from(script, 'utf8').toString('base64');
-    const { stdout } = await runCommand('docker', [
-      'exec',
-      containerName,
-      'sh',
-      '-lc',
-      `echo "${encoded}" | base64 -d > /tmp/version.js && node /tmp/version.js`
-    ]);
-    return stdout || OPENCLAW_RUNTIME_VERSION;
-  } catch {
-    return OPENCLAW_RUNTIME_VERSION;
-  }
-};
-
-const runOpenClawPostUpdateChecks = async (containerName: string): Promise<{ doctor: string; gatewayRestart: string; health: string }> => {
-  const runOpenClaw = async (args: string[]) => {
-    const { stdout, stderr } = await runCommand('docker', ['exec', containerName, 'openclaw', ...args]);
-    return stdout || stderr || 'ok';
-  };
-
-  const doctor = await runOpenClaw(['doctor']);
-  const gatewayRestart = await runOpenClaw(['gateway', 'restart']);
-  const health = await runOpenClaw(['health']);
-  return { doctor, gatewayRestart, health };
-};
-
-const ensureDataDirs = async (): Promise<void> => {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.mkdir(path.join(DATA_DIR, 'instances'), { recursive: true });
-  await fs.mkdir(path.join(DATA_DIR, 'agents'), { recursive: true });
-};
-
-const sanitizeAgentId = (value: string): string => value.replace(/[^a-zA-Z0-9_-]/g, '');
-const isValidDockerImage = (value: string): boolean => DOCKER_IMAGE_REGEX.test(value);
-
-const getContainerName = (agentId: string): string => `openclaw-${sanitizeAgentId(agentId)}`;
-
-const portsFilePath = (): string => path.join(DATA_DIR, 'ports.json');
-const lockFilePath = (): string => path.join(DATA_DIR, 'ports.lock');
-
-/**
- * Acquire an exclusive lock to prevent concurrent port provisioning.
- * Uses Postgres advisory lock for distributed safety across Railway replicas.
- * Falls back to file-based lock if database is unavailable.
- */
-const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
-  // Try Postgres advisory lock first (works across replicas)
-  const lockKey = 0x4147454E54; // "AGENT" in hex
-  let useDbLock = false;
-  
-  try {
-    const result = await pool.query('SELECT pg_advisory_lock($1)', [lockKey]);
-    if (result.rows[0]?.pg_advisory_lock) {
-      useDbLock = true;
-    }
-  } catch {
-    // Database unavailable, fall back to file-based lock
-  }
-
-  if (useDbLock) {
-    try {
-      return await fn();
-    } finally {
-      try {
-        await pool.query('SELECT pg_advisory_unlock($1)', [lockKey]);
-      } catch {
-        // Lock will be released when connection closes
-      }
-    }
-  }
-
-  // Fallback: file-based lock (single-host only)
-  const lockFile = lockFilePath();
-  let retries = 50;
-  
-  while (retries > 0) {
-    try {
-      const handle = await fs.open(lockFile, 'wx');
-      await handle.close();
-      break;
-    } catch (err: unknown) {
-      if ((err as NodeJS.ErrnoException).code === 'EEXIST') {
-        retries--;
-        await new Promise(resolve => setTimeout(resolve, 100));
-        continue;
-      }
-      throw err;
-    }
-  }
-
-  if (retries === 0) {
-    throw new Error('Could not acquire lock after multiple retries');
-  }
-
-  try {
-    return await fn();
-  } finally {
-    try {
-      await fs.unlink(lockFile);
-    } catch {
-      // Lock file cleanup is best-effort
-    }
-  }
-};
-
-const readPorts = async (): Promise<Record<string, number>> => {
-  try {
-    const raw = await fs.readFile(portsFilePath(), 'utf8');
-    return JSON.parse(raw) as Record<string, number>;
-  } catch {
-    return {};
-  }
-};
-
-const writePorts = async (ports: Record<string, number>): Promise<void> => {
-  await fs.writeFile(portsFilePath(), JSON.stringify(ports, null, 2));
-};
-
-/**
- * Gets the next available port and updates the ports.json atomically.
- * Uses withLock to prevent race conditions during port assignment.
- */
-const getNextPortAndAssign = async (agentId: string): Promise<number> => {
-  return await withLock(async () => {
-    const ports = await readPorts();
-    
-    // If agent already has a port, return it
-    if (ports[agentId]) {
-      return ports[agentId];
-    }
-
-    const usedPorts = Object.values(ports);
-    // Account for port offset: each agent uses assignedPort and assignedPort + 2
-    const allUsedPorts = new Set([
-      ...usedPorts,
-      ...usedPorts.map(p => p + 2)
-    ]);
-    
-    // Find next available port accounting for offset
-    let port = BASE_PORT;
-    while (allUsedPorts.has(port) || allUsedPorts.has(port + 2)) port++;
-    
-    // Assign and save immediately while holding the lock
-    ports[agentId] = port;
-    await writePorts(ports);
-    
-    return port;
-  });
-};
-
-const agentFilePath = (agentId: string): string => path.join(DATA_DIR, 'agents', `${sanitizeAgentId(agentId)}.json`);
-
-const readAgentMetadata = async (agentId: string): Promise<AgentMetadata | null> => {
-  try {
-    const raw = await fs.readFile(agentFilePath(agentId), 'utf8');
-    return JSON.parse(raw) as AgentMetadata;
-  } catch {
-    return null;
-  }
-};
-
-const writeAgentMetadata = async (agent: AgentMetadata): Promise<void> => {
-  await fs.writeFile(agentFilePath(agent.agentId), JSON.stringify(agent, null, 2));
-  // Identity is a Fact: Snapshot the new state to gitlawb
-  await snapshotAgentState(agent.agentId, agent);
-};
-
-const containerStatus = async (containerName: string): Promise<{ status: string; startedAt?: string } | null> => {
-  try {
-    const { stdout } = await runCommand('docker', [
-      'inspect', 
-      containerName, 
-      '--format', 
-      '{{.State.Status}}|{{.State.StartedAt}}'
-    ]);
-    const [rawStatus, startedAt] = stdout.split('|');
-    let status = rawStatus;
-    if (rawStatus === 'running') {
-      status = 'active';
-    } else if (rawStatus === 'exited') {
-      status = 'stopped';
-    }
-    return { status, startedAt };
-  } catch {
-    return null;
-  }
-};
-
-// createOpenClawConfig and authenticate moved to ./lib/openclaw-config and ./middleware/authenticate
-
-// Mount sub-routers
+// Mount routes
 app.use('/api/invite', inviteRouter);
 app.use('/api/underground', undergroundRouter);
 app.use('/api/mission-control', missionControlRouter);
@@ -544,580 +120,104 @@ app.use('/api/railway', railwayProvisionRouter);
 app.use('/api/platform-jobs', authenticate, platformJobsRouter);
 app.use('/api/cron', cronRouter);
 app.use('/api/openclaude', authenticate, aiChatLimiter, openclaudeRouter);
-// All /api/openclaw/* routes require backend bearer token
 app.use('/api/openclaw', authenticate, openclawRouter);
-app.use('/api', registrationRouter); // validate-key, register-home, register-link, heartbeat
+app.use('/api', registrationRouter);
+app.use('/api/deployments', deploymentsRouter);
+app.use('/api/subscriptions', subscriptionsRouter);
+app.use(openaiCompatRouter);
 
-// Permission system — tiered command classification
-import {
-  preToolUseHook,
-  getPendingForUser,
-  getPendingForAgent,
-  processPermissionDecision,
-} from './middleware/permission-hook';
-
-// GET /api/permissions — list pending requests for user
+import { preToolUseHook, getPendingForUser, getPendingForAgent, processPermissionDecision } from './middleware/permission-hook';
 app.get('/api/permissions', authenticate, async (req: Request, res: Response) => {
   const userId = req.userId || 'unknown';
   const agentId = req.query.agentId as string;
-  const pending = agentId
-    ? await getPendingForAgent(agentId)
-    : await getPendingForUser(userId);
+  const pending = agentId ? await getPendingForAgent(agentId) : await getPendingForUser(userId);
   res.json({ pending });
 });
-
-// POST /api/permissions — submit decision
 app.post('/api/permissions', authenticate, async (req: Request, res: Response) => {
   const { requestId, decision } = req.body;
-  if (!requestId || !decision) {
-    return res.status(400).json({ error: 'Missing requestId or decision' });
-  }
-  if (!['approve', 'reject', 'approve_always'].includes(decision)) {
-    return res.status(400).json({ error: 'Invalid decision' });
-  }
+  if (!requestId || !decision) return res.status(400).json({ error: 'Missing requestId or decision' });
+  if (!['approve', 'reject', 'approve_always'].includes(decision)) return res.status(400).json({ error: 'Invalid decision' });
   const result = await processPermissionDecision(requestId, decision, req.userEmail);
-  if (!result) {
-    return res.status(404).json({ error: 'Request not found' });
-  }
+  if (!result) return res.status(404).json({ error: 'Request not found' });
   res.json({ success: true, requestId, decision, tier: result.tier });
 });
 
-// Health check — includes Docker status for observability
 app.get('/health', async (req: Request, res: Response) => {
   const summary = buildHealthSummary({ dockerAvailable });
-  // During the first ~500ms after boot the provisioning probe hasn't completed
-  // yet — surface that explicitly so a green dashboard isn't a false negative.
-  // db: shared pg pool stats (totalCount/idleCount/waitingCount) — surfaces
-  // connection-pool saturation without any new dependencies.
   res.json({ ...summary, provisioningChecked, db: getPoolStats() });
 });
 
-// OpenAI-compatible endpoints (/v1/models, /v1/models/:model, /v1/embeddings)
-// extracted to ./routes/openai-compat
-app.use(openaiCompatRouter);
+app.get('/install', (req: Request, res: Response) => { res.type('text/plain'); res.sendFile('install.sh', { root: require('path').join(__dirname, '../public') }); });
+app.get('/link', (req: Request, res: Response) => { res.type('text/plain'); res.sendFile('link.sh', { root: require('path').join(__dirname, '../public') }); });
 
-// Install script endpoints
-app.get('/install', (req: Request, res: Response) => {
-  res.type('text/plain');
-  res.sendFile('install.sh', { root: path.join(__dirname, '../public') });
-});
-
-app.get('/link', (req: Request, res: Response) => {
-  res.type('text/plain');
-  res.sendFile('link.sh', { root: path.join(__dirname, '../public') });
-});
-
-// Deployments endpoint
-app.post('/api/deployments', authenticate, deployLimiter, async (req: Request, res: Response) => {
-  const { agentId, config } = req.body as {
-    agentId?: string;
-    config?: {
-      telegramToken?: string;
-      ownerIds?: string[];
-      aiProvider?: string;
-      apiKey?: string;
-      plan?: string;
-      tailscale?: {
-        enabled?: boolean;
-        mode?: 'serve' | 'funnel' | 'tailnet';
-        authKey?: string;
-        hostname?: string;
-        tags?: string[];
-        acceptRoutes?: boolean;
-        password?: string;
-        resetOnExit?: boolean;
-      };
-    };
-  };
-
-  if (!agentId) {
-    res.status(400).json({ error: 'agentId is required' });
-    return;
-  }
-
-  const safeAgentId = sanitizeAgentId(agentId);
-  if (!safeAgentId) {
-    res.status(400).json({ error: 'Invalid agentId' });
-    return;
-  }
-
-  if (!config?.telegramToken) {
-    res.status(400).json({ error: 'telegramToken is required' });
-    return;
-  }
-
-  const containerName = getContainerName(safeAgentId);
-
-  try {
-    await ensureDataDirs();
-
-    const existing = await containerStatus(containerName);
-    if (existing?.status === 'active') {
-      const metadata = await readAgentMetadata(safeAgentId);
-      const subdomain = metadata?.subdomain || `${safeAgentId}.${AGENTS_DOMAIN}`;
-      res.status(200).json({
-        id: `deploy-${safeAgentId}`,
-        agentId: safeAgentId,
-        subdomain,
-        url: `https://${subdomain}`,
-        status: 'active',
-        openclawVersion: OPENCLAW_RUNTIME_VERSION,
-      });
-      return;
-    }
-
-    const openclawConfig = createOpenClawConfig(
-      config.telegramToken,
-      config.aiProvider || 'openrouter',
-      config.ownerIds,
-    );
-
-    const volumeName = `openclaw-data-${safeAgentId}`;
-    await runCommand('docker', ['volume', 'create', volumeName]);
-
-    const configBase64 = Buffer.from(JSON.stringify(openclawConfig, null, 2), 'utf8').toString('base64');
-    // Using SecureExec for the complex sequence with base64 decoding and pipes
-    await SecureExec.provisionConfig(volumeName, configBase64);
-
-    const assignedPort = await getNextPortAndAssign(safeAgentId);
-
-    try {
-      await runCommand('docker', ['rm', '-f', containerName]);
-    } catch {
-      // no-op
-    }
-
-    const provider = config.aiProvider || 'openrouter';
-    const providedKey = (config.apiKey || '').trim();
-    const envArgs: string[] = [];
-
-    const addEnvIfKeyExists = (envName: string) => {
-      const key = providedKey || (process.env[envName] || '').trim();
-      if (key) {
-        envArgs.push('-e', `${envName}=${key}`);
-      }
-    };
-
-    if (provider === 'gemini' || provider === 'google') {
-      addEnvIfKeyExists('GEMINI_API_KEY');
-    } else if (provider === 'groq') {
-      addEnvIfKeyExists('GROQ_API_KEY');
-    } else if (provider === 'anthropic') {
-      addEnvIfKeyExists('ANTHROPIC_API_KEY');
-    } else if (provider === 'openai') {
-      addEnvIfKeyExists('OPENAI_API_KEY');
-    } else if (provider === 'openrouter') {
-      addEnvIfKeyExists('OPENROUTER_API_KEY');
-    }
-
-    if (config.tailscale?.enabled) {
-      const authKey = config.tailscale.authKey?.trim();
-      if (!authKey) {
-        res.status(400).json({ error: 'tailscale.authKey is required when Tailscale is enabled' });
-        return;
-      }
-      const tailscaleMode = config.tailscale.mode === 'funnel' || config.tailscale.mode === 'tailnet'
-        ? config.tailscale.mode
-        : 'serve';
-      const tailscalePassword = config.tailscale.password?.trim();
-      if (tailscaleMode === 'funnel' && !tailscalePassword) {
-        res.status(400).json({ error: 'tailscale.password is required when Tailscale Funnel is enabled' });
-        return;
-      }
-      envArgs.push('-e', `OPENCLAW_TAILSCALE_MODE=${tailscaleMode}`);
-      envArgs.push('-e', `TAILSCALE_AUTHKEY=${authKey}`);
-      envArgs.push('-e', `TAILSCALE_HOSTNAME=${config.tailscale.hostname || `agentbot-${safeAgentId}`}`);
-      envArgs.push('-e', `TAILSCALE_ACCEPT_ROUTES=${config.tailscale.acceptRoutes !== false}`);
-      envArgs.push('-e', `OPENCLAW_GATEWAY_BIND=${tailscaleMode === 'tailnet' ? 'tailnet' : 'loopback'}`);
-      if (config.tailscale.resetOnExit === true) {
-        envArgs.push('-e', 'OPENCLAW_TAILSCALE_RESET_ON_EXIT=true');
-      }
-      if (tailscalePassword) {
-        envArgs.push('-e', `OPENCLAW_GATEWAY_PASSWORD=${tailscalePassword}`);
-      }
-      if (Array.isArray(config.tailscale.tags) && config.tailscale.tags.length > 0) {
-        envArgs.push('-e', `TAILSCALE_TAGS=${config.tailscale.tags.map((tag) => tag.trim()).filter(Boolean).join(',')}`);
-      }
-    }
-
-    const resources = getPlanResources(config.plan || 'free');
-
-    await runCommand('docker', [
-      'run', '-d',
-      '--name', containerName,
-      '--restart', 'unless-stopped',
-      '--memory', resources.memory,
-      '--cpus', resources.cpus,
-      ...envArgs,
-      '-v', `${volumeName}:${OPENCLAW_HOME_DIR}`,
-      '-p', `${assignedPort}:18789`,
-      '-p', `${assignedPort + 2}:18791`,
-      OPENCLAW_IMAGE,
-    ]);
-
-    const subdomain = `${safeAgentId}.${AGENTS_DOMAIN}`;
-    await writeAgentMetadata({
-      agentId: safeAgentId,
-      createdAt: new Date().toISOString(),
-      plan: config.plan || 'free',
-      aiProvider: config.aiProvider || 'openrouter',
-      port: assignedPort,
-      subdomain,
-    });
-
-    res.status(201).json({
-      id: `deploy-${safeAgentId}`,
-      agentId: safeAgentId,
-      subdomain,
-      url: `https://${subdomain}`,
-      status: 'active',
-      openclawVersion: OPENCLAW_RUNTIME_VERSION,
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Deployment failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-const OPENCLAW_REPO = 'OpenClaw/openclaw';
-const AUTO_UPDATE_INTERVAL = process.env.AUTO_UPDATE_INTERVAL || '0 3 * * *';
-
-async function checkForOpenClawUpdate(): Promise<string | null> {
-  try {
-    const response = await fetch(`https://api.github.com/repos/${OPENCLAW_REPO}/releases/latest`, {
-      headers: { 'User-Agent': 'Agentbot' }
-    });
-    if (!response.ok) return null;
-    
-    const release = await response.json() as { tag_name?: string; name?: string };
-    const latestVersion = release.tag_name?.replace(/^v/, '') || release.name?.replace(/^v/, '');
-    
-    if (latestVersion && latestVersion !== OPENCLAW_RUNTIME_VERSION) {
-      log.info('[Auto-Update] New version available', { latestVersion, current: OPENCLAW_RUNTIME_VERSION });
-      return latestVersion;
-    }
-    
-    return null;
-  } catch (error) {
-    log.error('[Auto-Update] Failed to check for updates', { error: error instanceof Error ? error.message : String(error) });
-    return null;
-  }
-}
-
-async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number; skipped: number }> {
-  // Check Docker availability first
-  try {
-    await runCommand('docker', ['version', '--format', '{{.Server.Version}}']);
-  } catch (err: any) {
-    log.warn('[Auto-Update] Docker not available — skipping container updates');
-    return { success: 0, failed: 0, skipped: 0 };
-  }
-
-  const portsFileContent = await fs.readFile(portsFilePath(), 'utf8').catch(() => '{}');
-  let ports: Record<string, number>;
-  try {
-    ports = JSON.parse(portsFileContent) as Record<string, number>;
-  } catch {
-    ports = {};
-  }
-  const results = { success: 0, failed: 0, skipped: 0 };
-  const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
-  const agentIds = Object.keys(ports);
-
-  if (agentIds.length === 0) {
-    console.log('[Auto-Update] No containers to update');
-    return results;
-  }
-
-  // Pull the image once before touching any containers
-  console.log(`[Auto-Update] Pulling image ${newImage}...`);
-  try {
-    await runCommand('docker', ['pull', newImage]);
-  } catch (err: any) {
-    console.error('[Auto-Update] Failed to pull image:', err.message);
-    return { success: 0, failed: 0, skipped: 0 };
-  }
-
-  // Update in parallel batches of 5 so we don't overwhelm the host
-  const CONCURRENCY = 5;
-  for (let i = 0; i < agentIds.length; i += CONCURRENCY) {
-    const batch = agentIds.slice(i, i + CONCURRENCY);
-    const batchResults = await Promise.allSettled(batch.map(async (agentId) => {
-      const containerName = getContainerName(agentId);
-      console.log(`[Auto-Update] Updating ${agentId} to ${newVersion}...`);
-      const inspect = await getContainerInspect(containerName);
-      if (inspect.Config.Image === newImage) {
-        log.info('[Auto-Update] Agent already current', { agentId, version: newVersion });
-        return 'skipped';
-      }
-
-      // MED-04 FIX: Read agent metadata so we can restore plan-specific resource
-      // limits when the container is recreated. Without this, every container
-      // would restart without --memory / --cpus constraints, effectively giving
-      // every agent unlimited host resources after an auto-update.
-      const metadata = await readAgentMetadata(agentId);
-      const resources = getPlanResources(metadata?.plan || 'starter');
-
-      await runCommand('docker', ['stop', containerName]);
-      await runCommand('docker', ['rm', containerName]);
-      const port = await getNextPortAndAssign(agentId);
-      await runCommand('docker', [
-        'run', '-d',
-        '--name', containerName,
-        '--restart', 'unless-stopped',
-        '--memory', resources.memory,
-        '--cpus', resources.cpus,
-        '-v', `openclaw-data-${agentId}:${OPENCLAW_HOME_DIR}`,
-        '-p', `${port}:18789`,
-        newImage,
-      ]);
-      await runOpenClawPostUpdateChecks(containerName);
-    }));
-
-    for (const result of batchResults) {
-      if (result.status === 'fulfilled') {
-        if (result.value === 'skipped') {
-          results.skipped++;
-        } else {
-          results.success++;
-        }
-      } else {
-        log.error('[Auto-Update] Batch failure', { reason: String(result.reason) });
-        results.failed++;
-      }
-    }
-  }
-
-  return results;
-}
-
-function startAutoUpdater() {
-  log.info('[Auto-Update] Scheduler initialized', { interval: AUTO_UPDATE_INTERVAL });
-  
-  const checkAndUpdate = async () => {
-    log.info('[Auto-Update] Checking for updates...');
-    const latestVersion = await checkForOpenClawUpdate();
-    const targetVersion = latestVersion || OPENCLAW_RUNTIME_VERSION;
-    
-    log.info('[Auto-Update] Reconciling containers', { targetVersion });
-    const results = await updateAllContainers(targetVersion);
-    log.info('[Auto-Update] Update complete', { success: results.success, skipped: results.skipped, failed: results.failed });
-  };
-  
-  const [hour, minute] = (process.env.AUTO_UPDATE_TIME || '03:00').split(':').map(Number);
-  const intervalMs = 24 * 60 * 60 * 1000;
-  
-  setInterval(checkAndUpdate, intervalMs);
-  
-  setTimeout(checkAndUpdate, 5000);
-  
-  log.info('[Auto-Update] Auto-updater started');
-}
-
-/**
- * POST /api/subscriptions/deploy
- * Called by the Stripe webhook (via frontend) when a checkout completes.
- * Records the subscription → plan mapping so the next agent deployment
- * picks up the correct resource tier.
- */
-app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Response) => {
-  const { tier, customerId, subscriptionId, stripeCustomerId } = req.body as {
-    tier?: string;
-    customerId?: string;
-    subscriptionId?: string;
-    stripeCustomerId?: string;
-  };
-
-  if (!customerId && !stripeCustomerId) {
-    res.status(400).json({ error: 'customerId is required' });
-    return;
-  }
-  if (!tier) {
-    res.status(400).json({ error: 'tier is required' });
-    return;
-  }
-
-  const validTiers = Object.keys(PLAN_RESOURCES);
-  if (!validTiers.includes(tier)) {
-    res.status(400).json({ error: `Invalid tier. Valid tiers: ${validTiers.join(', ')}` });
-    return;
-  }
-
-  try {
-    await ensureDataDirs();
-
-    // Persist subscription metadata so provisioning endpoints can read it
-    const id = (stripeCustomerId || customerId) as string;
-    const subscriptionFile = path.join(DATA_DIR, 'subscriptions', `${id.replace(/[^a-zA-Z0-9_-]/g, '_')}.json`);
-    await fs.mkdir(path.join(DATA_DIR, 'subscriptions'), { recursive: true });
-    await fs.writeFile(subscriptionFile, JSON.stringify({
-      customerId: id,
-      subscriptionId: subscriptionId || null,
-      tier,
-      plan: tier,
-      resources: PLAN_RESOURCES[tier],
-      activatedAt: new Date().toISOString(),
-    }, null, 2));
-
-    log.info('[Subscriptions] Tier activated', { tier, customerId: id, subscriptionId });
-
-    res.json({
-      success: true,
-      customerId: id,
-      subscriptionId,
-      tier,
-      resources: PLAN_RESOURCES[tier],
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Subscription activation failed';
-    log.error('[Subscriptions] Deploy error', { message });
-    res.status(500).json({ error: message });
-  }
-});
-
-// NOTE: Routes for /api/ai, /api/provision, /api/metrics, /api/render-mcp,
-// /api/agents, and /api/openclaw are already mounted above with Bearer token
-// authentication. Do NOT re-mount them here without auth.
-
-// Global error handler — must be registered after all routes.
-// Prevents Express from leaking stack traces on unhandled route errors.
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-  // L-9: forward the requestId attached by the structured request logger so
-  // users can quote it in support tickets and operators can correlate the 500
-  // back to the structured log line.
-  const requestId = (req as Request & { requestId?: string }).requestId;
+  const requestId = (req as any).requestId;
   log.error('[Unhandled Error]', { requestId: requestId ?? '-', message: err.message, stack: err.stack });
-
-  // Report to Sentry if configured
-  try {
-    const { Sentry } = require('./lib/sentry');
-    Sentry.captureException(err, {
-      extra: { requestId, path: req.path, method: req.method },
-    });
-  } catch {
-    // Sentry not available — continue without it
-  }
-
+  try { const { Sentry } = require('./lib/sentry'); Sentry.captureException(err, { extra: { requestId, path: req.path, method: req.method } }); } catch { /* Sentry not available */ }
   res.status(500).json({ error: 'Internal server error', requestId });
 });
 
-// Initialize database schema on startup.
-// In production, a DB failure is fatal — don't serve traffic with a broken schema.
+// Boot
 initDatabase().then(() => {
   log.info('[DB] Ready');
-  // Start scheduler only after schema is confirmed ready — avoids 42P01 race on boot
-  if (RUN_MODE === 'all' || RUN_MODE === 'worker') {
-    startScheduler();
-  }
+  if (RUN_MODE === 'all' || RUN_MODE === 'worker') startScheduler();
 }).catch(err => {
   log.error('[DB] Init error', { message: err.message });
-  if (process.env.NODE_ENV === 'production') {
-    log.error('[DB] Refusing to serve in production with failed schema. Exiting.');
-    process.exit(1);
-  }
+  if (process.env.NODE_ENV === 'production') { log.error('[DB] Refusing to serve. Exiting.'); process.exit(1); }
 });
 
-// Check Railway availability at startup (non-fatal — container provisioning degrades gracefully)
-const checkProvisioning = async () => {
-  // Use container manager's readiness check (Railway GraphQL)
-  const { isDockerReady } = require('./lib/container-manager').default;
-  try {
-    const ready = await isDockerReady();
-    if (ready) {
-      log.info('[Provisioning] Railway API available — agent provisioning enabled');
-      return true;
-    }
-    log.warn('[Provisioning] Railway API unreachable — provisioning disabled');
-    return false;
-  } catch (err: any) {
-    log.warn('[Provisioning] Railway check failed', { message: err.message });
-    return false;
-  }
-};
-
-// L-2: dockerAvailable is async — during the first ~500ms after server.listen
-// the /health endpoint may report dockerAvailable: false even when Railway is
-// reachable. Track an explicit "checked" flag so monitoring can distinguish
-// "not yet checked" from "checked and unavailable".
 let dockerAvailable = false;
 let provisioningChecked = false;
-checkProvisioning().then(available => {
-  dockerAvailable = available;
+(async () => {
+  try {
+    const { isDockerReady } = require('./lib/container-manager').default;
+    dockerAvailable = await isDockerReady();
+    if (dockerAvailable) log.info('[Provisioning] Railway API available');
+    else log.warn('[Provisioning] Railway API unreachable');
+  } catch { log.warn('[Provisioning] Railway check failed'); }
   provisioningChecked = true;
-});
+})();
 
 const server = http.createServer(app);
 
-// WebSocket proxy for OpenClaw Control UI — require token auth
 server.on('upgrade', (req, socket, head) => {
   const match = req.url?.match(/^\/api\/openclaw\/proxy\/([a-zA-Z0-9_-]+)(\/.*)?$/);
   if (match) {
-    // Validate Bearer token before proxying WebSocket upgrades
     const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Bearer ')) {
-      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-      socket.destroy();
-      return;
-    }
+    if (!auth || !auth.startsWith('Bearer ')) { socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n'); socket.destroy(); return; }
     const token = auth.substring(7);
-    const tokenBuf = Buffer.from(token);
-    const keyBuf = Buffer.from(API_KEY);
-    if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
-      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
-      socket.destroy();
-      return;
-    }
-
+    if (Buffer.from(token).length !== Buffer.from(API_KEY).length || !timingSafeEqual(Buffer.from(token), Buffer.from(API_KEY))) { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
     const agentId = match[1];
     const target = `http://agentbot-agent-${agentId}.railway.internal:18789`;
-    const proxiedReq = Object.assign({}, req, { url: match[2] || '/' });
-    openclawProxy.ws(proxiedReq as http.IncomingMessage, socket, head, { target });
+    openclawProxy.ws(Object.assign({}, req, { url: match[2] || '/' }) as http.IncomingMessage, socket, head, { target });
   } else {
     socket.destroy();
   }
 });
 
-// Permission WebSocket — real-time approval notifications
 import { setupWebSocket } from './lib/hooks/ws-handler';
 const permissionWss = setupWebSocket(server);
-  log.info('[WS] Permission WebSocket registered at /ws/permissions');
+log.info('[WS] Permission WebSocket registered');
 
 let serverStarted = false;
-
 export function startServer() {
   if (serverStarted) return server;
-
   server.listen(PORT, () => {
-    log.info('🦞 Agentbot API server started', { port: PORT, mode: RUN_MODE });
-    log.info('Health check', { url: `http://localhost:${PORT}/health` });
-
-    if (process.env.NODE_ENV === 'production' && RUN_MODE !== 'worker') {
-      startAutoUpdater();
-    }
+    log.info('Agentbot API started', { port: PORT, mode: RUN_MODE });
+    if (process.env.NODE_ENV === 'production' && RUN_MODE !== 'worker') startAutoUpdater(DATA_DIR, OPENCLAW_HOME_DIR, getPlanResources);
   });
-
   serverStarted = true;
   return server;
 }
 
-if (require.main === module) {
-  startServer();
-}
+if (require.main === module) startServer();
 
-// Graceful shutdown
 process.on('SIGTERM', () => {
   log.info('[API] Shutting down...');
   stopScheduler();
   if (serverStarted) {
-    server.close(() => {
-      log.info('[API] All connections drained. Exiting.');
-      process.exit(0);
-    });
-    // Force exit after 10 seconds if connections don't drain
-    setTimeout(() => {
-      log.warn('[API] Forced shutdown after timeout.');
-      process.exit(1);
-    }, 10_000).unref();
+    server.close(() => { log.info('[API] Connections drained. Exiting.'); process.exit(0); });
+    setTimeout(() => { log.warn('[API] Forced shutdown.'); process.exit(1); }, 10_000).unref();
   } else {
     process.exit(0);
   }
@@ -1125,4 +225,3 @@ process.on('SIGTERM', () => {
 
 export { server, permissionWss };
 export default app;
-// Cache bust 1773437272
