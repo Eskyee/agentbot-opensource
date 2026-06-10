@@ -2,9 +2,10 @@ import { Router, Request, Response } from 'express';
 import { randomBytes } from 'crypto';
 import { authenticate } from '../middleware/auth';
 import { log } from '../lib/logger';
-import { createContainer } from '../lib/container-manager';
-import type { PlanType } from '../lib/container-manager';
+import { orchestrator } from '../orchestrator';
+import { AgentInstance } from '../orchestrator/types';
 import { getAgentCount } from '../lib/agent-queries';
+import { DEFAULT_OPENCLAW_IMAGE } from '../lib/openclaw-version';
 
 /**
  * BASEFM Provision Endpoint
@@ -178,7 +179,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     // In production, you would:
     // 1. Store agent config in database
     // 2. Create real Mux live stream
-    // 3. Deploy Docker container via /api/deployments
+    // 3. Deploy Docker container via orchestrator
     // 4. Set up monitoring and alerting
     // 5. Return full agent metadata
 
@@ -221,25 +222,42 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       },
     };
 
-    // Create Docker container for the agent
-    let containerInfo = null;
+    // Create Agent via Orchestrator
+    let instance: AgentInstance | null = null;
     try {
-      containerInfo = await createContainer(userId, plan as PlanType);
-      log.info('[Provision] Container created', { containerId: containerInfo?.id });
-    } catch (containerError: any) {
-      log.error('[Provision] Container creation failed', { message: containerError.message });
+      instance = await orchestrator.deployAgent(userId, {
+        image: DEFAULT_OPENCLAW_IMAGE,
+        memory: '2g',
+        cpus: '1',
+        env: {
+          AGENTBOT_USER_ID: userId,
+          AGENTBOT_PLAN: plan,
+          AGENTBOT_AGENT_ID: userId,
+          TELEGRAM_TOKEN: telegramToken || '',
+          DISCORD_BOT_TOKEN: discordBotToken || '',
+          WHATSAPP_TOKEN: whatsappToken || '',
+          AI_PROVIDER: aiProvider,
+        },
+        ports: {}, // Orchestrator handles 18789 automatically
+        volumes: [{ source: `openclaw-data-${userId}`, target: '/root/.openclaw' }],
+        name: `DJ Agent ${userId.substring(0, 4)}`,
+        plan
+      });
+      if (instance) {
+        log.info('[Provision] Agent deployed', { agentId: userId, runtimeId: instance.runtimeId });
+      }
+    } catch (error: any) {
+      log.error('[Provision] Agent deployment failed', { message: error.message });
       // Don't fail provisioning — agent can still use API-side processing
     }
 
-    // Add container info to response
-    if (containerInfo) {
+    // Add instance info to response
+    if (instance) {
       (response as any).container = {
-        name: containerInfo.container,
-        status: containerInfo.status,
-        serviceId: containerInfo.serviceId,
-        railwayUrl: containerInfo.url,
-        // Control UI auto-connect URL (token in #fragment, never sent to server)
-        controlUiUrl: containerInfo.controlUiUrl,
+        name: instance.id,
+        status: instance.status,
+        serviceId: instance.runtimeId,
+        url: instance.endpoint,
       };
     }
 

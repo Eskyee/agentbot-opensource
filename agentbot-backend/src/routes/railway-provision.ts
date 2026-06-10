@@ -219,7 +219,7 @@ async function railwayGql<T = unknown>(
   const key = process.env.RAILWAY_API_KEY
   if (!key) throw new Error('RAILWAY_API_KEY not configured')
   const tokenType = ((process.env.RAILWAY_TOKEN_TYPE || 'account').trim().toLowerCase()) as RailwayTokenType
-  const headers =
+  const headers: Record<string, string> =
     tokenType === 'project'
       ? {
           'Project-Access-Token': key,

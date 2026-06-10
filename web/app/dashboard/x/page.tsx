@@ -324,7 +324,7 @@ export default function XAgentPage() {
           {queueDrafts.length === 0 ? (
             <div className="border border-zinc-800 bg-zinc-950 py-12 text-center">
               <p className="text-xs text-zinc-500 uppercase tracking-widest">
-                No drafts yet — your agent will auto-draft from mentions every 15 min
+                No drafts yet — your agent auto-monitors X every 15 min
               </p>
             </div>
           ) : (

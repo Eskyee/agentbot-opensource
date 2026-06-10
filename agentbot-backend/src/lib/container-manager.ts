@@ -188,7 +188,7 @@ async function railwayGql<T = any>(
   variables: Record<string, unknown> = {}
 ): Promise<T> {
   const key = getApiKey();
-  const headers = getRailwayTokenType() === 'project'
+  const headers: Record<string, string> = getRailwayTokenType() === 'project'
     ? {
         'Project-Access-Token': key,
         'Content-Type': 'application/json',

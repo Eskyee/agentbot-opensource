@@ -386,10 +386,35 @@ CREATE TABLE IF NOT EXISTS ai_token_reservations (
   PRIMARY KEY (user_id, period_start)
 );
 
+-- Orchestrator: Network configuration (replaces ports.json)
+CREATE TABLE IF NOT EXISTS agent_network_config (
+  agent_id TEXT PRIMARY KEY,
+  assigned_port INTEGER UNIQUE,
+  subdomain TEXT,
+  endpoint_url TEXT,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Orchestrator: Runtime state (replaces local agent .json metadata)
+CREATE TABLE IF NOT EXISTS agent_runtime_state (
+  agent_id TEXT PRIMARY KEY,
+  runtime_type TEXT NOT NULL,              -- docker | railway
+  runtime_id TEXT,                         -- container_id or service_id
+  image_name TEXT,
+  resource_plan TEXT,
+  status TEXT DEFAULT 'provisioning',
+  last_started_at TIMESTAMPTZ,
+  last_heartbeat_at TIMESTAMPTZ,
+  metadata JSONB DEFAULT '{}',
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for performance
 -- Core FK indexes (prevent full-table scans on joins)
 CREATE INDEX IF NOT EXISTS idx_agents_user_id ON agents(user_id);
 CREATE INDEX IF NOT EXISTS idx_agents_status ON agents(status);
+CREATE INDEX IF NOT EXISTS idx_agent_runtime_status ON agent_runtime_state(status);
+CREATE INDEX IF NOT EXISTS idx_agent_network_port ON agent_network_config(assigned_port);
 CREATE INDEX IF NOT EXISTS idx_treasury_user_id ON treasury_transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_treasury_agent_id ON treasury_transactions(agent_id);
 CREATE INDEX IF NOT EXISTS idx_treasury_category ON treasury_transactions(category);

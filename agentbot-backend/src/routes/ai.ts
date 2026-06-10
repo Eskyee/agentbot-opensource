@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import AIProviderService from '../services/ai-provider';
 import { ALGORITHM_SYSTEM_PROMPT } from '../services/ai';
+import { soulService } from '../services/soul';
 import { requirePlan, canAccessModel } from '../middleware/plan';
 import { authenticate } from '../middleware/auth';
 
@@ -92,7 +93,7 @@ router.post('/models/select', authenticate, requirePlan, async (req: Request, re
 
 // Universal chat endpoint - works with any provider
 router.post('/chat', authenticate, requirePlan, async (req: Request, res: Response) => {
-  const { messages, model, taskType, temperature, top_p, max_tokens, algorithmMode } = req.body;
+  const { messages, model, taskType, temperature, top_p, max_tokens, algorithmMode, agentId } = req.body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'Messages array is required' });
@@ -121,7 +122,13 @@ router.post('/chat', authenticate, requirePlan, async (req: Request, res: Respon
     // Send to appropriate provider - cast messages to correct type
     const typedMessages = messages as Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
 
-    // Inject Algorithm system prompt when algorithmMode is enabled
+    // 1. Inject "Soul" system prompt if agentId is provided
+    if (agentId) {
+      const soulPrompt = await soulService.generateSystemPrompt(agentId);
+      typedMessages.unshift({ role: 'system', content: soulPrompt });
+    }
+
+    // 2. Inject Algorithm system prompt when algorithmMode is enabled
     if (algorithmMode) {
       const hasAlgoPrompt = typedMessages.some(m => m.role === 'system' && m.content.includes('PHASE 1/7'));
       if (!hasAlgoPrompt) {

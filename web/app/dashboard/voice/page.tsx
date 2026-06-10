@@ -51,6 +51,8 @@ export default function VoicePage() {
     },
   })
 
+  const audioRef = useRef<HTMLAudioElement>(null)
+
   const handleTestVoice = async () => {
     if (!testText.trim()) return
     setIsPlaying(true)
@@ -75,11 +77,20 @@ export default function VoicePage() {
       const url = URL.createObjectURL(blob)
       setAudioUrl(url)
 
-      const audio = new Audio(url)
-      audio.onended = () => setIsPlaying(false)
-      audio.onerror = () => { setIsPlaying(false); setTtsError('Audio playback failed') }
-      await audio.play()
+      // Use ref-based audio element for reliable playback
+      if (audioRef.current) {
+        audioRef.current.src = url
+        audioRef.current.load()
+        try {
+          await audioRef.current.play()
+        } catch (playErr) {
+          console.error('[TTS] Play error:', playErr)
+          setTtsError('Browser blocked autoplay — click the play button below')
+          setIsPlaying(false)
+        }
+      }
     } catch (err) {
+      console.error('[TTS] Error:', err)
       setTtsError('Network error — TTS unavailable')
       setIsPlaying(false)
     }
@@ -215,14 +226,30 @@ export default function VoicePage() {
               )}
             </button>
           </div>
+          {/* Hidden audio element for reliable playback */}
+          <audio ref={audioRef} onEnded={() => setIsPlaying(false)} onError={() => { setIsPlaying(false); setTtsError('Audio playback error') }} />
+
           {ttsError && (
             <div className="mt-3 text-xs text-red-400 border border-red-500/20 p-3">
               {ttsError}
             </div>
           )}
-          {audioUrl && !isPlaying && (
-            <div className="mt-3 text-xs text-emerald-400">
-              ✓ Voice generated successfully
+          {audioUrl && (
+            <div className="mt-3 flex items-center gap-3">
+              <button
+                onClick={() => audioRef.current?.play()}
+                className="flex items-center gap-2 text-[11px] border border-emerald-500/30 text-emerald-400 px-3 py-1.5 hover:bg-emerald-500/10 transition-colors"
+              >
+                <Play className="h-3 w-3" />
+                Play Again
+              </button>
+              <a
+                href={audioUrl}
+                download="tts-output.wav"
+                className="text-[10px] text-zinc-500 hover:text-white transition-colors"
+              >
+                Download WAV
+              </a>
             </div>
           )}
           <p className="text-[10px] text-zinc-600 mt-3">

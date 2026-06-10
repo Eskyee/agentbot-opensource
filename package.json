@@ -31,11 +31,12 @@
     "fast-xml-builder": "^1.2.0",
     "fast-xml-parser": "^5.7.0",
     "follow-redirects": "^1.16.0",
-    "uuid": "^9.0.1",
-    "postcss": "^8.5.10",
+    "uuid": "11.1.1",
+    "shell-quote": "1.8.4",
+    "postcss": "8.5.10",
     "next-auth": "4.24.12",
     "elliptic": "6.6.1",
-    "ws": "^8.20.1",
+    "ws": "8.20.1",
     "picomatch": "^4.0.2",
     "brace-expansion": "^5.0.6",
     "handlebars": "^4.7.9",
@@ -47,17 +48,29 @@
     "viem": "^2.50.4",
     "bs58": "^6.0.0",
     "rpc-websockets": {
-      "uuid": "^9.0.1"
+      "uuid": "11.1.1"
     },
     "jayson": {
-      "uuid": "^9.0.1"
+      "uuid": "11.1.1"
     },
     "svix": {
-      "uuid": "^9.0.1"
+      "uuid": "11.1.1"
     },
     "@metamask/utils": {
-      "uuid": "^9.0.1"
+      "uuid": "11.1.1"
     },
+    "next-auth": {
+      "uuid": "11.1.1"
+    },
+    "next": {
+      "postcss": "8.5.10"
+    },
+    "@solana/web3.js": {
+      "jayson": {
+        "uuid": "11.1.1"
+      }
+    },
+    "ethers": "5.7.2",
     "@aws-sdk/xml-builder": {
       "fast-xml-parser": "^5.7.0"
     },
