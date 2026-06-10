@@ -7,7 +7,7 @@
  * Requires: BRIDGE_SECRET, BRIDGE_URL env vars (or config.env in same dir)
  */
 
-const { execSync, spawn } = require('child_process');
+const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
@@ -92,15 +92,25 @@ function runOpenClaw(messages) {
   // Build the prompt from messages
   const prompt = messages.map(m => `${m.role}: ${m.content}`).join('\n');
 
-  try {
-    const result = execSync(
-      `${OPENCLAW_CMD} run --message ${JSON.stringify(prompt)} 2>&1`,
-      { timeout: 120000, encoding: 'utf8', maxBuffer: 1024 * 1024 }
-    );
-    return result.trim();
-  } catch (err) {
-    return `Bridge error: ${err.message}`;
-  }
+  return new Promise((resolve) => {
+    const child = spawn(OPENCLAW_CMD, ['run', '--message', prompt], {
+      timeout: 120000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (data) => { stdout += data; });
+    child.stderr.on('data', (data) => { stderr += data; });
+
+    child.on('close', (code) => {
+      resolve(stdout.trim() || `Bridge error (exit ${code}): ${stderr.trim()}`);
+    });
+
+    child.on('error', (err) => {
+      resolve(`Bridge error: ${err.message}`);
+    });
+  });
 }
 
 let running = false;
@@ -119,8 +129,8 @@ async function loop() {
     if (data.type === 'chat' && data.requestId) {
       console.log(`[bridge] Received request ${data.requestId} with ${data.messages.length} messages`);
 
-      // Run OpenClaw synchronously
-      const response = runOpenClaw(data.messages);
+      // Run OpenClaw asynchronously
+      const response = await runOpenClaw(data.messages);
       console.log(`[bridge] Response length: ${response.length} chars`);
 
       await respond(data.requestId, response, true);

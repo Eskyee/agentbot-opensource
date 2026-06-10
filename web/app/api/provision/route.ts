@@ -8,6 +8,7 @@ import { acquireWorkloadSlot, releaseWorkloadSlot, type WorkloadTicket } from '@
 import { signedFetch } from '@/app/lib/backend-client'
 import { isAdminEmail } from '@/app/lib/admin'
 import { sendAlert } from '@/app/lib/alerts'
+import { safeCompare } from '@/app/lib/safe-compare'
 
 /**
  * Provision route — creates an OpenClaw agent container for the authenticated user.
@@ -270,15 +271,20 @@ export async function POST(request: NextRequest) {
 }
 
 
-// GET /api/provision — signup stats (atlas heartbeat, bridge-secret auth)
+// GET /api/provision — signup stats (requires INTERNAL_API_KEY or BRIDGE_SECRET)
 const BRIDGE_SECRET = process.env.BRIDGE_SECRET
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY
 
 export async function GET(request: NextRequest) {
-  if (BRIDGE_SECRET) {
-    const provided = request.headers.get('x-bridge-secret')
-    if (provided !== BRIDGE_SECRET) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-    }
+  const authHeader = request.headers.get('authorization') || ''
+  const token = authHeader.replace(/^Bearer\s+/i, '')
+  const bridgeSecret = request.headers.get('x-bridge-secret') || ''
+
+  const isInternal = safeCompare(token, INTERNAL_API_KEY)
+  const isBridge = safeCompare(bridgeSecret, BRIDGE_SECRET)
+
+  if (!isInternal && !isBridge) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {

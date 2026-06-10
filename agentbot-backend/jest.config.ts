@@ -8,8 +8,7 @@ export default {
   // Stub out bull (mocked in tests but not a real runtime dependency)
   moduleNameMapper: {
     '^bull$': '<rootDir>/src/__mocks__/bull.ts',
+    // Mock jose (ESM-only dependency from @coinbase/cdp-sdk) for CJS test runner
+    '^jose$': '<rootDir>/src/__mocks__/jose.ts',
   },
-  // smoke-test-review depends on @coinbase/cdp-sdk → jose (ESM-only, no CJS build)
-  // which ts-jest cannot transform. Skip it in CI; run it locally with --experimental-vm-modules.
-  testPathIgnorePatterns: ['/node_modules/', 'smoke-test-review\\.test\\.ts'],
 };

@@ -17,6 +17,7 @@
 
 import { processPlatformJobs } from './services/platform-jobs';
 import { pool } from './lib/db';
+import { log } from './lib/logger';
 
 let schedulerInterval: ReturnType<typeof setInterval> | null = null;
 let platformJobInterval: ReturnType<typeof setInterval> | null = null;
@@ -108,10 +109,13 @@ async function markFailureOrRetry(task: ClaimedTask, errorMessage: string): Prom
        WHERE id = $1`,
       [task.id, String(backoffSeconds), errorMessage]
     );
-    console.warn(
-      `[Scheduler] Task ${task.id} failed (attempt ${task.attempts}/${task.max_attempts}); ` +
-      `retrying in ${backoffSeconds}s — ${errorMessage}`
-    );
+    log.warn('[Scheduler] Task failed, retrying', {
+      taskId: task.id,
+      attempt: task.attempts,
+      maxAttempts: task.max_attempts,
+      retryIn: backoffSeconds,
+      error: errorMessage,
+    });
     return;
   }
   await pool.query(
@@ -120,16 +124,18 @@ async function markFailureOrRetry(task: ClaimedTask, errorMessage: string): Prom
      WHERE id = $1`,
     [task.id, errorMessage]
   );
-  console.error(
-    `[Scheduler] Task ${task.id} permanently failed after ${task.attempts} attempts: ${errorMessage}`
-  );
+  log.error('[Scheduler] Task permanently failed', {
+    taskId: task.id,
+    attempts: task.attempts,
+    error: errorMessage,
+  });
 }
 
 async function executeTask(task: ClaimedTask): Promise<void> {
   const agentUrl = task.config?.agentUrl;
   if (!agentUrl) {
     // No-op tasks (e.g. config-only) are still real work — mark completed.
-    console.log(`[Scheduler] Task ${task.id} has no agentUrl — completing as no-op`);
+    log.info('[Scheduler] Task has no agentUrl, completing as no-op', { taskId: task.id });
     await markCompleted(task.id);
     return;
   }
@@ -160,7 +166,7 @@ async function executeTask(task: ClaimedTask): Promise<void> {
   // We only care that the agent acknowledged. Body parsing is best-effort —
   // its failure should not flip the task back to pending.
   await res.json().catch(() => null);
-  console.log(`[Scheduler] Task ${task.id} completed successfully`);
+  log.info('[Scheduler] Task completed successfully', { taskId: task.id });
   await markCompleted(task.id);
 }
 
@@ -179,9 +185,9 @@ async function processScheduledTasks(): Promise<void> {
         await executeTask(task);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        console.error(`[Scheduler] Unexpected error executing task ${task.id}:`, message);
+        log.error('[Scheduler] Unexpected error executing task', { taskId: task.id, error: message });
         await markFailureOrRetry(task, `Unhandled scheduler error: ${message}`).catch((e) =>
-          console.error(`[Scheduler] Failed to settle task ${task.id} after error:`, e)
+          log.error('[Scheduler] Failed to settle task after error', { taskId: task.id, error: String(e) })
         );
       }
     }
@@ -189,11 +195,11 @@ async function processScheduledTasks(): Promise<void> {
     const code = (err as { code?: string } | null)?.code;
     // 42P01 = undefined_table — DB schema not ready yet (race on first boot).
     if (code === '42P01') {
-      console.warn('[Scheduler] scheduled_tasks table not ready yet — will retry next tick');
+      log.warn('[Scheduler] scheduled_tasks table not ready yet, will retry next tick');
       return;
     }
     const message = err instanceof Error ? err.message : String(err);
-    console.error('[Scheduler] Error processing tasks:', message);
+    log.error('[Scheduler] Error processing tasks', { error: message });
   }
 }
 
@@ -227,7 +233,7 @@ async function tickPlatformJobs(): Promise<void> {
     await processPlatformJobs();
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error('[Scheduler] Platform jobs tick failed:', message);
+    log.error('[Scheduler] Platform jobs tick failed', { error: message });
   } finally {
     platformJobsRunning = false;
   }
@@ -239,7 +245,7 @@ async function tickPlatformJobs(): Promise<void> {
  */
 export function startScheduler(): void {
   if (schedulerInterval || platformJobInterval) {
-    console.log('[Scheduler] Already running');
+    log.info('[Scheduler] Already running');
     return;
   }
 
@@ -251,7 +257,7 @@ export function startScheduler(): void {
     throw new Error('scheduler: DATABASE_URL is not set; refusing to start');
   }
 
-  console.log('[Scheduler] Starting inline task scheduler (scheduled tasks every 30s, platform jobs every 5s)');
+  log.info('[Scheduler] Starting inline task scheduler', { scheduledTaskInterval: '30s', platformJobInterval: '5s' });
 
   // Kick off immediately so we don't wait one full tick on boot.
   void tickScheduledTasks();
@@ -278,5 +284,5 @@ export function stopScheduler(): void {
     clearInterval(platformJobInterval);
     platformJobInterval = null;
   }
-  console.log('[Scheduler] Stopped');
+  log.info('[Scheduler] Stopped');
 }

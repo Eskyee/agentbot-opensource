@@ -8,26 +8,45 @@ import { redis } from '@/app/lib/redis';
 const CACHE_TTL = 30; // 30 seconds
 
 const PLANS = {
-  starter: {
-    name: 'Starter',
-    price: 19,
+  solo: {
+    name: 'Solo',
+    price: 29,
     priceId: process.env.STRIPE_PRICE_STARTER,
     dailyUnits: 600,
+    memory: '2g',
+    cpus: '1',
+    maxAgents: 1,
     features: ['1 AI Agent', '2GB RAM', 'Telegram', 'Basic skills']
   },
-  pro: {
-    name: 'Pro',
-    price: 39,
+  collective: {
+    name: 'Collective',
+    price: 69,
     priceId: process.env.STRIPE_PRICE_PRO,
     dailyUnits: 1000,
-    features: ['1 AI Agent', '4GB RAM', 'All channels', 'All skills', 'Priority support']
+    memory: '4g',
+    cpus: '2',
+    maxAgents: 3,
+    features: ['3 AI Agents', '4GB RAM', 'All channels', 'All skills', 'Priority support']
   },
-  scale: {
-    name: 'Scale',
-    price: 79,
+  label: {
+    name: 'Label',
+    price: 149,
     priceId: process.env.STRIPE_PRICE_SCALE,
     dailyUnits: 2500,
-    features: ['3 AI Agents', '8GB RAM', 'All channels', 'All skills', 'Analytics']
+    memory: '8g',
+    cpus: '4',
+    maxAgents: 10,
+    features: ['10 AI Agents', '8GB RAM', 'All channels', 'All skills', 'Analytics']
+  },
+  network: {
+    name: 'Network',
+    price: 499,
+    priceId: process.env.STRIPE_PRICE_NETWORK,
+    dailyUnits: 10000,
+    memory: '16g',
+    cpus: '4',
+    maxAgents: 999999,
+    features: ['Unlimited Agents', '16GB RAM', 'All channels', 'All skills', 'Dedicated support']
   }
 };
 
@@ -91,10 +110,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'get-usage') {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { plan: true },
+      });
+      const planMap: Record<string, keyof typeof PLANS> = {
+        starter: 'solo', pro: 'collective', scale: 'label',
+        free: 'solo',
+      };
+      const planKey = planMap[user?.plan || ''] || (user?.plan as keyof typeof PLANS) || 'solo';
+      const planConfig = PLANS[planKey] || PLANS.solo;
       return NextResponse.json({
-        dailyUnits: 600,
-        used: 245,
-        remaining: 355,
+        dailyUnits: planConfig.dailyUnits,
+        used: 0,
+        remaining: planConfig.dailyUnits,
         resetsAt: 'midnight UTC'
       });
     }
@@ -153,6 +182,14 @@ export async function GET(request: NextRequest) {
 
     const countdown = getTrialCountdown(user?.trialEndsAt)
 
+    // Map legacy plan names to canonical names
+    const planMap: Record<string, keyof typeof PLANS> = {
+      starter: 'solo', pro: 'collective', scale: 'label',
+      free: 'solo',
+    };
+    const planKey = planMap[user?.plan || ''] || (user?.plan as keyof typeof PLANS) || 'solo';
+    const planConfig = PLANS[planKey] || PLANS.solo;
+
     const responseData = {
       plans: PLANS,
       currentPlan: user?.plan || 'free',
@@ -166,9 +203,9 @@ export async function GET(request: NextRequest) {
         : null,
       byokEnabled: false,
       usage: {
-        dailyUnits: 600,
-        used: 245,
-        remaining: 355
+        dailyUnits: planConfig.dailyUnits,
+        used: 0,
+        remaining: planConfig.dailyUnits
       }
     };
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { isAdminEmail } from '@/app/lib/admin'
+import { prisma } from '@/app/lib/prisma'
 
 export async function GET() {
   // Require admin authentication
@@ -10,48 +11,21 @@ export async function GET() {
   }
   
   try {
-    const deployments = [
-      {
-        id: 'deploy-1',
-        agentId: 'my-first-agent',
-        name: 'My First Agent',
-        status: 'active',
-        createdAt: new Date(Date.now() - 300000).toISOString(),
-        updatedAt: new Date(Date.now() - 60000).toISOString(),
-        version: '1.0.0',
+    const agents = await prisma.agent.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
       },
-      {
-        id: 'deploy-2',
-        agentId: 'fd90edcbecce95e2',
-        name: 'fd90edcbecce95e2',
-        status: 'active',
-        createdAt: new Date(Date.now() - 180000).toISOString(),
-        updatedAt: new Date(Date.now() - 120000).toISOString(),
-        version: '1.0.0',
-      },
-      {
-        id: 'deploy-3',
-        agentId: '23104c045a71c730',
-        name: '23104c045a71c730',
-        status: 'active',
-        createdAt: new Date(Date.now() - 120000).toISOString(),
-        updatedAt: new Date(Date.now() - 90000).toISOString(),
-        version: '1.0.0',
-      },
-      {
-        id: 'deploy-4',
-        agentId: 'fc2711220884ffe8',
-        name: 'fc2711220884ffe8',
-        status: 'active',
-        createdAt: new Date(Date.now() - 60000).toISOString(),
-        updatedAt: new Date(Date.now() - 30000).toISOString(),
-        version: '1.0.0',
-      },
-    ]
+    })
 
     return NextResponse.json({
-      deployments,
-      total: deployments.length,
+      deployments: agents,
+      total: agents.length,
       status: 'ok',
     })
   } catch (error) {

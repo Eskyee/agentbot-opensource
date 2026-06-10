@@ -16,6 +16,7 @@ import openclaudeRouter from './routes/openclaude';
 import orchestrationRouter from './routes/orchestration';
 import railwayProvisionRouter from './routes/railway-provision';
 import platformJobsRouter from './routes/platform-jobs';
+import cronRouter from './routes/cron';
 import http from 'http';
 import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
 import { startScheduler, stopScheduler } from './scheduler';
@@ -31,7 +32,7 @@ import { getPoolStats } from './lib/db';
 import { signatureGuard } from './middleware/signature';
 import { snapshotAgentState } from './services/gitlawb';
 import { authenticate } from './middleware/authenticate';
-import { runCommand, runShellCommand } from './utils/run-command';
+import { SecureExec, runCommand } from './utils/secure-exec';
 import { createOpenClawConfig } from './lib/openclaw-config';
 import openaiCompatRouter from './routes/openai-compat';
 
@@ -127,7 +128,7 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please slow down.' },
-  keyGenerator: (req) => ipKeyGenerator(req.ip || '0.0.0.0'),
+  keyGenerator: (req) => ipKeyGenerator(req.ip || req.headers['x-forwarded-for']?.toString() || '0.0.0.0'),
 });
 const deployLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -135,7 +136,7 @@ const deployLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Deployment rate limit exceeded.' },
-  keyGenerator: (req) => ipKeyGenerator(req.ip || '0.0.0.0'),
+  keyGenerator: (req) => ipKeyGenerator(req.ip || req.headers['x-forwarded-for']?.toString() || '0.0.0.0'),
 });
 const aiChatLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -143,7 +144,7 @@ const aiChatLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'AI rate limit exceeded.' },
-  keyGenerator: (req) => ipKeyGenerator(req.ip || '0.0.0.0'),
+  keyGenerator: (req) => ipKeyGenerator(req.ip || req.headers['x-forwarded-for']?.toString() || '0.0.0.0'),
 });
 app.use('/api/', generalLimiter);
 
@@ -211,7 +212,7 @@ type ContainerInspect = {
   };
 };
 
-// runCommand and runShellCommand extracted to ./utils/run-command
+// runCommand and SecureExec patterns in ./utils/secure-exec
 
 const LEGACY_MODEL_MAP: Record<string, string> = {
   'openrouter/google/gemini-2.0-flash-exp:free': 'openrouter/openai/gpt-4o-mini',
@@ -255,7 +256,12 @@ console.log('healed:'+current+'->'+legacy[current]);
 
 const getContainerInspect = async (containerName: string): Promise<ContainerInspect> => {
   const { stdout } = await runCommand('docker', ['inspect', containerName]);
-  const parsed = JSON.parse(stdout) as ContainerInspect[];
+  let parsed: ContainerInspect[];
+  try {
+    parsed = JSON.parse(stdout) as ContainerInspect[];
+  } catch (e) {
+    throw new Error(`Failed to parse docker inspect output: ${e instanceof Error ? e.message : String(e)}`);
+  }
   if (!parsed[0]) {
     throw new Error('Container inspect returned no data');
   }
@@ -279,10 +285,8 @@ const backupContainerData = async (containerName: string, inspect: ContainerInsp
       throw new Error(`Unsafe docker volume name for backup: ${mount.Name}`);
     }
 
-    // This command needs shell redirection (>)
-    await runShellCommand(
-      `docker run --rm -v ${mount.Name}:/data:ro alpine sh -lc 'tar czf - -C /data .' > "${backupFile}"`
-    );
+    // Use SecureExec to prevent injection via volume names or backup paths
+    await SecureExec.dockerBackup(mount.Name, backupFile);
     return backupFile;
   }
 
@@ -377,24 +381,42 @@ const portsFilePath = (): string => path.join(DATA_DIR, 'ports.json');
 const lockFilePath = (): string => path.join(DATA_DIR, 'ports.lock');
 
 /**
- * Executes a function while holding a file-based lock.
- * This ensures atomic access to ports.json across multiple provisioning requests.
- *
- * L-4: this lock is FILE-BASED and only protects against concurrent
- * provisioning on the SAME host. The Railway deployment path no longer
- * assigns local ports (services are addressed via Railway-managed domains),
- * so on Railway this lock is effectively a no-op held over from the
- * single-host Docker era. If you ever scale the legacy Docker path across
- * replicas, replace this with a database-backed lock (e.g. Postgres advisory
- * locks on `pg_advisory_lock(hashtext('agentbot-ports'))`).
+ * Acquire an exclusive lock to prevent concurrent port provisioning.
+ * Uses Postgres advisory lock for distributed safety across Railway replicas.
+ * Falls back to file-based lock if database is unavailable.
  */
 const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
+  // Try Postgres advisory lock first (works across replicas)
+  const lockKey = 0x4147454E54; // "AGENT" in hex
+  let useDbLock = false;
+  
+  try {
+    const result = await pool.query('SELECT pg_advisory_lock($1)', [lockKey]);
+    if (result.rows[0]?.pg_advisory_lock) {
+      useDbLock = true;
+    }
+  } catch {
+    // Database unavailable, fall back to file-based lock
+  }
+
+  if (useDbLock) {
+    try {
+      return await fn();
+    } finally {
+      try {
+        await pool.query('SELECT pg_advisory_unlock($1)', [lockKey]);
+      } catch {
+        // Lock will be released when connection closes
+      }
+    }
+  }
+
+  // Fallback: file-based lock (single-host only)
   const lockFile = lockFilePath();
-  let retries = 50; // Max 5 seconds (50 * 100ms)
+  let retries = 50;
   
   while (retries > 0) {
     try {
-      // Try to create the lock file. 'wx' means it fails if it already exists.
       const handle = await fs.open(lockFile, 'wx');
       await handle.close();
       break;
@@ -409,17 +431,16 @@ const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
   }
 
   if (retries === 0) {
-    throw new Error('Could not acquire lock for ports.json after multiple retries');
+    throw new Error('Could not acquire lock after multiple retries');
   }
 
   try {
     return await fn();
   } finally {
-    // Always remove the lock file, even if the function fails
     try {
       await fs.unlink(lockFile);
-    } catch (err) {
-      log.error('Failed to remove lock file', { error: err instanceof Error ? err.message : String(err) });
+    } catch {
+      // Lock file cleanup is best-effort
     }
   }
 };
@@ -521,13 +542,10 @@ app.use('/api/agents', authenticate, agentsRouter);
 app.use('/api/orchestration', authenticate, orchestrationRouter);
 app.use('/api/railway', railwayProvisionRouter);
 app.use('/api/platform-jobs', authenticate, platformJobsRouter);
+app.use('/api/cron', cronRouter);
 app.use('/api/openclaude', authenticate, aiChatLimiter, openclaudeRouter);
-// /api/openclaw/proxy/* is public — OpenClaw handles its own auth
-// All other /api/openclaw/* routes require backend bearer token
-app.use('/api/openclaw', (req: Request, res: Response, next: NextFunction) => {
-  if (req.path.startsWith('/proxy/')) return next();
-  authenticate(req, res, next);
-}, openclawRouter);
+// All /api/openclaw/* routes require backend bearer token
+app.use('/api/openclaw', authenticate, openclawRouter);
 app.use('/api', registrationRouter); // validate-key, register-home, register-link, heartbeat
 
 // Permission system — tiered command classification
@@ -658,10 +676,8 @@ app.post('/api/deployments', authenticate, deployLimiter, async (req: Request, r
     await runCommand('docker', ['volume', 'create', volumeName]);
 
     const configBase64 = Buffer.from(JSON.stringify(openclawConfig, null, 2), 'utf8').toString('base64');
-    // Using runShellCommand for the complex sequence with base64 decoding and pipes
-    await runShellCommand(
-      `docker run --rm -e OPENCLAW_CONFIG_B64='${configBase64}' -v ${volumeName}:/target alpine sh -lc "mkdir -p /target/agents /target/workspace /target/logs /target/canvas /target/cron && echo \\$OPENCLAW_CONFIG_B64 | base64 -d > /target/openclaw.json && chmod -R 777 /target"`
-    );
+    // Using SecureExec for the complex sequence with base64 decoding and pipes
+    await SecureExec.provisionConfig(volumeName, configBase64);
 
     const assignedPort = await getNextPortAndAssign(safeAgentId);
 
@@ -798,7 +814,12 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
   }
 
   const portsFileContent = await fs.readFile(portsFilePath(), 'utf8').catch(() => '{}');
-  const ports = JSON.parse(portsFileContent) as Record<string, number>;
+  let ports: Record<string, number>;
+  try {
+    ports = JSON.parse(portsFileContent) as Record<string, number>;
+  } catch {
+    ports = {};
+  }
   const results = { success: 0, failed: 0, skipped: 0 };
   const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
   const agentIds = Object.keys(ports);

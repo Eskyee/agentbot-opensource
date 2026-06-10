@@ -11,6 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { safeCompare } from '@/app/lib/safe-compare'
 // Classify tool call using inline classifier (mirrors agentbot-backend/src/lib/permissions/tiered-classifier.ts)
 // This avoids cross-package imports between web and backend
 
@@ -77,9 +78,10 @@ const pendingRequests = new Map<string, {
 
 export async function POST(req: NextRequest) {
   // Auth check — must have valid internal API key
-  const authHeader = req.headers.get('authorization')
+  const authHeader = req.headers.get('authorization') || ''
+  const token = authHeader.replace(/^Bearer\s+/i, '')
   const expectedKey = process.env.INTERNAL_API_KEY
-  if (!expectedKey || authHeader !== `Bearer ${expectedKey}`) {
+  if (!safeCompare(token, expectedKey)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

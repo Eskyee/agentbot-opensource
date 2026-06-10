@@ -8,6 +8,7 @@ import { AmplificationService } from './services/amplification'; // Added
 import dotenv from 'dotenv';
 import { timingSafeEqual } from 'crypto';
 import { pool } from './lib/db';
+import { log } from './lib/logger';
 
 dotenv.config();
 
@@ -27,8 +28,8 @@ const authenticate = (req: Request, res: Response, next: any) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   // Extract user context from trusted frontend headers
-  (req as any).userId = req.headers['x-user-id'] as string || '';
-  (req as any).userEmail = req.headers['x-user-email'] as string || '';
+  req.userId = req.headers['x-user-id'] as string || '';
+  req.userEmail = req.headers['x-user-email'] as string || '';
   next();
 };
 
@@ -50,8 +51,9 @@ const busSendLimiter = rateLimit({
     if (typeof wallet === 'string' && wallet.length > 0) {
       return `bus:${wallet.toLowerCase()}`;
     }
-    // Fall back to IP for unparsable bodies — express-rate-limit's default.
-    return `bus:ip:${req.ip ?? 'unknown'}`;
+    // Fall back to IP for unparsable bodies — use headers for proxy support and non-null fallback
+    const ip = req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown';
+    return `bus:ip:${ip}`;
   },
   message: { error: 'Bus rate limit exceeded for this wallet' },
 });
@@ -114,7 +116,7 @@ router.post('/bus/send', busSendLimiter, async (req: Request, res: Response) => 
     res.json({ success: true, messageId: message.messageId });
   } catch (error: unknown) {
     const detail = error instanceof Error ? error.message : String(error);
-    console.error('[Bus] Send error:', detail);
+    log.error('[Bus] Send error', { error: detail });
     res.status(500).json({ error: 'Failed to send message' });
   }
 });
@@ -125,7 +127,7 @@ router.post('/bus/send', busSendLimiter, async (req: Request, res: Response) => 
 
 // List events for user's agents only
 router.get('/events', authenticate, async (req: Request, res: Response) => {
-  const userId = (req as any).userId;
+  const userId = req.userId;
   if (!userId) return res.status(401).json({ error: 'User context required' });
 
   const result = await pool.query(
@@ -140,7 +142,7 @@ router.get('/events', authenticate, async (req: Request, res: Response) => {
 
 // Create a new event (Rave) — user must own the agent
 router.post('/events', authenticate, async (req: Request, res: Response) => {
-  const userId = (req as any).userId;
+  const userId = req.userId;
   const { agentId, name, description, venue, eventDate, ticketPriceUsdc, totalTickets } = req.body;
   if (!userId) return res.status(401).json({ error: 'User context required' });
   if (!agentId || typeof agentId !== 'string') return res.status(400).json({ error: 'agentId (string) is required' });
@@ -161,7 +163,7 @@ router.post('/events', authenticate, async (req: Request, res: Response) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
-    console.error('[Events] Create error:', error.message);
+    log.error('[Events] Create error', { error: error.message });
     res.status(500).json({ error: 'Failed to create event' });
   }
 });
@@ -172,7 +174,7 @@ router.post('/events', authenticate, async (req: Request, res: Response) => {
 
 // Create a new agent wallet — userId from auth context, not body
 router.post('/wallets', authenticate, async (req: Request, res: Response) => {
-  const userId = (req as any).userId;
+  const userId = req.userId;
   const { agentId } = req.body;
   if (!userId) return res.status(401).json({ error: 'User context required' });
   if (!agentId) return res.status(400).json({ error: 'agentId is required' });
@@ -187,14 +189,14 @@ router.post('/wallets', authenticate, async (req: Request, res: Response) => {
     const wallet = await WalletService.createAgentWallet(userId, agentId);
     res.status(201).json(wallet);
   } catch (error: any) {
-    console.error('[Wallets] Create error:', { userId, agentId, message: error?.message });
+    log.error('[Wallets] Create error', { userId, agentId, error: error?.message });
     res.status(500).json({ error: 'Failed to create wallet' });
   }
 });
 
 // Get agent balance — userId from auth context, not query param
 router.get('/wallets/:address/balance', authenticate, async (req: Request, res: Response) => {
-  const userId = (req as any).userId;
+  const userId = req.userId;
   const { address } = req.params;
   if (!userId) return res.status(401).json({ error: 'User context required' });
 
@@ -202,7 +204,7 @@ router.get('/wallets/:address/balance', authenticate, async (req: Request, res: 
     const balance = await WalletService.getBalance(Number(userId), address);
     res.json({ address, balance_usdc: balance });
   } catch (error: any) {
-    console.error('[Wallets] Balance error:', { userId, address, message: error?.message });
+    log.error('[Wallets] Balance error', { userId, address, error: error?.message });
     res.status(500).json({ error: 'Failed to fetch balance' });
   }
 });
@@ -216,7 +218,7 @@ router.get('/bitcoin/backend/info', authenticate, async (_req: Request, res: Res
     const info = await BitcoinWalletService.getBackendInfo();
     res.json(info);
   } catch (error: any) {
-    console.error('[Bitcoin] Backend info error:', error.message);
+    log.error('[Bitcoin] Backend info error', { error: error.message });
     res.status(502).json({ error: 'Failed to fetch Bitcoin backend info' });
   }
 });
@@ -226,37 +228,37 @@ router.get('/bitcoin/liquid/info', authenticate, async (_req: Request, res: Resp
     const info = await BitcoinWalletService.getLiquidInfo();
     res.json(info);
   } catch (error: any) {
-    console.error('[Liquid] Info error:', error.message);
+    log.error('[Liquid] Info error', { error: error.message });
     res.status(502).json({ error: 'Failed to fetch Liquid info' });
   }
 });
 
 router.get('/bitcoin/greenlight/status', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = String((req as any).userId || '');
+    const userId = String(req.userId || '');
     const info = await BitcoinWalletService.getGreenlightStatus(userId);
     res.json(info);
   } catch (error: any) {
-    console.error('[Greenlight] Status error:', error.message);
+    log.error('[Greenlight] Status error', { error: error.message });
     res.status(502).json({ error: 'Failed to fetch Greenlight status' });
   }
 });
 
 router.get('/bitcoin/wallets', authenticate, async (req: Request, res: Response) => {
-  const userId = String((req as any).userId || '');
+  const userId = String(req.userId || '');
   if (!userId) return res.status(401).json({ error: 'User context required' });
 
   try {
     const wallets = await BitcoinWalletService.listWallets(userId);
     res.json(wallets);
   } catch (error: any) {
-    console.error('[Bitcoin] List wallets error:', error.message);
+    log.error('[Bitcoin] List wallets error', { error: error.message });
     res.status(500).json({ error: 'Failed to list Bitcoin wallets' });
   }
 });
 
 router.post('/bitcoin/wallets', authenticate, async (req: Request, res: Response) => {
-  const userId = String((req as any).userId || '');
+  const userId = String(req.userId || '');
   const agentId = typeof req.body?.agentId === 'string' ? req.body.agentId : '';
   const derivationScheme = typeof req.body?.derivationScheme === 'string' ? req.body.derivationScheme : '';
   const label = typeof req.body?.label === 'string' ? req.body.label : undefined;
@@ -273,13 +275,13 @@ router.post('/bitcoin/wallets', authenticate, async (req: Request, res: Response
     const wallet = await BitcoinWalletService.registerWatchOnlyWallet(userId, agentId, derivationScheme, label);
     res.status(201).json(wallet);
   } catch (error: any) {
-    console.error('[Bitcoin] Register wallet error:', error.message);
+    log.error('[Bitcoin] Register wallet error', { error: error.message });
     res.status(500).json({ error: 'Failed to register Bitcoin wallet' });
   }
 });
 
 router.get('/bitcoin/wallets/:walletId/address/unused', authenticate, async (req: Request, res: Response) => {
-  const userId = String((req as any).userId || '');
+  const userId = String(req.userId || '');
   const walletId = Number(req.params.walletId);
   if (!userId) return res.status(401).json({ error: 'User context required' });
   if (!Number.isInteger(walletId) || walletId <= 0) {
@@ -291,13 +293,13 @@ router.get('/bitcoin/wallets/:walletId/address/unused', authenticate, async (req
     res.json(address);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
-    if (status !== 404) console.error('[Bitcoin] Unused address error:', { userId, walletId, message: error?.message });
+    if (status !== 404) log.error('[Bitcoin] Unused address error', { userId, walletId, error: error?.message });
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to derive Bitcoin address' });
   }
 });
 
 router.get('/bitcoin/wallets/:walletId/balance', authenticate, async (req: Request, res: Response) => {
-  const userId = String((req as any).userId || '');
+  const userId = String(req.userId || '');
   const walletId = Number(req.params.walletId);
   if (!userId) return res.status(401).json({ error: 'User context required' });
   if (!Number.isInteger(walletId) || walletId <= 0) {
@@ -309,13 +311,13 @@ router.get('/bitcoin/wallets/:walletId/balance', authenticate, async (req: Reque
     res.json(balance);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
-    if (status !== 404) console.error('[Bitcoin] Balance error:', { userId, walletId, message: error?.message });
+    if (status !== 404) log.error('[Bitcoin] Balance error', { userId, walletId, error: error?.message });
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin balance' });
   }
 });
 
 router.get('/bitcoin/wallets/:walletId/transactions', authenticate, async (req: Request, res: Response) => {
-  const userId = String((req as any).userId || '');
+  const userId = String(req.userId || '');
   const walletId = Number(req.params.walletId);
   if (!userId) return res.status(401).json({ error: 'User context required' });
   if (!Number.isInteger(walletId) || walletId <= 0) {
@@ -327,7 +329,7 @@ router.get('/bitcoin/wallets/:walletId/transactions', authenticate, async (req: 
     res.json(transactions);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
-    if (status !== 404) console.error('[Bitcoin] Transactions error:', { userId, walletId, message: error?.message });
+    if (status !== 404) log.error('[Bitcoin] Transactions error', { userId, walletId, error: error?.message });
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin transactions' });
   }
 });
@@ -338,7 +340,7 @@ router.get('/bitcoin/wallets/:walletId/transactions', authenticate, async (req: 
 
 // Create and execute a royalty split — user must own the agent
 router.post('/splits', authenticate, async (req: Request, res: Response) => {
-  const userId = (req as any).userId;
+  const userId = req.userId;
   const { agentId, name, totalAmount, recipients } = req.body;
   if (!userId) return res.status(401).json({ error: 'User context required' });
   if (!agentId || typeof agentId !== 'string') return res.status(400).json({ error: 'agentId (string) is required' });
@@ -400,10 +402,10 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
       );
 
       await client.query('COMMIT');
-      console.log(`[Splits] Split ${splitId} executed for agent ${agentId}`);
+      log.info('[Splits] Split executed', { splitId, agentId });
     } catch (execErr: any) {
       await client.query('ROLLBACK');
-      console.error(`[Splits] Split execution error:`, execErr.message);
+      log.error('[Splits] Split execution error', { error: execErr.message });
       throw execErr;
     } finally {
       client.release();
@@ -411,7 +413,7 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
 
     res.json({ success: true, splitId, status: 'completed' });
   } catch (error: any) {
-    console.error('[Splits] Create error:', { userId, message: error?.message });
+    log.error('[Splits] Create error', { userId, error: error?.message });
     res.status(500).json({ error: 'Failed to create split' });
   }
 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { safeCompare } from '@/app/lib/safe-compare'
 
 /**
  * POST /api/ops/runs/log
@@ -14,8 +15,8 @@ export async function POST(req: NextRequest) {
     const internalKey = process.env.INTERNAL_API_KEY
     const bridgeSecret = process.env.BRIDGE_SECRET
 
-    const isInternal = internalKey && token === internalKey
-    const isBridge = bridgeSecret && token === bridgeSecret
+    const isInternal = safeCompare(token, internalKey)
+    const isBridge = safeCompare(token, bridgeSecret)
 
     if (!isInternal && !isBridge) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

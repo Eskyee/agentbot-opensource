@@ -1,8 +1,7 @@
-import CryptoJS from 'crypto-js';
 import { CdpClient } from '@coinbase/cdp-sdk';
 import dotenv from 'dotenv';
 import { parseUnits, formatUnits } from 'viem';
-import { randomUUID } from 'crypto';
+import { randomUUID, createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { log } from '../lib/logger';
 import { pool } from '../lib/db';
 
@@ -51,16 +50,44 @@ type Hex = `0x${string}`;
 
 export class WalletService {
   /**
-   * Encrypts sensitive data for storage.
+   * Encrypts sensitive data for storage using AES-256-GCM.
+   * Format: salt(16) + iv(12) + authTag(16) + ciphertext
    */
   private static encrypt(text: string): string {
-    return CryptoJS.AES.encrypt(text, getEncryptionKey()).toString();
+    const key = getEncryptionKey();
+    const salt = randomBytes(16);
+    const keyBuf = scryptSync(key, salt, 32);
+    const iv = randomBytes(12);
+    const cipher = createCipheriv('aes-256-gcm', keyBuf, iv);
+    const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+    const authTag = cipher.getAuthTag();
+    return Buffer.concat([salt, iv, authTag, encrypted]).toString('base64');
   }
 
   /**
-   * Decrypts sensitive data.
+   * Decrypts sensitive data. Falls back to CryptoJS for legacy data.
    */
   private static decrypt(ciphertext: string): string {
+    // Try Node crypto first (new format: base64)
+    if (/^[A-Za-z0-9+/]+=*$/.test(ciphertext) && ciphertext.length > 60) {
+      try {
+        const buf = Buffer.from(ciphertext, 'base64');
+        const salt = buf.subarray(0, 16);
+        const iv = buf.subarray(16, 28);
+        const authTag = buf.subarray(28, 44);
+        const encrypted = buf.subarray(44);
+        const key = getEncryptionKey();
+        const keyBuf = scryptSync(key, salt, 32);
+        const decipher = createDecipheriv('aes-256-gcm', keyBuf, iv);
+        decipher.setAuthTag(authTag);
+        return decipher.update(encrypted) + decipher.final('utf8');
+      } catch {
+        // Fall through to CryptoJS fallback
+      }
+    }
+    // Legacy CryptoJS fallback (for existing encrypted data)
+    // TODO: Migrate all data to Node crypto format and remove this fallback
+    const CryptoJS = require('crypto-js');
     const bytes = CryptoJS.AES.decrypt(ciphertext, getEncryptionKey());
     return bytes.toString(CryptoJS.enc.Utf8);
   }

@@ -1,217 +1,139 @@
-# AGENTS.md — Agentbot Review Guide
+# AGENTS.md — Agentbot
 
-This file is the primary review context for AI coding agents, including Vercel Agent Code Review.
-Use it to understand project-specific conventions, production constraints, and common failure modes.
+## Project Overview
 
-## 🆕 Agentbot Advanced Features (New)
+Agentbot is an open-source AI agent platform. Monorepo managed by Turborepo with three workspaces:
 
-Agentbot now includes two powerful systems inspired by Oh My OpenAgent:
+| Workspace | Tech | Purpose |
+|-----------|------|---------|
+| `web/` | Next.js 16 (App Router) | Frontend + API routes (~140 handlers) |
+| `agentbot-backend/` | Express + TypeScript | Agent lifecycle, webhooks, payments |
+| `gateway/` | Gateway service | Routing |
 
-### Hashline — Content-Addressed File Editing
-Located in `web/app/lib/hashline/`, this system prevents stale-line errors by using content hashes instead of line numbers.
+## Commands
 
-**Usage for Agents:**
-```typescript
-// Read file with hashes
-import { readWithHashes, formatWithHashes, applyEdit } from '@/app/lib/hashline'
-
-const lines = readWithHashes('/path/to/file.ts')
-const formatted = formatWithHashes(lines)
-// Output: "12#A3| import { x } from 'y'"
-
-// Apply edit by hash (fails if file changed)
-applyEdit('/path/to/file.ts', '12#A3', 'import { z } from "y"')
-```
-
-**API Endpoints:**
-- `GET /api/hashline?path=/path/to/file.ts` — Read file with hashes
-- `POST /api/hashline` — Apply edit by hash reference
-
-**Format:** `lineNumber#hash| content`  
-Example: `15#B7| const x = 5`
-
-### Init-Deep — Hierarchical AGENTS.md Generation
-Located in `web/app/lib/init-deep.ts`, generates scoped context files throughout the project.
-
-**Usage:**
 ```bash
-# Generate AGENTS.md for all key directories
-curl -X POST /api/init-deep
+# Root (Turborepo)
+npm run build          # Build all workspaces
+npm run dev            # Dev servers in parallel
+npm run lint           # Lint all
+npm run test           # Test all
 
-# Check which directories have AGENTS.md
-curl /api/init-deep/status
+# Web
+cd web && npm run dev                              # Dev server :3000
+cd web && npm run build                            # Production build
+cd web && npm run test                             # Playwright E2E
+cd web && npm run lint                             # ESLint
+cd web && npx prisma generate                      # Regenerate Prisma client
 
-# Dry run to see what would be generated
-curl -X POST /api/init-deep -d '{"dryRun":true}'
+# Backend
+cd agentbot-backend && npm run dev                 # Dev server :4000
+cd agentbot-backend && npm run build               # TypeScript compile
+cd agentbot-backend && npm test                    # Jest tests
+
+# Type check (CI equivalent)
+cd agentbot-backend && npx tsc --noEmit
 ```
 
-**Scoped Context:** Each major directory has its own `AGENTS.md` with:
-- Key files and their purposes
-- Directory-specific conventions
-- Local dependencies and exports
-- Links to parent context
+**Build order:** `lint → typecheck → test → build`. Turborepo handles workspace dependencies automatically.
 
----
+**Pre-commit hooks:** ESLint + Prettier + secret detection (via `.pre-commit-config.yaml`). Run `bash scripts/check-secrets.sh .` before pushing.
 
-## Project Structure
+## Architecture
 
 ```
 agentbot/
-├── web/                     # Next.js frontend and API routes
-│   ├── app/                 # App Router pages and route handlers
-│   │   ├── api/            # API routes (see web/app/api/AGENTS.md)
-│   │   ├── lib/            # Utilities (see web/app/lib/AGENTS.md)
-│   │   │   └── hashline/   # Content-addressed editing system
-│   │   └── ...
-│   ├── components/         # React components
-│   ├── lib/                # Shared utilities
-│   └── prisma/             # Prisma schema
-├── agentbot-backend/       # Express backend API
-├── skills/                 # AI skill definitions
-└── docs/                   # Documentation
+├── web/                          # Next.js 16 frontend
+│   ├── app/                      # App Router pages + API routes
+│   │   ├── api/                  # ~140 route handlers
+│   │   ├── lib/hashline/         # Content-addressed file editing (anti-stale-line)
+│   │   └── lib/init-deep.ts      # Hierarchical AGENTS.md generation
+│   ├── components/               # React components
+│   └── prisma/                   # Database schema + migrations
+├── agentbot-backend/             # Express API
+│   └── src/services/             # Business logic (underground, bus, wallet, etc.)
+├── gateway/                      # Gateway service
+├── skills/                       # AI skill definitions
+└── scripts/                      # Dev + ops utilities
 ```
 
-## Development Commands
+## Runtime Facts
 
-### Web Application (Next.js)
-```bash
-cd web
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Run tests (Playwright)
-npm run test
-
-# Lint code
-npm run lint
-
-# Generate Prisma client
-npx prisma generate
-```
-
-### Backend API (Express)
-```bash
-cd agentbot-backend
-
-# Start development server
-npm run dev
-
-# Run tests (Jest)
-npm run test
-
-# Build TypeScript
-npm run build
-```
-
-## Runtime Baseline
-
-- `web` uses Next.js 16 and builds with `next build --webpack`
-- Production runtime for `web` is `node .next/standalone/server.js`
-- `web` is deployed on Vercel
-- Some public pages are intentionally `force-dynamic` because they render live platform counts from Prisma
-- Do not reintroduce Turbopack-only assumptions without verifying Vercel build output
+- `web` builds with `next build --webpack` (NOT Turbopack)
+- Production runtime: `node .next/standalone/server.js`
+- Deployed on Vercel (frontend) + Railway (backend, x402-gateway, browser)
+- Some public pages are `force-dynamic` — they render live Prisma counts
+- Node.js ≥ 22 required
 
 ## Environment Setup
 
-Copy `.env.example` to `.env` and configure:
+Copy `.env.example` to `.env` in both `web/` and `agentbot-backend/`.
 
-**Web (.env):**
-- `DATABASE_URL` — PostgreSQL connection string
-- `NEXTAUTH_SECRET` — Auth secret
-- `NEXTAUTH_URL` — Auth URL
-- `DISCORD_CLIENT_ID/SECRET` — Discord OAuth
-- `TELEGRAM_BOT_TOKEN` — Telegram bot token
-- `STRIPE_SECRET_KEY` — Payment processing
+**Web requires:** `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `DISCORD_CLIENT_ID/SECRET`, `TELEGRAM_BOT_TOKEN`, `STRIPE_SECRET_KEY`
 
-**Backend (.env):**
-- `PORT` — Server port (default: 4000)
-- `DATABASE_URL` — PostgreSQL connection
-- `JWT_SECRET` — JWT signing secret
+**Backend requires:** `PORT` (default 4000), `DATABASE_URL`, `JWT_SECRET`
 
-## Database
+## Code Conventions
 
-Agentbot uses Prisma with PostgreSQL. Run migrations:
-```bash
-cd web && npx prisma migrate dev
-```
-
-## Testing
-
-- **Unit tests:** Jest in backend
-- **E2E tests:** Playwright in web
-- Run all tests: `npm test` in each directory
-
-## Code Style
-
-- Prefer TypeScript-first route handlers and server components
-- Keep edits aligned with existing patterns in `web/app/` and `web/components/`
-- Use Zod for validation and Prisma for ORM-backed state
-- Avoid mock data in production routes when real Prisma-backed data exists
-- Prefer server-rendered real metrics over client-only placeholders for public dashboards
+- TypeScript strict — no `any` where avoidable
+- `spawn()` not `exec()` — no shell injection
+- Fail-closed security patterns (auth defaults to deny)
+- Zod for validation, Prisma for ORM
+- Server components preferred over client components
+- Prefer real Prisma-backed data over mock/placeholder data in production routes
 
 ## Key Integrations
 
-- **Auth:** NextAuth.js with multiple providers
-- **Payments:** Stripe with subscription tiers
-- **Messaging:** Telegram, Discord, WhatsApp bots
-- **Blockchain:** Wagmi/Viem for Base network
-- **AI:** OpenAI, Anthropic via AI SDK
-- **Streaming:** Mux for live video
+| Service | Purpose |
+|---------|---------|
+| NextAuth.js | Auth (Discord, etc.) |
+| Stripe | Subscriptions |
+| Prisma + PostgreSQL (Neon) | Database |
+| OpenAI / Anthropic / OpenRouter | AI models |
+| Wagmi/Viem | Base network (blockchain) |
+| Telegram / Discord / WhatsApp | Bot messaging |
+| Mux | Live video streaming |
+| Coinbase CDP | Agent wallets (USDC) |
+
+## External References
+
+- [Mastercard Agent Toolkit](https://developer.mastercard.com/platform/documentation/agent-toolkit/) — Payment integration patterns for AI agents
+
+## Known Gotchas
+
+- `web/app/api/provision/route.ts` is legacy-heavy — may succeed without creating a Prisma `Agent` row
+- Public stats must distinguish "deployed agents" (total rows) from "live agents" (status `active` or `running`)
+- `User.openclawUrl` ≠ `Agent` record
+- `/api/deployments` is compatibility-oriented, not source of truth for metrics
+- Build warnings that affect Vercel output are serious; warning-only noise is secondary
+- Do not reintroduce Turbopack-only assumptions without verifying Vercel build
 
 ## Review Priorities
 
-Focus review comments on:
+1. Security: auth, webhook verification, SSRF, secret handling
+2. Provisioning drift between `web`, Prisma, and `agentbot-backend`
+3. Public page data integrity (`/marketplace`, `/demo`, `/dashboard/fleet`, `/dashboard/colony`)
+4. Vercel build/start regressions
+5. Fallback behavior hiding production failures
 
-1. Security regressions in auth, webhook verification, bearer-token gates, SSRF protections, or secret handling
-2. Provisioning and agent lifecycle drift between Vercel `web`, Prisma state, and `agentbot-backend`
-3. Public page data integrity — especially stats shown on `/marketplace`, `/demo`, `/dashboard/fleet`, and `/dashboard/colony`
-4. Runtime regressions that break Vercel build/start behavior
-5. Incorrect fallback behavior that hides production failures behind fake success states
+## CI/CD
 
-## Known Production Constraints
-
-- `web/app/api/provision/route.ts` is a legacy-heavy provisioning path and may succeed without creating a Prisma `Agent` row
-- Public platform stats should distinguish between:
-  - deployed agents: total Prisma `Agent` rows
-  - live agents: agents with status `active` or `running`
-- `User.openclawUrl` is not a substitute for an `Agent` record
-- `/api/deployments` is partially compatibility-oriented and should not become the source of truth for platform metrics
-- Build warnings should be treated seriously when they affect Vercel output, but warning-only noise is secondary to runtime correctness
-
-## Testing Expectations
-
-- For `web`, validate with `npm run build` before merging meaningful changes
-- For route handler changes, prefer verifying the exact affected endpoint or page path
-- For provisioning or dashboard work, confirm both:
-  - the data contract returned by the route
-  - the page that consumes it
-
-## Avoid
-
-- Replacing real counts with hardcoded marketing numbers
-- Reporting auth-protected stats as if they are public platform totals
-- Assuming `active` is the only valid “live” state without checking the current write paths
-- Counting success based only on a passing local render when the Vercel build/runtime contract changed
+GitHub Actions runs on push to `main` and PRs:
+1. **Backend:** TypeScript check → build → Jest tests
+2. **Frontend:** Prisma generate → build (with stub env) → Playwright E2E
+3. **Pre-deploy validation** (main only)
+4. **Deploy** → Vercel + Railway (auto-triggered)
+5. **Smoke tests** against production endpoints
 
 ## Common Tasks
 
-### Adding a new bot platform
-1. Create skill: `skills/add-[platform].md`
-2. Add API route: `web/app/api/bot/[platform]/route.ts`
-3. Add UI component: `web/components/bot/[Platform]Config.tsx`
+**Add a bot platform:** `skills/add-[platform].md` → `web/app/api/bot/[platform]/route.ts` → `web/components/bot/[Platform]Config.tsx`
 
-### Adding a new API endpoint
-1. Create route: `web/app/api/[feature]/route.ts`
-2. Add Zod validation schema
-3. Add to API docs
+**Add an API endpoint:** `web/app/api/[feature]/route.ts` + Zod schema + API docs
 
 ## Security
 
-- Never commit secrets to git
-- Use BotID for bot protection
-- Enable 2FA on all accounts
-- Run `npm audit` regularly
+- Never commit secrets (CI runs GitLeaks + TruffleHog)
+- Bearer token auth with `timingSafeEqual` (fail-closed)
+- SHA-256 hashed API keys (raw keys never stored)
+- SSRF blocklist: IPv4 private + IPv6 ULA + CGN
