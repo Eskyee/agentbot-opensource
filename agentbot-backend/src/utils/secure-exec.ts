@@ -13,16 +13,12 @@ export interface RunCommandOptions {
  * Executes a command with arguments using child_process.spawn.
  * Mitigates shell injection by avoiding the shell entirely.
  */
-export const runCommand = (
-  cmd: string, 
-  args: string[] = [], 
+const executeOnce = (
+  cmd: string,
+  args: string[],
   options: RunCommandOptions = {}
 ): Promise<{ stdout: string; stderr: string }> => {
-  const {
-    maxBuffer = 10 * 1024 * 1024,
-    timeout = 60000,
-    cwd,
-  } = options;
+  const { maxBuffer = 10 * 1024 * 1024, timeout = 60000, cwd } = options;
 
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, args, { shell: false, cwd });
@@ -31,32 +27,16 @@ export const runCommand = (
     let timedOut = false;
 
     const timer = timeout
-      ? setTimeout(() => {
-          timedOut = true;
-          child.kill('SIGKILL');
-        }, timeout)
+      ? setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, timeout)
       : null;
 
-    child.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    child.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
+    child.stdout.on('data', (data) => { stdout += data.toString(); });
+    child.stderr.on('data', (data) => { stderr += data.toString(); });
 
     child.on('close', (code) => {
       if (timer) clearTimeout(timer);
-      
-      if (timedOut) {
-        reject(new Error(`Command timed out after ${timeout}ms: ${cmd} ${args.join(' ')}`));
-        return;
-      }
-
-      if (code !== 0) {
-        reject(new Error(stderr.trim() || `Command failed with exit code ${code}`));
-        return;
-      }
+      if (timedOut) return reject(new Error(`Command timed out after ${timeout}ms: ${cmd} ${args.join(' ')}`));
+      if (code !== 0) return reject(new Error(stderr.trim() || `Command failed with exit code ${code}`));
       resolve({ stdout: stdout.trim(), stderr: stderr.trim() });
     });
 
@@ -65,6 +45,32 @@ export const runCommand = (
       reject(err);
     });
   });
+};
+
+/**
+ * Executes a command with arguments using child_process.spawn.
+ * Mitigates shell injection by avoiding the shell entirely.
+ * Supports automatic retries with exponential backoff.
+ */
+export const runCommand = async (
+  cmd: string, 
+  args: string[] = [], 
+  options: RunCommandOptions = {}
+): Promise<{ stdout: string; stderr: string }> => {
+  const { retries = 0, retryDelay = 1000, ...execOptions } = options;
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await executeOnce(cmd, args, execOptions);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, retryDelay * (attempt + 1)));
+      }
+    }
+  }
+  throw lastError;
 };
 
 /**

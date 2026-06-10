@@ -78,12 +78,21 @@ ${additionalContext}
    * Updates an agent's soul metadata.
    */
   async updateSoul(agentId: string, soulUpdate: Partial<AgentSoul>): Promise<void> {
+    if (!agentId || typeof agentId !== 'string') {
+      throw new Error('agentId is required');
+    }
+
     const current = await this.getSoul(agentId);
-    const metadata = {
+    const metadata: Record<string, unknown> = {
       ...(current?.metadata || {}),
       ...soulUpdate,
       updatedAt: new Date().toISOString()
     };
+
+    // Validate coreDirectives if provided
+    if (soulUpdate.coreDirectives && !Array.isArray(soulUpdate.coreDirectives)) {
+      throw new Error('coreDirectives must be an array');
+    }
 
     await pool.query(
       'UPDATE agent_runtime_state SET metadata = $1 WHERE agent_id = $2',

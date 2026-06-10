@@ -68,11 +68,11 @@ export class AgentOrchestrator {
   /**
    * Creates an agent record without deploying it.
    */
-  async createAgent(id: string, metadata: Record<string, any>): Promise<void> {
+  async createAgent(id: string, metadata: Record<string, unknown>): Promise<void> {
     const instance: AgentInstance = {
       id,
-      name: metadata.name || id,
-      plan: metadata.plan || 'solo',
+      name: (metadata.name as string) || id,
+      plan: (metadata.plan as string) || 'solo',
       status: 'provisioning',
       metadata
     };
