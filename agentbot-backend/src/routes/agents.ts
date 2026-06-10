@@ -191,7 +191,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     instance.metadata = { 
       ...(instance.metadata || {}),
       ...(aiProvider ? { aiProvider } : {}),
-      ...(config ? { config: { ...(instance.metadata?.config as any || {}), ...config } } : {})
+      ...(config ? { config: { ...(instance.metadata?.config as Record<string, unknown> || {}), ...config } } : {})
     };
 
     await orchestrator.createAgent(id, instance.metadata);
@@ -334,7 +334,7 @@ router.post('/:id/update', async (req: Request, res: Response) => {
       image: targetImage,
       memory: resources.memory,
       cpus: resources.cpus,
-      env: (instance.metadata?.config as any)?.env || {},
+      env: (instance.metadata?.config as Record<string, unknown>)?.env as Record<string, string> || {},
       ports: {}, // Orchestrator handles 18789
       volumes: [{ source: `openclaw-data-${id}`, target: '/root/.openclaw' }],
       name: instance.name,
@@ -383,7 +383,7 @@ router.post('/:id/repair', async (req: Request, res: Response) => {
       image: targetImage,
       memory: resources.memory,
       cpus: resources.cpus,
-      env: (instance.metadata?.config as any)?.env || {},
+      env: (instance.metadata?.config as Record<string, unknown>)?.env as Record<string, string> || {},
       ports: {},
       volumes: [{ source: `openclaw-data-${id}`, target: '/root/.openclaw' }],
       name: instance.name,

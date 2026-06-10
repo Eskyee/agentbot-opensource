@@ -77,7 +77,7 @@ app.use(signatureGuard);
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   const requestId = randomBytes(8).toString('hex');
-  (req as any).requestId = requestId;
+  req.requestId = requestId;
   res.on('finish', () => {
     const duration = Date.now() - start;
     const entry = { requestId, method: req.method, path: req.originalUrl || req.url, status: res.statusCode, durationMs: duration };
@@ -151,7 +151,7 @@ app.get('/install', (req: Request, res: Response) => { res.type('text/plain'); r
 app.get('/link', (req: Request, res: Response) => { res.type('text/plain'); res.sendFile('link.sh', { root: require('path').join(__dirname, '../public') }); });
 
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-  const requestId = (req as any).requestId;
+  const requestId = req.requestId;
   log.error('[Unhandled Error]', { error: { requestId: requestId ?? '-', message: err.message, stack: err.stack } })
   try { const { Sentry } = require('./lib/sentry'); Sentry.captureException(err, { extra: { requestId, path: req.path, method: req.method } }); } catch { /* Sentry not available */ }
   res.status(500).json({ error: 'Internal server error', requestId });

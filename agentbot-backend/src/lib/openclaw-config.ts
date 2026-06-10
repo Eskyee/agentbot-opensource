@@ -199,7 +199,7 @@ export const createOpenClawConfig = (
 
   // Add MiMo provider if API key is available
   if (MIMO_API_KEY) {
-    (config as any).models = {
+    (config as Record<string, unknown>).models = {
       providers: {
         xiaomi: {
           baseUrl: MIMO_BASE_URL,

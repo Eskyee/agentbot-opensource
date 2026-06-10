@@ -35,7 +35,7 @@ async function getAgentCount(email: string): Promise<number> {
 
 router.post('/', authenticate, async (req, res) => {
   try {
-    const userId = (req as any).userId
+    const userId = req.userId
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
@@ -50,7 +50,7 @@ router.post('/', authenticate, async (req, res) => {
     }
 
     // Payment enforcement — only admins bypass, everyone else needs subscription
-    const email = ((req as any).userEmail as string) || ''
+    const email = (req.userEmail as string) || ''
     const isAdmin = email && ADMIN_EMAILS.includes(email.toLowerCase())
     const stripeSubscriptionId = (req.body?.stripeSubscriptionId as string) || (req.headers['x-stripe-subscription-id'] as string)
 

@@ -27,9 +27,9 @@ export class RailwayRuntime implements IAgentRuntime {
       body: JSON.stringify({ query, variables }),
     });
 
-    const json = await res.json() as any;
+    const json = await res.json() as { errors?: Array<{ message: string }>; data: T };
     if (json.errors?.length) {
-      throw new Error(`Railway GQL error: ${json.errors.map((e: any) => e.message).join(', ')}`);
+      throw new Error(`Railway GQL error: ${json.errors.map((e) => e.message).join(', ')}`);
     }
     return json.data as T;
   }

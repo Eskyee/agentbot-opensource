@@ -73,7 +73,7 @@ export async function streamChat(
     const stream = await openrouter.chat.send({
       chatGenerationParams: {
         model: options.model || 'openai/gpt-4o-mini',
-        messages: messages as any,
+        messages: messages as Array<{ role: string; content: string }>,
         stream: true,
         temperature: options.temperature ?? 0.7,
         maxTokens: options.max_tokens,
@@ -111,7 +111,7 @@ export async function streamChat(
           promptTokens: chunk.usage.promptTokens,
           completionTokens: chunk.usage.completionTokens,
           totalTokens: chunk.usage.totalTokens,
-          reasoningTokens: (chunk.usage as any).reasoningTokens,
+          reasoningTokens: (chunk.usage as Record<string, unknown>).reasoningTokens as number,
         };
       }
     }

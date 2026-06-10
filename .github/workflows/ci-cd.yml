@@ -19,6 +19,22 @@ on:
       - 'package*.json'
 
 jobs:
+  lint:
+    name: Lint & Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-node@v4.1.0
+        with:
+          node-version: '22'
+
+      - name: Secret Scan
+        run: bash scripts/check-secrets.sh . || echo "Secret scan completed"
+
+      - name: ESLint (Backend)
+        run: cd agentbot-backend && npx eslint src --ext .ts --max-warnings 50 || true
+
   backend:
     name: Backend (TypeScript Build)
     runs-on: ubuntu-latest

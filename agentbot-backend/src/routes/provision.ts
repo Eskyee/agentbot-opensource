@@ -66,7 +66,7 @@ const generateMuxCredentials = async () => {
     throw new Error(`Mux API error: ${response.status}`);
   }
   
-  const data = await response.json() as any;
+  const data = await response.json() as { data: { stream_key: string; id: string; playback_ids: Array<{ id: string }> } };
   const stream = data.data;
   
   return {
@@ -253,7 +253,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 
     // Add instance info to response
     if (instance) {
-      (response as any).container = {
+      (response as Record<string, unknown>).container = {
         name: instance.id,
         status: instance.status,
         serviceId: instance.runtimeId,
