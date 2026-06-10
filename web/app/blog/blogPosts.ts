@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'agentbot-audit-improvements-june-2026',
+    dateLabel: '10 Jun',
+    isoDate: '2026-06-10',
+    title: 'Security Audit & A+ Grade: How We Hardened Agentbot in One Day',
+    excerpt:
+      'We ran a comprehensive 4-phase security audit, fixed 20+ findings, eliminated all critical vulnerabilities, and achieved an A+ code quality grade — all in a single day.',
+    tags: ['Security', 'Audit', 'Code Quality', 'Testing'],
+    track: 'Shipping',
+  },
+  {
     slug: 'base-integration-sprint',
     dateLabel: '5 Jun',
     isoDate: '2026-06-05',
