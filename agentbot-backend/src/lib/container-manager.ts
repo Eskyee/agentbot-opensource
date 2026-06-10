@@ -282,7 +282,7 @@ export async function createContainer(
     const existingUrl = existingDomain
       ? `https://${existingDomain}`
       : `https://${serviceName}.up.railway.app`;
-    log.info('[ContainerManager/Railway] Reusing existing service', { existingId, serviceName, userId, url: existingUrl });
+    log.info('[ContainerManager/Railway] Reusing existing service', { details: { existingId, serviceName, userId, url: existingUrl } })
     return {
       container: serviceName,
       status: 'deploying',
@@ -306,23 +306,23 @@ export async function createContainer(
   });
 
   const serviceId = created.serviceCreate.id;
-  log.info('[ContainerManager/Railway] Created service', { serviceId, serviceName, userId });
+  log.info('[ContainerManager/Railway] Created service', { details: { serviceId, serviceName, userId } })
 
   // Compensation helper — delete the half-built service so a retry can
   // start clean rather than colliding on the unique service name.
   const compensate = async (failedStep: string, err: unknown) => {
     const message = err instanceof Error ? err.message : String(err);
-    log.error('[ContainerManager/Railway] Step failed, rolling back', { failedStep, serviceName, message, serviceId });
+    log.error('[ContainerManager/Railway] Step failed, rolling back', { error: { failedStep, serviceName, message, serviceId } })
     try {
       await railwayGql(`
         mutation ServiceDelete($id: String!) {
           serviceDelete(id: $id)
         }
       `, { id: serviceId });
-      log.info('[ContainerManager/Railway] Compensated: deleted service', { serviceId });
+      log.info('[ContainerManager/Railway] Compensated: deleted service', { details: { serviceId } })
     } catch (cleanupErr: unknown) {
       const cleanupMessage = cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr);
-      log.error('[ContainerManager/Railway] Compensation failed', { serviceId, message: cleanupMessage });
+      log.error('[ContainerManager/Railway] Compensation failed', { error: { serviceId, message: cleanupMessage } })
     }
   };
 
@@ -427,7 +427,7 @@ export async function createContainer(
     await compensate('serviceInstanceUpdate', err);
     throw err;
   }
-  log.info('[ContainerManager/Railway] Set startCommand + resources', { serviceName });
+  log.info('[ContainerManager/Railway] Set startCommand + resources', { details: { serviceName } })
 
   // 4. Create service domain with targetPort 18789 (routes Railway HTTP proxy to Gateway)
   //    Without this, Railway's proxy defaults to port 3000 and the Gateway is unreachable.
@@ -453,7 +453,7 @@ export async function createContainer(
     throw err;
   }
   const serviceDomain = domainRes?.serviceDomainCreate;
-  log.info('[ContainerManager/Railway] Created domain', { domain: serviceDomain?.domain, port: serviceDomain?.targetPort });
+  log.info('[ContainerManager/Railway] Created domain', { details: { domain: serviceDomain?.domain, port: serviceDomain?.targetPort } })
 
   // 5. Deploy
   try {
@@ -692,9 +692,9 @@ export function resetIdleTimer(userId: string, idleMinutes: number = 30): void {
   const timer = setTimeout(async () => {
     try {
       await pauseContainer(userId);
-      log.info('[ContainerManager/Railway] Idle agent paused', { userId });
+      log.info('[ContainerManager/Railway] Idle agent paused', { details: { userId } })
     } catch (err: any) {
-      log.error('[ContainerManager/Railway] Failed to pause', { userId, message: err.message });
+      log.error('[ContainerManager/Railway] Failed to pause', { error: { userId, message: err.message } })
     }
     idleTimers.delete(userId);
   }, idleMinutes * 60 * 1000);

@@ -23,7 +23,7 @@ const pool = new Pool({
 
 // Catch idle client errors — don't crash, pool reconnects automatically.
 pool.on('error', (err) => {
-  log.error('[DB] Idle client error (non-fatal)', { message: err.message });
+  log.error('[DB] Idle client error (non-fatal)', { error: { message: err.message } })
 });
 
 export { pool };

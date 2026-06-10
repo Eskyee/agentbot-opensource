@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 /**
  * Backend Orchestration Batch Endpoint
  *
@@ -44,7 +45,7 @@ router.post('/batch', async (req: Request, res: Response) => {
     })
 
     // Log for monitoring
-    console.log(`[Orchestration] User ${userId}: ${stats.totalTools} tools, ${stats.parallelBatches} parallel batches, ${stats.serialBatches} serial, duration ${result.stats.totalDurationMs}ms`)
+    log.info(`[Orchestration] User ${userId}: ${stats.totalTools} tools, ${stats.parallelBatches} parallel batches, ${stats.serialBatches} serial, duration ${result.stats.totalDurationMs}ms`)
 
     return res.json({
       result,
@@ -54,7 +55,7 @@ router.post('/batch', async (req: Request, res: Response) => {
       },
     })
   } catch (error: unknown) {
-    console.error('[Orchestration]', error)
+    log.error('[Orchestration]', error)
     const message = error instanceof Error ? error.message : 'Internal error'
     return res.status(500).json({ error: message })
   }
@@ -79,7 +80,7 @@ router.post('/partition', async (req: Request, res: Response) => {
 
     return res.json({ batches, stats })
   } catch (error: unknown) {
-    console.error('[Orchestration Partition]', error)
+    log.error('[Orchestration Partition]', error)
     const message = error instanceof Error ? error.message : 'Internal error'
     return res.status(500).json({ error: message })
   }

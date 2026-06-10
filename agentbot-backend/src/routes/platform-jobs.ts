@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 import { Router, Request, Response } from 'express';
 import { enqueueGatewayChatJob, enqueueProvisionJob, getPlatformJob, getPlatformJobMetrics } from '../services/platform-jobs';
 
@@ -46,7 +47,7 @@ router.post('/provision', async (req: Request, res: Response) => {
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to enqueue provision job';
-    console.error('[PlatformJobs] Enqueue error:', message);
+    log.error('[PlatformJobs] Enqueue error:', { error: message })
     return res.status(500).json({ error: message });
   }
 });

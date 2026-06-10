@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 /**
  * OpenRouter Streaming Service
  *
@@ -138,7 +139,7 @@ export async function streamChat(
             0, // latency tracked client-side for streaming
           ]
         )
-        .catch((err) => console.error('[StreamAI] Usage logging failed:', err.message));
+        .catch((err) => log.error('[StreamAI] Usage logging failed:', { error: err.message) })
     }
   } catch (error: any) {
     res.write(

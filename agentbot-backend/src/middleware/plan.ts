@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 import { Request, Response, NextFunction } from 'express';
 import { pool } from '../lib/db';
 
@@ -95,7 +96,7 @@ export async function requirePlan(req: Request, res: Response, next: NextFunctio
       // User exists but has no subscription stored — fall through to format check
     } catch (err) {
       // DB unavailable — fall through to header-based check rather than blocking all traffic
-      console.error('[requirePlan] DB lookup failed, falling back to header check:', (err as Error).message);
+      log.error('[requirePlan] DB lookup failed, falling back to header check:', { error: (err as Error).message })
     }
   }
 

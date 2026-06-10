@@ -1,3 +1,5 @@
+import { log } from '../lib/logger';
+
 /**
  * Permission Hook Middleware — Pre-Tool-Use Interceptor
  *
@@ -100,7 +102,7 @@ export async function preToolUseHook(
     )
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error('[PermissionHook] Failed to persist pending request:', message)
+    log.error('[PermissionHook] Failed to persist pending request:', message)
     // Fail closed — block the tool call rather than silently allowing it
     // through with no record of the approval check.
     return {
@@ -158,7 +160,7 @@ export async function getPendingForUser(userId: string): Promise<PendingRequest[
     return result.rows.map((r) => fromRow(r))
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error('[PermissionHook] getPendingForUser failed:', message)
+    log.error('[PermissionHook] getPendingForUser failed:', message)
     return []
   }
 }
@@ -177,7 +179,7 @@ export async function getPendingForAgent(agentId: string): Promise<PendingReques
     return result.rows.map((r) => fromRow(r))
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error('[PermissionHook] getPendingForAgent failed:', message)
+    log.error('[PermissionHook] getPendingForAgent failed:', message)
     return []
   }
 }
@@ -207,7 +209,7 @@ export async function processPermissionDecision(
     return fromRow(result.rows[0])
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error('[PermissionHook] processPermissionDecision failed:', message)
+    log.error('[PermissionHook] processPermissionDecision failed:', message)
     return null
   }
 }

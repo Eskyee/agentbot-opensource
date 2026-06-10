@@ -26,14 +26,14 @@ export class AgentOrchestrator {
       this.runtime = new DockerRuntime(this.registry);
     }
     
-    log.info('Orchestrator', { event: 'initialized', runtime: runtimeType });
+    log.info('Orchestrator', { details: { event: 'initialized', runtime: runtimeType } })
   }
 
   /**
    * Deploys a new agent instance or updates an existing one.
    */
   async deployAgent(id: string, options: RuntimeOptions & { name: string, plan: string }): Promise<AgentInstance> {
-    log.info('Orchestrator', { event: 'agent_deploy_request', id, plan: options.plan });
+    log.info('Orchestrator', { details: { event: 'agent_deploy_request', id, plan: options.plan } })
 
     try {
       // 1. Allocate port if not already assigned
@@ -57,10 +57,10 @@ export class AgentOrchestrator {
 
       await this.registry.saveMetadata(fullInstance);
       
-      log.info('Orchestrator', { event: 'agent_deploy_success', id, port });
+      log.info('Orchestrator', { details: { event: 'agent_deploy_success', id, port } })
       return fullInstance;
     } catch (error) {
-      log.error('Orchestrator', { event: 'agent_deploy_failed', id, error: String(error) });
+      log.error('Orchestrator', { error: { event: 'agent_deploy_failed', id, error: String(error) } })
       throw error;
     }
   }

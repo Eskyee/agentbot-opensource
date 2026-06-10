@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 import { Router, Request, Response } from 'express';
 
 const router = Router();
@@ -119,7 +120,7 @@ router.post('/playground/generate', async (req: Request, res: Response) => {
       raw: content,
     });
   } catch (error) {
-    console.error('[openclaude] playground generation failed', error);
+    log.error('[openclaude] playground generation failed', error);
     res.status(502).json({ error: error instanceof Error ? error.message : 'OpenClaude generation failed' });
   }
 });

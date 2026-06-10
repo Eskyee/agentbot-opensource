@@ -14,7 +14,7 @@ export class KubernetesRuntime implements IAgentRuntime {
    */
   async deploy(id: string, options: RuntimeOptions): Promise<AgentInstance> {
     const name = `agent-${id}`;
-    log.info('K8sRuntime', { event: 'deploy_start', id, name });
+    log.info('K8sRuntime', { details: { event: 'deploy_start', id, name } })
 
     // Implementation would use @kubernetes/client-node
     // 1. Create/Update PersistentVolumeClaim
@@ -35,12 +35,12 @@ export class KubernetesRuntime implements IAgentRuntime {
 
   async start(id: string): Promise<void> {
     // K8s start is scaling replicas from 0 to 1
-    log.info('K8sRuntime', { event: 'start', id });
+    log.info('K8sRuntime', { details: { event: 'start', id } })
   }
 
   async stop(id: string): Promise<void> {
     // K8s stop is scaling replicas to 0
-    log.info('K8sRuntime', { event: 'stop', id });
+    log.info('K8sRuntime', { details: { event: 'stop', id } })
   }
 
   async status(id: string): Promise<AgentInstance> {
@@ -62,7 +62,7 @@ export class KubernetesRuntime implements IAgentRuntime {
 
   async destroy(id: string): Promise<void> {
     // Delete deployment, service, ingress, and optionally PVC
-    log.info('K8sRuntime', { event: 'destroy', id });
+    log.info('K8sRuntime', { details: { event: 'destroy', id } })
   }
 
   async logs(id: string, lines: number): Promise<string> {

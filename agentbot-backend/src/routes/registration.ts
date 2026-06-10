@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 /**
  * Agentbot Home/Link Registration Routes
  * Handles user registration for Home (self-hosted) and Link (existing OpenClaw) modes.
@@ -45,10 +46,10 @@ router.post('/validate-key', async (req: Request, res: Response) => {
       pool.query(
         'UPDATE api_keys SET last_used_at = NOW() WHERE key_hash = $1',
         [keyHash]
-      ).catch((err: Error) => console.error('[ValidateKey] last_used_at update failed:', err.message));
+      ).catch((err: Error) => log.error('[ValidateKey] last_used_at update failed:', { error: err.message) })
     }
   } catch (err: any) {
-    console.error('[ValidateKey] DB lookup failed:', err.message);
+    log.error('[ValidateKey] DB lookup failed:', { error: err.message })
     return res.status(500).json({ valid: false, error: 'Internal error' });
   }
 
@@ -87,11 +88,11 @@ router.post('/register-home', authenticate, async (req: Request, res: Response) 
       [userId, mode || 'home', gatewayToken || null]
     );
   } catch (err: any) {
-    console.error('[Home] DB upsert failed:', err.message);
+    log.error('[Home] DB upsert failed:', { error: err.message })
     return res.status(500).json({ success: false, error: 'Registration failed' });
   }
 
-  console.log(`[Home] Registered user ${userId} (mode: ${mode || 'home'})`);
+  log.info(`[Home] Registered user ${userId} (mode: ${mode || 'home'})`);
   res.json({
     success: true,
     message: 'Home installation registered',
@@ -122,11 +123,11 @@ router.post('/register-link', authenticate, async (req: Request, res: Response) 
       [userId, gatewayToken || null]
     );
   } catch (err: any) {
-    console.error('[Link] DB upsert failed:', err.message);
+    log.error('[Link] DB upsert failed:', { error: err.message })
     return res.status(500).json({ success: false, error: 'Registration failed' });
   }
 
-  console.log(`[Link] Registered user ${userId} (mode: link)`);
+  log.info(`[Link] Registered user ${userId} (mode: link)`);
   res.json({
     success: true,
     message: 'OpenClaw instance linked',
@@ -153,7 +154,7 @@ router.get('/installations', authenticate, async (req: Request, res: Response) =
       installations: result.rows,
     });
   } catch (err: any) {
-    console.error('[Installations] DB query failed:', err.message);
+    log.error('[Installations] DB query failed:', { error: err.message })
     res.status(500).json({ success: false, error: 'Failed to list installations' });
   }
 });
@@ -169,7 +170,7 @@ router.post('/heartbeat', authenticate, async (req: Request, res: Response) => {
     pool.query(
       `UPDATE agent_registrations SET last_seen = NOW(), status = 'active' WHERE user_id = $1`,
       [userId]
-    ).catch((err: Error) => console.error('[Heartbeat] DB update failed:', err.message));
+    ).catch((err: Error) => log.error('[Heartbeat] DB update failed:', { error: err.message) })
   }
 
   res.json({ success: true, timestamp: new Date().toISOString() });

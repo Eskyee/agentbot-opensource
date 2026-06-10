@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 import { promises as fs } from 'fs';
 import path from 'path';
 import { runCommand } from '../utils';
@@ -31,7 +32,7 @@ export async function snapshotAgentState(agentId: string, state: Record<string, 
       .catch(() => false);
 
     if (!isGitRepo) {
-      console.info(`[Gitlawb] Initializing new facts repository at ${GITLAWB_REPO_PATH}`);
+      log.info(`[Gitlawb] Initializing new facts repository at ${GITLAWB_REPO_PATH}`);
       await runCommand('git', ['init'], { cwd: GITLAWB_REPO_PATH });
       // Configure local git identity if not set
       await runCommand('git', ['config', 'user.name', 'Agentbot Fact-Builder'], { cwd: GITLAWB_REPO_PATH });
@@ -55,7 +56,7 @@ export async function snapshotAgentState(agentId: string, state: Record<string, 
         '--allow-empty'
       ], { cwd: GITLAWB_REPO_PATH });
 
-      console.info(`[Gitlawb] Recorded fact for agent ${agentId}`);
+      log.info(`[Gitlawb] Recorded fact for agent ${agentId}`);
 
       // 5. Push to remote if configured (Peer-to-Peer propagation)
       if (GITLAWB_REMOTE) {
@@ -63,12 +64,12 @@ export async function snapshotAgentState(agentId: string, state: Record<string, 
           await runCommand('git', ['push', 'origin', 'main'], { cwd: GITLAWB_REPO_PATH });
         } catch (pushError: unknown) {
           const message = pushError instanceof Error ? pushError.message : String(pushError);
-          console.warn(`[Gitlawb] Remote push failed: ${message}`);
+          log.warn(`[Gitlawb] Remote push failed: ${message}`);
         }
       }
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[Gitlawb] Failed to record state fact: ${message}`);
+    log.error(`[Gitlawb] Failed to record state fact: ${message}`);
   }
 }

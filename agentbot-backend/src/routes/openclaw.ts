@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 /**
  * OpenClaw runtime info routes
  *
@@ -23,7 +24,7 @@ const router = Router();
 const proxy = httpProxy.createProxyServer({ ws: true, changeOrigin: true });
 
 proxy.on('error', (err, _req, res) => {
-  console.error('[OpenClaw proxy] error:', err.message);
+  log.error('[OpenClaw proxy] error:', { error: err.message })
   if (res && 'writeHead' in res) {
     (res as Response).writeHead(502);
     (res as Response).end('OpenClaw instance unreachable');

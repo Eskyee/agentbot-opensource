@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 import { randomBytes } from 'crypto';
 import { provisionOnRailway, type TailscaleProvisionOptions } from '../routes/railway-provision';
 import { snapshotAgentState } from './gitlawb';
@@ -372,7 +373,7 @@ async function processProvisionJob(job: PlatformJobRow) {
     });
   } catch (err) {
     persistFailure = err instanceof Error ? err.message : String(err);
-    console.error(
+    log.error(
       `[Platform-jobs] Persist failed for ${payload.agentId} (Railway service is live at ${result.url}); recording orphan_railway_service for manual reconciliation:`,
       persistFailure
     );
@@ -400,7 +401,7 @@ async function processProvisionJob(job: PlatformJobRow) {
     ).catch((logErr: Error) => {
       // If even the orphan log fails, fall back to a console-error breadcrumb
       // so an operator at least sees something in the logs.
-      console.error('[Platform-jobs] Failed to log orphan_railway_service:', logErr.message);
+      log.error('[Platform-jobs] Failed to log orphan_railway_service:', { error: logErr.message })
     });
   }
 
@@ -553,7 +554,7 @@ export async function processPlatformJobs(maxJobs = 2): Promise<void> {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown platform job error';
       const permanent = error instanceof PermanentJobError;
-      console.error(
+      log.error(
         `[PlatformJobs] Job failed${permanent ? ' (permanent)' : ''}:`,
         job.id,
         message

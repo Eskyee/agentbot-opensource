@@ -116,7 +116,7 @@ router.post('/bus/send', busSendLimiter, async (req: Request, res: Response) => 
     res.json({ success: true, messageId: message.messageId });
   } catch (error: unknown) {
     const detail = error instanceof Error ? error.message : String(error);
-    log.error('[Bus] Send error', { error: detail });
+    log.error('[Bus] Send error', { error: { error: detail } })
     res.status(500).json({ error: 'Failed to send message' });
   }
 });
@@ -163,7 +163,7 @@ router.post('/events', authenticate, async (req: Request, res: Response) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
-    log.error('[Events] Create error', { error: error.message });
+    log.error('[Events] Create error', { error: { error: error.message } })
     res.status(500).json({ error: 'Failed to create event' });
   }
 });
@@ -189,7 +189,7 @@ router.post('/wallets', authenticate, async (req: Request, res: Response) => {
     const wallet = await WalletService.createAgentWallet(Number(userId), Number(agentId));
     res.status(201).json(wallet);
   } catch (error: any) {
-    log.error('[Wallets] Create error', { userId, agentId, error: error?.message });
+    log.error('[Wallets] Create error', { error: { userId, agentId, error: error?.message } })
     res.status(500).json({ error: 'Failed to create wallet' });
   }
 });
@@ -204,7 +204,7 @@ router.get('/wallets/:address/balance', authenticate, async (req: Request, res: 
     const balance = await WalletService.getBalance(Number(userId), address);
     res.json({ address, balance_usdc: balance });
   } catch (error: any) {
-    log.error('[Wallets] Balance error', { userId, address, error: error?.message });
+    log.error('[Wallets] Balance error', { error: { userId, address, error: error?.message } })
     res.status(500).json({ error: 'Failed to fetch balance' });
   }
 });
@@ -218,7 +218,7 @@ router.get('/bitcoin/backend/info', authenticate, async (_req: Request, res: Res
     const info = await BitcoinWalletService.getBackendInfo();
     res.json(info);
   } catch (error: any) {
-    log.error('[Bitcoin] Backend info error', { error: error.message });
+    log.error('[Bitcoin] Backend info error', { error: { error: error.message } })
     res.status(502).json({ error: 'Failed to fetch Bitcoin backend info' });
   }
 });
@@ -228,7 +228,7 @@ router.get('/bitcoin/liquid/info', authenticate, async (_req: Request, res: Resp
     const info = await BitcoinWalletService.getLiquidInfo();
     res.json(info);
   } catch (error: any) {
-    log.error('[Liquid] Info error', { error: error.message });
+    log.error('[Liquid] Info error', { error: { error: error.message } })
     res.status(502).json({ error: 'Failed to fetch Liquid info' });
   }
 });
@@ -239,7 +239,7 @@ router.get('/bitcoin/greenlight/status', authenticate, async (req: Request, res:
     const info = await BitcoinWalletService.getGreenlightStatus(userId);
     res.json(info);
   } catch (error: any) {
-    log.error('[Greenlight] Status error', { error: error.message });
+    log.error('[Greenlight] Status error', { error: { error: error.message } })
     res.status(502).json({ error: 'Failed to fetch Greenlight status' });
   }
 });
@@ -252,7 +252,7 @@ router.get('/bitcoin/wallets', authenticate, async (req: Request, res: Response)
     const wallets = await BitcoinWalletService.listWallets(userId);
     res.json(wallets);
   } catch (error: any) {
-    log.error('[Bitcoin] List wallets error', { error: error.message });
+    log.error('[Bitcoin] List wallets error', { error: { error: error.message } })
     res.status(500).json({ error: 'Failed to list Bitcoin wallets' });
   }
 });
@@ -275,7 +275,7 @@ router.post('/bitcoin/wallets', authenticate, async (req: Request, res: Response
     const wallet = await BitcoinWalletService.registerWatchOnlyWallet(userId, agentId, derivationScheme, label);
     res.status(201).json(wallet);
   } catch (error: any) {
-    log.error('[Bitcoin] Register wallet error', { error: error.message });
+    log.error('[Bitcoin] Register wallet error', { error: { error: error.message } })
     res.status(500).json({ error: 'Failed to register Bitcoin wallet' });
   }
 });
@@ -293,7 +293,7 @@ router.get('/bitcoin/wallets/:walletId/address/unused', authenticate, async (req
     res.json(address);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
-    if (status !== 404) log.error('[Bitcoin] Unused address error', { userId, walletId, error: error?.message });
+    if (status !== 404) log.error('[Bitcoin] Unused address error', { error: { userId, walletId, error: error?.message } })
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to derive Bitcoin address' });
   }
 });
@@ -311,7 +311,7 @@ router.get('/bitcoin/wallets/:walletId/balance', authenticate, async (req: Reque
     res.json(balance);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
-    if (status !== 404) log.error('[Bitcoin] Balance error', { userId, walletId, error: error?.message });
+    if (status !== 404) log.error('[Bitcoin] Balance error', { error: { userId, walletId, error: error?.message } })
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin balance' });
   }
 });
@@ -329,7 +329,7 @@ router.get('/bitcoin/wallets/:walletId/transactions', authenticate, async (req: 
     res.json(transactions);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
-    if (status !== 404) log.error('[Bitcoin] Transactions error', { userId, walletId, error: error?.message });
+    if (status !== 404) log.error('[Bitcoin] Transactions error', { error: { userId, walletId, error: error?.message } })
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin transactions' });
   }
 });
@@ -402,10 +402,10 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
       );
 
       await client.query('COMMIT');
-      log.info('[Splits] Split executed', { splitId, agentId });
+      log.info('[Splits] Split executed', { details: { splitId, agentId } })
     } catch (execErr: any) {
       await client.query('ROLLBACK');
-      log.error('[Splits] Split execution error', { error: execErr.message });
+      log.error('[Splits] Split execution error', { error: { error: execErr.message } })
       throw execErr;
     } finally {
       client.release();
@@ -413,7 +413,7 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
 
     res.json({ success: true, splitId, status: 'completed' });
   } catch (error: any) {
-    log.error('[Splits] Create error', { userId, error: error?.message });
+    log.error('[Splits] Create error', { error: { userId, error: error?.message } })
     res.status(500).json({ error: 'Failed to create split' });
   }
 });

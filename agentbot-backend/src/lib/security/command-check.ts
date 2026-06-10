@@ -1,3 +1,4 @@
+import { log } from "./lib/logger";
 /**
  * Command Injection Checker — PAI Security Pattern
  *
@@ -96,7 +97,7 @@ if (require.main === module) {
   const findings = scanDirectory(targetDir);
 
   if (findings.length === 0) {
-    console.log('✅ No command injection patterns found');
+    log.info('✅ No command injection patterns found');
     process.exit(0);
   }
 
@@ -105,24 +106,24 @@ if (require.main === module) {
   const alert = findings.filter(f => f.severity === 'alert');
 
   if (blocked.length > 0) {
-    console.log(`\n🚨 BLOCKED (${blocked.length}):`);
+    log.info(`\n🚨 BLOCKED (${blocked.length}):`);
     for (const f of blocked) {
-      console.log(`  ${f.file}:${f.line} — ${f.reason}`);
-      console.log(`    ${f.code}`);
+      log.info(`  ${f.file}:${f.line} — ${f.reason}`);
+      log.info(`    ${f.code}`);
     }
   }
 
   if (confirm.length > 0) {
-    console.log(`\n⚠️  CONFIRM (${confirm.length}):`);
+    log.info(`\n⚠️  CONFIRM (${confirm.length}):`);
     for (const f of confirm) {
-      console.log(`  ${f.file}:${f.line} — ${f.reason}`);
+      log.info(`  ${f.file}:${f.line} — ${f.reason}`);
     }
   }
 
   if (alert.length > 0) {
-    console.log(`\nℹ️  ALERT (${alert.length}):`);
+    log.info(`\nℹ️  ALERT (${alert.length}):`);
     for (const f of alert) {
-      console.log(`  ${f.file}:${f.line} — ${f.reason}`);
+      log.info(`  ${f.file}:${f.line} — ${f.reason}`);
     }
   }
 

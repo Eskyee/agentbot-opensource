@@ -106,7 +106,7 @@ export class AgentBusService {
       const ok = recoveredAddress.toLowerCase() === message.from.walletAddress.toLowerCase();
       return ok ? { ok: true } : { ok: false, reason: 'invalid_signature' };
     } catch (error) {
-      log.error('Signature verification failed', { error: error instanceof Error ? error.message : String(error) });
+      log.error('Signature verification failed', { error: { error: error instanceof Error ? error.message : String(error) } })
       return { ok: false, reason: 'verify_error' };
     }
   }
@@ -134,7 +134,7 @@ export class AgentBusService {
       // If the table doesn't exist yet (race on first boot), let the message
       // through rather than blocking the whole bus. db-init.ts will create it
       // shortly. We log so the gap is visible.
-      log.warn('[Bus] claimNonce DB error (allowing message through)', { error: error instanceof Error ? error.message : String(error) });
+      log.warn('[Bus] claimNonce DB error (allowing message through)', { error: { error: error instanceof Error ? error.message : String(error) } })
       return true;
     }
   }
@@ -146,7 +146,7 @@ export class AgentBusService {
         `DELETE FROM agent_message_nonces WHERE processed_at < NOW() - INTERVAL '1 hour'`
       );
     } catch (error) {
-      log.warn('[Bus] cleanupExpiredNonces failed', { error: error instanceof Error ? error.message : String(error) });
+      log.warn('[Bus] cleanupExpiredNonces failed', { error: { error: error instanceof Error ? error.message : String(error) } })
     }
   }
 

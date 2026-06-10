@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 /**
  * Metrics routes
  *
@@ -146,7 +147,7 @@ const generateRealMetrics = async (userId: string, timeRange: string): Promise<M
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[Metrics] DB query failed for ${userId}:`, message);
+      log.error(`[Metrics] DB query failed for ${userId}:`, message);
     }
   }
 
@@ -179,7 +180,7 @@ router.get('/:userId/historical', authenticate, async (req: Request, res: Respon
     const averages = calculateAverages(metrics);
     res.json({ userId, timeRange, metrics, averages } as HistoricalMetricsResponse);
   } catch (error) {
-    console.error('Error fetching historical metrics:', error);
+    log.error('Error fetching historical metrics:', { error: error })
     res.status(500).json({ error: 'Failed to fetch historical metrics' });
   }
 });
@@ -222,7 +223,7 @@ router.get('/:userId/performance', authenticate, async (req: Request, res: Respo
 
     res.json(performanceData);
   } catch (error) {
-    console.error('Error fetching performance data:', error);
+    log.error('Error fetching performance data:', { error: error })
     res.status(500).json({ error: 'Failed to fetch performance data' });
   }
 });
@@ -254,7 +255,7 @@ router.get('/:userId/summary', authenticate, async (req: Request, res: Response)
 
     res.json(summary);
   } catch (error) {
-    console.error('Error fetching music metrics summary:', error);
+    log.error('Error fetching music metrics summary:', { error: error })
     res.status(500).json({ error: 'Failed to fetch metrics summary' });
   }
 });

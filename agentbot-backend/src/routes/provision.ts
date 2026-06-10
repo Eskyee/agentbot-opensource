@@ -244,10 +244,10 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
         plan
       });
       if (instance) {
-        log.info('[Provision] Agent deployed', { agentId: userId, runtimeId: instance.runtimeId });
+        log.info('[Provision] Agent deployed', { details: { agentId: userId, runtimeId: instance.runtimeId } })
       }
     } catch (error: any) {
-      log.error('[Provision] Agent deployment failed', { message: error.message });
+      log.error('[Provision] Agent deployment failed', { error: { message: error.message } })
       // Don't fail provisioning — agent can still use API-side processing
     }
 
@@ -264,7 +264,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     res.status(200).json(response);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Provision failed';
-    log.error('[Provision]', { message });
+    log.error('[Provision]', { error: { message } })
     res.status(500).json({
       success: false,
       error: message,

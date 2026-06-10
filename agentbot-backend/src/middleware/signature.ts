@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyMessage, getAddress } from 'ethers';
 import { canonicalJsonStringify } from '../utils/canonical-json';
+import { log } from '../lib/logger';
 
 /**
  * SignatureGuard — Verifies cryptographic signatures from agents or users.
@@ -69,11 +70,11 @@ export async function signatureGuard(req: Request, res: Response, next: NextFunc
     req.userRole = 'agent'; // Address-based identities are treated as agent-class
 
     // Identity is now a verified fact. Proceed.
-    console.info(`[SignatureGuard] Verified identity: ${req.userId}`);
+    log.info('[SignatureGuard] Verified identity', { details: { userId: req.userId } })
     next();
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error('[SignatureGuard] Verification error:', message);
+    log.error('[SignatureGuard] Verification error', { error: { error: message } })
     res.status(401).json({
       error: 'Signature verification error',
       code: 'SIGNATURE_ERROR'

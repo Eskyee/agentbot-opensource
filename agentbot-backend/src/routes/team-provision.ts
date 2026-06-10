@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 /**
  * POST /api/provision/team
  * 
@@ -89,7 +90,7 @@ router.post('/', authenticate, async (req, res) => {
       yaml_config: generateTeamYAML(result.template),
     })
   } catch (err: unknown) {
-    console.error('[TeamProvision] Error:', err)
+    log.error('[TeamProvision] Error:', err)
     const message = err instanceof Error ? err.message : 'Team provisioning failed'
     res.status(500).json({ error: message })
   }

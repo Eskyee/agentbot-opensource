@@ -1,3 +1,4 @@
+import { log } from './lib/logger';
 import { randomBytes, timingSafeEqual } from 'crypto';
 import { Router, Request, Response } from 'express';
 import { pool } from './lib/db';
@@ -31,7 +32,7 @@ router.post('/generate', requireInternalAuth, async (req: Request, res: Response
     );
     res.json({ code });
   } catch (err: any) {
-    console.error('[Invite] Failed to persist invite code:', err.message);
+    log.error('[Invite] Failed to persist invite code:', { error: err.message })
     res.status(500).json({ error: 'Failed to generate invite code' });
   }
 });
@@ -58,7 +59,7 @@ router.post('/validate', async (req: Request, res: Response) => {
     }
     res.json({ valid: true });
   } catch (err: any) {
-    console.error('[Invite] Failed to validate invite code:', err.message);
+    log.error('[Invite] Failed to validate invite code:', { error: err.message })
     res.status(500).json({ error: 'Failed to validate invite code' });
   }
 });

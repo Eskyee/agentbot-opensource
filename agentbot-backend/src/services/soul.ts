@@ -69,7 +69,7 @@ ${additionalContext}
         metadata
       };
     } catch (error) {
-      log.error('SoulService', { event: 'get_soul_failed', agentId, error: String(error) });
+      log.error('SoulService', { error: { event: 'get_soul_failed', agentId, error: String(error) } })
       return null;
     }
   }
@@ -99,7 +99,7 @@ ${additionalContext}
       [metadata, agentId]
     );
     
-    log.info('SoulService', { event: 'soul_updated', agentId });
+    log.info('SoulService', { details: { event: 'soul_updated', agentId } })
   }
 }
 

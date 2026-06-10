@@ -1,3 +1,4 @@
+import { log } from "./lib/logger";
 /**
  * Metrics Synthesis — PAI Memory/Learning Pattern
  *
@@ -64,7 +65,7 @@ export async function analyzeLatencyTrend(agentId?: string): Promise<TrendAnalys
       message: `Latency ${changePercent > 0 ? 'increased' : 'decreased'} ${Math.abs(Math.round(changePercent))}% (${Math.round(previous)}ms → ${Math.round(current)}ms)`,
     };
   } catch (error: any) {
-    console.warn('[Synthesis] Latency trend analysis failed:', error.message);
+    log.warn('[Synthesis] Latency trend analysis failed:', { error: error.message })
     return null;
   }
 }
@@ -121,7 +122,7 @@ export async function analyzeErrorTrend(agentId?: string): Promise<TrendAnalysis
       message: `Error rate ${currentRate.toFixed(1)}% (${changePercent > 0 ? '+' : ''}${Math.round(changePercent)}% vs previous 24h)`,
     };
   } catch (error: any) {
-    console.warn('[Synthesis] Error trend analysis failed:', error.message);
+    log.warn('[Synthesis] Error trend analysis failed:', { error: error.message })
     return null;
   }
 }
@@ -180,7 +181,7 @@ export async function analyzeContainerHealth(agentId?: string): Promise<TrendAna
       message: `Container healthy: CPU ${cpu.toFixed(0)}%, Memory ${mem.toFixed(0)}%, ${restarts} restarts`,
     };
   } catch (error: any) {
-    console.warn('[Synthesis] Container health analysis failed:', error.message);
+    log.warn('[Synthesis] Container health analysis failed:', { error: error.message })
     return null;
   }
 }

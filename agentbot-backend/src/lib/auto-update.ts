@@ -19,12 +19,12 @@ export async function checkForOpenClawUpdate(): Promise<string | null> {
     const latestVersion = release.tag_name?.replace(/^v/, '') || release.name?.replace(/^v/, '');
 
     if (latestVersion && latestVersion !== OPENCLAW_RUNTIME_VERSION) {
-      log.info('[Auto-Update] New version available', { latestVersion, current: OPENCLAW_RUNTIME_VERSION });
+      log.info('[Auto-Update] New version available', { details: { latestVersion, current: OPENCLAW_RUNTIME_VERSION } })
       return latestVersion;
     }
     return null;
   } catch (error) {
-    log.error('[Auto-Update] Failed to check for updates', { error: error instanceof Error ? error.message : String(error) });
+    log.error('[Auto-Update] Failed to check for updates', { error: { error: error instanceof Error ? error.message : String(error) } })
     return null;
   }
 }
@@ -49,11 +49,11 @@ export async function updateAllContainers(
 
   if (agentIds.length === 0) return results;
 
-  log.info('[Auto-Update] Pulling image', { image: newImage });
+  log.info('[Auto-Update] Pulling image', { details: { image: newImage } })
   try {
     await runCommand('docker', ['pull', newImage]);
   } catch (err: any) {
-    log.error('[Auto-Update] Failed to pull image', { error: err.message });
+    log.error('[Auto-Update] Failed to pull image', { error: { error: err.message } })
     return { success: 0, failed: 0, skipped: 0 };
   }
 
@@ -83,7 +83,7 @@ export async function updateAllContainers(
       if (result.status === 'fulfilled') {
         result.value === 'skipped' ? results.skipped++ : results.success++;
       } else {
-        log.error('[Auto-Update] Batch failure', { reason: String(result.reason) });
+        log.error('[Auto-Update] Batch failure', { error: { reason: String(result.reason) } })
         results.failed++;
       }
     }
@@ -101,7 +101,7 @@ export function startAutoUpdater(
     const latestVersion = await checkForOpenClawUpdate();
     const targetVersion = latestVersion || OPENCLAW_RUNTIME_VERSION;
     const results = await updateAllContainers(targetVersion, dataDir, homeDir, getPlanResources);
-    log.info('[Auto-Update] Complete', { success: results.success, skipped: results.skipped, failed: results.failed });
+    log.info('[Auto-Update] Complete', { details: { success: results.success, skipped: results.skipped, failed: results.failed } })
   };
 
   const intervalMs = 24 * 60 * 60 * 1000;

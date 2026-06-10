@@ -15,7 +15,7 @@ export class DockerRuntime implements IAgentRuntime {
 
   async deploy(id: string, options: RuntimeOptions): Promise<AgentInstance> {
     const containerName = this.getContainerName(id);
-    log.info('DockerRuntime', { event: 'deploy_start', id, image: options.image });
+    log.info('DockerRuntime', { details: { event: 'deploy_start', id, image: options.image } })
 
     // 1. Ensure volume exists
     const volumeName = await this.storage.createVolume(id);
@@ -56,10 +56,10 @@ export class DockerRuntime implements IAgentRuntime {
       ]);
 
       const instance = await this.status(id);
-      log.info('DockerRuntime', { event: 'deploy_success', id, containerId: instance.runtimeId });
+      log.info('DockerRuntime', { details: { event: 'deploy_success', id, containerId: instance.runtimeId } })
       return instance;
     } catch (error) {
-      log.error('DockerRuntime', { event: 'deploy_failed', id, error: String(error) });
+      log.error('DockerRuntime', { error: { event: 'deploy_failed', id, error: String(error) } })
       throw error;
     }
   }
@@ -90,7 +90,7 @@ export class DockerRuntime implements IAgentRuntime {
         };
       });
     } catch (error) {
-      log.error('DockerRuntime', { event: 'list_failed', error: String(error) });
+      log.error('DockerRuntime', { error: { event: 'list_failed', error: String(error) } })
       return [];
     }
   }

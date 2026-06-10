@@ -36,7 +36,7 @@ export class RailwayRuntime implements IAgentRuntime {
 
   async deploy(id: string, options: RuntimeOptions): Promise<AgentInstance> {
     const serviceName = `agentbot-agent-${id}`;
-    log.info('RailwayRuntime', { event: 'deploy_start', id, serviceName });
+    log.info('RailwayRuntime', { details: { event: 'deploy_start', id, serviceName } })
 
     // Implementation would follow the pattern in container-manager.ts
     // 1. serviceCreate
@@ -61,12 +61,12 @@ export class RailwayRuntime implements IAgentRuntime {
 
   async start(id: string): Promise<void> {
     // Railway start is a redeploy of the latest instance
-    log.info('RailwayRuntime', { event: 'start', id });
+    log.info('RailwayRuntime', { details: { event: 'start', id } })
   }
 
   async stop(id: string): Promise<void> {
     // Railway has no direct 'stop' without deleting or sleeping
-    log.info('RailwayRuntime', { event: 'stop', id });
+    log.info('RailwayRuntime', { details: { event: 'stop', id } })
   }
 
   async status(id: string): Promise<AgentInstance> {
@@ -88,7 +88,7 @@ export class RailwayRuntime implements IAgentRuntime {
 
   async destroy(id: string): Promise<void> {
     // mutation ServiceDelete
-    log.info('RailwayRuntime', { event: 'destroy', id });
+    log.info('RailwayRuntime', { details: { event: 'destroy', id } })
   }
 
   async logs(id: string, lines: number): Promise<string> {

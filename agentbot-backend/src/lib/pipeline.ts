@@ -1,3 +1,4 @@
+import { log } from "./lib/logger";
 /**
  * Pipeline Verification Gate — PAI Pattern
  *
@@ -79,7 +80,7 @@ export async function runPipeline<TInput, TOutput>(
 
           if (!verification.passed) {
             if (step.onFailure === 'retry' && attempt < maxAttempts) {
-              console.warn(`[Pipeline] ${step.name} verification failed (attempt ${attempt}/${maxAttempts}): ${verification.criterion}`);
+              log.warn(`[Pipeline] ${step.name} verification failed (attempt ${attempt}/${maxAttempts}): ${verification.criterion}`);
               continue; // retry
             }
 
@@ -92,7 +93,7 @@ export async function runPipeline<TInput, TOutput>(
             }
 
             // 'continue' — log warning and proceed
-            console.warn(`[Pipeline] ${step.name} verification failed, continuing: ${verification.criterion}`);
+            log.warn(`[Pipeline] ${step.name} verification failed, continuing: ${verification.criterion}`);
           }
         }
 
@@ -102,7 +103,7 @@ export async function runPipeline<TInput, TOutput>(
 
       } catch (error: any) {
         if (step.onFailure === 'retry' && attempt < maxAttempts) {
-          console.warn(`[Pipeline] ${step.name} error (attempt ${attempt}/${maxAttempts}): ${error.message}`);
+          log.warn(`[Pipeline] ${step.name} error (attempt ${attempt}/${maxAttempts}): ${error.message}`);
           continue;
         }
 
@@ -115,7 +116,7 @@ export async function runPipeline<TInput, TOutput>(
         }
 
         // 'continue' — log and proceed
-        console.error(`[Pipeline] ${step.name} error, continuing: ${error.message}`);
+        log.error(`[Pipeline] ${step.name} error, continuing: ${error.message}`);
         stepResult.error = error.message;
       }
     }

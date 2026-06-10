@@ -52,11 +52,11 @@ export class RegistryService implements INetworkManager, IStorageProvider {
       );
 
       await client.query('COMMIT');
-      log.info('Registry', { event: 'port_allocated', agentId, port });
+      log.info('Registry', { details: { event: 'port_allocated', agentId, port } })
       return port;
     } catch (error) {
       await client.query('ROLLBACK');
-      log.error('Registry', { event: 'port_allocation_failed', agentId, error: String(error) });
+      log.error('Registry', { error: { event: 'port_allocation_failed', agentId, error: String(error) } })
       throw error;
     } finally {
       client.release();
@@ -136,7 +136,7 @@ export class RegistryService implements INetworkManager, IStorageProvider {
     if (walletAddress) {
       const dynamicTier = await governance.getResourceTier(walletAddress);
       if (dynamicTier !== baseInstance.plan) {
-        log.info('Registry', { event: 'dynamic_plan_override', agentId: id, oldPlan: baseInstance.plan, newPlan: dynamicTier });
+        log.info('Registry', { details: { event: 'dynamic_plan_override', agentId: id, oldPlan: baseInstance.plan, newPlan: dynamicTier } })
         baseInstance.plan = dynamicTier;
       }
     }

@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 import dotenv from 'dotenv';
 import { pool } from '../lib/db';
 
@@ -444,19 +445,19 @@ CREATE INDEX IF NOT EXISTS idx_treasury_user_category ON treasury_transactions(u
 
 export async function initDatabase(): Promise<void> {
   if (!process.env.DATABASE_URL) {
-    console.warn('[DB] DATABASE_URL not set — skipping schema initialization');
+    log.warn('[DB] DATABASE_URL not set — skipping schema initialization');
     return;
   }
 
   try {
     // Test connection before running schema
     const client = await pool.connect();
-    console.log('[DB] Connection successful');
+    log.info('[DB] Connection successful');
     client.release();
 
-    console.log('[DB] Initializing database schema...');
+    log.info('[DB] Initializing database schema...');
     await pool.query(SCHEMA);
-    console.log('[DB] Schema initialized successfully');
+    log.info('[DB] Schema initialized successfully');
   } catch (error: unknown) {
     const e = error as { message?: string; code?: string; detail?: string; address?: string; port?: string | number }
     const errorInfo = {
@@ -466,7 +467,7 @@ export async function initDatabase(): Promise<void> {
       host: e.address || '(unknown)',
       port: e.port || '(unknown)',
     };
-    console.error('[DB] Schema initialization failed:', JSON.stringify(errorInfo));
+    log.error('[DB] Schema initialization failed:', { error: JSON.stringify(errorInfo) })
     // Re-throw so callers can decide whether to abort startup
     throw error;
   }

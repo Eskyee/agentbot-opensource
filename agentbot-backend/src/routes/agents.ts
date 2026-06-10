@@ -1,3 +1,4 @@
+import { log } from "../lib/logger";
 /**
  * Agent CRUD + lifecycle routes
  *
@@ -98,7 +99,7 @@ router.get('/', async (_req: Request, res: Response) => {
     }));
     res.json(formatted);
   } catch (err) { 
-    console.error('[Agents] List failed:', err); 
+    log.error('[Agents] List failed:', { error: err }) 
     res.json([]); 
   }
 });

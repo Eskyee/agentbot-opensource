@@ -36,11 +36,11 @@ router.post('/deploy', authenticate, async (req: Request, res: Response) => {
     await fs.mkdir(path.join(DATA_DIR, 'subscriptions'), { recursive: true });
     await fs.writeFile(subscriptionFile, JSON.stringify({ customerId: id, subscriptionId: subscriptionId || null, tier, plan: tier, resources: PLAN_RESOURCES[tier], activatedAt: new Date().toISOString() }, null, 2));
 
-    log.info('[Subscriptions] Tier activated', { tier, customerId: id, subscriptionId });
+    log.info('[Subscriptions] Tier activated', { details: { tier, customerId: id, subscriptionId } })
     res.json({ success: true, customerId: id, subscriptionId, tier, resources: PLAN_RESOURCES[tier] });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Subscription activation failed';
-    log.error('[Subscriptions] Deploy error', { message });
+    log.error('[Subscriptions] Deploy error', { error: { message } })
     res.status(500).json({ error: message });
   }
 });

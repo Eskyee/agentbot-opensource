@@ -1,3 +1,4 @@
+import { log } from '../lib/logger';
 import dotenv from 'dotenv';
 import { pool } from '../lib/db';
 
@@ -157,7 +158,7 @@ export class AIService {
         };
       } catch (error) {
         const isTimeout = error instanceof Error && error.name === 'AbortError';
-        console.error(
+        log.error(
           `Tier ${tier}: Model ${model} ${isTimeout ? 'timed out' : 'failed'}, trying fallback...`
         );
         this.logMetric(model, tier, Date.now() - startTime, false, 'cloud');

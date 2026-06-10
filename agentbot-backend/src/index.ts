@@ -81,9 +81,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   res.on('finish', () => {
     const duration = Date.now() - start;
     const entry = { requestId, method: req.method, path: req.originalUrl || req.url, status: res.statusCode, durationMs: duration };
-    if (res.statusCode >= 500) log.error('request', entry);
-    else if (res.statusCode >= 400) log.warn('request', entry);
-    else log.info('request', entry);
+    if (res.statusCode >= 500) log.error('request', { error: entry })
+    else if (res.statusCode >= 400) log.warn('request', { error: entry })
+    else log.info('request', { details: entry })
   });
   next();
 });
@@ -152,7 +152,7 @@ app.get('/link', (req: Request, res: Response) => { res.type('text/plain'); res.
 
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   const requestId = (req as any).requestId;
-  log.error('[Unhandled Error]', { requestId: requestId ?? '-', message: err.message, stack: err.stack });
+  log.error('[Unhandled Error]', { error: { requestId: requestId ?? '-', message: err.message, stack: err.stack } })
   try { const { Sentry } = require('./lib/sentry'); Sentry.captureException(err, { extra: { requestId, path: req.path, method: req.method } }); } catch { /* Sentry not available */ }
   res.status(500).json({ error: 'Internal server error', requestId });
 });
@@ -162,7 +162,7 @@ initDatabase().then(() => {
   log.info('[DB] Ready');
   if (RUN_MODE === 'all' || RUN_MODE === 'worker') startScheduler();
 }).catch(err => {
-  log.error('[DB] Init error', { message: err.message });
+  log.error('[DB] Init error', { error: { message: err.message } })
   if (process.env.NODE_ENV === 'production') { log.error('[DB] Refusing to serve. Exiting.'); process.exit(1); }
 });
 
@@ -203,7 +203,7 @@ let serverStarted = false;
 export function startServer() {
   if (serverStarted) return server;
   server.listen(PORT, () => {
-    log.info('Agentbot API started', { port: PORT, mode: RUN_MODE });
+    log.info('Agentbot API started', { details: { port: PORT, mode: RUN_MODE } })
     if (process.env.NODE_ENV === 'production' && RUN_MODE !== 'worker') startAutoUpdater(DATA_DIR, OPENCLAW_HOME_DIR, getPlanResources);
   });
   serverStarted = true;

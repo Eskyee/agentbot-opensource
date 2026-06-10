@@ -29,7 +29,7 @@ export class GovernanceService {
    */
   async getResourceTier(walletAddress: string): Promise<ResourceTier> {
     if (!ethers.utils.isAddress(walletAddress)) {
-      log.warn('Governance', { event: 'invalid_address', address: walletAddress });
+      log.warn('Governance', { error: { event: 'invalid_address', address: walletAddress } })
       return 'solo';
     }
 
@@ -41,14 +41,14 @@ export class GovernanceService {
       const balanceWei = await contract.balanceOf(walletAddress);
       const balance = parseFloat(ethers.utils.formatEther(balanceWei));
 
-      log.info('Governance', { event: 'stake_check', address: walletAddress, balance });
+      log.info('Governance', { details: { event: 'stake_check', address: walletAddress, balance } })
 
       if (balance >= STAKING_TIERS.NETWORK) return 'network';
       if (balance >= STAKING_TIERS.LABEL) return 'label';
       if (balance >= STAKING_TIERS.COLLECTIVE) return 'collective';
       return 'solo';
     } catch (error) {
-      log.error('Governance', { event: 'stake_check_failed', address: walletAddress, error: String(error) });
+      log.error('Governance', { error: { event: 'stake_check_failed', address: walletAddress, error: String(error) } })
       return 'solo'; // Fallback to basic tier
     }
   }

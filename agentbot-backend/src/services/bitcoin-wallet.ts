@@ -1,3 +1,4 @@
+import { log } from '../lib/logger';
 import CryptoJS from 'crypto-js';
 import { pool } from '../lib/db';
 
@@ -89,7 +90,7 @@ export class BitcoinWalletService {
       // `degraded: true` instead of pretending everything is fine. The UI
       // can use these flags to surface the degraded state to operators
       // ("NBXplorer unavailable, balances will be stale").
-      console.warn('[Bitcoin] NBXplorer unreachable, falling back to public blockstream explorer (degraded mode)');
+      log.warn('[Bitcoin] NBXplorer unreachable, falling back to public blockstream explorer (degraded mode)');
       try {
         const res = await fetch('https://blockstream.info/api/blocks/tip/height', {
           signal: AbortSignal.timeout(8000),
@@ -155,7 +156,7 @@ export class BitcoinWalletService {
       };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.warn('[Bitcoin] Liquid sync status lookup failed:', message);
+      log.warn('[Bitcoin] Liquid sync status lookup failed', { error: { error: message } })
       return {
         status: 'unknown',
         chain: 'liquidv1',
@@ -237,7 +238,7 @@ export class BitcoinWalletService {
     } catch (e: unknown) {
       backendStatus = 'pending_explorer';
       backendError = e instanceof Error ? e.message : String(e);
-      console.warn(
+      log.warn(
         `[Bitcoin] Failed to register derivation with NBXplorer (${backendError}); persisting locally with backend_status='pending_explorer'.`
       );
     }

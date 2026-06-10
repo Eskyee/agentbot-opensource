@@ -1,3 +1,4 @@
+import { log } from "./lib/logger";
 /**
  * Prompt Injection Detector — PAI Security Pattern
  *
@@ -116,7 +117,7 @@ export function rejectPromptInjection(req: any, res: any, next: any) {
   const result = detectPromptInjection(body);
 
   if (result.detected && result.confidence !== 'low') {
-    console.warn(`[Security] Prompt injection detected from ${req.ip}: ${result.reason}`);
+    log.warn(`[Security] Prompt injection detected from ${req.ip}: ${result.reason}`);
     return res.status(400).json({
       error: 'Request contains disallowed content patterns',
     });

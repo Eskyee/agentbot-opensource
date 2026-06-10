@@ -1,3 +1,4 @@
+import { log } from '../lib/logger';
 import { Router, Request, Response } from 'express';
 import AIProviderService from '../services/ai-provider';
 import { ALGORITHM_SYSTEM_PROMPT } from '../services/ai';
@@ -144,7 +145,7 @@ router.post('/chat', authenticate, requirePlan, async (req: Request, res: Respon
 
     res.json(response);
   } catch (error) {
-    console.error('Chat error:', error);
+    log.error('Chat error', { error: { error: String(error) } })
     res.status(500).json({ error: error instanceof Error ? error.message : 'Chat failed' });
   }
 });

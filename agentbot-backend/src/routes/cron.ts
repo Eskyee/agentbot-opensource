@@ -30,7 +30,7 @@ const authenticateCron = (req: Request, res: Response, next: any) => {
  * 3. Auto-generate drafts for new mentions
  */
 router.get('/x-monitor', authenticateCron, async (req: Request, res: Response) => {
-  log.info('Cron', { event: 'x_monitor_start' });
+  log.info('Cron', { details: { event: 'x_monitor_start' } })
 
   try {
     // 1. Find users with X connected
@@ -47,7 +47,7 @@ router.get('/x-monitor', authenticateCron, async (req: Request, res: Response) =
       // 2. Fetch mentions and generate drafts (Placeholder for actual API logic)
       // In a real implementation, we'd use the X credentials from row.value
       
-      log.info('Cron', { event: 'x_monitor_user_processed', userId });
+      log.info('Cron', { details: { event: 'x_monitor_user_processed', userId } })
       
       // 3. Append draft to queue if found new mentions
       // This part would update the "x_draft_queue" key in "UserSetting"
@@ -57,7 +57,7 @@ router.get('/x-monitor', authenticateCron, async (req: Request, res: Response) =
 
     res.json({ success: true, processed: results.length, results });
   } catch (error) {
-    log.error('Cron', { event: 'x_monitor_failed', error: String(error) });
+    log.error('Cron', { error: { event: 'x_monitor_failed', error: String(error) } })
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

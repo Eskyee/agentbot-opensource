@@ -103,8 +103,8 @@ export class WalletService {
       // 1. Create Server Account
       const client = getCdpClient();
       const account = await client.evm.createAccount({ name: `agent-${agentId}` });
-      cdpAccountName = account.name;
-      cdpAddress = account.address;
+      cdpAccountName = account.name || null;
+      cdpAddress = account.address || null;
 
       // 2. Encrypt and store metadata
       const encryptedMetadata = this.encrypt(JSON.stringify({ address: cdpAddress, name: cdpAccountName }));
@@ -116,13 +116,13 @@ export class WalletService {
 
       return { address: cdpAddress };
     } catch (error) {
-      log.error('Account creation failed', { error: error instanceof Error ? error.message : String(error) });
+      log.error('Account creation failed', { error: { error: error instanceof Error ? error.message : String(error) } })
 
       // Compensation: if we created a CDP account but the DB insert failed,
       // log the orphan so it can be reconciled. CDP accounts cannot be deleted
       // programmatically, so we record the failure for manual cleanup.
       if (cdpAddress && cdpAccountName) {
-        log.error('[WalletService] ORPHAN CDP ACCOUNT — DB insert failed after on-chain creation', { address: cdpAddress, name: cdpAccountName, userId, agentId });
+        log.error('[WalletService] ORPHAN CDP ACCOUNT — DB insert failed after on-chain creation', { error: { address: cdpAddress, name: cdpAccountName, userId, agentId } })
         try {
           await pool.query(
             `INSERT INTO treasury_transactions (user_id, type, description, status)
@@ -131,7 +131,7 @@ export class WalletService {
           );
         } catch (logErr) {
           // If even the audit log fails, we've done what we can — the log.error above is the fallback
-          log.error('[WalletService] Failed to log orphan wallet', { error: logErr instanceof Error ? logErr.message : String(logErr) });
+          log.error('[WalletService] Failed to log orphan wallet', { error: { error: logErr instanceof Error ? logErr.message : String(logErr) } })
         }
       }
 
@@ -243,7 +243,7 @@ export class WalletService {
       return transactionHash;
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      log.error('USDC Transfer failed', { error: error instanceof Error ? error.message : String(error) });
+      log.error('USDC Transfer failed', { error: { error: error instanceof Error ? error.message : String(error) } })
       // Best-effort: mark the outbox row failed so future calls with the same
       // idempotency key see the prior failure. If THIS write also fails we
       // log and proceed — the outbox row will simply stay 'pending' and the
@@ -256,7 +256,7 @@ export class WalletService {
           [detail.slice(0, 1000), outboxId]
         );
       } catch (auditErr) {
-        log.error('USDC Transfer audit-update failed', { error: auditErr instanceof Error ? auditErr.message : String(auditErr) });
+        log.error('USDC Transfer audit-update failed', { error: { error: auditErr instanceof Error ? auditErr.message : String(auditErr) } })
       }
       throw new Error(`Failed to transfer USDC: ${detail}`);
     }
@@ -298,7 +298,7 @@ export class WalletService {
 
       return balance;
     } catch (error) {
-      log.error('Balance fetch failed', { error: error instanceof Error ? error.message : String(error) });
+      log.error('Balance fetch failed', { error: { error: error instanceof Error ? error.message : String(error) } })
       throw new Error('Failed to fetch account balance');
     }
   }

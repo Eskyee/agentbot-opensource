@@ -1,3 +1,4 @@
+import { log } from "./lib/logger";
 /**
  * WebSocket Handler — Real-time Permission Notifications
  *
@@ -53,7 +54,7 @@ export function setupWebSocket(server: HTTPServer): InstanceType<typeof WebSocke
     }
     clients.get(userId)!.add(client)
 
-    console.log(`[WS] Client connected: ${userId} (total: ${getClientCount()})`)
+    log.info(`[WS] Client connected: ${userId} (total: ${getClientCount()})`)
 
     // Send welcome message
     ws.send(JSON.stringify({
@@ -80,7 +81,7 @@ export function setupWebSocket(server: HTTPServer): InstanceType<typeof WebSocke
           clients.delete(userId)
         }
       }
-      console.log(`[WS] Client disconnected: ${userId} (total: ${getClientCount()})`)
+      log.info(`[WS] Client disconnected: ${userId} (total: ${getClientCount()})`)
     })
 
     // Heartbeat
@@ -93,7 +94,7 @@ export function setupWebSocket(server: HTTPServer): InstanceType<typeof WebSocke
     ws.on('close', () => clearInterval(heartbeat))
   })
 
-  console.log('[WS] Permission WebSocket server ready at /ws/permissions')
+  log.info('[WS] Permission WebSocket server ready at /ws/permissions')
   return wss
 }
 
@@ -117,7 +118,7 @@ function handleClientMessage(client: WSClient, msg: { type: string; data: Record
           data: { requestId, decision, timestamp: Date.now() },
         }))
 
-        console.log(`[WS] Decision from ${client.userId}: ${requestId} → ${decision}`)
+        log.info(`[WS] Decision from ${client.userId}: ${requestId} → ${decision}`)
       }
       break
 
@@ -151,7 +152,7 @@ export function broadcastPermissionRequest(userId: string, request: {
     }
   }
 
-  console.log(`[WS] Broadcast to ${userId}: ${request.id} (${userClients.size} clients)`)
+  log.info(`[WS] Broadcast to ${userId}: ${request.id} (${userClients.size} clients)`)
 }
 
 /**

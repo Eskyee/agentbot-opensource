@@ -135,7 +135,7 @@ async function executeTask(task: ClaimedTask): Promise<void> {
   const agentUrl = task.config?.agentUrl;
   if (!agentUrl) {
     // No-op tasks (e.g. config-only) are still real work — mark completed.
-    log.info('[Scheduler] Task has no agentUrl, completing as no-op', { taskId: task.id });
+    log.info('[Scheduler] Task has no agentUrl, completing as no-op', { details: { taskId: task.id } })
     await markCompleted(task.id);
     return;
   }
@@ -166,7 +166,7 @@ async function executeTask(task: ClaimedTask): Promise<void> {
   // We only care that the agent acknowledged. Body parsing is best-effort —
   // its failure should not flip the task back to pending.
   await res.json().catch(() => null);
-  log.info('[Scheduler] Task completed successfully', { taskId: task.id });
+  log.info('[Scheduler] Task completed successfully', { details: { taskId: task.id } })
   await markCompleted(task.id);
 }
 
@@ -185,7 +185,7 @@ async function processScheduledTasks(): Promise<void> {
         await executeTask(task);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        log.error('[Scheduler] Unexpected error executing task', { taskId: task.id, error: message });
+        log.error('[Scheduler] Unexpected error executing task', { error: { taskId: task.id, error: message } })
         await markFailureOrRetry(task, `Unhandled scheduler error: ${message}`).catch((e) =>
           log.error('[Scheduler] Failed to settle task after error', { taskId: task.id, error: String(e) })
         );
@@ -199,7 +199,7 @@ async function processScheduledTasks(): Promise<void> {
       return;
     }
     const message = err instanceof Error ? err.message : String(err);
-    log.error('[Scheduler] Error processing tasks', { error: message });
+    log.error('[Scheduler] Error processing tasks', { error: { error: message } })
   }
 }
 
@@ -233,7 +233,7 @@ async function tickPlatformJobs(): Promise<void> {
     await processPlatformJobs();
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    log.error('[Scheduler] Platform jobs tick failed', { error: message });
+    log.error('[Scheduler] Platform jobs tick failed', { error: { error: message } })
   } finally {
     platformJobsRunning = false;
   }
@@ -257,7 +257,7 @@ export function startScheduler(): void {
     throw new Error('scheduler: DATABASE_URL is not set; refusing to start');
   }
 
-  log.info('[Scheduler] Starting inline task scheduler', { scheduledTaskInterval: '30s', platformJobInterval: '5s' });
+  log.info('[Scheduler] Starting inline task scheduler', { details: { scheduledTaskInterval: '30s', platformJobInterval: '5s' } })
 
   // Kick off immediately so we don't wait one full tick on boot.
   void tickScheduledTasks();
