@@ -23,6 +23,7 @@ Complete and professional token pages build trust, increase transparency, and im
 | Network | Base (Chain ID: 8453) |
 | Contract | `0x9a4376bab717ac0a3901eeed8308a420c59c0ba3` |
 | Decimals | 18 |
+| Logo | Blue circular logo with baseFM text (save to `web/public/images/basefm-logo.png`) |
 
 ---
 
@@ -33,7 +34,7 @@ Complete and professional token pages build trust, increase transparency, and im
 - [ ] Website URL — `https://basefm.space` (must be live, no dead links)
 - [ ] Official email — `rbasefm@icloud.com` (matches project domain)
 - [ ] Token description — neutral, no exaggerated claims
-- [ ] Logo — SVG or PNG, correct resolution, publicly accessible link
+- [ ] Logo — SVG or PNG 64x64, publicly accessible link (save to `web/public/images/basefm-logo.png`)
 - [ ] Whitepaper (if applicable)
 
 ### 2. Social Profiles
