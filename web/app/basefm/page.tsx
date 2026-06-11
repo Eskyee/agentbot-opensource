@@ -12,12 +12,6 @@ const features = [
   { icon: Mic, label: 'Go Live', desc: 'Human or AI — stream live video + audio. Connect your deck, camera, or deploy a DJ agent' },
 ]
 
-const holderTiers = [
-  { tier: '💎 Holder', min: '1,000+ tokens', reward: '50 credits + baseFM stream access', perks: 'Exclusive DJ streams, free agent credits, scam alerts' },
-  { tier: '🔧 Builder', min: '10,000+ tokens', reward: '100 credits + premium playlists', perks: 'Early feature access, premium baseFM playlists, priority support' },
-  { tier: '🐋 Whale', min: '100,000+ tokens', reward: '200 credits + VIP everything', perks: 'VIP community chat, voting rights, revenue share, lifetime perks' },
-]
-
 export default function BasefmTokenPage() {
   return (
     <main className="min-h-screen bg-black text-white font-mono">
@@ -146,37 +140,49 @@ export default function BasefmTokenPage() {
       </section>
 
       {/* Holder Benefits */}
-      <section className="mx-auto max-w-5xl px-6 mt-16">
+      <section className="mx-auto max-w-4xl px-5 sm:px-6 mt-16">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-8">
           <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Holder Benefits</div>
           <h2 className="mt-2 text-2xl font-bold uppercase tracking-tight">Holder Benefits</h2>
           <p className="text-zinc-400 text-sm mt-2">
-            Hold Solana Agentbot tokens? You get free credits AND baseFM perks. Two tokens, one ecosystem.
+            Hold $BASEFM tokens? Unlock exclusive perks — stream access, credits, and VIP features.
           </p>
 
           <div className="mt-8 space-y-4">
-            {holderTiers.map((t) => (
-              <div key={t.tier} className="rounded-xl border border-zinc-800 bg-black p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold">{t.tier} <span className="text-zinc-500">({t.min})</span></span>
-                  <span className="text-green-400 font-mono text-sm">{t.reward}</span>
-                </div>
-                <p className="text-zinc-500 text-xs">{t.perks}</p>
+            <div className="rounded-xl border border-zinc-800 bg-black p-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold">💎 Holder <span className="text-zinc-500">(1,000+ tokens)</span></span>
+                <span className="text-green-400 font-mono text-sm">50 credits + baseFM stream access</span>
               </div>
-            ))}
+              <p className="text-zinc-500 text-xs">Exclusive DJ streams, free agent credits, scam alerts</p>
+            </div>
+            <div className="rounded-xl border border-zinc-800 bg-black p-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold">🔧 Builder <span className="text-zinc-500">(10,000+ tokens)</span></span>
+                <span className="text-green-400 font-mono text-sm">100 credits + premium playlists</span>
+              </div>
+              <p className="text-zinc-500 text-xs">Early feature access, premium baseFM playlists, priority support</p>
+            </div>
+            <div className="rounded-xl border border-zinc-800 bg-black p-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold">🐋 Whale <span className="text-zinc-500">(100,000+ tokens)</span></span>
+                <span className="text-green-400 font-mono text-sm">200 credits + VIP everything</span>
+              </div>
+              <p className="text-zinc-500 text-xs">VIP community chat, voting rights, revenue share, lifetime perks</p>
+            </div>
           </div>
 
           <div className="mt-6 p-4 rounded-xl border border-green-500/30 bg-green-950/10">
             <p className="text-green-400 text-sm">
-              <strong>Solana Token:</strong>{' '}
-              <code className="text-green-300">9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump</code>
+              <strong>Base Token:</strong>{' '}
+              <code className="text-green-300">0x9a4376bab717ac0a3901eeed8308a420c59c0ba3</code>
             </p>
             <p className="text-zinc-500 text-xs mt-2 flex gap-2">
-              <a href="/claim" className="underline hover:text-white">Claim free credits</a>
+              <a href="https://app.uniswap.org/swap?outputCurrency=0x9a4376bab717ac0a3901eeed8308a420c59c0ba3&chain=base" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Trade on Uniswap</a>
               <span>·</span>
-              <a href="https://dexscreener.com/solana/l3lctrhv2geqzkrgccqqczqmuutgt6hklnpqv4fmhcp" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">DexScreener</a>
+              <a href="https://dex.coinmarketcap.com/token/base/0x9a4376bab717ac0a3901eeed8308a420c59c0ba3/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">CoinMarketCap DEX</a>
               <span>·</span>
-              <a href="https://join.pump.fun/HSag/j97r1jfp" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Pump.fun</a>
+              <a href="/basefm" className="underline hover:text-white">Token Page</a>
             </p>
           </div>
         </div>
