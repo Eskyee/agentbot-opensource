@@ -24,8 +24,37 @@ services:
       timeout: 10s
       retries: 3
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: agentbot-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: agentbot-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: agentbot
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
 volumes:
   gateway-config:
     name: agentbot-gateway-local-config
   gateway-workspace:
     name: agentbot-gateway-local-workspace
+  prometheus_data:
+  grafana_data:

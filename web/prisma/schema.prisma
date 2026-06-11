@@ -1636,3 +1636,40 @@ model AuditLog {
   @@index([agentId, createdAt])
   @@index([category])
 }
+
+model Heartbeat {
+  id        String   @id @default(cuid())
+  agentId   String   @unique
+  userId    String
+  status    String   @default("active")
+  port      Int?
+  uptime    String?
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([agentId, lastSeen])
+  @@index([status])
+}
+
+model TokenUsage {
+  id           String   @id @default(cuid())
+  userId       String
+  agentId      String?
+  model        String
+  provider     String   @default("openrouter")
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  totalTokens  Int      @default(0)
+  cost         Float    @default(0)
+  latencyMs    Int?
+  success      Boolean  @default(true)
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([model, createdAt])
+  @@index([provider])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+}
