@@ -3,7 +3,7 @@ import { prisma } from '@/app/lib/prisma';
 import { createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 import crypto from 'crypto';
-import { attachSessionCookie } from '@/app/lib/session';
+import { attachSessionCookie, getSessionTokenFromCookies } from '@/app/lib/session';
 import { consumeWalletNonce } from '@/app/lib/wallet-nonce';
 
 const viemClient = createPublicClient({ chain: base, transport: http() });
@@ -50,18 +50,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid or expired nonce' }, { status: 401 });
     }
 
-    // Find or create user
-    const walletEmail = `${address.toLowerCase()}@wallet.agentbot`;
+    const walletAddress = address.toLowerCase()
+    const walletEmail = `${walletAddress}@wallet.agentbot`
+
+    // Check if this wallet is already linked to a user
     let user = await prisma.user.findFirst({
-      where: { OR: [{ email: walletEmail }, { name: address }] }
+      where: { email: walletEmail }
     });
 
+    // If no user linked to this wallet, check if there's an active session
+    if (!user) {
+      const sessionToken = getSessionTokenFromCookies(req.cookies);
+      if (sessionToken) {
+        const session = await prisma.session.findUnique({
+          where: { sessionToken },
+          include: { user: true },
+        });
+        if (session?.user) {
+          // Link wallet to existing logged-in user
+          user = await prisma.user.update({
+            where: { id: session.userId },
+            data: {
+              vaultId: walletAddress,
+              // Only set wallet email if user doesn't have a real email
+              ...(session.user.email?.includes('@wallet.agentbot') ? { email: walletEmail } : {}),
+            },
+          });
+        }
+      }
+    }
+
+    // Only create new user if no existing user found
     if (!user) {
       user = await prisma.user.create({
         data: {
           name: `Wallet:${address.slice(0, 6)}...${address.slice(-4)}`,
           email: walletEmail,
           emailVerified: new Date(),
+          vaultId: walletAddress,
         },
       });
     }
