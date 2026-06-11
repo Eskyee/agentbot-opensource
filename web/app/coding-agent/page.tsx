@@ -4,7 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Coding Agent — AI-Powered Code Generation | Agentbot',
   description:
-    'Deploy AI coding agents that write, test, and ship code autonomously. Powered by Claude, Codex, Gemini, and Vercel Sandbox.',
+    'Deploy AI coding agents that write, test, and ship code autonomously. Powered by Claude, Codex, Gemini, and OpenClaw.',
 }
 
 export default function CodingAgentPage() {
@@ -29,25 +29,23 @@ export default function CodingAgentPage() {
 
           <p className="max-w-2xl text-sm leading-7 text-zinc-400 mt-6 sm:text-base">
             Deploy AI coding agents that write, test, and ship code autonomously.
-            Powered by Claude Code, OpenAI Codex, Gemini CLI, and Vercel Sandbox
+            Powered by Claude Code, OpenAI Codex, Gemini CLI, and OpenClaw
             for isolated, secure code execution.
           </p>
 
           <div className="flex flex-wrap gap-3 mt-8">
-            <a
-              href="https://vercel.com/templates/next.js/coding-agent-template"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-zinc-200"
-            >
-              Deploy Template
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-            </a>
             <Link
               href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-full bg-indigo-500 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-indigo-400"
+            >
+              Deploy Coding Agent
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </Link>
+            <Link
+              href="/register"
               className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
             >
-              Open Dashboard
+              Start Free Trial
             </Link>
           </div>
         </div>
@@ -125,7 +123,7 @@ export default function CodingAgentPage() {
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-8">
           <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600 mb-4">Tech Stack</div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            {['Next.js 15', 'React 19', 'Tailwind CSS', 'Drizzle ORM', 'Neon Postgres', 'AI SDK 5', 'Vercel Sandbox', 'Vercel AI Gateway'].map((t) => (
+            {['OpenClaw Runtime', 'Claude Code', 'OpenAI Codex', 'Gemini CLI', 'Docker Isolation', 'USDC Payments', 'Base Network', 'Agentbot Platform'].map((t) => (
               <div key={t} className="flex items-center gap-2 text-zinc-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                 {t}
@@ -137,23 +135,21 @@ export default function CodingAgentPage() {
 
       {/* Deploy CTA */}
       <section className="mx-auto max-w-5xl px-6 mt-16 mb-24">
-        <a
-          href="https://vercel.com/templates/next.js/coding-agent-template"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href="/dashboard"
           className="block rounded-2xl border border-indigo-500/30 bg-indigo-950/10 p-8 text-center transition-colors hover:bg-indigo-950/20"
         >
           <div className="text-[10px] uppercase tracking-[0.24em] text-indigo-400 mb-2">Deploy Now</div>
-          <h2 className="text-2xl font-bold uppercase tracking-tight">Build Your Own Coding Agent</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tight">Deploy Your Coding Agent</h2>
           <p className="text-zinc-400 text-sm mt-2 max-w-lg mx-auto">
-            One-click deploy to Vercel with automatic Neon database setup.
-            Configure OAuth, add your API keys, and start coding with AI.
+            Deploy an AI coding agent on Agentbot in seconds.
+            Configure your AI model, connect your repo, and start shipping with AI.
           </p>
-          <span className="inline-flex items-center gap-2 mt-4 rounded-full bg-white px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-black">
-            Deploy Template
+          <span className="inline-flex items-center gap-2 mt-4 rounded-full bg-indigo-500 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white">
+            Open Dashboard
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
           </span>
-        </a>
+        </Link>
       </section>
     </main>
   )
