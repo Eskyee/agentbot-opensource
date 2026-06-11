@@ -20,12 +20,10 @@ const COLUMNS = [
     heading: 'Builders',
     links: [
       { href: '/documentation', label: 'Docs' },
-      { href: '/blog/posts/agentbot-mimo-native', label: 'MiMo Integration' },
+      { href: '/coding-agent', label: 'Coding Agent' },
       { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },
       { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
-      { href: 'https://mimo.xiaomi.com',                                 label: 'MiMo API', external: true },
       { href: 'https://openclaw.ai',                                     label: 'OpenClaw', external: true },
-      { href: 'https://github.com/Eskyee/agentbot-opensource/releases/tag/v1.2.0',          label: 'Releases v1.2.0', external: true },
     ],
   },
   {
