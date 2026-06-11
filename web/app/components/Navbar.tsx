@@ -70,6 +70,7 @@ export default function Navbar() {
             <>
               <NavLink href="/openclaw" current={pathname}>OpenClaw</NavLink>
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
+              <NavLink href="/social" current={pathname}>Social</NavLink>
               <NavLink href="/partner/mimo" current={pathname}>MiMo</NavLink>
             </>
           )}
