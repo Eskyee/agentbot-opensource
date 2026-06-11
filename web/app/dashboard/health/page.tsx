@@ -135,7 +135,7 @@ export default function HealthDashboardPage() {
             label="Tokens Today"
             value={totals?.totalTokens?.toLocaleString() ?? '0'}
             sub="Combined usage"
-            color="text-purple-400"
+            color="text-orange-400"
           />
           <StatCard
             icon={DollarSign}
@@ -238,7 +238,7 @@ export default function HealthDashboardPage() {
                             : '—'}
                         </td>
                         <td className="py-3 px-3 text-right font-mono text-zinc-400">{agent.callsToday}</td>
-                        <td className="py-3 px-3 text-right font-mono text-purple-400">{agent.tokensUsed.toLocaleString()}</td>
+                        <td className="py-3 px-3 text-right font-mono text-orange-400">{agent.tokensUsed.toLocaleString()}</td>
                         <td className="py-3 px-3 text-right font-mono text-emerald-400">${agent.costToday.toFixed(4)}</td>
                         <td className="py-3 px-3 text-right">
                           <span className={cn(

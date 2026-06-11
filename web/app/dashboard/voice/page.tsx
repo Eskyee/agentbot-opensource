@@ -145,7 +145,7 @@ export default function VoicePage() {
             { label: 'TTS', value: config?.ttsEnabled ? (config?.ttsReachable ? 'Active' : 'Unreachable') : 'No Key', icon: Volume2, color: config?.ttsEnabled && config?.ttsReachable ? 'text-emerald-400' : config?.ttsEnabled ? 'text-amber-400' : 'text-red-400' },
             { label: 'ASR', value: config?.asrEnabled ? 'Active' : 'No Key', icon: Mic, color: config?.asrEnabled ? 'text-emerald-400' : 'text-red-400' },
             { label: 'MiMo Plan', value: config?.plan?.toUpperCase() ?? 'FREE', icon: Zap, color: 'text-orange-400' },
-            { label: 'Phone Calls', value: config?.callEnabled ? 'Enabled' : 'Coming Soon', icon: Phone, color: config?.callEnabled ? 'text-purple-400' : 'text-zinc-500' },
+            { label: 'Phone Calls', value: config?.callEnabled ? 'Enabled' : 'Coming Soon', icon: Phone, color: config?.callEnabled ? 'text-orange-400' : 'text-zinc-500' },
           ].map((s) => (
             <div key={s.label} className="bg-zinc-950 p-5 border border-zinc-800">
               <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-zinc-600 mb-1">

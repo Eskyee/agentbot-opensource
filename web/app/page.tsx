@@ -2,10 +2,7 @@ import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import dynamic from 'next/dynamic'
 import { TokenCard } from '@/app/components/TokenCard'
-const DashboardPreview = dynamic(
-  () => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })),
-  { ssr: false },
-)
+const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
 
 export default async function Home() {
   const session = await getAuthSession()

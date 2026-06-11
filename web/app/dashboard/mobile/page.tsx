@@ -30,7 +30,7 @@ const capabilities = [
     icon: Mic,
     title: 'Voice Input',
     desc: 'Speak naturally to your agent. MiMo ASR transcribes in real-time. No typing needed.',
-    color: 'text-purple-400',
+    color: 'text-orange-400',
   },
   {
     icon: Image,

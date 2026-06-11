@@ -37,7 +37,7 @@ const riskConfig: Record<string, { color: string; bg: string; label: string }> =
 }
 
 const categoryConfig: Record<string, { icon: typeof Shield; color: string }> = {
-  payment: { icon: DollarSign, color: 'text-purple-400' },
+  payment: { icon: DollarSign, color: 'text-orange-400' },
   message: { icon: MessageSquare, color: 'text-blue-400' },
   api_call: { icon: Globe, color: 'text-orange-400' },
   config: { icon: Settings, color: 'text-zinc-400' },

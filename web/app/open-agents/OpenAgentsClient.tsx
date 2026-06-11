@@ -24,7 +24,7 @@ const TOOL_ICONS: Record<string, typeof Terminal> = {
   grep: Search, read: FileCode, write: FileCode, edit: Edit3, bash: Terminal,
 }
 const TOOL_COLORS: Record<string, string> = {
-  grep: 'text-cyan-400', read: 'text-blue-400', write: 'text-green-400', edit: 'text-yellow-400', bash: 'text-purple-400',
+  grep: 'text-cyan-400', read: 'text-blue-400', write: 'text-green-400', edit: 'text-yellow-400', bash: 'text-orange-400',
 }
 
 export default function OpenAgentsClient() {

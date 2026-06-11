@@ -44,7 +44,7 @@ const templates: WebhookTemplate[] = [
     description: 'Trigger your agent when a payment succeeds or fails. Auto-respond to customers, update records, send notifications.',
     provider: 'Stripe',
     icon: CreditCard,
-    color: 'text-purple-400',
+    color: 'text-orange-400',
     event: 'payment_intent.succeeded',
     payload: '{"event": "payment_intent.succeeded", "data": {"amount": 2000, "currency": "gbp", "customer": "cus_xxx"}}',
     docsUrl: 'https://stripe.com/docs/webhooks',

@@ -41,7 +41,7 @@ const paymentProtocols = [
     name: 'Stripe Machine Payments',
     desc: 'Stripe MPP for agent-to-agent commerce. Real-time sub-cent settlements. USD stablecoin wallets.',
     status: 'Coming Soon',
-    color: 'text-purple-400',
+    color: 'text-orange-400',
     icon: DollarSign,
   },
   {

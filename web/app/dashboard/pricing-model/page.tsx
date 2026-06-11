@@ -63,7 +63,7 @@ const pricingModels = [
     name: 'Per Token',
     desc: 'Pay-as-you-go. Scales with usage. Best for variable workloads.',
     icon: Zap,
-    color: 'text-purple-400',
+    color: 'text-orange-400',
     example: '$0.001 per 1K tokens',
   },
   {
@@ -113,7 +113,7 @@ export default function PricingModelPage() {
             { label: 'Total Revenue', value: `$${(metrics?.totalRevenue ?? 0).toFixed(2)}`, icon: DollarSign, color: 'text-emerald-400' },
             { label: 'Resolutions', value: metrics?.totalResolutions?.toLocaleString() ?? '0', icon: CheckCircle, color: 'text-blue-400' },
             { label: 'Tasks Completed', value: metrics?.totalTasks?.toLocaleString() ?? '0', icon: Target, color: 'text-orange-400' },
-            { label: 'Avg Revenue/Unit', value: `$${(metrics?.avgRevenuePerUnit ?? 0).toFixed(4)}`, icon: TrendingUp, color: 'text-purple-400' },
+            { label: 'Avg Revenue/Unit', value: `$${(metrics?.avgRevenuePerUnit ?? 0).toFixed(4)}`, icon: TrendingUp, color: 'text-orange-400' },
           ].map((s) => (
             <div key={s.label} className="bg-zinc-950 p-5 border border-zinc-800">
               <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-zinc-600 mb-1">
@@ -193,8 +193,8 @@ export default function PricingModelPage() {
 
         {/* Token-based deep dive */}
         {selectedModel === 'per_token' && (
-          <div className="border border-purple-500/20 bg-zinc-950 p-5">
-            <h2 className="text-sm font-bold text-purple-400 uppercase tracking-tight mb-4">
+          <div className="border border-orange-500/20 bg-zinc-950 p-5">
+            <h2 className="text-sm font-bold text-orange-400 uppercase tracking-tight mb-4">
               Per-Token Pricing
             </h2>
             <div className="space-y-4 text-zinc-400 text-sm leading-relaxed max-w-lg">
@@ -204,7 +204,7 @@ export default function PricingModelPage() {
               </p>
               <div className="border border-zinc-800 bg-black p-3">
                 <div className="text-[10px] text-zinc-600 uppercase tracking-widest mb-1">Tokens Used</div>
-                <div className="text-lg font-bold text-purple-400">
+                <div className="text-lg font-bold text-orange-400">
                   {metrics?.totalTokens?.toLocaleString() ?? '0'}
                 </div>
               </div>

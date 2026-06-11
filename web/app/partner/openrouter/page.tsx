@@ -24,7 +24,7 @@ const popularModels = [
   { name: 'Claude Haiku', provider: 'Anthropic', use: 'Fast & cheap', price: '$1 / $5', color: 'text-orange-300 border-orange-300/30 bg-orange-300/5' },
   { name: 'GPT-4o', provider: 'OpenAI', use: 'Vision & multimodal', price: '$2.50 / $10', color: 'text-green-400 border-green-400/30 bg-green-400/5' },
   { name: 'Gemini 2.5 Pro', provider: 'Google', use: 'Long context', price: '$1.25 / $10', color: 'text-blue-400 border-blue-400/30 bg-blue-400/5' },
-  { name: 'MiMo V2.5 Pro', provider: 'Xiaomi', use: 'Agentic tasks', price: '$0.44 / $0.87', color: 'text-purple-400 border-purple-400/30 bg-purple-400/5' },
+  { name: 'MiMo V2.5 Pro', provider: 'Xiaomi', use: 'Agentic tasks', price: '$0.44 / $0.87', color: 'text-orange-400 border-orange-400/30 bg-orange-400/5' },
   { name: 'DeepSeek R1', provider: 'DeepSeek', use: 'Code & math', price: '$0.55 / $2.19', color: 'text-cyan-400 border-cyan-400/30 bg-cyan-400/5' },
   { name: 'Llama 3.3 70B', provider: 'Meta', use: 'Fast inference', price: '$0.10 / $0.10', color: 'text-blue-300 border-blue-300/30 bg-blue-300/5' },
   { name: 'Qwen 3.7 Plus', provider: 'Alibaba', use: 'Multilingual', price: '$0.40 / $1.60', color: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5' },

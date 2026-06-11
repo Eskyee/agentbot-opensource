@@ -26,7 +26,7 @@ interface AuditEntry {
 
 const categoryConfig: Record<string, { icon: typeof Bot; color: string; label: string }> = {
   agent: { icon: Bot, color: 'text-orange-400', label: 'Agent' },
-  skill: { icon: Wrench, color: 'text-purple-400', label: 'Skill' },
+  skill: { icon: Wrench, color: 'text-orange-400', label: 'Skill' },
   config: { icon: Settings, color: 'text-blue-400', label: 'Config' },
   deployment: { icon: Rocket, color: 'text-emerald-400', label: 'Deploy' },
 }

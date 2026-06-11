@@ -42,7 +42,7 @@ const TOOL_COLORS: Record<string, string> = {
   read: 'text-blue-400',
   write: 'text-green-400',
   edit: 'text-yellow-400',
-  bash: 'text-purple-400',
+  bash: 'text-orange-400',
 }
 
 export default function CodingAgentClient() {

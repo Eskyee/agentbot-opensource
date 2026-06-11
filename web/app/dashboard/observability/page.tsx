@@ -50,7 +50,7 @@ interface ObservabilityStats {
 }
 
 const stepTypeConfig: Record<string, { color: string; label: string }> = {
-  llm_call: { color: 'text-purple-400', label: 'LLM' },
+  llm_call: { color: 'text-orange-400', label: 'LLM' },
   tool_call: { color: 'text-orange-400', label: 'Tool' },
   decision: { color: 'text-blue-400', label: 'Decision' },
   error: { color: 'text-red-400', label: 'Error' },
@@ -88,7 +88,7 @@ function TraceStepRow({ step, depth = 0 }: { step: TraceStep; depth?: number }) 
           </span>
         )}
         {step.tokens != null && (
-          <span className="text-[10px] font-mono text-purple-400 w-16 text-right">
+          <span className="text-[10px] font-mono text-orange-400 w-16 text-right">
             {step.tokens.toLocaleString()}
           </span>
         )}
@@ -184,7 +184,7 @@ export default function ObservabilityPage() {
           {[
             { label: 'Traces', value: stats?.totalTraces?.toLocaleString() ?? '0', icon: Activity, color: 'text-orange-400' },
             { label: 'Avg Duration', value: stats?.avgDuration ? `${(stats.avgDuration / 1000).toFixed(1)}s` : '—', icon: Clock, color: 'text-blue-400' },
-            { label: 'Total Tokens', value: stats?.totalTokens?.toLocaleString() ?? '0', icon: Zap, color: 'text-purple-400' },
+            { label: 'Total Tokens', value: stats?.totalTokens?.toLocaleString() ?? '0', icon: Zap, color: 'text-orange-400' },
             { label: 'Total Cost', value: stats ? `$${stats.totalCost.toFixed(4)}` : '$0', icon: DollarSign, color: 'text-emerald-400' },
             { label: 'Error Rate', value: stats ? `${(stats.errorRate * 100).toFixed(1)}%` : '—', icon: AlertTriangle, color: stats && stats.errorRate > 0.05 ? 'text-red-400' : 'text-emerald-400' },
           ].map((s) => (
@@ -279,7 +279,7 @@ export default function ObservabilityPage() {
                   </div>
                   <div>
                     <div className="text-zinc-600 uppercase tracking-widest">Tokens</div>
-                    <div className="font-mono text-purple-400">{activeTrace.totalTokens.toLocaleString()}</div>
+                    <div className="font-mono text-orange-400">{activeTrace.totalTokens.toLocaleString()}</div>
                   </div>
                   <div>
                     <div className="text-zinc-600 uppercase tracking-widest">Cost</div>

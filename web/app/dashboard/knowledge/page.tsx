@@ -163,7 +163,7 @@ export default function KnowledgePage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800">
           {[
             { label: 'Documents', value: docs.length, icon: FileText, color: 'text-orange-400' },
-            { label: 'Chunks', value: totalChunks.toLocaleString(), icon: Database, color: 'text-purple-400' },
+            { label: 'Chunks', value: totalChunks.toLocaleString(), icon: Database, color: 'text-orange-400' },
             { label: 'Total Size', value: formatBytes(totalSize), icon: Brain, color: 'text-blue-400' },
             { label: 'Ready', value: `${readyDocs}/${docs.length}`, icon: CheckCircle, color: 'text-emerald-400' },
           ].map((s) => (

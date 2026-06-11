@@ -15,7 +15,7 @@ const activities = [
 
 const channelColors: Record<string, string> = {
   telegram: 'text-blue-400',
-  discord: 'text-purple-400',
+  discord: 'text-orange-400',
   whatsapp: 'text-green-400',
   email: 'text-yellow-400',
   agent: 'text-orange-400',
