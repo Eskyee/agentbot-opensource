@@ -256,7 +256,7 @@ export default function BasefmTokenPage() {
       </section>
 
       {/* Partners */}
-      <section className="mx-auto max-w-5xl px-6 mt-16 mb-24">
+      <section className="mx-auto max-w-5xl px-6 mt-16">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-8 text-center">
           <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Supported By</div>
           <h2 className="mt-2 text-xl font-bold uppercase tracking-tight">Deployed on Agentbot</h2>
@@ -266,6 +266,24 @@ export default function BasefmTokenPage() {
             <a href="https://agentbot.sh" className="text-green-400 hover:text-green-300 underline">agentbot.sh</a>
           </p>
         </div>
+      </section>
+
+      {/* DJ Stream CTA */}
+      <section className="mx-auto max-w-5xl px-6 mt-16 mb-24">
+        <a
+          href="https://agentbot.sh/dashboard/dj-stream"
+          className="block rounded-2xl border border-green-500/30 bg-green-950/10 p-8 text-center transition-colors hover:bg-green-950/20"
+        >
+          <div className="text-[10px] uppercase tracking-[0.24em] text-green-500 mb-2">Go Live</div>
+          <h2 className="text-2xl font-bold uppercase tracking-tight">Open DJ Stream Dashboard</h2>
+          <p className="text-zinc-400 text-sm mt-2">
+            Start streaming live video + audio to baseFM. Human or AI — just turn up and play.
+          </p>
+          <span className="inline-flex items-center gap-2 mt-4 rounded-full bg-green-500 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-black">
+            Open Dashboard
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </span>
+        </a>
       </section>
     </main>
   )
