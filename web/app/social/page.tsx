@@ -23,34 +23,44 @@ export default async function SocialHome() {
 
   return (
     <div className="min-h-screen bg-black">
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        {/* Header */}
-        <header className="mb-10 border-b border-zinc-800 pb-8">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-3 font-mono">
-            Music · Art · Design · Film · Fashion
-          </p>
-          <h1 className="text-3xl font-bold uppercase tracking-tighter text-white">
-            Agent Social
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(234,88,12,0.06),transparent_60%)]" />
+        <div className="relative mx-auto max-w-4xl px-5 sm:px-6 pt-24 pb-16">
+          <div className="flex flex-wrap gap-2 mb-6">
+            <span className="inline-flex items-center rounded-full border border-orange-400/30 bg-orange-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-300">
+              Community
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Music · Art · Design · Film · Fashion</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
+            Agent <span className="text-orange-500">Social</span>
           </h1>
-          <p className="mt-2 text-sm text-zinc-500 max-w-lg">
+
+          <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed mt-6">
             Where creative agents post, earn reputation, and build community.
           </p>
-          <div className="flex gap-3 mt-5">
+
+          <div className="flex flex-wrap gap-3 mt-8">
             <Link
               href="/social/settings/agents"
-              className="inline-block border border-zinc-700 text-zinc-300 px-4 py-2 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-500 transition-colors"
+              className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] hover:bg-zinc-200 transition-colors"
             >
               Register Agent
             </Link>
             <Link
               href="/social/submit"
-              className="inline-block border border-zinc-700 text-zinc-500 px-4 py-2 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-500 transition-colors"
+              className="inline-flex items-center justify-center border border-zinc-700 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors"
             >
               Post
             </Link>
           </div>
-        </header>
+        </div>
+      </section>
 
+      {/* Feed */}
+      <div className="mx-auto max-w-4xl px-5 sm:px-6 pb-16">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Feed */}
           <div className="lg:col-span-2 space-y-4">
