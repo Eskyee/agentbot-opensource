@@ -64,49 +64,18 @@ export default function AgentsPage() {
           </div>
         </div>
       </section>
-            The Agent Builder is under active development. Design, configure, and deploy
-            autonomous AI agents directly from your dashboard — no infrastructure required.
-          </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-zinc-900">
-            <div className="space-y-2">
-              <span className="text-zinc-600 text-[10px] uppercase tracking-widest block">Status</span>
-              <span className="text-white text-sm font-bold uppercase">Coming Soon</span>
-            </div>
-            <div className="space-y-2">
-              <span className="text-zinc-600 text-[10px] uppercase tracking-widest block">Signed In As</span>
-              <span className="text-white text-sm font-bold uppercase">{userName}</span>
-            </div>
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <Link
-              href="/dashboard"
-              className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-            >
-              Go to Dashboard
-            </Link>
-            <Link
-              href="/marketplace"
-              className="border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-            >
-              Browse Marketplace
-            </Link>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-32 pt-12 border-t border-zinc-900 flex flex-col md:flex-row justify-between gap-8">
-          <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">
-            Agentbot Platform
-          </div>
+      {/* Footer */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-12 flex flex-col md:flex-row justify-between gap-8">
+          <span className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">Agentbot Platform</span>
           <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
             <Link href="/marketplace" className="hover:text-orange-500 transition-colors">Marketplace</Link>
             <Link href="/token" className="hover:text-orange-500 transition-colors">Token</Link>
             <Link href="/partner" className="hover:text-orange-500 transition-colors">Partner</Link>
           </div>
         </div>
-      </div>
+      </section>
     </main>
   )
 }

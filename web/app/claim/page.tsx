@@ -351,6 +351,7 @@ export default function ClaimPage() {
           </div>
         </div>
       </div>
+      </section>
     </main>
   )
 }
