@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowUpRight, Radio, Music, Users, Mic } from 'lucide-react'
+import { ArrowUpRight, Radio, Music, Users, Mic, TrendingUp, TrendingDown, Activity } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 const BASEFM_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
 
@@ -11,6 +12,109 @@ const features = [
   { icon: Users, label: 'Rewards & Perks', desc: 'Earn $RAVE for streams, get exclusive DJ access, and unlock premium features' },
   { icon: Mic, label: 'Go Live', desc: 'Human or AI — stream live video + audio. Connect your deck, camera, or deploy a DJ agent' },
 ]
+
+interface PriceData {
+  price: number
+  priceUsd: string
+  change24h: number
+  change7d: number
+  volume24h: number
+  liquidity: number
+  fdv: number
+  updatedAt: string
+}
+
+function PriceTracker() {
+  const [priceData, setPriceData] = useState<PriceData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [lastUpdate, setLastUpdate] = useState<string>('')
+
+  useEffect(() => {
+    async function fetchPrice() {
+      try {
+        const res = await fetch('/api/basefm/price')
+        if (res.ok) {
+          const data = await res.json()
+          setPriceData(data)
+          setLastUpdate(new Date().toLocaleTimeString())
+        }
+      } catch {
+        // silent
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPrice()
+    const interval = setInterval(fetchPrice, 15000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Live Price</div>
+          <div className="mt-1 flex items-baseline gap-3">
+            <span className="text-3xl font-bold text-white">
+              {loading ? '...' : priceData?.priceUsd || '$0.00'}
+            </span>
+            {priceData && priceData.change24h !== 0 && (
+              <span className={`flex items-center gap-1 text-sm font-bold ${priceData.change24h > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {priceData.change24h > 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                {priceData.change24h > 0 ? '+' : ''}{priceData.change24h.toFixed(1)}%
+              </span>
+            )}
+          </div>
+          {lastUpdate && (
+            <div className="mt-1 text-[10px] text-zinc-600 flex items-center gap-1">
+              <Activity className="h-3 w-3 text-green-500 animate-pulse" />
+              Updated {lastUpdate} · DexScreener
+            </div>
+          )}
+        </div>
+        <div className="text-right">
+          <a
+            href={`https://www.coinbase.com/en-gb/price/basefm-base-${BASEFM_ADDRESS}-token`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] text-zinc-500 hover:text-white transition-colors"
+          >
+            Coinbase
+            <ArrowUpRight className="h-3 w-3" />
+          </a>
+        </div>
+      </div>
+
+      {/* Embedded Chart */}
+      <div className="rounded-xl border border-zinc-800 bg-black overflow-hidden">
+        <iframe
+          src={`https://www.geckoterminal.com/base/pools/${BASEFM_ADDRESS}/embed?chart=price&palette=dark`}
+          width="100%"
+          height="400"
+          style={{ border: 0 }}
+          loading="lazy"
+          title="BASEFM Price Chart"
+        />
+      </div>
+
+      {/* Live Market Stats */}
+      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: '24h Volume', value: priceData ? `$${(priceData.volume24h / 1000).toFixed(1)}K` : '...' },
+          { label: 'Liquidity', value: priceData ? `$${(priceData.liquidity / 1000).toFixed(1)}K` : '...' },
+          { label: 'FDV', value: priceData ? `$${(priceData.fdv / 1000000).toFixed(2)}M` : '...' },
+          { label: '7d Change', value: priceData ? `${priceData.change7d > 0 ? '+' : ''}${priceData.change7d.toFixed(1)}%` : '...' },
+        ].map((item) => (
+          <div key={item.label} className="rounded-xl border border-zinc-800 bg-black p-4">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{item.label}</div>
+            <div className="mt-2 text-lg font-bold text-white">{item.value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function BasefmTokenPage() {
   return (
@@ -72,53 +176,7 @@ export default function BasefmTokenPage() {
 
       {/* Price Chart */}
       <section className="mx-auto max-w-5xl px-6 mt-8">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Price</div>
-              <div className="mt-1 text-3xl font-bold text-white">$0.0000001673</div>
-              <div className="mt-1 text-xs text-zinc-500">via CoinGecko · Base Network</div>
-            </div>
-            <div className="text-right">
-              <a
-                href={`https://www.coinbase.com/en-gb/price/basefm-base-${BASEFM_ADDRESS}-token`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] text-zinc-500 hover:text-white transition-colors"
-              >
-                Coinbase
-                <ArrowUpRight className="h-3 w-3" />
-              </a>
-            </div>
-          </div>
-
-          {/* Embedded Chart */}
-          <div className="rounded-xl border border-zinc-800 bg-black overflow-hidden">
-            <iframe
-              src={`https://www.geckoterminal.com/base/pools/${BASEFM_ADDRESS}/embed?chart=price&palette=dark`}
-              width="100%"
-              height="400"
-              style={{ border: 0 }}
-              loading="lazy"
-              title="BASEFM Price Chart"
-            />
-          </div>
-
-          {/* Market Stats */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: 'Network', value: 'Base' },
-              { label: 'Chain ID', value: '8453' },
-              { label: 'Decimals', value: '18' },
-              { label: 'Symbol', value: 'BASEFM' },
-            ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-zinc-800 bg-black p-4">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{item.label}</div>
-                <div className="mt-2 text-lg font-bold text-white">{item.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PriceTracker />
       </section>
 
       {/* Contract Address */}
