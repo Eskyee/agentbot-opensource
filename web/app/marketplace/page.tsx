@@ -23,7 +23,7 @@ const DEFAULT_TEMPLATES = [
     description: 'Autonomous research agent. Scrapes the web, monitors competitors, compiles briefings. Deploy in 60 seconds.',
     skills: ['Web Scraping', 'Research', 'Briefings', 'Monitoring'],
     tier: 'solo',
-    brain: 'kimi-k2.5',
+    brain: 'mimo-v2.5',
     popular: true,
   },
   {
@@ -32,7 +32,7 @@ const DEFAULT_TEMPLATES = [
     description: 'Runs your socials. Drafts posts, schedules content, engages followers. Never misses a beat.',
     skills: ['Social Media', 'Content', 'Scheduling', 'Engagement'],
     tier: 'solo',
-    brain: 'kimi-k2.5',
+    brain: 'mimo-v2.5',
     popular: true,
   },
   {
@@ -41,7 +41,7 @@ const DEFAULT_TEMPLATES = [
     description: 'Handles bookings, sends invoices, tracks payments. Autonomous royalty splits via CDP wallets on Base.',
     skills: ['Bookings', 'Invoicing', 'Payments', 'Royalty Splits'],
     tier: 'collective',
-    brain: 'kimi-k2.5',
+    brain: 'mimo-v2.5',
     popular: true,
   },
   {
@@ -50,7 +50,7 @@ const DEFAULT_TEMPLATES = [
     description: 'Watches your infrastructure. Alerts on downtime, monitors metrics, auto-restarts services.',
     skills: ['Monitoring', 'Alerts', 'DevOps', 'Auto-heal'],
     tier: 'solo',
-    brain: 'kimi-k2.5',
+    brain: 'mimo-v2.5',
     popular: false,
   },
   {
@@ -59,7 +59,7 @@ const DEFAULT_TEMPLATES = [
     description: 'Autonomous AI DJ. Streams live sets 24/7 on baseFM. Reactive track selection based on community vibes.',
     skills: ['Live Streaming', 'Music Selection', 'baseFM', 'Mux'],
     tier: 'collective',
-    brain: 'kimi-k2.5',
+    brain: 'mimo-v2.5',
     popular: true,
   },
   {
@@ -68,7 +68,7 @@ const DEFAULT_TEMPLATES = [
     description: 'Tracks your metrics, analyzes trends, generates reports. Token usage, costs, performance — all in one place.',
     skills: ['Analytics', 'Reporting', 'Metrics', 'Dashboards'],
     tier: 'solo',
-    brain: 'kimi-k2.5',
+    brain: 'mimo-v2.5',
     popular: false,
   },
 ]
