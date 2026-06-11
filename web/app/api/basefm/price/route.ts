@@ -41,9 +41,25 @@ export async function GET() {
     const buys = attrs.transactions?.h24?.buys || 0
     const sells = attrs.transactions?.h24?.sells || 0
 
+    // Format price as readable USD (no scientific notation)
+    const formatPrice = (p: number): string => {
+      if (p === 0) return '$0.00'
+      if (p >= 1) return `$${p.toFixed(2)}`
+      if (p >= 0.01) return `$${p.toFixed(4)}`
+      // Show leading zeros for micro-cap tokens
+      const str = p.toFixed(20)
+      const match = str.match(/^0\.(0+)(\d{4})/)
+      if (match) {
+        const zeros = match[1].length
+        const significant = match[2]
+        return `$0.${'0'.repeat(zeros)}${significant}`
+      }
+      return `$${p.toExponential(2)}`
+    }
+
     return NextResponse.json({
       price,
-      priceUsd: price < 0.000001 ? `$${price.toExponential(2)}` : `$${price.toFixed(8)}`,
+      priceUsd: formatPrice(price),
       change24h,
       change1h,
       volume24h,
