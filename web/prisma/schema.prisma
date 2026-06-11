@@ -1687,4 +1687,6 @@ model TokenUsage {
   @@index([provider])
   @@index([createdAt])
   @@index([userId, createdAt])
+  @@index([model, provider, createdAt])  // covers groupBy in usage dashboard
+  @@index([userId, model])               // covers per-user model queries
 }

@@ -36,6 +36,7 @@ export const navSections = [
     items: [
       { label: 'Health', href: '/dashboard/health', icon: '💓' },
       { label: 'Observability', href: '/dashboard/observability', icon: '👁' },
+      { label: 'News', href: '/news', icon: '📰' },
       { label: 'Changelog', href: '/dashboard/changelog', icon: '📋' },
     ],
   },
@@ -45,7 +46,7 @@ export const navSections = [
       { label: 'Knowledge Base', href: '/dashboard/knowledge', icon: '📚' },
       { label: 'Webhooks', href: '/dashboard/webhooks', icon: '🔗' },
       { label: 'Approvals', href: '/dashboard/approvals', icon: '✅' },
-      { label: 'Wallet API', href: 'https://docs.agentbot.raveculture.xyz/api-reference/wallet', icon: '💳', external: true },
+      { label: 'Wallet', href: '/dashboard/wallet', icon: '💳' },
     ],
   },
   {

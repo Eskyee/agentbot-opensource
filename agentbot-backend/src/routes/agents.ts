@@ -479,4 +479,85 @@ router.post('/definitions', async (req: Request, res: Response) => {
   }
 });
 
+// --- AgentKit Wallet Routes ---
+
+import { AgentKitService } from '../services/agentkit';
+
+/**
+ * GET /api/agents/:id/wallet — Get or create AgentKit wallet for an agent
+ */
+router.get('/:id/wallet', async (req: Request, res: Response) => {
+  try {
+    const agentId = req.params.id;
+    const userId = (req as any).userId || (req as any).user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const ownership = await checkOwnership(agentId, userId, res);
+    if (!ownership) return;
+
+    const wallet = await AgentKitService.getOrCreateAgentWallet(userId, agentId);
+    res.json({ ok: true, wallet });
+  } catch (error: unknown) {
+    log.error('[AgentKit] Wallet error:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Wallet error' });
+  }
+});
+
+/**
+ * GET /api/agents/:id/wallet/balance — Get wallet balances
+ */
+router.get('/:id/wallet/balance', async (req: Request, res: Response) => {
+  try {
+    const agentId = req.params.id;
+    const userId = (req as any).userId || (req as any).user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const ownership = await checkOwnership(agentId, userId, res);
+    if (!ownership) return;
+
+    const balances = await AgentKitService.getBalances(agentId);
+    res.json({ ok: true, balances });
+  } catch (error: unknown) {
+    log.error('[AgentKit] Balance error:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Balance error' });
+  }
+});
+
+/**
+ * POST /api/agents/:id/wallet/send — Send USDC from agent wallet
+ */
+router.post('/:id/wallet/send', async (req: Request, res: Response) => {
+  try {
+    const agentId = req.params.id;
+    const userId = (req as any).userId || (req as any).user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const ownership = await checkOwnership(agentId, userId, res);
+    if (!ownership) return;
+
+    const { toAddress, amount } = req.body;
+    if (!toAddress || !amount) {
+      return res.status(400).json({ error: 'toAddress and amount required' });
+    }
+
+    const result = await AgentKitService.sendUSDC(agentId, toAddress, amount);
+    res.json({ ok: true, ...result });
+  } catch (error: unknown) {
+    log.error('[AgentKit] Send error:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Send error' });
+  }
+});
+
+/**
+ * GET /api/agents/:id/wallet/actions — List available AgentKit actions
+ */
+router.get('/:id/wallet/actions', async (req: Request, res: Response) => {
+  try {
+    const actions = AgentKitService.listActions();
+    res.json({ ok: true, actions });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Actions error' });
+  }
+});
+
 export default router;
