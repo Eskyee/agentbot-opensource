@@ -45,6 +45,7 @@ export const navSections = [
       { label: 'Knowledge Base', href: '/dashboard/knowledge', icon: '📚' },
       { label: 'Webhooks', href: '/dashboard/webhooks', icon: '🔗' },
       { label: 'Approvals', href: '/dashboard/approvals', icon: '✅' },
+      { label: 'Wallet API', href: 'https://docs.agentbot.raveculture.xyz/api-reference/wallet', icon: '💳', external: true },
     ],
   },
   {
