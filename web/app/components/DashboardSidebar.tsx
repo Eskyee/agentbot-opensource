@@ -50,6 +50,15 @@ export const navSections = [
     ],
   },
   {
+    label: 'Finance',
+    items: [
+      { label: 'Invoices', href: '/dashboard/invoice', icon: '🧾' },
+      { label: 'Time Tracking', href: '/dashboard/time', icon: '⏱' },
+      { label: 'Vault', href: '/dashboard/vault', icon: '🗄' },
+      { label: 'Export', href: '/dashboard/export', icon: '📤' },
+    ],
+  },
+  {
     label: 'Platform',
     items: [
       { label: 'Voice & TTS', href: '/dashboard/voice', icon: '🎙' },
