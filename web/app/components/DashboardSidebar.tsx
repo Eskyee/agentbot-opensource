@@ -37,6 +37,7 @@ export const navSections = [
       { label: 'Health', href: '/dashboard/health', icon: '💓' },
       { label: 'Observability', href: '/dashboard/observability', icon: '👁' },
       { label: 'News', href: '/news', icon: '📰' },
+      { label: 'DJ Dashboard', href: '/dashboard/dj-stream', icon: '🎵' },
       { label: 'Changelog', href: '/dashboard/changelog', icon: '📋' },
     ],
   },

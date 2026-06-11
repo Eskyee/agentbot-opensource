@@ -223,10 +223,8 @@ export function BasefmLivePageClient({
         </section>
 
         <div className="flex flex-wrap gap-4 justify-center pt-8 border-t border-zinc-900">
-          <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-zinc-500 text-xs hover:text-white flex items-center gap-1">
-            basefm.space <ExternalLink className="w-3 h-3" />
+           <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-zinc-500 text-xs hover:text-white flex items-center gap-1">basefm.space <ExternalLink className="w-3 h-3" />
           </a>
-          <a href="/basefm" className="text-zinc-500 text-xs hover:text-white">$BASEFM Token</a>
           <a href="/dashboard/dj-stream" className="text-zinc-500 text-xs hover:text-white">DJ Dashboard</a>
         </div>
       </div>
