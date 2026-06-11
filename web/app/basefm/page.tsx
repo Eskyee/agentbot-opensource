@@ -148,7 +148,7 @@ export default function BasefmTokenPage() {
       {/* Holder Benefits */}
       <section className="mx-auto max-w-5xl px-6 mt-16">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-8">
-          <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Rewards</div>
+          <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Holder Benefits</div>
           <h2 className="mt-2 text-2xl font-bold uppercase tracking-tight">Holder Benefits</h2>
           <p className="text-zinc-400 text-sm mt-2">
             Hold Solana Agentbot tokens? You get free credits AND baseFM perks. Two tokens, one ecosystem.
