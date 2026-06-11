@@ -170,7 +170,7 @@ export default function SolanaPage() {
         </div>
 
         {/* $AGENTBOT Token */}
-        <div className="bg-gradient-to-r from-purple-900/20 to-orange-900/20 border border-purple-500/30 rounded-2xl p-6 mb-16">
+        <div className="bg-gradient-to-r from-amber-900/20 to-orange-900/20 border border-orange-500/30 rounded-2xl p-6 mb-16">
           <h2 className="text-xl font-bold uppercase tracking-tight mb-4">$AGENTBOT Token</h2>
           <p className="text-zinc-400 text-sm mb-4">
             $AGENTBOT is live on pump.fun. The native token powering the Agentbot ecosystem.

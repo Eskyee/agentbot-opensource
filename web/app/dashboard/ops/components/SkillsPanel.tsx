@@ -15,7 +15,7 @@ interface SkillsPanelProps {
 const TYPE_COLORS: Record<string, string> = {
   exec: 'bg-green-500/20 text-green-400',
   net: 'bg-blue-500/20 text-blue-400',
-  ingest: 'bg-purple-500/20 text-purple-400',
+  ingest: 'bg-orange-500/20 text-orange-400',
   state: 'bg-yellow-500/20 text-yellow-400',
   egress: 'bg-orange-500/20 text-orange-400',
 }

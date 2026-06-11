@@ -218,12 +218,12 @@ export default function SettingsPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h2 className="text-sm font-bold uppercase tracking-tight mb-1">Agent Showcase</h2>
-                        <p className="text-[11px] text-zinc-500">List your agent on the public showcase at <a href="/showcase" className="text-purple-400 hover:text-purple-300">/showcase</a></p>
+                        <p className="text-[11px] text-zinc-500">List your agent on the public showcase at <a href="/showcase" className="text-orange-400 hover:text-orange-300">/showcase</a></p>
                       </div>
                       <button
                         onClick={() => setShowcaseOptIn(!showcaseOptIn)}
                         className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                          showcaseOptIn ? 'bg-purple-600' : 'bg-zinc-700'
+                          showcaseOptIn ? 'bg-orange-600' : 'bg-zinc-700'
                         }`}
                         role="switch"
                         aria-checked={showcaseOptIn}
@@ -283,7 +283,7 @@ export default function SettingsPage() {
                         <span className="text-[10px] text-red-400">{showcaseError}</span>
                       )}
                       {showcaseOptIn && !showcaseError && (
-                        <a href="/showcase" target="_blank" rel="noopener noreferrer" className="text-[10px] text-purple-400 hover:text-purple-300 uppercase tracking-widest">
+                        <a href="/showcase" target="_blank" rel="noopener noreferrer" className="text-[10px] text-orange-400 hover:text-orange-300 uppercase tracking-widest">
                           View showcase →
                         </a>
                       )}

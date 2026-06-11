@@ -73,7 +73,7 @@ export default function AgentTeamPage() {
 
         {/* Week 3 */}
         <section className="mb-12">
-          <div className="text-[10px] uppercase tracking-widest text-purple-400 font-bold mb-4">Week 3</div>
+          <div className="text-[10px] uppercase tracking-widest text-orange-400 font-bold mb-4">Week 3</div>
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4">Add a Second Agent</h2>
           <ul className="text-sm text-zinc-400 space-y-2 list-disc pl-4">
             <li>Create second agent&apos;s SOUL.md — different role</li>

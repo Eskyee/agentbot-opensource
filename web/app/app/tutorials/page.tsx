@@ -68,7 +68,7 @@ export default function TutorialsPage() {
         {/* Progress bar */}
         <div className="h-2 bg-zinc-900 rounded-full mb-8">
           <div
-            className="h-full bg-gradient-to-r from-purple-500 to-orange-500 rounded-full transition-all"
+            className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all"
             style={{ width: `${(completedCount / TUTORIALS.length) * 100}%` }}
           />
         </div>
@@ -118,7 +118,7 @@ export default function TutorialsPage() {
                     {!isComplete && (
                       <div className="mt-3 h-1 bg-zinc-800 rounded-full">
                         <div
-                          className="h-full bg-purple-500 rounded-full transition-all"
+                          className="h-full bg-orange-500 rounded-full transition-all"
                           style={{ width: `${(p.stepIndex / t.stepCount) * 100}%` }}
                         />
                       </div>

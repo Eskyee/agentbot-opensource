@@ -311,7 +311,7 @@ function DashboardContent() {
               </div>
               <div className="mt-2 h-2 bg-zinc-800 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-purple-500 transition-all duration-500"
+                  className="h-full bg-orange-500 transition-all duration-500"
                   style={{ width: stats?.memory?.split('%')[0] + '%' || '0%' }}
                 />
               </div>

@@ -223,7 +223,7 @@ export default function GitlawbNetworkPage() {
     switch (type) {
       case 'PUSH': return <GitBranch className="h-3 w-3 text-green-400" />
       case 'GOSSIP': return <Signal className="h-3 w-3 text-orange-400" />
-      case 'PEER': return <Link2 className="h-3 w-3 text-purple-400" />
+      case 'PEER': return <Link2 className="h-3 w-3 text-orange-400" />
       case 'AGENT': return <Users className="h-3 w-3 text-orange-400" />
       default: return <Activity className="h-3 w-3 text-zinc-400" />
     }
@@ -233,7 +233,7 @@ export default function GitlawbNetworkPage() {
     <DashboardShell>
       <DashboardHeader
         title="Gitlawb Network"
-        icon={<Network className="h-5 w-5 text-purple-400" />}
+        icon={<Network className="h-5 w-5 text-orange-400" />}
       />
 
       <DashboardContent>
@@ -286,7 +286,7 @@ export default function GitlawbNetworkPage() {
         <div className="border border-zinc-800 mb-6">
           <div className="p-4 border-b border-zinc-800">
             <h3 className="text-white font-bold flex items-center gap-2">
-              <Users className="h-4 w-4 text-purple-400" />
+              <Users className="h-4 w-4 text-orange-400" />
               YOUR AGENTS ON GITLAWB
             </h3>
           </div>
@@ -333,7 +333,7 @@ export default function GitlawbNetworkPage() {
                     <div className="mt-4 grid gap-px bg-zinc-800 lg:grid-cols-2">
                       <div className="bg-black p-4">
                         <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">DID</div>
-                        <code className="text-xs text-purple-400 break-all">{agent.gitlawb.did}</code>
+                        <code className="text-xs text-orange-400 break-all">{agent.gitlawb.did}</code>
                       </div>
                       <div className="bg-black p-4">
                         <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Repo</div>
@@ -390,7 +390,7 @@ export default function GitlawbNetworkPage() {
               <div className="text-xs text-zinc-500 uppercase tracking-wider">Recent Ref Events</div>
             </div>
             <div className="text-center p-4 border border-zinc-800">
-              <div className="text-2xl font-bold text-purple-400">4</div>
+              <div className="text-2xl font-bold text-orange-400">4</div>
               <div className="text-xs text-zinc-500 uppercase tracking-wider">Links</div>
             </div>
           </div>
@@ -406,7 +406,7 @@ export default function GitlawbNetworkPage() {
               <div className="text-xs text-zinc-500 uppercase tracking-wider">Repos Mirrored</div>
             </div>
             <div className="border border-zinc-800 p-4 text-center">
-              <div className="text-3xl font-bold text-purple-400">{stats.agents.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-orange-400">{stats.agents.toLocaleString()}</div>
               <div className="text-xs text-zinc-500 uppercase tracking-wider">Agents Registered</div>
             </div>
           </div>
@@ -516,7 +516,7 @@ export default function GitlawbNetworkPage() {
                     <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Repos</div>
                   </div>
                   <div className="text-center p-3 border border-zinc-800">
-                    <div className="text-xl font-bold text-purple-400">{node.agents.toLocaleString()}</div>
+                    <div className="text-xl font-bold text-orange-400">{node.agents.toLocaleString()}</div>
                     <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Agents</div>
                   </div>
                   <div className="text-center p-3 border border-zinc-800">
@@ -533,7 +533,7 @@ export default function GitlawbNetworkPage() {
                 <div className="space-y-3 text-xs font-mono mb-4">
                   <div className="flex items-center gap-2">
                     <span className="text-zinc-600 w-12">DID</span>
-                    <code className="text-purple-400 flex-1">{node.did}</code>
+                    <code className="text-orange-400 flex-1">{node.did}</code>
                     <button 
                       onClick={() => copyToClipboard(node.did)}
                       className="text-zinc-600 hover:text-white p-1"
@@ -563,7 +563,7 @@ export default function GitlawbNetworkPage() {
                   <div className="flex flex-wrap gap-2">
                     {node.peers.map((peer, idx) => (
                       <div key={idx} className="flex items-center gap-2 px-2 py-1 bg-zinc-900 text-xs">
-                        <span className="text-purple-400">{peer.did.substring(0, 12)}...</span>
+                        <span className="text-orange-400">{peer.did.substring(0, 12)}...</span>
                         <span className="text-zinc-600">{peer.url}</span>
                         <span className="text-zinc-500">{peer.lastSeen}</span>
                       </div>
@@ -621,9 +621,9 @@ export default function GitlawbNetworkPage() {
             href="https://gitlawb.com/node/repos"
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-purple-600 transition-colors"
+            className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-orange-600 transition-colors"
           >
-            <GitBranch className="h-6 w-6 text-purple-400 mb-2" />
+            <GitBranch className="h-6 w-6 text-orange-400 mb-2" />
             <h4 className="text-white font-bold text-sm">Browse Repos</h4>
             <p className="text-zinc-500 text-xs mt-1">1647 repos on network</p>
           </a>

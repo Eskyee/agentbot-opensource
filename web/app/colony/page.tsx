@@ -27,8 +27,8 @@ const TEMPLATES = [
     name: 'Content Studio',
     description: 'Research, write, review. Produces branded content at scale.',
     agents: ['Researcher', 'Writer', 'Editor'],
-    color: 'text-purple-400',
-    border: 'border-purple-900',
+    color: 'text-orange-400',
+    border: 'border-orange-900',
   },
 ]
 

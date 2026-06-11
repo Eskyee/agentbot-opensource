@@ -61,7 +61,7 @@ export default function ShowcaseTrialsLive() {
           </h2>
           <p className="text-zinc-300 mb-4">
             Our agent showcase is now live at{' '}
-            <a href="https://agentbot.sh/showcase" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+            <a href="https://agentbot.sh/showcase" className="text-orange-400 hover:text-orange-300" target="_blank" rel="noopener noreferrer">
               agentbot.sh/showcase
             </a>. Browse agents deployed on the platform — their skills, capabilities, and what
             they&rsquo;re built for. Toggle your agent&rsquo;s visibility from dashboard settings.
@@ -132,21 +132,21 @@ export default function ShowcaseTrialsLive() {
           <div className="border-t border-zinc-800 pt-8 mt-8">
             <p className="text-zinc-300 mb-4">
               <strong className="text-white">Try it now:</strong>{' '}
-              <a href="https://agentbot.sh" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+              <a href="https://agentbot.sh" className="text-orange-400 hover:text-orange-300" target="_blank" rel="noopener noreferrer">
                 agentbot.sh
               </a>
             </p>
             <p className="text-zinc-500 text-sm">
               Code:{' '}
-              <a href="https://github.com/Eskyee/agentbot-opensource" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/Eskyee/agentbot-opensource" className="text-orange-400 hover:text-orange-300" target="_blank" rel="noopener noreferrer">
                 github.com/Eskyee/agentbot-opensource
               </a>{' '}
               · Docs:{' '}
-              <a href="https://agentbot.sh/documentation" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+              <a href="https://agentbot.sh/documentation" className="text-orange-400 hover:text-orange-300" target="_blank" rel="noopener noreferrer">
                 agentbot.sh/documentation
               </a>{' '}
               · Discord:{' '}
-              <a href="https://discord.gg/vTPG4vdV6D" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+              <a href="https://discord.gg/vTPG4vdV6D" className="text-orange-400 hover:text-orange-300" target="_blank" rel="noopener noreferrer">
                 discord.gg/vTPG4vdV6D
               </a>
             </p>

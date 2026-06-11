@@ -50,8 +50,8 @@ export default function PlatformUpdateApril2026() {
             fixes (devDependencies for TypeScript compilation), and orchestration route registration.
           </p>
           <p className="text-zinc-300 mb-8">
-            If you&apos;re self-hosting, pull the latest image: <code className="text-purple-400">openclaw/openclaw:2026.4.1</code>.
-            Run <code className="text-purple-400">openclaw doctor --fix</code> after update — the Maintenance
+            If you&apos;re self-hosting, pull the latest image: <code className="text-orange-400">openclaw/openclaw:2026.4.1</code>.
+            Run <code className="text-orange-400">openclaw doctor --fix</code> after update — the Maintenance
             page in your dashboard can trigger this automatically.
           </p>
 
@@ -60,7 +60,7 @@ export default function PlatformUpdateApril2026() {
           </h2>
           <p className="text-zinc-300 mb-4">
             Agents now execute tools concurrently where it&apos;s safe to do so. Read-only tools
-            (file reads, searches, API GETs) run in parallel via <code className="text-purple-400">Promise.all</code>.
+            (file reads, searches, API GETs) run in parallel via <code className="text-orange-400">Promise.all</code>.
             Mutating tools (writes, bash commands, deploys) remain serial. The batch partitioner
             groups consecutive read-only calls automatically — no config needed.
           </p>
@@ -71,7 +71,7 @@ export default function PlatformUpdateApril2026() {
             <p className="text-zinc-300">Promise.all([read(fileA), read(fileB), read(fileC)]) → write(result)</p>
           </div>
           <p className="text-zinc-300 mb-8">
-            27 orchestration tests passing. The batch endpoint at <code className="text-purple-400">/api/orchestration/batch</code> is
+            27 orchestration tests passing. The batch endpoint at <code className="text-orange-400">/api/orchestration/batch</code> is
             live and wired to real tool execution with directory traversal blocked, 30s timeout, and 100KB output cap.
           </p>
 
@@ -115,7 +115,7 @@ export default function PlatformUpdateApril2026() {
           </h2>
           <p className="text-zinc-300 mb-8">
             Dashboard → Maintenance gives you live agent health (liveness + readiness checks),
-            a one-click &quot;Run Maintenance&quot; button that triggers <code className="text-purple-400">openclaw doctor --fix</code>,
+            a one-click &quot;Run Maintenance&quot; button that triggers <code className="text-orange-400">openclaw doctor --fix</code>,
             and an expandable Matrix migration guide with copy-able CLI commands. Useful if your agent
             goes quiet or starts failing health checks.
           </p>
@@ -127,7 +127,7 @@ export default function PlatformUpdateApril2026() {
             The main dashboard was measuring <strong className="text-white">1568ms INP</strong> (Interaction to Next Paint) —
             meaning user clicks felt slow to respond. Fixed by lazy-loading the four heaviest client
             components (AgentChat, HelpChat, WalletCard, AIModelCard) as separate JS chunks via
-            Next.js <code className="text-purple-400">dynamic()</code>. These components never ran on the
+            Next.js <code className="text-orange-400">dynamic()</code>. These components never ran on the
             server anyway — splitting them out of the initial bundle frees the main thread for
             interactions. Expect the INP to drop significantly in Speed Insights over the next few days.
           </p>
@@ -140,7 +140,7 @@ export default function PlatformUpdateApril2026() {
               href="https://github.com/Eskyee/agentbot-opensource/releases/tag/v1.0.0"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-purple-400 hover:text-purple-300"
+              className="text-orange-400 hover:text-orange-300"
             >
               agentbot-opensource v1.0.0
             </a>{' '}
@@ -153,7 +153,7 @@ export default function PlatformUpdateApril2026() {
             an upgrade ships:
           </p>
           <div className="bg-zinc-900 border border-zinc-800 p-4 mb-8 text-sm">
-            <code className="text-purple-400">
+            <code className="text-orange-400">
               curl -s https://api.github.com/repos/Eskyee/agentbot-opensource/releases/latest | jq &apos;.tag_name&apos;
             </code>
           </div>
@@ -163,7 +163,7 @@ export default function PlatformUpdateApril2026() {
           </h2>
           <ul className="text-zinc-300 space-y-2 mb-8 list-none pl-0">
             <li className="flex gap-3"><span className="text-zinc-600">—</span>Agent definition files (markdown + YAML frontmatter)</li>
-            <li className="flex gap-3"><span className="text-zinc-600">—</span>Internal <code className="text-purple-400">@agentbot/*</code> packages — replacing high-risk public deps with audited internals</li>
+            <li className="flex gap-3"><span className="text-zinc-600">—</span>Internal <code className="text-orange-400">@agentbot/*</code> packages — replacing high-risk public deps with audited internals</li>
             <li className="flex gap-3"><span className="text-zinc-600">—</span>WebSocket permission notifications fully rolled out</li>
             <li className="flex gap-3"><span className="text-zinc-600">—</span>Speed Insights targets: /dashboard INP under 200ms, /settings under 500ms</li>
           </ul>
@@ -171,11 +171,11 @@ export default function PlatformUpdateApril2026() {
           <div className="border-t border-zinc-800 pt-8 mt-8">
             <p className="text-zinc-500 text-sm">
               Questions or issues? Join the{' '}
-              <a href="https://discord.gg/vTPG4vdV6D" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+              <a href="https://discord.gg/vTPG4vdV6D" className="text-orange-400 hover:text-orange-300" target="_blank" rel="noopener noreferrer">
                 Discord
               </a>{' '}
               or open an{' '}
-              <a href="https://github.com/Eskyee/agentbot-opensource/issues" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/Eskyee/agentbot-opensource/issues" className="text-orange-400 hover:text-orange-300" target="_blank" rel="noopener noreferrer">
                 issue
               </a>.
             </p>

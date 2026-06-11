@@ -79,7 +79,7 @@ export default function DreamsPage() {
     <DashboardShell>
       <DashboardHeader
         title="Dream Generator"
-        icon={<Moon className="h-5 w-5 text-purple-400" />}
+        icon={<Moon className="h-5 w-5 text-orange-400" />}
         count={dreams.length}
         action={
           <div className="text-[10px] text-zinc-600 font-mono">
@@ -102,7 +102,7 @@ export default function DreamsPage() {
                 disabled={generating}
                 className={`px-3 py-2.5 text-xs font-mono border transition-all ${
                   selectedMood === mood
-                    ? 'border-purple-500 bg-purple-500/10 text-purple-300'
+                    ? 'border-orange-500 bg-orange-500/10 text-orange-300'
                     : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white'
                 } disabled:opacity-50`}
               >
@@ -128,7 +128,7 @@ export default function DreamsPage() {
           {generating ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Sparkles className="h-4 w-4 text-purple-400" />
+            <Sparkles className="h-4 w-4 text-orange-400" />
           )}
           {generating ? 'Dreaming...' : 'Random Dream'}
         </button>
@@ -152,7 +152,7 @@ export default function DreamsPage() {
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] uppercase tracking-widest text-purple-400 font-bold">
+                      <span className="text-[10px] uppercase tracking-widest text-orange-400 font-bold">
                         {dream.mood}
                       </span>
                       <span className="text-[10px] text-zinc-700 font-mono">

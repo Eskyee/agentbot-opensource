@@ -287,7 +287,7 @@ export default function SystemPulsePage() {
             label="Tokens"
             value={costSummary?.totalTokens?.toLocaleString() ?? '0'}
             sub={costSummary ? `$${costSummary.avgCostPerCall.toFixed(4)} avg / call` : 'No token usage yet'}
-            color="text-purple-400"
+            color="text-orange-400"
           />
         </div>
 

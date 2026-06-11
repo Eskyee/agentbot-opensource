@@ -54,7 +54,7 @@ function getMimeBadge(mimeType?: string): string {
 function badgeColor(badge: string): string {
   switch (badge) {
     case 'PDF': return 'bg-red-900/50 text-red-400 border-red-800'
-    case 'MP3': case 'WAV': case 'FLAC': return 'bg-purple-900/50 text-purple-400 border-purple-800'
+    case 'MP3': case 'WAV': case 'FLAC': return 'bg-orange-900/50 text-orange-400 border-orange-800'
     case 'MP4': return 'bg-red-900/50 text-orange-500 border-red-800'
     case 'PNG': case 'JPG': case 'GIF': case 'WEBP': case 'IMG': return 'bg-green-900/50 text-green-400 border-green-800'
     case 'JSON': case 'TXT': case 'CSV': return 'bg-yellow-900/50 text-yellow-400 border-yellow-800'

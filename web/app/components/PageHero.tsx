@@ -8,7 +8,7 @@ interface PageHeroProps {
 
 const gradients = {
   blue: 'bg-orange-500/5',
-  purple: 'bg-purple-500/5',
+  purple: 'bg-orange-500/5',
   green: 'bg-green-500/5',
   amber: 'bg-amber-500/5',
 }

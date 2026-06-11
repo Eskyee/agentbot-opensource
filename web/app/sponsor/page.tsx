@@ -65,7 +65,7 @@ export default function SponsorPage() {
       <DashboardContent>
         <div className="max-w-4xl mx-auto">
           {/* Solana Claim Banner */}
-          <div className="border border-purple-900 bg-purple-900/20 p-6 mb-12 text-center">
+          <div className="border border-orange-900 bg-orange-900/20 p-6 mb-12 text-center">
             <h3 className="text-white font-bold text-lg mb-2">🐋 Solana Agentbot Holders — Claim Free Credits</h3>
             <p className="text-zinc-400 text-sm mb-4">
               Hold Solana Agentbot tokens? Claim free agent credits every month.
@@ -73,7 +73,7 @@ export default function SponsorPage() {
             </p>
             <Link
               href="/claim"
-              className="inline-block bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm px-6 py-3 transition-colors"
+              className="inline-block bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm px-6 py-3 transition-colors"
             >
               Claim Your Credits →
             </Link>
@@ -113,7 +113,7 @@ export default function SponsorPage() {
               href="https://github.com/sponsors/Eskyee"
               target="_blank"
               rel="noopener"
-              className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-purple-600 transition-all text-center"
+              className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-orange-600 transition-all text-center"
             >
               <Heart className="h-8 w-8 text-pink-400 mx-auto mb-3" />
               <h3 className="text-white font-bold mb-2">GitHub Sponsors</h3>
@@ -206,9 +206,9 @@ export default function SponsorPage() {
           </div>
 
           {/* Liquid Node Future */}
-          <div className="border border-purple-900 bg-purple-900/20 p-6 mb-12">
+          <div className="border border-orange-900 bg-orange-900/20 p-6 mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Check className="h-6 w-6 text-purple-400" />
+              <Check className="h-6 w-6 text-orange-400" />
               <h3 className="text-white font-bold text-lg">Future: Liquid Node for Users</h3>
             </div>
             <p className="text-zinc-400 text-sm mb-4">
@@ -216,15 +216,15 @@ export default function SponsorPage() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               <div className="bg-black p-3 border border-zinc-800">
-                <span className="text-purple-400 font-bold">⚡ Faster Blocks</span>
+                <span className="text-orange-400 font-bold">⚡ Faster Blocks</span>
                 <p className="text-zinc-500 mt-1">1-minute block times on Liquid</p>
               </div>
               <div className="bg-black p-3 border border-zinc-800">
-                <span className="text-purple-400 font-bold">⚡ Lightning</span>
+                <span className="text-orange-400 font-bold">⚡ Lightning</span>
                 <p className="text-zinc-500 mt-1">Native Lightning for instant payments</p>
               </div>
               <div className="bg-black p-3 border border-zinc-800">
-                <span className="text-purple-400 font-bold">⚡ Assets</span>
+                <span className="text-orange-400 font-bold">⚡ Assets</span>
                 <p className="text-zinc-500 mt-1">Issue & transfer Liquid assets</p>
               </div>
             </div>
@@ -272,7 +272,7 @@ export default function SponsorPage() {
               href="https://github.com/sponsors/Eskyee"
               target="_blank"
               rel="noopener"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-lg px-8 py-4 transition-all transform hover:scale-105"
+              className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-lg px-8 py-4 transition-all transform hover:scale-105"
             >
               Sponsor on GitHub Sponsors →
             </a>

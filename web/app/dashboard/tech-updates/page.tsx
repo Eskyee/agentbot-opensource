@@ -111,7 +111,7 @@ const CATEGORY_META: Record<Category, { label: string; icon: LucideIcon; color: 
   security:  { label: 'Security',  icon: Shield,      color: 'text-red-400' },
   protocols: { label: 'Protocols', icon: Radio,       color: 'text-green-400' },
   tools:     { label: 'Tools',     icon: TrendingUp,  color: 'text-yellow-400' },
-  openclaw:  { label: 'OpenClaw',  icon: Cpu,         color: 'text-purple-400' },
+  openclaw:  { label: 'OpenClaw',  icon: Cpu,         color: 'text-orange-400' },
 }
 
 const IMPACT_STATUS = {

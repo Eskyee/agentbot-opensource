@@ -45,7 +45,7 @@ interface WorkflowDef {
 
 const nodeTypes = [
   { type: 'trigger', label: 'Trigger', icon: Zap, color: 'text-orange-400', desc: 'Webhook, cron, message, or event' },
-  { type: 'agent', label: 'Agent', icon: Bot, color: 'text-purple-400', desc: 'Run an agent with a prompt' },
+  { type: 'agent', label: 'Agent', icon: Bot, color: 'text-orange-400', desc: 'Run an agent with a prompt' },
   { type: 'condition', label: 'Condition', icon: GitBranch, color: 'text-blue-400', desc: 'Branch based on output' },
   { type: 'action', label: 'Action', icon: Globe, color: 'text-emerald-400', desc: 'API call, tool use, or side effect' },
   { type: 'delay', label: 'Delay', icon: Clock, color: 'text-amber-400', desc: 'Wait before next step' },

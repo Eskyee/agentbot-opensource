@@ -138,7 +138,7 @@ export default function HardeningAgenticStackPost() {
               <p className="text-[10px] text-zinc-400">MCP-compatible skill marketplace. Browser automation (Playwright). Sandbox execution. 500+ models via ClawRouter.</p>
             </div>
             <div className="border border-zinc-800 bg-zinc-950 p-4">
-              <div className="text-xs font-bold text-purple-400 mb-1">Memory Layer</div>
+              <div className="text-xs font-bold text-orange-400 mb-1">Memory Layer</div>
               <p className="text-[10px] text-zinc-400">Markdown-based persistent memory. Per-user isolation. Neuroplastic salience scoring. Planned: structured claims with evidence.</p>
             </div>
             <div className="border border-zinc-800 bg-zinc-950 p-4">

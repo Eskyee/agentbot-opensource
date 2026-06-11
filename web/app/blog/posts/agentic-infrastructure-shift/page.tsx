@@ -75,7 +75,7 @@ export default function AgenticInfrastructurePost() {
             </div>
 
             <div className="border border-zinc-800 bg-zinc-950 p-5">
-              <div className="text-[10px] uppercase tracking-widest text-purple-400 font-bold mb-2">3. Infrastructure That Is Itself Agentic</div>
+              <div className="text-[10px] uppercase tracking-widest text-orange-400 font-bold mb-2">3. Infrastructure That Is Itself Agentic</div>
               <p className="text-sm text-zinc-400 leading-relaxed mb-3">
                 The platform itself becomes an agent — monitoring production, investigating anomalies, 
                 reading logs, inspecting source code, performing root-cause analysis, and proposing fixes.

@@ -289,7 +289,7 @@ export default function RobinhoodPage() {
               desc: 'Place market, limit, stop, and other order types',
             },
             {
-              icon: <BarChart3 className="h-4 w-4 text-purple-400" />,
+              icon: <BarChart3 className="h-4 w-4 text-orange-400" />,
               title: 'Analysis',
               desc: 'Analyze positions, risks, and market data',
             },

@@ -60,7 +60,7 @@ export default function LinkUpBlog() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-purple-400 uppercase tracking-widest">03. RaveCulture (The Soul)</h3>
+              <h3 className="text-lg font-bold text-orange-400 uppercase tracking-widest">03. RaveCulture (The Soul)</h3>
               <p className="text-zinc-400">
                 The ethos. We are taking the spirit of the 90s underground—the DIY energy, the community-first approach—and encoding it into the blockchain. No middle-men, no corporate suits, just the music and the machines.
               </p>
@@ -84,7 +84,7 @@ export default function LinkUpBlog() {
               <span><strong>London Hub:</strong> Global distribution, relay infrastructure, and high-frequency market signals.</span>
             </li>
             <li className="flex gap-4">
-              <span className="text-purple-500 font-bold">[OXF]</span>
+              <span className="text-orange-500 font-bold">[OXF]</span>
               <span><strong>Oxford Node:</strong> Agent architecture, cognitive modeling, and tokenomic strategy.</span>
             </li>
           </ul>

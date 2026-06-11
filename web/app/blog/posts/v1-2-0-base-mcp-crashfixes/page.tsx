@@ -158,7 +158,7 @@ export default function BlogPost() {
           </div>
 
           {/* BANKR */}
-          <div className="border-l-2 border-purple-500 pl-6">
+          <div className="border-l-2 border-orange-500 pl-6">
             <h2 className="text-xl font-bold text-white uppercase tracking-tight mb-3">
               Bankr Ecosystem
             </h2>

@@ -182,7 +182,7 @@ const TYPE_COLOR: Record<string, string> = {
   security: 'text-red-400 border-orange-500/30',
   blog: 'text-orange-500 border-orange-500/30',
   ecosystem: 'text-orange-500 border-orange-500/30',
-  integration: 'text-purple-400 border-purple-500/30',
+  integration: 'text-orange-400 border-orange-500/30',
   'open-source': 'text-blue-400 border-blue-500/30',
 };
 

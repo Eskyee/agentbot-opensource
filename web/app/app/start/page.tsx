@@ -61,7 +61,7 @@ export default function StartPage() {
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-zinc-900 z-50">
         <div
-          className="h-full bg-gradient-to-r from-purple-500 to-orange-500 transition-all duration-500"
+          className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500"
           style={{ width: `${((STEPS.indexOf(step) + 1) / STEPS.length) * 100}%` }}
         />
       </div>
@@ -116,7 +116,7 @@ export default function StartPage() {
                   onClick={() => setSelectedTemplate(t.key)}
                   className={`text-left p-5 rounded-xl border transition-all ${
                     selectedTemplate === t.key
-                      ? 'border-purple-500 bg-purple-500/10'
+                      ? 'border-orange-500 bg-orange-500/10'
                       : 'border-zinc-800 hover:border-zinc-600 bg-zinc-900/50'
                   }`}
                 >
@@ -166,14 +166,14 @@ export default function StartPage() {
                   value={agentName}
                   onChange={(e) => setAgentName(e.target.value)}
                   placeholder={`My ${TEMPLATES.find(t => t.key === selectedTemplate)?.name ?? 'Agent'}`}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500"
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500"
                 />
               </div>
               <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5">
                 <h3 className="text-sm font-medium text-zinc-300 mb-3">What will be created:</h3>
                 <ul className="space-y-2 text-sm text-zinc-400">
                   <li className="flex items-center gap-2">
-                    <span className="text-purple-400">◈</span> An AI agent powered by MiMo-V2-Pro
+                    <span className="text-orange-400">◈</span> An AI agent powered by MiMo-V2-Pro
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-orange-500">⊞</span> An automated workflow with pre-configured triggers
@@ -236,7 +236,7 @@ export default function StartPage() {
               <button
                 onClick={handleLaunch}
                 disabled={launching}
-                className="px-10 py-3 bg-gradient-to-r from-purple-600 to-red-600 text-white font-medium rounded-lg hover:from-purple-500 hover:to-red-500 transition-all disabled:opacity-50"
+                className="px-10 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-medium rounded-lg hover:from-orange-500 hover:to-red-400 transition-all disabled:opacity-50"
               >
                 {launching ? 'Launching...' : 'Launch Agent'}
               </button>

@@ -37,13 +37,13 @@ export default function BuddiesGuidePage() {
             {/* Step 1 */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0">
                   <Egg className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold mb-2">Step 1: Hatch an Egg</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-3">
-                    Click the <span className="text-purple-400 font-bold">&quot;Hatch Egg&quot;</span> button to receive a random buddy. 
+                    Click the <span className="text-orange-400 font-bold">&quot;Hatch Egg&quot;</span> button to receive a random buddy. 
                     Each egg rolls from a pool of 5 rarity tiers. Common types appear most often, while 
                     Legendary buddies are extremely rare.
                   </p>
@@ -62,7 +62,7 @@ export default function BuddiesGuidePage() {
                   <h3 className="text-lg font-bold mb-2">Step 2: Feed Your Buddy</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-3">
                     Click a buddy card to select it, then press <span className="text-orange-500 font-bold">&quot;Feed&quot;</span>.
-                    Each feed restores <span className="text-yellow-400">+20 energy</span> and gives <span className="text-yellow-400">+10 happiness</span> plus <span className="text-purple-400">+10 XP</span>.
+                    Each feed restores <span className="text-yellow-400">+20 energy</span> and gives <span className="text-yellow-400">+10 happiness</span> plus <span className="text-orange-400">+10 XP</span>.
                   </p>
                   <p className="text-zinc-500 text-xs">Energy maxes out at 100. You can&apos;t feed when full.</p>
                 </div>
@@ -79,7 +79,7 @@ export default function BuddiesGuidePage() {
                   <h3 className="text-lg font-bold mb-2">Step 3: Play Together</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-3">
                     Press <span className="text-orange-500 font-bold">&quot;Play&quot;</span> to interact with your buddy.
-                    Each play session gives <span className="text-pink-400">+15 happiness</span> and <span className="text-purple-400">+25 XP</span> -- 
+                    Each play session gives <span className="text-pink-400">+15 happiness</span> and <span className="text-orange-400">+25 XP</span> -- 
                     the fastest way to level up.
                   </p>
                   <p className="text-zinc-500 text-xs">Happiness maxes at 100. Keep feeding and playing in rotation.</p>
@@ -90,13 +90,13 @@ export default function BuddiesGuidePage() {
             {/* Step 4 */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
                   <Star className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold mb-2">Step 4: Level Up</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-3">
-                    Every <span className="text-purple-400 font-bold">100 XP</span> earned advances your buddy one level.
+                    Every <span className="text-orange-400 font-bold">100 XP</span> earned advances your buddy one level.
                     The XP progress bar shows how close you are to the next level.
                   </p>
                   <p className="text-zinc-500 text-xs">
@@ -125,7 +125,7 @@ export default function BuddiesGuidePage() {
                 {[
                   { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'text-orange-500', desc: 'Your basic AI companion', rate: '37.5%' },
                   { emoji: '⚡', name: 'Spark Agent', rarity: 'Uncommon', color: 'text-yellow-400', desc: 'Charged with extra energy', rate: '25%' },
-                  { emoji: '👻', name: 'Ghost Agent', rarity: 'Rare', color: 'text-purple-400', desc: 'Mysterious and elusive', rate: '12.5%' },
+                  { emoji: '👻', name: 'Ghost Agent', rarity: 'Rare', color: 'text-orange-400', desc: 'Mysterious and elusive', rate: '12.5%' },
                   { emoji: '🐉', name: 'Dragon Agent', rarity: 'Epic', color: 'text-green-400', desc: 'Powerful and wise', rate: '12.5%' },
                   { emoji: '👽', name: 'Alien Agent', rarity: 'Legendary', color: 'text-red-400', desc: 'Otherworldly rare', rate: '12.5%' },
                 ].map((row) => (
@@ -165,7 +165,7 @@ export default function BuddiesGuidePage() {
               </p>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center">
-              <Star className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+              <Star className="w-8 h-8 text-orange-400 mx-auto mb-3" />
               <h3 className="font-bold mb-2">XP &amp; Level</h3>
               <p className="text-xs text-zinc-500 leading-relaxed">
                 Experience points earned from interactions. Every 100 XP = 1 level.
@@ -202,7 +202,7 @@ export default function BuddiesGuidePage() {
         <div className="text-center">
           <a
             href="/buddies"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 px-8 py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity"
           >
             Start Hatching <ArrowRight className="w-5 h-5" />
           </a>

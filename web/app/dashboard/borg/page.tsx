@@ -299,7 +299,7 @@ function CycleHealthPanel({ health }: { health: SoulStatus['cycle_health'] }) {
 // ─── Thought Stream ───────────────────────────────────────────────────────────
 
 const THOUGHT_COLORS: Record<string, string> = {
-  plan: 'text-purple-400 border-purple-800',
+  plan: 'text-orange-400 border-orange-800',
   execute: 'text-emerald-400 border-emerald-800',
   reflect: 'text-blue-400 border-blue-800',
   learn: 'text-amber-400 border-amber-800',
@@ -312,7 +312,7 @@ function ThoughtStreamPanel({ thoughts }: { thoughts: SoulStatus['recent_thought
   if (list.length === 0) return null;
   return (
     <Panel>
-      <SectionLabel icon={<Radio className="w-3 h-3" />} label="Thought Stream" color="text-purple-400" count={list.length} />
+      <SectionLabel icon={<Radio className="w-3 h-3" />} label="Thought Stream" color="text-orange-400" count={list.length} />
       <div className="space-y-2">
         {list.map((t, i) => {
           const colors = THOUGHT_COLORS[t.type] ?? 'text-zinc-400 border-zinc-700';
@@ -377,7 +377,7 @@ function GoalsPanel({ goals }: { goals: SoulStatus['goals'] }) {
   const shown = expanded ? goals : goals.slice(0, 3);
   return (
     <Panel>
-      <SectionLabel icon={<Target className="w-3 h-3" />} label="Active Goals" color="text-purple-400" count={goals.length} />
+      <SectionLabel icon={<Target className="w-3 h-3" />} label="Active Goals" color="text-orange-400" count={goals.length} />
       <div className="space-y-2">
         {shown.map(g => (
           <div key={g.id} className="border border-zinc-800 p-2.5">

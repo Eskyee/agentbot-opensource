@@ -89,7 +89,7 @@ export default function SoulTemplatesPage() {
           <Link href="/dashboard/skills" className="text-zinc-400 hover:text-white mb-4 inline-block text-[10px] uppercase tracking-widest">
             ← Back to Skills
           </Link>
-          <div className="text-[10px] uppercase tracking-widest text-purple-400 font-bold mb-2">Skill Pack</div>
+          <div className="text-[10px] uppercase tracking-widest text-orange-400 font-bold mb-2">Skill Pack</div>
           <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">SOUL.md Templates</h1>
           <p className="text-zinc-400 text-sm max-w-xl leading-relaxed">
             TV character-based personality templates for your agents. 
@@ -106,7 +106,7 @@ export default function SoulTemplatesPage() {
                 <span className="text-[9px] text-zinc-600 font-mono">{t.lines} lines</span>
               </div>
               <h3 className="text-sm font-bold text-white mb-1">{t.name}</h3>
-              <div className="text-[10px] text-purple-400 uppercase tracking-widest mb-1">{t.role}</div>
+              <div className="text-[10px] text-orange-400 uppercase tracking-widest mb-1">{t.role}</div>
               <p className="text-[10px] text-zinc-500 mb-2">{t.energy}</p>
               <p className="text-[10px] text-zinc-400 leading-relaxed">{t.desc}</p>
             </div>

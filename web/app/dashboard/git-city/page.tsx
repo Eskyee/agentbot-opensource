@@ -177,9 +177,9 @@ export default function GitCityPage() {
           
           <Link
             href="/dashboard/git-city"
-            className="border border-purple-800 bg-purple-900/20 p-4 hover:border-purple-600 transition-colors"
+            className="border border-orange-800 bg-orange-900/20 p-4 hover:border-orange-600 transition-colors"
           >
-            <Gamepad2 className="h-6 w-6 text-purple-400 mb-2" />
+            <Gamepad2 className="h-6 w-6 text-orange-400 mb-2" />
             <h3 className="text-white font-bold">Arcade</h3>
             <p className="text-zinc-400 text-xs mt-1">Pixel games & achievements</p>
           </Link>

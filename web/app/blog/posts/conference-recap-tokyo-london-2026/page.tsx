@@ -43,7 +43,7 @@ export default function ConferenceRecapPage() {
           <p>
             The summit confirmed high-profile political speakers and featured sessions on AI + Web3 convergence, enterprise adoption, and the emerging &quot;agentic economy&quot; where autonomous agents transact, negotiate, and settle on-chain.
           </p>
-          <p className="border-l-2 border-purple-500 pl-4 italic text-zinc-400">
+          <p className="border-l-2 border-orange-500 pl-4 italic text-zinc-400">
             &quot;Every exchange employee will have an enterprise-grade AI assistant within two years. Agent-powered onboarding will make crypto accessible to the next billion users.&quot;
             <br /><span className="text-xs not-italic text-zinc-600">— Sophia Jin, BytePlus (ByteDance), speaking at a related side event</span>
           </p>
@@ -105,7 +105,7 @@ export default function ConferenceRecapPage() {
             The conferences made one thing undeniable: the future of crypto isn&apos;t just trading — it&apos;s infrastructure for machines. AI agents will book, trade, settle, and negotiate on-chain. The question isn&apos;t whether this happens. It&apos;s who builds the rails.
           </p>
           <p>
-            We&apos;re building them. <Link href="/token" className="text-purple-400 hover:text-purple-300 underline">$AGENTBOT</Link> is how you ride along.
+            We&apos;re building them. <Link href="/token" className="text-orange-400 hover:text-orange-300 underline">$AGENTBOT</Link> is how you ride along.
           </p>
 
           <div className="border-t border-zinc-800 pt-8 mt-10 flex gap-4 flex-wrap text-sm">
