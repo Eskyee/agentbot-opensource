@@ -40,7 +40,7 @@ Complete and professional token pages build trust, increase transparency, and im
 
 All links must be **full URLs**, not usernames:
 
-- [ ] Twitter/X — `https://x.com/basefmradio`
+- [ ] Twitter/X — `https://x.com/Esky33junglist`
 - [ ] Discord — `https://discord.gg/n5zvYRnCDF`
 - [ ] Telegram — `https://t.me/basefmradio`
 - [ ] GitHub — `https://github.com/Eskyee/agentbot-opensource`
