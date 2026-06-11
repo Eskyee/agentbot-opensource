@@ -71,7 +71,7 @@ const sections = [
 
 export default function DocumentationPage() {
   return (
-    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden">
+    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden pt-14">
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">

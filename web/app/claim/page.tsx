@@ -210,15 +210,30 @@ export default function ClaimPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-6 py-16 text-white font-mono">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-12 text-center">
-          <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Community Rewards</p>
-          <h1 className="mt-4 text-4xl font-bold uppercase tracking-tighter md:text-6xl">Claim Your Agentbot Credits</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-zinc-400">
-            Hold the community Solana token, verify your wallet, and unlock credits for the Agentbot platform.
+    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden pt-14">
+
+      {/* Hero */}
+      <section className="max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            <div className="inline-block px-3 py-1 border border-orange-500/30 text-orange-500 text-[10px] uppercase tracking-widest">
+              Community Rewards
+            </div>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
+            Claim Your <span className="text-orange-500">Credits</span>
+          </h1>
+
+          <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed">
+            Hold the community token, verify your wallet, and unlock credits for the Agentbot platform.
           </p>
         </div>
+      </section>
+
+      {/* Content */}
+      <section className="border-t border-zinc-900">
+        <div className="mx-auto max-w-4xl px-5 sm:px-6 py-16">
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
           <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">

@@ -104,7 +104,7 @@ export default async function MarketplacePage() {
   ])
 
   return (
-    <main className="min-h-screen bg-black text-white font-mono">
+    <main className="min-h-screen bg-black text-white font-mono pt-14">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="mb-12 sm:mb-16 space-y-4 sm:space-y-6">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Verified Fleet</span>

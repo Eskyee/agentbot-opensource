@@ -9,20 +9,61 @@ export default function AgentsPage() {
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono">
-      <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
-        {/* Hero */}
-        <div className="space-y-8 max-w-2xl">
-          <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest">
-            Agent Builder
+    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden pt-14">
+
+      {/* Hero */}
+      <section className="max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            <div className="inline-block px-3 py-1 border border-orange-500/30 text-orange-500 text-[10px] uppercase tracking-widest">
+              Agent Builder
+            </div>
+            <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
+              Coming Soon
+            </div>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
             Build Your <br />
-            <span className="text-zinc-700">AI Agent</span>
+            <span className="text-orange-500">AI Agent</span>
           </h1>
 
-          <p className="text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed">
+          <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed">
+            Design, configure, and deploy autonomous AI agents directly from your dashboard — no infrastructure required.
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/dashboard"
+              className="border border-white bg-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-black transition-colors hover:bg-zinc-200"
+            >
+              Go to Dashboard
+            </Link>
+            <Link
+              href="/marketplace"
+              className="border border-zinc-700 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-400 transition-colors hover:text-white hover:border-zinc-500"
+            >
+              Browse Marketplace
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Status */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div>
+              <span className="text-zinc-600 text-[10px] uppercase tracking-widest block mb-2">Status</span>
+              <span className="text-white text-sm font-bold uppercase">Coming Soon</span>
+            </div>
+            <div>
+              <span className="text-zinc-600 text-[10px] uppercase tracking-widest block mb-2">Signed In As</span>
+              <span className="text-white text-sm font-bold uppercase">{userName}</span>
+            </div>
+          </div>
+        </div>
+      </section>
             The Agent Builder is under active development. Design, configure, and deploy
             autonomous AI agents directly from your dashboard — no infrastructure required.
           </p>

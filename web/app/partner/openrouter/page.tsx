@@ -34,7 +34,7 @@ const popularModels = [
 
 export default function OpenRouterPartnerPage() {
   return (
-    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden">
+    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden pt-14">
 
       {/* Hero */}
       <section className="relative overflow-hidden">

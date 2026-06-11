@@ -403,14 +403,20 @@ export default function BuddiesPage() {
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">New Feature</div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase mb-4">
-            Agentbot Babies
+      <div className="max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
+        {/* Hero */}
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            <div className="inline-block px-3 py-1 border border-orange-500/30 text-orange-500 text-[10px] uppercase tracking-widest">
+              New Feature
+            </div>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
+            Agentbot <span className="text-orange-500">Babies</span>
           </h1>
-          <p className="text-zinc-400 max-w-xl mx-auto">
+
+          <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed">
             Hatch, raise, and level up digital companions. Your AI agent&apos;s babies.
           </p>
           <div className="flex items-center justify-center gap-3 mt-4 flex-wrap">

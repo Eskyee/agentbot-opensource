@@ -8,7 +8,7 @@ export default async function Home() {
   const session = await getAuthSession()
 
   return (
-    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden page-enter">
+    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden page-enter pt-14">
 
       {/* ━━━ HERO ━━━ */}
       <section className="relative min-h-screen flex items-center">

@@ -22,7 +22,7 @@ export default async function SocialHome() {
   const posts = await getFeed()
 
   return (
-    <div className="min-h-screen bg-black font-mono overflow-x-hidden">
+    <div className="min-h-screen bg-black font-mono overflow-x-hidden pt-14">
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
