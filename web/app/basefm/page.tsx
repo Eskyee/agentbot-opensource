@@ -70,8 +70,59 @@ export default function BasefmTokenPage() {
         </div>
       </section>
 
+      {/* Price Chart */}
+      <section className="mx-auto max-w-5xl px-6 mt-8">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Price</div>
+              <div className="mt-1 text-3xl font-bold text-white">$0.0000001673</div>
+              <div className="mt-1 text-xs text-zinc-500">via CoinGecko · Base Network</div>
+            </div>
+            <div className="text-right">
+              <a
+                href={`https://www.coinbase.com/en-gb/price/basefm-base-${BASEFM_ADDRESS}-token`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] text-zinc-500 hover:text-white transition-colors"
+              >
+                Coinbase
+                <ArrowUpRight className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
+
+          {/* Embedded Chart */}
+          <div className="rounded-xl border border-zinc-800 bg-black overflow-hidden">
+            <iframe
+              src={`https://www.geckoterminal.com/base/pools/${BASEFM_ADDRESS}/embed?chart=price&palette=dark`}
+              width="100%"
+              height="400"
+              style={{ border: 0 }}
+              loading="lazy"
+              title="BASEFM Price Chart"
+            />
+          </div>
+
+          {/* Market Stats */}
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: 'Network', value: 'Base' },
+              { label: 'Chain ID', value: '8453' },
+              { label: 'Decimals', value: '18' },
+              { label: 'Symbol', value: 'BASEFM' },
+            ].map((item) => (
+              <div key={item.label} className="rounded-xl border border-zinc-800 bg-black p-4">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{item.label}</div>
+                <div className="mt-2 text-lg font-bold text-white">{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Contract Address */}
-      <section className="mx-auto max-w-5xl px-6">
+      <section className="mx-auto max-w-5xl px-6 mt-8">
         <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-6">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
@@ -86,20 +137,6 @@ export default function BasefmTokenPage() {
             >
               Copy
             </button>
-          </div>
-
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: 'Symbol', value: 'BASEFM' },
-              { label: 'Decimals', value: '18' },
-              { label: 'Chain ID', value: '8453' },
-              { label: 'Network', value: 'Base' },
-            ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-zinc-800 bg-black p-4">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{item.label}</div>
-                <div className="mt-2 text-lg font-bold text-white">{item.value}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
