@@ -68,9 +68,9 @@ export default async function Home() {
 
       {/* ━━━ MiMo + OpenClaw ━━━ */}
       <section className="border-t border-zinc-900">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24 text-center">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-10">Powered by MiMo + OpenClaw</div>
-          <div className="grid sm:grid-cols-3 gap-px bg-zinc-900">
+          <div className="grid sm:grid-cols-3 gap-px bg-zinc-900 text-left">
             {[
               {
                 label: 'MiMo v2.5',
@@ -96,8 +96,8 @@ export default async function Home() {
 
       {/* ━━━ THREE TRUTHS ━━━ */}
       <section className="border-t border-zinc-900">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
-          <div className="grid sm:grid-cols-3 gap-px bg-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24 text-center">
+          <div className="grid sm:grid-cols-3 gap-px bg-zinc-900 text-left">
             {[
               {
                 title: 'It wakes up before you',
@@ -123,9 +123,9 @@ export default async function Home() {
 
       {/* ━━━ PRICING — inline, minimal ━━━ */}
       <section className="border-t border-zinc-900">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24 text-center">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">Pricing</div>
-          <div className="grid sm:grid-cols-3 gap-px bg-zinc-900">
+          <div className="grid sm:grid-cols-3 gap-px bg-zinc-900 text-left">
             {[
               { name: 'Solo', price: '29', tagline: '1 agent, always on' },
               { name: 'Collective', price: '69', tagline: '3 agents, workflows', popular: true },
