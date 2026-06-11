@@ -51,7 +51,7 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0" onClick={closeMenu}>
-          <Image src="/icons/icon-192x192.png" alt="Agentbot" width={22} height={22} priority className="rounded" />
+          <span className="text-xl leading-none">🦞</span>
           <span className="text-xs font-bold uppercase tracking-widest text-white">Agentbot</span>
         </Link>
 
