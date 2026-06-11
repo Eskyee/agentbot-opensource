@@ -214,9 +214,10 @@ export function BasefmLivePageClient({
               <p className="text-zinc-600 text-xs mt-2">Gates live streaming. Required for DJ access.</p>
             </div>
             <div className="border border-zinc-800 p-4">
-              <h3 className="text-sm font-bold mb-2 text-purple-400">Agentbot (Solana)</h3>
-              <code className="text-zinc-500 text-xs break-all">9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump</code>
-              <p className="text-zinc-600 text-xs mt-2">Community token. Holders get the same baseFM stream access path plus free credits.</p>
+              <h3 className="text-sm font-bold mb-2 text-orange-400">$AGENTBOT (Base)</h3>
+              <code className="text-zinc-500 text-xs break-all">0x986b41c76ab8b7350079613340ee692773b34ba3</code>
+              <p className="text-zinc-600 text-xs mt-2">Powers AI agent infrastructure. Trade on Uniswap.</p>
+              <a href="/token" className="text-orange-400 text-xs hover:underline mt-2 inline-block">View token page →</a>
             </div>
           </div>
         </section>
