@@ -3,38 +3,67 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'OpenRouter × Agentbot — Integration',
-  description: 'Agentbot supports 300+ AI models through OpenRouter. BYOK with zero markup. Switch models anytime.',
+  description: 'Access 300+ AI models through OpenRouter. Claude Fable 5, GPT-4o, Gemini, free models — all with one API key.',
 }
+
+const freeModels = [
+  { name: 'Gemma 4 26B', provider: 'Google', id: 'google/gemma-4-26b-a4b-it:free' },
+  { name: 'Gemma 4 31B', provider: 'Google', id: 'google/gemma-4-31b-it:free' },
+  { name: 'Nemotron 3 Ultra', provider: 'NVIDIA', id: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
+  { name: 'Nemotron 3 Super', provider: 'NVIDIA', id: 'nvidia/nemotron-3-super-120b-a12b:free' },
+  { name: 'Qwen3 Next 80B', provider: 'Alibaba', id: 'qwen/qwen3-next-80b-a3b-instruct:free' },
+  { name: 'Nex-N2-Pro', provider: 'Nex AGI', id: 'nex-agi/nex-n2-pro:free' },
+  { name: 'Laguna XS', provider: 'Poolside', id: 'poolside/laguna-xs.2:free' },
+  { name: 'Nemotron Nano 12B', provider: 'NVIDIA', id: 'nvidia/nemotron-nano-12b-v2-vl:free' },
+]
+
+const popularModels = [
+  { name: 'Claude Fable 5', provider: 'Anthropic', use: 'Latest reasoning', price: '$10 / $50', color: 'text-orange-400 border-orange-400/30 bg-orange-400/5' },
+  { name: 'Claude Opus 4.8', provider: 'Anthropic', use: 'Deep reasoning', price: '$5 / $25', color: 'text-orange-400 border-orange-400/30 bg-orange-400/5' },
+  { name: 'Claude Sonnet 4', provider: 'Anthropic', use: 'Balanced', price: '$3 / $15', color: 'text-orange-300 border-orange-300/30 bg-orange-300/5' },
+  { name: 'Claude Haiku', provider: 'Anthropic', use: 'Fast & cheap', price: '$1 / $5', color: 'text-orange-300 border-orange-300/30 bg-orange-300/5' },
+  { name: 'GPT-4o', provider: 'OpenAI', use: 'Vision & multimodal', price: '$2.50 / $10', color: 'text-green-400 border-green-400/30 bg-green-400/5' },
+  { name: 'Gemini 2.5 Pro', provider: 'Google', use: 'Long context', price: '$1.25 / $10', color: 'text-blue-400 border-blue-400/30 bg-blue-400/5' },
+  { name: 'MiMo V2.5 Pro', provider: 'Xiaomi', use: 'Agentic tasks', price: '$0.44 / $0.87', color: 'text-purple-400 border-purple-400/30 bg-purple-400/5' },
+  { name: 'DeepSeek R1', provider: 'DeepSeek', use: 'Code & math', price: '$0.55 / $2.19', color: 'text-cyan-400 border-cyan-400/30 bg-cyan-400/5' },
+  { name: 'Llama 3.3 70B', provider: 'Meta', use: 'Fast inference', price: '$0.10 / $0.10', color: 'text-blue-300 border-blue-300/30 bg-blue-300/5' },
+  { name: 'Qwen 3.7 Plus', provider: 'Alibaba', use: 'Multilingual', price: '$0.40 / $1.60', color: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5' },
+  { name: 'MiniMax M3', provider: 'MiniMax', use: 'Long context', price: '$0.20 / $0.80', color: 'text-pink-400 border-pink-400/30 bg-pink-400/5' },
+  { name: 'Kimi K2.5', provider: 'Moonshot', use: 'Default on Agentbot', price: '$0.14 / $0.28', color: 'text-white border-zinc-700 bg-zinc-900' },
+]
 
 export default function OpenRouterPartnerPage() {
   return (
     <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden">
 
       {/* Hero */}
-      <section className="max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
-        <div className="space-y-6">
-          <div className="flex flex-wrap gap-2">
-            <div className="inline-block px-3 py-1 border border-blue-500/30 text-blue-500 text-[10px] uppercase tracking-widest">
-              Integration
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.08),transparent_60%)]" />
+        <div className="relative max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
+          <div className="space-y-6">
+            <div className="flex flex-wrap gap-2">
+              <div className="inline-block px-3 py-1 border border-blue-500/30 text-blue-500 text-[10px] uppercase tracking-widest">
+                Integration
+              </div>
+              <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
+                300+ Models
+              </div>
             </div>
-            <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
-              300+ Models
-            </div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
+              OpenRouter ×<br />
+              <span className="text-blue-500">Agentbot</span>
+            </h1>
+
+            <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed">
+              Access 300+ AI models through OpenRouter. Bring your own key.
+              Zero markup. Switch models anytime. Your agent, your models, your rules.
+            </p>
           </div>
-
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
-            OpenRouter ×<br />
-            <span className="text-blue-500">Agentbot</span>
-          </h1>
-
-          <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed">
-            Access 300+ AI models through OpenRouter. Bring your own key.
-            Zero markup. Switch models anytime. Your agent, your models, your rules.
-          </p>
         </div>
       </section>
 
-      {/* Integration Depth */}
+      {/* How It Works */}
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-10">How It Works</div>
@@ -46,7 +75,7 @@ export default function OpenRouterPartnerPage() {
               },
               {
                 title: '300+ Models',
-                body: 'GPT-4o, Claude, Gemini, Llama, DeepSeek, Mistral, Qwen — every major model, one API key, one dashboard.',
+                body: 'Claude Fable 5, GPT-4o, Gemini, Llama, DeepSeek, Mistral, Qwen — every major model, one API key, one dashboard.',
               },
               {
                 title: 'Switch Anytime',
@@ -66,6 +95,62 @@ export default function OpenRouterPartnerPage() {
         </div>
       </section>
 
+      {/* Free Models */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">New</div>
+            <span className="inline-flex items-center rounded-full border border-green-400/30 bg-green-400/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-green-300">
+              Free Tier
+            </span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mb-3">
+            Free models on OpenRouter
+          </h2>
+          <p className="text-zinc-400 text-sm max-w-lg mb-8">
+            Start building for $0. These models are free to use — no credit card required. Perfect for testing and prototyping.
+          </p>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {freeModels.map((model) => (
+              <div key={model.id} className="rounded-xl border border-green-500/20 bg-green-500/5 p-4">
+                <div className="text-sm font-bold text-white">{model.name}</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">{model.provider}</div>
+                <div className="mt-2 text-[10px] font-mono text-green-400">$0 — Free</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Models */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Popular Models</div>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mb-3">
+            What agents run on
+          </h2>
+          <p className="text-zinc-400 text-sm max-w-lg mb-8">
+            Prices shown as input / output per 1M tokens.
+          </p>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {popularModels.map((model) => (
+              <div key={model.name} className={`rounded-xl border p-4 ${model.color}`}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-sm font-bold text-white">{model.name}</div>
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">{model.provider}</div>
+                  </div>
+                  <div className="text-[10px] font-mono text-zinc-400 text-right">{model.price}</div>
+                </div>
+                <div className="text-xs text-zinc-400 mt-2">{model.use}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Why OpenRouter */}
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
@@ -78,41 +163,11 @@ export default function OpenRouterPartnerPage() {
               OpenRouter is the universal gateway to AI models. Instead of managing 10 different API keys, subscriptions, and rate limits — you get one key that accesses everything.
             </p>
             <p>
-              Agentbot integrates natively with OpenRouter. Your agents can switch between Claude for reasoning, GPT-4o for vision, Llama for speed, and DeepSeek for code — all without reconfiguration.
+              Agentbot integrates natively with OpenRouter. Your agents can switch between Claude Fable 5 for reasoning, GPT-4o for vision, Llama for speed, and DeepSeek for code — all without reconfiguration.
             </p>
             <p>
               We don&apos;t mark up OpenRouter pricing. You pay exactly what OpenRouter charges. Our platform fee covers infrastructure, not inference.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Supported Models */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Popular Models</div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mb-8">
-            What agents run on
-          </h2>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { name: 'Claude 4 Opus', provider: 'Anthropic', use: 'Reasoning & coding', color: 'text-orange-400 border-orange-400/30 bg-orange-400/5' },
-              { name: 'GPT-4o', provider: 'OpenAI', use: 'Vision & multimodal', color: 'text-green-400 border-green-400/30 bg-green-400/5' },
-              { name: 'Gemini 2.5 Pro', provider: 'Google', use: 'Long context', color: 'text-blue-400 border-blue-400/30 bg-blue-400/5' },
-              { name: 'MiMo V2.5 Pro', provider: 'Xiaomi', use: 'Agentic tasks', color: 'text-purple-400 border-purple-400/30 bg-purple-400/5' },
-              { name: 'DeepSeek R1', provider: 'DeepSeek', use: 'Code & math', color: 'text-cyan-400 border-cyan-400/30 bg-cyan-400/5' },
-              { name: 'Llama 3.3', provider: 'Meta', use: 'Fast inference', color: 'text-blue-300 border-blue-300/30 bg-blue-300/5' },
-              { name: 'Qwen 2.5', provider: 'Alibaba', use: 'Multilingual', color: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5' },
-              { name: 'Mistral Large', provider: 'Mistral', use: 'European models', color: 'text-red-400 border-red-400/30 bg-red-400/5' },
-              { name: 'Kimi K2.5', provider: 'Moonshot', use: 'Default on Agentbot', color: 'text-white border-zinc-700 bg-zinc-900' },
-            ].map((model) => (
-              <div key={model.name} className={`rounded-xl border p-4 ${model.color}`}>
-                <div className="text-sm font-bold text-white">{model.name}</div>
-                <div className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">{model.provider}</div>
-                <div className="text-xs text-zinc-400 mt-2">{model.use}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
