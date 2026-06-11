@@ -37,6 +37,7 @@ const COLUMNS = [
       { href: '/social',            label: 'Social' },
       { href: '/token',             label: '$AGENTBOT' },
       { href: '/basefm',           label: '$BASEFM' },
+      { href: '/dashboard/dj-stream', label: 'DJ Dashboard' },
     ],
   },
   {
