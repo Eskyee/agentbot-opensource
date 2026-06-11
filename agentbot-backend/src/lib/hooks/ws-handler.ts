@@ -92,6 +92,7 @@ export function setupWebSocket(server: HTTPServer): InstanceType<typeof WebSocke
     }, 30000)
 
     ws.on('close', () => clearInterval(heartbeat))
+    ws.on('error', () => clearInterval(heartbeat))
   })
 
   log.info('[WS] Permission WebSocket server ready at /ws/permissions')

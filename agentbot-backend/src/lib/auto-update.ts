@@ -91,10 +91,14 @@ export async function updateAllContainers(
   return results;
 }
 
+let autoUpdaterStarted = false;
+
 export function startAutoUpdater(
   dataDir: string, homeDir: string,
   getPlanResources: (p: string) => { memory: string; cpus: string }
 ) {
+  if (autoUpdaterStarted) return;
+  autoUpdaterStarted = true;
   log.info('[Auto-Update] Scheduler initialized');
 
   const checkAndUpdate = async () => {
