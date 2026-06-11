@@ -64,7 +64,8 @@ export default function CodingAgentClient() {
     { type: 'read', path: 'lib/session.ts', status: 'done' },
     { type: 'write', path: 'app/api/auth/route.ts', status: 'done' },
     { type: 'write', path: 'app/api/auth/callback/route.ts', status: 'done' },
-    { type: 'edit', path: 'middleware.ts', status: 'running' },
+    { type: 'edit', path: 'middleware.ts', status: 'done' },
+    { type: 'bash', path: 'pnpm typecheck', status: 'done' },
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -114,7 +115,7 @@ export default function CodingAgentClient() {
 
     // Simulate tool calls
     const simulatedTools: ToolCall[] = [
-      { type: 'grep', path: `searching for ${input.slice(0, 20)}...`, status: 'running' },
+      { type: 'grep', path: `searching for ${input.slice(0, 20)}...`, status: 'done' },
     ]
     setToolCalls(simulatedTools)
 
