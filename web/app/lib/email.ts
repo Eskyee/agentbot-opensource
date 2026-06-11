@@ -1,5 +1,4 @@
 import { Resend } from 'resend';
-import { render } from '@react-email/render';
 
 const resend = process.env.RESEND_API_KEY 
   ? new Resend(process.env.RESEND_API_KEY)
@@ -31,20 +30,6 @@ export async function sendEmail({
     console.error('Failed to send email:', error);
     return { success: false, error };
   }
-}
-
-// ─── Card Email Sender (React Email) ────────────────────────────────────────
-export async function sendCardEmail({
-  to,
-  subject,
-  component,
-}: {
-  to: string;
-  subject: string;
-  component: React.ReactElement;
-}) {
-  const html = render(component);
-  return sendEmail({ to, subject, html });
 }
 
 export async function sendWelcomeEmail(email: string, name: string) {
@@ -107,48 +92,33 @@ export async function sendPaymentReceiptEmail(
   });
 }
 
-// ─── Card Email Functions (React Email) ─────────────────────────────────────
+// ─── Card Email Functions ───────────────────────────────────────────────────
 export async function sendWelcomeCardEmail(email: string, name: string) {
-  const { WelcomeCard } = await import('@/lib/email/card-templates')
-  return sendCardEmail({
-    to: email,
-    subject: 'Your agent is live — here\'s what to do first',
-    component: WelcomeCard({ name }),
-  })
+  const { welcomeCard } = await import('@/lib/email/card-templates')
+  const { subject, html } = welcomeCard(name)
+  return sendEmail({ to: email, subject, html })
 }
 
 export async function sendAgentDeployedCardEmail(email: string, name: string, plan: string, agentUrl: string) {
-  const { AgentDeployedCard } = await import('@/lib/email/card-templates')
-  return sendCardEmail({
-    to: email,
-    subject: `Your ${plan} agent is live`,
-    component: AgentDeployedCard({ name, plan, agentUrl }),
-  })
+  const { agentDeployedCard } = await import('@/lib/email/card-templates')
+  const { subject, html } = agentDeployedCard(name, plan, agentUrl)
+  return sendEmail({ to: email, subject, html })
 }
 
 export async function sendPlanUpgradedCardEmail(email: string, name: string, oldPlan: string, newPlan: string) {
-  const { PlanUpgradedCard } = await import('@/lib/email/card-templates')
-  return sendCardEmail({
-    to: email,
-    subject: `Upgraded to ${newPlan} — more power unlocked`,
-    component: PlanUpgradedCard({ name, oldPlan, newPlan }),
-  })
+  const { planUpgradedCard } = await import('@/lib/email/card-templates')
+  const { subject, html } = planUpgradedCard(name, oldPlan, newPlan)
+  return sendEmail({ to: email, subject, html })
 }
 
 export async function sendWeeklyDigestCardEmail(email: string, name: string, stats: { messagesProcessed: number; tasksCompleted: number; uptime: string }) {
-  const { WeeklyDigestCard } = await import('@/lib/email/card-templates')
-  return sendCardEmail({
-    to: email,
-    subject: `Your agent this week — ${stats.tasksCompleted} tasks completed`,
-    component: WeeklyDigestCard({ name, stats }),
-  })
+  const { weeklyDigestCard } = await import('@/lib/email/card-templates')
+  const { subject, html } = weeklyDigestCard(name, stats)
+  return sendEmail({ to: email, subject, html })
 }
 
 export async function sendPaymentReceiptCardEmail(email: string, amount: number, plan: string) {
-  const { PaymentReceiptCard } = await import('@/lib/email/card-templates')
-  return sendCardEmail({
-    to: email,
-    subject: `Payment received — ${plan} plan`,
-    component: PaymentReceiptCard({ amount, plan }),
-  })
+  const { paymentReceiptCard } = await import('@/lib/email/card-templates')
+  const { subject, html } = paymentReceiptCard(amount, plan)
+  return sendEmail({ to: email, subject, html })
 }
