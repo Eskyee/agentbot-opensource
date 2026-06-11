@@ -24,8 +24,8 @@ export default function BasefmTokenPage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,197,94,0.08),transparent_60%)]" />
-        <div className="relative mx-auto max-w-5xl px-6 pt-24 pb-16">
-          <div className="flex items-center gap-3 mb-6">
+        <div className="relative mx-auto max-w-4xl px-5 sm:px-6 pt-24 pb-16">
+          <div className="flex flex-wrap gap-2 mb-6">
             <span className="inline-flex items-center rounded-full border border-green-400/30 bg-green-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-green-300">
               Live on Base
             </span>
@@ -34,7 +34,7 @@ export default function BasefmTokenPage() {
 
           <div className="flex items-center gap-4 mb-6">
             <img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreiaf3pcxumy7e2yjcxsi2u3v7n4sliwok2ypk7ot7tbv4espkik3pi" alt="baseFM" className="w-16 h-16 rounded-full border border-green-500/30" />
-            <h1 className="text-6xl font-bold uppercase leading-none tracking-tighter md:text-8xl">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
               $<span className="text-green-500">BASEFM</span>
             </h1>
           </div>

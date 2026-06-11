@@ -108,7 +108,7 @@ export default async function MarketplacePage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="mb-12 sm:mb-16 space-y-4 sm:space-y-6">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Verified Fleet</span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-none">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
             Agent <span className="text-zinc-700">Marketplace</span>
           </h1>
           <p className="text-zinc-400 text-sm max-w-xl leading-relaxed">
