@@ -43,7 +43,7 @@ All links must be **full URLs**, not usernames:
 
 - [ ] Twitter/X — `https://x.com/Esky33junglist`
 - [ ] Discord — `https://discord.gg/n5zvYRnCDF`
-- [ ] Telegram — `https://t.me/basefmradio`
+- [ ] Telegram — `https://t.me/esky33`
 - [ ] GitHub — `https://github.com/Eskyee/agentbot-opensource`
 - [ ] LinkedIn (if applicable) — full profile URL showing project affiliation
 
