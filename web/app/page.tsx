@@ -34,7 +34,7 @@ export default async function Home() {
             {session ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center justify-center bg-white text-black px-6 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
+                className="inline-flex items-center justify-center bg-white text-black px-5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
               >
                 Open Dashboard
               </Link>
@@ -42,13 +42,13 @@ export default async function Home() {
               <>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center justify-center bg-white text-black px-6 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
+                  className="inline-flex items-center justify-center bg-white text-black px-5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
                 >
                   Deploy Your Agent
                 </Link>
                 <Link
                   href="/login"
-                  className="inline-flex items-center justify-center border border-zinc-800 px-6 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors btn-press"
+                  className="inline-flex items-center justify-center border border-zinc-800 px-5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors btn-press"
                 >
                   Sign In
                 </Link>
@@ -170,7 +170,7 @@ export default async function Home() {
           <div className="pt-4">
             <Link
               href={session ? '/dashboard' : '/signup'}
-              className="inline-flex items-center justify-center bg-white text-black px-10 py-4 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
+              className="inline-flex items-center justify-center bg-white text-black px-5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
             >
               {session ? 'Open Dashboard' : 'Deploy Your Agent'} →
             </Link>
