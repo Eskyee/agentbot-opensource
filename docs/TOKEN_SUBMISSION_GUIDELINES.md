@@ -23,7 +23,7 @@ Complete and professional token pages build trust, increase transparency, and im
 | Network | Base (Chain ID: 8453) |
 | Contract | `0x9a4376bab717ac0a3901eeed8308a420c59c0ba3` |
 | Decimals | 18 |
-| Logo | Blue circular logo with baseFM text (save to `web/public/images/basefm-logo.png`) |
+| Logo | `https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreiaf3pcxumy7e2yjcxsi2u3v7n4sliwok2ypk7ot7tbv4espkik3pi` |
 
 ---
 
