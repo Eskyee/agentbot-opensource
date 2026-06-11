@@ -71,18 +71,33 @@ const sections = [
 
 export default function DocumentationPage() {
   return (
-    <main className="min-h-screen bg-black text-white font-mono">
-      <div className="max-w-4xl mx-auto px-6 py-16">
+    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden">
 
-        <section className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Docs</span>
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter uppercase leading-[0.9]">
+      {/* Hero */}
+      <section className="max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            <div className="inline-block px-3 py-1 border border-orange-500/30 text-orange-500 text-[10px] uppercase tracking-widest">
+              Docs
+            </div>
+            <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
+              Getting Started
+            </div>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
             Your agent.<br /><span className="text-orange-500">Everything you need.</span>
           </h1>
-          <p className="text-zinc-400 text-sm max-w-md leading-relaxed mt-8">
+
+          <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed">
             Deploy your agent, connect your channels, give it tasks. It handles the rest.
           </p>
-        </section>
+        </div>
+      </section>
+
+      {/* Content */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16">
 
         <div className="space-y-px bg-zinc-800">
           {sections.map((section) => (

@@ -31,23 +31,50 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
   const hrefFor = (post: BlogPostSummary) => post.href || `/blog/posts/${post.slug}`
 
   return (
-    <main className="min-h-screen bg-black text-white font-mono">
-      <section className="border-b border-zinc-900">
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-24">
-          <div className="grid gap-12 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
-            <div>
-              <p className="mb-5 text-[10px] uppercase tracking-[0.35em] text-zinc-600">Agentbot Journal</p>
-              <h1 className="max-w-4xl text-5xl font-bold uppercase tracking-[-0.08em] text-white sm:text-7xl md:text-8xl">
-                Shipping the OpenClaw stack in public.
-              </h1>
-              <p className="mt-6 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-base">
-                Product updates, release notes, launch logs, and operator field reports from Agentbot.
-                This is where we publish what changed, what broke, and what shipped.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/documentation"
-                  className="border border-white bg-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-black transition-colors hover:bg-zinc-200"
+    <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden">
+
+      {/* Hero */}
+      <section className="max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            <div className="inline-block px-3 py-1 border border-orange-500/30 text-orange-500 text-[10px] uppercase tracking-widest">
+              Shipping Log
+            </div>
+            <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
+              Open Source
+            </div>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
+            Agent <span className="text-orange-500">Blog</span>
+          </h1>
+
+          <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed">
+            Product updates, release notes, launch logs, and operator field reports from Agentbot.
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/documentation"
+              className="border border-white bg-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-black transition-colors hover:bg-zinc-200"
+            >
+              Read Docs
+            </Link>
+            <Link
+              href="https://github.com/Eskyee/agentbot-opensource"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-700 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-400 transition-colors hover:text-white hover:border-zinc-500"
+            >
+              View Source
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Tags */}
+      <section className="border-t border-zinc-900">
+        <div className="mx-auto max-w-4xl px-5 sm:px-6 py-6">
                 >
                   Read docs
                 </Link>
