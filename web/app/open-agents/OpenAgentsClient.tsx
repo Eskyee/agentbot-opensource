@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, GitBranch, Terminal, FileCode, Search, Edit3, Check, Loader2, ChevronRight, Cpu } from 'lucide-react'
+import { Plus, GitBranch, Terminal, FileCode, Search, Edit3, Check, Loader2, ChevronRight, Cpu, Send, Copy } from 'lucide-react'
 
 interface Session {
   id: string
@@ -10,28 +10,14 @@ interface Session {
   age: string
   repo: string
   branch: string
+  task: string
 }
 
 interface ToolCall {
   type: 'grep' | 'read' | 'write' | 'edit' | 'bash'
   path: string
-  detail?: string
+  status: 'running' | 'done'
 }
-
-const DEMO_SESSIONS: Session[] = [
-  { id: '1', name: 'Auth flow', status: 'active', age: '3m', repo: 'agentbot/feat/auth-flow', branch: 'feat/auth' },
-  { id: '2', name: 'API refactor', status: 'idle', age: '2h', repo: 'agentbot/api-refactor', branch: 'refactor/api' },
-  { id: '3', name: 'Fix tests', status: 'done', age: '1d', repo: 'agentbot/fix-tests', branch: 'fix/tests' },
-]
-
-const DEMO_TOOLS: ToolCall[] = [
-  { type: 'grep', path: 'auth patterns in src/' },
-  { type: 'read', path: 'lib/session.ts' },
-  { type: 'write', path: 'app/api/auth/route.ts' },
-  { type: 'write', path: 'app/api/auth/callback/route.ts' },
-  { type: 'edit', path: 'middleware.ts' },
-  { type: 'bash', path: 'pnpm typecheck' },
-]
 
 const TOOL_ICONS: Record<string, typeof Terminal> = {
   grep: Search,
@@ -50,19 +36,30 @@ const TOOL_COLORS: Record<string, string> = {
 }
 
 export default function OpenAgentsClient() {
-  const [sessions] = useState<Session[]>(DEMO_SESSIONS)
-  const [activeSession, setActiveSession] = useState(DEMO_SESSIONS[0])
+  const [sessions] = useState<Session[]>([
+    { id: '1', name: 'Auth flow', status: 'active', age: '3m', repo: 'Eskyee/agentbot', branch: 'feat/auth', task: 'Build the auth flow with GitHub OAuth' },
+    { id: '2', name: 'API refactor', status: 'idle', age: '2h', repo: 'Eskyee/agentbot', branch: 'refactor/api', task: 'Refactor API routes to modular structure' },
+    { id: '3', name: 'Fix tests', status: 'done', age: '1d', repo: 'Eskyee/agentbot', branch: 'fix/tests', task: 'Fix failing test suite' },
+  ])
+  const [activeSession, setActiveSession] = useState(sessions[0])
+  const [toolCalls] = useState<ToolCall[]>([
+    { type: 'grep', path: 'auth patterns in src/', status: 'done' },
+    { type: 'read', path: 'lib/session.ts', status: 'done' },
+    { type: 'write', path: 'app/api/auth/route.ts', status: 'done' },
+    { type: 'write', path: 'app/api/auth/callback/route.ts', status: 'done' },
+    { type: 'edit', path: 'middleware.ts', status: 'running' },
+    { type: 'bash', path: 'pnpm typecheck', status: 'done' },
+  ])
   const [input, setInput] = useState('')
-  const [showInfra, setShowInfra] = useState(false)
 
   return (
     <div className="min-h-screen bg-black text-white font-mono">
       {/* Header */}
-      <header className="border-b border-zinc-900 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <header className="border-b border-zinc-900 px-6 py-3">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Cpu className="h-5 w-5 text-green-500" />
-            <span className="text-sm font-bold uppercase tracking-widest">Open Agents</span>
+            <Cpu className="h-4 w-4 text-green-500" />
+            <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Open Agents</span>
           </div>
           <div className="flex items-center gap-3">
             <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">
@@ -72,20 +69,20 @@ export default function OpenAgentsClient() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-[1600px] mx-auto px-6 py-6">
         {/* Hero */}
-        <div className="mb-8">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter">
+        <div className="mb-6">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter">
             Open <span className="text-green-500">Agents.</span>
           </h1>
-          <p className="mt-3 text-sm text-zinc-400 max-w-xl">
+          <p className="mt-2 text-sm text-zinc-400 max-w-xl">
             Spawn coding agents that run infinitely in the cloud. Powered by OpenClaw, MiMo, and Agentbot Sandbox.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
           {/* Sessions Sidebar */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Sessions</span>
               <button className="w-6 h-6 rounded border border-zinc-800 flex items-center justify-center text-zinc-600 hover:text-white hover:border-zinc-600 transition-colors">
@@ -109,49 +106,47 @@ export default function OpenAgentsClient() {
                       s.status === 'active' ? 'bg-green-500' :
                       s.status === 'idle' ? 'bg-yellow-500' : 'bg-zinc-700'
                     }`} />
-                    <span className="text-xs font-bold text-white truncate">{s.name}</span>
-                    <span className="ml-auto text-[10px] text-zinc-600">{s.age}</span>
+                    <span className="text-[11px] font-bold text-white truncate">{s.name}</span>
+                    <span className="ml-auto text-[9px] text-zinc-600">{s.age}</span>
                   </div>
-                  <div className="mt-1 text-[10px] text-zinc-600 truncate">{s.repo}</div>
+                  <div className="mt-1 text-[9px] text-zinc-600 truncate">{s.repo}/{s.branch}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Main Panel */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Session Header */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-sm font-bold">{activeSession.repo}</span>
-                <span className="text-zinc-600">/</span>
-                <span className="text-xs text-zinc-400">{activeSession.name}</span>
-                <span className="ml-auto flex items-center gap-1.5 text-[10px] text-zinc-600">
-                  <GitBranch className="h-3 w-3" />
-                  {activeSession.branch}
-                </span>
-              </div>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-3 flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-xs font-bold">{activeSession.repo}</span>
+              <ChevronRight className="h-3 w-3 text-zinc-700" />
+              <span className="text-xs text-zinc-400">{activeSession.name}</span>
+              <span className="ml-auto flex items-center gap-1.5 text-[10px] text-zinc-600">
+                <GitBranch className="h-3 w-3" />
+                {activeSession.branch}
+              </span>
             </div>
 
             {/* Tool Activity */}
             <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
               <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600 mb-3">Agent Activity</div>
               <div className="space-y-2">
-                {DEMO_TOOLS.map((tool, i) => {
+                {toolCalls.map((tool, i) => {
                   const Icon = TOOL_ICONS[tool.type]
                   return (
                     <div key={i} className="flex items-center gap-3 py-1.5">
+                      {tool.status === 'running' ? (
+                        <Loader2 className={`h-3 w-3 animate-spin ${TOOL_COLORS[tool.type]}`} />
+                      ) : (
+                        <Check className="h-3 w-3 text-green-500" />
+                      )}
                       <span className={`text-[10px] font-bold uppercase w-12 ${TOOL_COLORS[tool.type]}`}>
                         {tool.type}
                       </span>
                       <Icon className={`h-3.5 w-3.5 ${TOOL_COLORS[tool.type]}`} />
                       <span className="text-xs text-zinc-400">{tool.path}</span>
-                      {i < DEMO_TOOLS.length - 1 && (
-                        <span className="ml-auto text-zinc-800">
-                          <ChevronRight className="h-3 w-3" />
-                        </span>
-                      )}
                     </div>
                   )
                 })}
@@ -192,33 +187,32 @@ export default function OpenAgentsClient() {
                   className="flex-1 bg-black border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-green-500/50"
                 />
                 <button className="bg-green-600 hover:bg-green-500 text-white rounded-lg px-4 py-2.5 text-sm font-bold transition-colors">
-                  Send
+                  <Send className="h-4 w-4" />
                 </button>
               </div>
               <div className="mt-2 flex items-center gap-2 text-[10px] text-zinc-600">
-                <span className="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800">Claude Opus 4.6</span>
-                <span>1%</span>
+                <span className="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800">Claude Sonnet 4.5</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Features Section */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Features */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
               title: 'Agents that ship real code',
-              desc: 'Each agent gets a full sandbox environment with filesystem, network, and runtime access. Describe what to build and let the agent work autonomously.',
+              desc: 'Each agent gets a full sandbox environment with filesystem, network, and runtime access.',
               items: ['File ops, search, shell, and task delegation', 'Explorer and executor subagents', 'Multi-model support via OpenRouter'],
             },
             {
               title: 'Cloud sandboxes, not local machines',
-              desc: 'Every session runs in an isolated sandbox with its own branch. Work is committed and pushed automatically.',
+              desc: 'Every session runs in an isolated sandbox with its own branch.',
               items: ['Ephemeral environments with full git integration', 'Auto-hibernate on inactivity', 'Snapshot and restore filesystem state'],
             },
             {
               title: 'Durable workflows that survive anything',
-              desc: 'Agent loops run as durable workflows that survive restarts, retry on failure, and coordinate multi-step operations.',
+              desc: 'Agent loops run as durable workflows that survive restarts.',
               items: ['Resumable agent loops with checkpointing', 'Usage tracking and auto-commit', 'Reconnect from any client'],
             },
           ].map((f) => (
@@ -238,8 +232,8 @@ export default function OpenAgentsClient() {
         </div>
 
         {/* Infrastructure */}
-        <div className="mt-16 mb-16">
-          <h2 className="text-2xl font-bold uppercase tracking-tight mb-8">Infrastructure that ships.</h2>
+        <div className="mt-12 mb-12">
+          <h2 className="text-2xl font-bold uppercase tracking-tight mb-6">Infrastructure that ships.</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { num: '001', title: 'OpenClaw Runtime', desc: 'Open-source AI agent runtime with persistent memory and tools.' },
