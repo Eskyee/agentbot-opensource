@@ -8,7 +8,7 @@ import {
   Row,
   Column,
   Section,
-} from '@react-email/components'
+} from 'react-email'
 
 const BRAND = {
   name: 'Agentbot',
@@ -23,19 +23,14 @@ const BRAND = {
 function CardEmail({ children }: { children: React.ReactNode }) {
   return (
     <Container style={{ backgroundColor: '#0a0a0a', border: '1px solid #1a1a1a', padding: '0', maxWidth: '600px', margin: '0 auto' }}>
-      {/* Header */}
       <Section style={{ padding: '32px 40px 0', borderBottom: '1px solid #1a1a1a' }}>
         <Text style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#ffffff', margin: 0, paddingBottom: '24px' }}>
           {BRAND.logo} AGENTBOT
         </Text>
       </Section>
-
-      {/* Content */}
       <Section style={{ padding: '40px' }}>
         {children}
       </Section>
-
-      {/* Footer */}
       <Section style={{ padding: '24px 40px', borderTop: '1px solid #1a1a1a' }}>
         <Text style={{ margin: 0, fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           <a href={BRAND.url} style={{ color: '#555', textDecoration: 'none' }}>agentbot.sh</a>
@@ -57,10 +52,8 @@ export function WelcomeCard({ name }: { name: string }) {
         Welcome to Agentbot
       </Heading>
       <Text style={{ fontSize: '15px', lineHeight: 1.7, color: '#cccccc', margin: '0 0 24px' }}>
-        Hey {name}, your agent is live and ready to work. While you're reading this, it's already running 24/7 on a secure server.
+        Hey {name}, your agent is live and ready to work. While you're reading this, it's already running 24/7.
       </Text>
-
-      {/* Agent Status Card */}
       <Section style={{ backgroundColor: '#111111', border: '1px solid #222222', padding: '20px', marginBottom: '24px' }}>
         <Row>
           <Column>
@@ -77,21 +70,12 @@ export function WelcomeCard({ name }: { name: string }) {
           </Column>
         </Row>
       </Section>
-
       <Text style={{ fontSize: '15px', lineHeight: 1.7, color: '#cccccc', margin: '0 0 8px' }}>
         <strong style={{ color: '#ffffff' }}>Give your agent one real task</strong> — something you do manually today.
       </Text>
-
       <Button href={buildAppUrl('/dashboard')} style={{ backgroundColor: '#ffffff', color: '#000000', padding: '14px 28px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', textDecoration: 'none', display: 'inline-block' }}>
         Open Dashboard
       </Button>
-
-      <Hr style={{ border: 'none', borderTop: '1px solid #1a1a1a', margin: '32px 0 24px' }} />
-
-      <Text style={{ fontSize: '13px', lineHeight: 2, color: '#888888', margin: 0 }}>
-        <a href={buildAppUrl('/documentation')} style={{ color: '#8b5cf6', textDecoration: 'none' }}>Documentation</a> — full setup guide<br />
-        <a href={BRAND.discord} style={{ color: '#8b5cf6', textDecoration: 'none' }}>Discord</a> — ask questions, share builds
-      </Text>
     </CardEmail>
   )
 }
@@ -106,8 +90,6 @@ export function AgentDeployedCard({ name, plan, agentUrl }: { name: string; plan
       <Text style={{ fontSize: '15px', lineHeight: 1.7, color: '#cccccc', margin: '0 0 24px' }}>
         Hey {name}, your <strong style={{ color: '#ffffff' }}>{plan}</strong> agent just finished deploying.
       </Text>
-
-      {/* Deployment Card */}
       <Section style={{ backgroundColor: '#111111', border: '1px solid #222222', padding: '20px', marginBottom: '24px' }}>
         <Row>
           <Column>
@@ -122,16 +104,6 @@ export function AgentDeployedCard({ name, plan, agentUrl }: { name: string; plan
         <Text style={{ fontSize: '11px', color: '#666666', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '16px 0 4px' }}>URL</Text>
         <a href={agentUrl} style={{ color: '#8b5cf6', textDecoration: 'none', fontSize: '13px', wordBreak: 'break-all' }}>{agentUrl}</a>
       </Section>
-
-      <Text style={{ fontSize: '15px', lineHeight: 1.7, color: '#cccccc', margin: '0 0 8px' }}>
-        <strong style={{ color: '#ffffff' }}>What to do next:</strong>
-      </Text>
-      <Text style={{ fontSize: '14px', lineHeight: 2, color: '#999999', margin: '0 0 24px' }}>
-        1. Open your dashboard and connect to OpenClaw<br />
-        2. Give your agent its first task<br />
-        3. Connect Telegram or Discord for mobile access
-      </Text>
-
       <Button href={buildAppUrl('/dashboard')} style={{ backgroundColor: '#ffffff', color: '#000000', padding: '14px 28px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', textDecoration: 'none', display: 'inline-block' }}>
         Open Dashboard
       </Button>
@@ -149,8 +121,6 @@ export function PlanUpgradedCard({ name, oldPlan, newPlan }: { name: string; old
       <Text style={{ fontSize: '15px', lineHeight: 1.7, color: '#cccccc', margin: '0 0 24px' }}>
         Hey {name}, your plan has been upgraded. Your agent container is being resized now.
       </Text>
-
-      {/* Upgrade Card */}
       <Section style={{ backgroundColor: '#111111', border: '1px solid #222222', padding: '20px', marginBottom: '24px', textAlign: 'center' }}>
         <Text style={{ fontSize: '14px', color: '#888888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
           {oldPlan}
@@ -158,7 +128,6 @@ export function PlanUpgradedCard({ name, oldPlan, newPlan }: { name: string; old
           <span style={{ color: '#22c55e', fontWeight: 700 }}>{newPlan}</span>
         </Text>
       </Section>
-
       <Button href={buildAppUrl('/dashboard')} style={{ backgroundColor: '#ffffff', color: '#000000', padding: '14px 28px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', textDecoration: 'none', display: 'inline-block' }}>
         View Dashboard
       </Button>
@@ -176,8 +145,6 @@ export function WeeklyDigestCard({ name, stats }: { name: string; stats: { messa
       <Text style={{ fontSize: '15px', lineHeight: 1.7, color: '#cccccc', margin: '0 0 24px' }}>
         Hey {name}, here's what your agent did this week:
       </Text>
-
-      {/* Stats Card */}
       <Section style={{ backgroundColor: '#111111', border: '1px solid #222222', padding: '20px', marginBottom: '24px' }}>
         <Row>
           <Column style={{ textAlign: 'center', paddingRight: '12px', borderRight: '1px solid #222222' }}>
@@ -194,7 +161,6 @@ export function WeeklyDigestCard({ name, stats }: { name: string; stats: { messa
           </Column>
         </Row>
       </Section>
-
       <Button href={buildAppUrl('/dashboard')} style={{ backgroundColor: '#ffffff', color: '#000000', padding: '14px 28px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', textDecoration: 'none', display: 'inline-block' }}>
         View Full Dashboard
       </Button>
@@ -212,8 +178,6 @@ export function PaymentReceiptCard({ amount, plan }: { amount: number; plan: str
       <Text style={{ fontSize: '15px', lineHeight: 1.7, color: '#cccccc', margin: '0 0 24px' }}>
         Payment received for your {plan} plan.
       </Text>
-
-      {/* Receipt Card */}
       <Section style={{ backgroundColor: '#111111', border: '1px solid #222222', padding: '20px', marginBottom: '24px' }}>
         <Row>
           <Column>
