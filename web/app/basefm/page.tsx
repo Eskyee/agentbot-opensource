@@ -235,7 +235,7 @@ export default function BasefmTokenPage() {
         <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
             { label: 'Uniswap', href: `https://app.uniswap.org/swap?outputCurrency=${BASEFM_ADDRESS}&chain=base`, color: 'text-pink-400 border-pink-400/30 bg-pink-400/5' },
-            { label: 'DexScreener', href: 'https://dexscreener.com/base/0x9a4376bab717ac0a3901eeed8308a420c59c0ba3', color: 'text-cyan-400 border-cyan-400/30 bg-cyan-400/5' },
+            { label: 'DexScreener', href: 'https://dex.coinmarketcap.com/token/base/0x9a4376bab717ac0a3901eeed8308a420c59c0ba3/', color: 'text-cyan-400 border-cyan-400/30 bg-cyan-400/5' },
             { label: 'GeckoTerminal', href: 'https://geckoterminal.com/base/pools/0x9a4376bab717ac0a3901eeed8308a420c59c0ba3', color: 'text-green-400 border-green-400/30 bg-green-400/5' },
             { label: 'Bankr', href: 'https://bankr.bot/agents/basefm', color: 'text-blue-300 border-blue-300/30 bg-blue-300/5' },
             { label: 'Basescan', href: `https://basescan.org/token/${BASEFM_ADDRESS}`, color: 'text-zinc-400 border-zinc-700 bg-zinc-900' },
