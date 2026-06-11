@@ -30,7 +30,19 @@ const DEFAULT_MODELS = [
   'openai/gpt-4o',
   'openai/gpt-4o-mini',
   'anthropic/claude-sonnet-4.5',
+  'anthropic/claude-fable-5',
+  'anthropic/claude-fable-latest',
   'google/gemini-2.5-flash',
+  'deepseek/deepseek-r1',
+  'meta-llama/llama-3.3-70b-instruct',
+  'qwen/qwen3.7-plus',
+  'moonshot/kimi-k2.5',
+  'nex-agi/nex-n2-pro:free',
+  'google/gemma-4-26b-a4b-it:free',
+  'google/gemma-4-31b-it:free',
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
+  'qwen/qwen3-next-80b-a3b-instruct:free',
 ]
 
 const MIMO_BASE_URL = process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1'
