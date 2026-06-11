@@ -41,7 +41,7 @@ Complete and professional token pages build trust, increase transparency, and im
 All links must be **full URLs**, not usernames:
 
 - [ ] Twitter/X — `https://x.com/basefmradio`
-- [ ] Discord — `https://discord.com/invite/clawd`
+- [ ] Discord — `https://discord.gg/n5zvYRnCDF`
 - [ ] Telegram — `https://t.me/basefmradio`
 - [ ] GitHub — `https://github.com/Eskyee/agentbot-opensource`
 - [ ] LinkedIn (if applicable) — full profile URL showing project affiliation
