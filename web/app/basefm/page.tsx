@@ -154,12 +154,21 @@ export default function BasefmTokenPage() {
               <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
             <a
-              href={`https://basescan.org/token/${BASEFM_ADDRESS}`}
+              href={`https://www.coinbase.com/price/basefm-base-${BASEFM_ADDRESS}-token`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-400 transition-colors hover:bg-blue-500/20"
             >
-              View on Basescan
+              Coinbase Price
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </a>
+            <a
+              href={`https://dex.coinmarketcap.com/token/base/${BASEFM_ADDRESS}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-yellow-400 transition-colors hover:bg-yellow-500/20"
+            >
+              CoinMarketCap DEX
               <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
             <a
@@ -339,12 +348,12 @@ export default function BasefmTokenPage() {
 
         <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
+            { label: 'CoinMarketCap DEX', href: `https://dex.coinmarketcap.com/token/base/${BASEFM_ADDRESS}/`, color: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5' },
+            { label: 'Coinbase Price', href: `https://www.coinbase.com/price/basefm-base-${BASEFM_ADDRESS}-token`, color: 'text-blue-400 border-blue-400/30 bg-blue-400/5' },
             { label: 'Uniswap', href: `https://app.uniswap.org/swap?outputCurrency=${BASEFM_ADDRESS}&chain=base`, color: 'text-pink-400 border-pink-400/30 bg-pink-400/5' },
-            { label: 'DexScreener', href: 'https://dex.coinmarketcap.com/token/base/0x9a4376bab717ac0a3901eeed8308a420c59c0ba3/', color: 'text-cyan-400 border-cyan-400/30 bg-cyan-400/5' },
-            { label: 'GeckoTerminal', href: 'https://geckoterminal.com/base/pools/0x9a4376bab717ac0a3901eeed8308a420c59c0ba3', color: 'text-green-400 border-green-400/30 bg-green-400/5' },
+            { label: 'GeckoTerminal', href: 'https://geckoterminal.com/base/pools/0xd54464bb6e5a0e1c49beddde0e02cd03e3239a49c71362902d48a034cd119894', color: 'text-green-400 border-green-400/30 bg-green-400/5' },
             { label: 'Bankr', href: 'https://bankr.bot/agents/basefm', color: 'text-blue-300 border-blue-300/30 bg-blue-300/5' },
             { label: 'Basescan', href: `https://basescan.org/token/${BASEFM_ADDRESS}`, color: 'text-zinc-400 border-zinc-700 bg-zinc-900' },
-            { label: 'MoltX', href: 'https://moltx.io/baseFM', color: 'text-orange-400 border-orange-400/30 bg-orange-400/5' },
           ].map((item) => (
             <a
               key={item.label}
