@@ -72,6 +72,7 @@ export default function Navbar() {
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
               <NavLink href="/social" current={pathname}>Social</NavLink>
+              <NavLink href="/partner/openrouter" current={pathname}>OpenRouter</NavLink>
               <NavLink href="/partner/mimo" current={pathname}>MiMo</NavLink>
             </>
           )}
