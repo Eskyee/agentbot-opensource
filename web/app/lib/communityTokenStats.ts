@@ -12,5 +12,5 @@ export const COMMUNITY_TOKEN = {
   basescanUrl: 'https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3',
   geckoTerminalUrl: 'https://www.geckoterminal.com/base/tokens/0x986b41c76ab8b7350079613340ee692773b34ba3',
   uniswapUrl: 'https://app.uniswap.org/#/swap?chain=base&outputCurrency=0x986b41c76ab8b7350079613340ee692773b34ba3',
-  dexScreenerUrl: 'https://dexscreener.com/base/0x986b41c76ab8b7350079613340ee692773b34ba3',
+  dexScreenerUrl: 'https://dex.coinmarketcap.com/token/base/0x9a4376bab717ac0a3901eeed8308a420c59c0ba3/',
 } as const
