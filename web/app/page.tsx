@@ -188,6 +188,7 @@ export default async function Home() {
           <div className="flex items-center gap-4">
             <Link href="/documentation" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">Docs</Link>
             <Link href="/blog" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">Blog</Link>
+            <Link href="/basefm" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">baseFM</Link>
             <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">GitHub</a>
           </div>
         </div>
