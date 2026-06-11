@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
   const result = streamText({
-    model: openrouter.chat('xiaomi/mimo-v2.5-pro'),
+    model: openrouter.chat('nex-agi/nex-n2-pro:free'),
     system: SYSTEM_PROMPT,
     messages: sanitized,
     maxOutputTokens: 500,
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       logUsage({
         userId: 'demo',
         agentId: 'demo',
-        model: 'xiaomi/mimo-v2.5-pro',
+        model: 'nex-agi/nex-n2-pro:free',
         inputTokens: usage.inputTokens ?? 0,
         outputTokens: usage.outputTokens ?? 0,
         endpoint: '/api/demo/chat',

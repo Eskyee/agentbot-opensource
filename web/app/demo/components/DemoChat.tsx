@@ -82,7 +82,7 @@ export function DemoChat() {
       {/* Header */}
       <div className="border-b border-zinc-800 px-4 py-3 flex items-center gap-3">
         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-        <span className="text-[10px] uppercase tracking-widest text-zinc-400">Live Demo — MiMo V2.5 Pro</span>
+        <span className="text-[10px] uppercase tracking-widest text-zinc-400">Live Demo — Free Model</span>
         <span className="ml-auto text-[10px] text-zinc-600">10 messages free</span>
       </div>
 
