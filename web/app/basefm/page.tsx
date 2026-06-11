@@ -17,10 +17,13 @@ interface PriceData {
   price: number
   priceUsd: string
   change24h: number
-  change7d: number
+  change1h: number
   volume24h: number
   liquidity: number
   fdv: number
+  buys: number
+  sells: number
+  poolName: string
   updatedAt: string
 }
 
@@ -69,7 +72,7 @@ function PriceTracker() {
           {lastUpdate && (
             <div className="mt-1 text-[10px] text-zinc-600 flex items-center gap-1">
               <Activity className="h-3 w-3 text-green-500 animate-pulse" />
-              Updated {lastUpdate} · DexScreener
+              Updated {lastUpdate} · GeckoTerminal
             </div>
           )}
         </div>
@@ -104,8 +107,8 @@ function PriceTracker() {
         {[
           { label: '24h Volume', value: priceData ? `$${(priceData.volume24h / 1000).toFixed(1)}K` : '...' },
           { label: 'Liquidity', value: priceData ? `$${(priceData.liquidity / 1000).toFixed(1)}K` : '...' },
-          { label: 'FDV', value: priceData ? `$${(priceData.fdv / 1000000).toFixed(2)}M` : '...' },
-          { label: '7d Change', value: priceData ? `${priceData.change7d > 0 ? '+' : ''}${priceData.change7d.toFixed(1)}%` : '...' },
+          { label: '24h Txns', value: priceData ? `${priceData.buys + priceData.sells} (${priceData.buys}B/${priceData.sells}S)` : '...' },
+          { label: 'FDV', value: priceData ? `$${(priceData.fdv / 1000).toFixed(1)}K` : '...' },
         ].map((item) => (
           <div key={item.label} className="rounded-xl border border-zinc-800 bg-black p-4">
             <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{item.label}</div>

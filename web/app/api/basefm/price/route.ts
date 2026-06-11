@@ -1,66 +1,57 @@
 import { NextResponse } from 'next/server'
 
-const BASEFM_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
+const BASEFM_POOL = '0xd54464bb6e5a0e1c49beddde0e02cd03e3239a49c71362902d48a034cd119894'
 
 export const dynamic = 'force-dynamic'
 
-interface DexScreenerPair {
-  priceUsd: string
-  priceChange: { h1: number; h24: number; d7: number }
-  volume: { h1: number; h24: number }
-  liquidity: { usd: number }
-  fdv: number
-  marketCap: number
-  pairCreatedAt: number
-  baseToken: { name: string; symbol: string }
-  quoteToken: { name: string; symbol: string }
+interface GeckoPoolResponse {
+  data: {
+    attributes: {
+      base_token_price_usd: string
+      price_change_percentage: { h1: string; h24: string; h6: string }
+      volume_usd: { h24: string; h1: string }
+      reserve_in_usd: string
+      fdv_usd: string
+      transactions: { h24: { buys: number; sells: number } }
+      name: string
+    }
+  }
 }
 
 export async function GET() {
   try {
     const res = await fetch(
-      `https://api.dexscreener.com/latest/dex/tokens/${BASEFM_ADDRESS}`,
-      { next: { revalidate: 30 } },
+      `https://api.geckoterminal.com/api/v2/networks/base/pools/${BASEFM_POOL}`,
+      { next: { revalidate: 15 } },
     )
 
     if (!res.ok) {
       return NextResponse.json({ error: 'Failed to fetch price' }, { status: 502 })
     }
 
-    const data = await res.json()
-    const pair: DexScreenerPair | undefined = data.pairs?.[0]
+    const data: GeckoPoolResponse = await res.json()
+    const attrs = data.data.attributes
 
-    if (!pair) {
-      return NextResponse.json({
-        price: 0,
-        priceUsd: '$0.00',
-        change24h: 0,
-        change7d: 0,
-        volume24h: 0,
-        liquidity: 0,
-        fdv: 0,
-        pairAddress: null,
-        dexId: null,
-      })
-    }
-
-    const price = parseFloat(pair.priceUsd) || 0
-    const change24h = pair.priceChange?.h24 ?? 0
-    const change7d = pair.priceChange?.d7 ?? 0
-    const volume24h = pair.volume?.h24 ?? 0
-    const liquidity = pair.liquidity?.usd ?? 0
-    const fdv = pair.fdv ?? 0
+    const price = parseFloat(attrs.base_token_price_usd) || 0
+    const change24h = parseFloat(attrs.price_change_percentage?.h24) || 0
+    const change1h = parseFloat(attrs.price_change_percentage?.h1) || 0
+    const volume24h = parseFloat(attrs.volume_usd?.h24) || 0
+    const liquidity = parseFloat(attrs.reserve_in_usd) || 0
+    const fdv = parseFloat(attrs.fdv_usd) || 0
+    const buys = attrs.transactions?.h24?.buys || 0
+    const sells = attrs.transactions?.h24?.sells || 0
 
     return NextResponse.json({
       price,
       priceUsd: price < 0.000001 ? `$${price.toExponential(2)}` : `$${price.toFixed(8)}`,
       change24h,
-      change7d,
+      change1h,
       volume24h,
       liquidity,
       fdv,
-      pairAddress: pair.pairAddress ?? null,
-      dexId: pair.dexId ?? null,
+      buys,
+      sells,
+      poolName: attrs.name,
       updatedAt: new Date().toISOString(),
     })
   } catch {
