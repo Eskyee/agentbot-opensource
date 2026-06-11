@@ -11,30 +11,30 @@ export default async function Home() {
     <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden page-enter pt-14">
 
       {/* ━━━ HERO ━━━ */}
-      <section className="relative min-h-screen flex items-center">
+      <section className="relative min-h-screen flex items-center justify-center">
         <div className="hero-glow" />
-        <div className="relative max-w-4xl mx-auto px-5 sm:px-6 py-24 sm:py-36">
-          <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest mb-8">
+        <div className="relative w-full max-w-4xl mx-auto px-6 py-20 sm:py-32 text-center">
+          <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest mb-6">
             Always on
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter uppercase leading-[0.9]">
             Your agent<br />
             works while<br />
             <span className="text-orange-500">you sleep.</span>
           </h1>
 
-          <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed mt-6">
+          <p className="text-zinc-400 text-xs sm:text-sm max-w-md mx-auto leading-relaxed mt-5">
             Deploy an autonomous AI agent. It connects to Telegram, Discord,
             and WhatsApp. It handles your tasks, monitors your channels, and
-            reports back — 24/7, on its own server, without you lifting a finger.
+            reports back — 24/7, on its own server.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 mt-8">
+          <div className="flex justify-center gap-2 mt-6">
             {session ? (
               <Link
                 href="/dashboard"
-                className="block w-full sm:w-auto text-center bg-white text-black px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
+                className="bg-white text-black px-4 py-2 text-[9px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
               >
                 Open Dashboard
               </Link>
@@ -42,13 +42,13 @@ export default async function Home() {
               <>
                 <Link
                   href="/signup"
-                  className="block w-full sm:w-auto text-center bg-white text-black px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
+                  className="bg-white text-black px-4 py-2 text-[9px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
                 >
                   Deploy Your Agent
                 </Link>
                 <Link
                   href="/login"
-                  className="block w-full sm:w-auto text-center border border-zinc-800 text-zinc-400 px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors btn-press"
+                  className="border border-zinc-800 text-zinc-400 px-4 py-2 text-[9px] font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors btn-press"
                 >
                   Sign In
                 </Link>
@@ -56,7 +56,7 @@ export default async function Home() {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-6 pt-6 text-[10px] uppercase tracking-widest text-zinc-600">
+          <div className="flex justify-center flex-wrap gap-4 sm:gap-6 pt-5 text-[9px] uppercase tracking-widest text-zinc-600">
             <div><span className="text-orange-500">24/7</span> always on</div>
             <div><span className="text-orange-500">3</span> channels</div>
             <div><span className="text-orange-500">2 min</span> to deploy</div>
