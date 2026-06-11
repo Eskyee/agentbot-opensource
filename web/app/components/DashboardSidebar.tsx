@@ -46,7 +46,7 @@ export const navSections = [
       { label: 'Knowledge Base', href: '/dashboard/knowledge', icon: '📚' },
       { label: 'Webhooks', href: '/dashboard/webhooks', icon: '🔗' },
       { label: 'Approvals', href: '/dashboard/approvals', icon: '✅' },
-      { label: 'Wallet', href: '/dashboard/wallet', icon: '💳' },
+      { label: 'Agentic Wallet', href: '/dashboard/wallet', icon: '🪙' },
     ],
   },
   {
