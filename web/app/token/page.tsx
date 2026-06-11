@@ -34,9 +34,12 @@ export default function TokenPage() {
             <span className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">ERC-20</span>
           </div>
 
-          <h1 className="text-6xl font-bold uppercase leading-none tracking-tighter md:text-8xl">
-            $AGENT<span className="text-orange-500">BOT</span>
-          </h1>
+          <div className="flex items-center gap-4 mb-6">
+            <img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreigjmaolz6n7iyegd6iepokjceepv2ul3jsq5a25bqxlazkffa5gsi" alt="AGENTBOT" className="w-16 h-16 rounded-full border border-orange-500/30" />
+            <h1 className="text-6xl font-bold uppercase leading-none tracking-tighter md:text-8xl">
+              $AGENT<span className="text-orange-500">BOT</span>
+            </h1>
+          </div>
 
           <p className="max-w-xl text-sm leading-7 text-zinc-400 mt-6">
             The official <span className="text-white font-semibold">$AGENTBOT</span> token on Base.
