@@ -1,11 +1,11 @@
 export function DashboardPreview() {
   return (
-    <div className="relative mt-8 sm:mt-12">
+    <div className="relative mt-8 sm:mt-12 scale-[0.85] sm:scale-100 origin-left">
       {/* Gradient fade */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10 pointer-events-none h-20 bottom-0 top-auto" />
       
       {/* Browser chrome */}
-      <div className="border border-zinc-800 bg-zinc-950 overflow-hidden shadow-2xl shadow-black/50">
+      <div className="border border-zinc-800 bg-zinc-950 overflow-hidden shadow-2xl shadow-black/50 rounded-lg">
         {/* Title bar */}
         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-zinc-800 bg-zinc-900/50">
           <div className="flex gap-1.5">

@@ -29,12 +29,12 @@ export function TokenCard() {
               Buy $AGENTBOT
             </a>
             <a
-              href="https://dexscreener.com/base/0x986b41c76ab8b7350079613340ee692773b34ba3"
+              href="https://dex.coinmarketcap.com/token/base/0x986b41c76ab8b7350079613340ee692773b34ba3/"
               target="_blank"
               rel="noopener noreferrer"
               className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 px-5 py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors"
             >
-              View Scanner
+              View on CoinMarketCap
             </a>
           </div>
           <div className="flex items-center gap-2 text-zinc-600 text-xs font-mono">
