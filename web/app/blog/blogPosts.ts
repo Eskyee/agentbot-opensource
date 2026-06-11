@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'claude-fable-openclaw-agentbot',
+    dateLabel: '11 Jun',
+    isoDate: '2026-06-11',
+    title: 'Claude Fable 5 × OpenClaw Agentbot — Frontier Intelligence for Autonomous Agents',
+    excerpt:
+      'Claude Fable 5 is Anthropic\'s most capable model for days-long autonomous tasks. Here\'s how Agentbot users can access it via OpenRouter.',
+    tags: ['Claude', 'Fable', 'OpenRouter', 'Models', 'AI'],
+    track: 'Release',
+  },
+  {
     slug: 'agentbot-audit-improvements-june-2026',
     dateLabel: '10 Jun',
     isoDate: '2026-06-10',
