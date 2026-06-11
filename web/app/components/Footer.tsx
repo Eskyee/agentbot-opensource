@@ -31,7 +31,7 @@ const COLUMNS = [
   {
     heading: 'Community',
     links: [
-      { href: '/basefm',            label: 'baseFM Live' },
+      { href: '/basefm/live',      label: 'baseFM Live' },
       { href: '/blog',              label: 'Blog' },
       { href: '/news',              label: 'News' },
       { href: '/social',            label: 'Social' },
