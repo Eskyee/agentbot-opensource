@@ -1,11 +1,10 @@
 import { buildAppUrl } from '@/app/lib/app-url'
 import {
-  Card,
+  Container,
   Heading,
   Text,
   Button,
   Hr,
-  Img,
   Row,
   Column,
   Section,
@@ -21,9 +20,9 @@ const BRAND = {
 }
 
 // ─── Card Email Wrapper ─────────────────────────────────────────────────────
-function CardEmail({ children, preview }: { children: React.ReactNode; preview?: string }) {
+function CardEmail({ children }: { children: React.ReactNode }) {
   return (
-    <Card style={{ backgroundColor: '#0a0a0a', border: '1px solid #1a1a1a', padding: '0', maxWidth: '600px', margin: '0 auto' }}>
+    <Container style={{ backgroundColor: '#0a0a0a', border: '1px solid #1a1a1a', padding: '0', maxWidth: '600px', margin: '0 auto' }}>
       {/* Header */}
       <Section style={{ padding: '32px 40px 0', borderBottom: '1px solid #1a1a1a' }}>
         <Text style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#ffffff', margin: 0, paddingBottom: '24px' }}>
@@ -46,7 +45,7 @@ function CardEmail({ children, preview }: { children: React.ReactNode; preview?:
           <a href={buildAppUrl('/blog')} style={{ color: '#555', textDecoration: 'none' }}>Blog</a>
         </Text>
       </Section>
-    </Card>
+    </Container>
   )
 }
 
