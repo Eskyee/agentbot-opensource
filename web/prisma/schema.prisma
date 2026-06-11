@@ -84,6 +84,7 @@ model User {
   passkeyCredentials   PasskeyCredential[]
   passkeyChallenges    PasskeyChallenge[]
   notifications        Notification[]
+  pushSubscriptions    PushSubscription[]
   buddies              Buddy[]
   greenlightRequests   GreenlightAccessRequest[]
   preferences          UserPreference[]
@@ -464,6 +465,20 @@ model Notification {
   @@index([userId])
   @@index([userId, read])
   @@index([createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, endpoint])
+  @@index([userId])
 }
 
 model PairedDevice {

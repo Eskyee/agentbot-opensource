@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { sendPushNotification } from '@/app/lib/push'
 import crypto from 'crypto'
 
 export const runtime = 'nodejs'
@@ -94,6 +95,13 @@ export async function POST(req: NextRequest) {
         channels,
       }),
     },
+  })
+
+  // Send push notification
+  sendPushNotification(user.id, {
+    title: 'Agent Deployed',
+    body: `Your agent ${agent.name} is now active.`,
+    url: '/dashboard',
   })
 
   // Generate OpenClaw config for self-hosting

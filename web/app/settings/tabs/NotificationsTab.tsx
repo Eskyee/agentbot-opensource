@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePushSubscription } from '@/app/components/PushSubscriptionManager'
 
 interface NotificationsTabProps {
   initialNotifications: {
@@ -13,6 +14,7 @@ interface NotificationsTabProps {
 
 export function NotificationsTab({ initialNotifications }: NotificationsTabProps) {
   const [notifications, setNotifications] = useState(initialNotifications)
+  const { isSupported, isSubscribed, loading: pushLoading, subscribe, unsubscribe } = usePushSubscription()
 
   const toggleNotification = async (key: string) => {
     const newValue = !notifications[key as keyof typeof notifications]
@@ -30,6 +32,14 @@ export function NotificationsTab({ initialNotifications }: NotificationsTabProps
     }
   }
 
+  const togglePush = async () => {
+    if (isSubscribed) {
+      await unsubscribe()
+    } else {
+      await subscribe()
+    }
+  }
+
   const items = [
     { key: 'email', label: 'Email notifications', desc: 'Receive email updates about your agents' },
     { key: 'usageAlerts', label: 'Usage alerts', desc: 'Get notified when credits are low' },
@@ -42,6 +52,28 @@ export function NotificationsTab({ initialNotifications }: NotificationsTabProps
       <h2 className="text-base sm:text-xl font-semibold">Notifications</h2>
 
       <div className="border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6 space-y-4">
+        {isSupported && (
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium">Push notifications</div>
+              <div className="text-sm text-zinc-400">Get browser alerts even when you{'\''}re away</div>
+            </div>
+            <button
+              onClick={togglePush}
+              disabled={pushLoading}
+              className={`relative w-12 h-6 rounded-full transition-colors ${
+                isSubscribed ? 'bg-white' : 'bg-zinc-700'
+              } ${pushLoading ? 'opacity-50' : ''}`}
+            >
+              <div
+                className={`absolute top-0.5 w-5 h-5 rounded-full transition-transform ${
+                  isSubscribed ? 'translate-x-6 bg-black' : 'translate-x-0.5 bg-white'
+                }`}
+              />
+            </button>
+          </div>
+        )}
+
         {items.map((item) => (
           <div key={item.key} className="flex items-center justify-between">
             <div>

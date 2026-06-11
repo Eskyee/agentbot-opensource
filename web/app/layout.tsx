@@ -8,6 +8,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import AskAtlas from './components/AskAtlas'
+import { ServiceWorkerRegistration } from './components/ServiceWorkerRegistration'
 import { APP_URL } from '@/app/lib/app-url'
 import { DashboardDataProvider } from './dashboard/DashboardDataProvider'
 
@@ -171,6 +172,7 @@ export default function RootLayout({
             <StatusBar />
             <AskAtlas />
             <Toaster theme="dark" position="bottom-right" richColors closeButton />
+            <ServiceWorkerRegistration />
           </DashboardDataProvider>
         </Providers>
       </body>
