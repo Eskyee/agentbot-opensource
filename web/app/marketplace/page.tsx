@@ -16,13 +16,70 @@ export const metadata = {
 // from ~600ms (5 sequential counts + a findMany) to ~50ms on cache hit.
 export const dynamic = 'force-dynamic'
 
+const DEFAULT_TEMPLATES = [
+  {
+    name: 'Scout',
+    role: 'Research & Intelligence',
+    description: 'Autonomous research agent. Scrapes the web, monitors competitors, compiles briefings. Deploy in 60 seconds.',
+    skills: ['Web Scraping', 'Research', 'Briefings', 'Monitoring'],
+    tier: 'solo',
+    brain: 'kimi-k2.5',
+    popular: true,
+  },
+  {
+    name: 'Promoter',
+    role: 'Marketing & Social',
+    description: 'Runs your socials. Drafts posts, schedules content, engages followers. Never misses a beat.',
+    skills: ['Social Media', 'Content', 'Scheduling', 'Engagement'],
+    tier: 'solo',
+    brain: 'kimi-k2.5',
+    popular: true,
+  },
+  {
+    name: 'Booker',
+    role: 'Bookings & Finance',
+    description: 'Handles bookings, sends invoices, tracks payments. Autonomous royalty splits via CDP wallets on Base.',
+    skills: ['Bookings', 'Invoicing', 'Payments', 'Royalty Splits'],
+    tier: 'collective',
+    brain: 'kimi-k2.5',
+    popular: true,
+  },
+  {
+    name: 'Operator',
+    role: 'DevOps & Monitoring',
+    description: 'Watches your infrastructure. Alerts on downtime, monitors metrics, auto-restarts services.',
+    skills: ['Monitoring', 'Alerts', 'DevOps', 'Auto-heal'],
+    tier: 'solo',
+    brain: 'kimi-k2.5',
+    popular: false,
+  },
+  {
+    name: 'DJ',
+    role: 'Live Radio & Streaming',
+    description: 'Autonomous AI DJ. Streams live sets 24/7 on baseFM. Reactive track selection based on community vibes.',
+    skills: ['Live Streaming', 'Music Selection', 'baseFM', 'Mux'],
+    tier: 'collective',
+    brain: 'kimi-k2.5',
+    popular: true,
+  },
+  {
+    name: 'Analyst',
+    role: 'Data & Analytics',
+    description: 'Tracks your metrics, analyzes trends, generates reports. Token usage, costs, performance — all in one place.',
+    skills: ['Analytics', 'Reporting', 'Metrics', 'Dashboards'],
+    tier: 'solo',
+    brain: 'kimi-k2.5',
+    popular: false,
+  },
+]
+
 const getTemplates = unstable_cache(
   async () => {
     const agents = await prisma.agent.findMany({
       where: { status: 'template' },
       orderBy: { createdAt: 'asc' },
     })
-    return agents.map((a) => {
+    const dbTemplates = agents.map((a) => {
       const cfg = (a.config as Record<string, any>) || {}
       return {
         name: a.name,
@@ -34,6 +91,7 @@ const getTemplates = unstable_cache(
         brain: cfg.brain || a.model || 'Unknown',
       }
     })
+    return dbTemplates.length > 0 ? dbTemplates : DEFAULT_TEMPLATES
   },
   ['marketplace:templates'],
   { revalidate: 300, tags: ['marketplace-templates'] },
