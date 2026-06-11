@@ -124,7 +124,8 @@ export default function DocumentationPage() {
             Deploy Your Agent →
           </Link>
         </section>
-      </div>
+        </div>
+      </section>
     </main>
   )
 }

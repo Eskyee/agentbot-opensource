@@ -75,17 +75,7 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
       {/* Tags */}
       <section className="border-t border-zinc-900">
         <div className="mx-auto max-w-4xl px-5 sm:px-6 py-6">
-                >
-                  Read docs
-                </Link>
-                <Link
-                  href="/showcase"
-                  className="border border-zinc-700 px-5 py-3 text-[10px] uppercase tracking-[0.24em] text-zinc-300 transition-colors hover:border-zinc-400 hover:text-white"
-                >
-                  Browse showcase
-                </Link>
-              </div>
-            </div>
+          <div className="flex flex-wrap gap-2">
 
             <div className="grid gap-px bg-zinc-900">
               {[

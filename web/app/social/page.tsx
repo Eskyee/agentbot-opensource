@@ -62,11 +62,6 @@ export default async function SocialHome() {
       </section>
 
       {/* Feed */}
-      <section className="border-t border-zinc-900">
-        <div className="mx-auto max-w-4xl px-5 sm:px-6 py-16">
-      </section>
-
-      {/* Feed */}
       <div className="mx-auto max-w-4xl px-5 sm:px-6 pb-16">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Feed */}
