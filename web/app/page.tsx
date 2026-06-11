@@ -30,29 +30,21 @@ export default async function Home() {
             reports back — 24/7, on its own server, without you lifting a finger.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 mt-8">
+          <div className="mt-8">
             {session ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center justify-center bg-white text-black px-5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
+                className="block w-full sm:w-auto text-center bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
               >
                 Open Dashboard
               </Link>
             ) : (
-              <>
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center justify-center bg-white text-black px-5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
-                >
-                  Deploy Your Agent
-                </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center justify-center border border-zinc-800 px-5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors btn-press"
-                >
-                  Sign In
-                </Link>
-              </>
+              <Link
+                href="/signup"
+                className="block w-full sm:w-auto text-center bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
+              >
+                Deploy Your Agent
+              </Link>
             )}
           </div>
 
@@ -170,7 +162,7 @@ export default async function Home() {
           <div className="pt-4">
             <Link
               href={session ? '/dashboard' : '/signup'}
-              className="inline-flex items-center justify-center bg-white text-black px-5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
+              className="block w-full sm:w-auto text-center bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors btn-press"
             >
               {session ? 'Open Dashboard' : 'Deploy Your Agent'} →
             </Link>
