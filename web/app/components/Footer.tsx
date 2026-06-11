@@ -56,7 +56,7 @@ const COLUMNS = [
 export default function Footer() {
   const [status, setStatus] = useState<'checking' | 'operational' | 'down'>('checking');
   const [version, setVersion] = useState<string>('v1.2.0');
-  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.6.1');
+  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.6.5');
 
   useEffect(() => {
     async function checkStatus() {
@@ -152,7 +152,7 @@ export default function Footer() {
             </span>
             <span className="text-zinc-800 text-[10px]">|</span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-800">
-              June 5, 2026 · Today
+              June 11, 2026 · Today
             </span>
             <span className="text-zinc-800 text-[10px]">|</span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-700">

@@ -38,6 +38,7 @@ export interface DeploymentStats {
 export const AVAILABLE_MODELS = [
   { id: 'xiaomi/mimo-v2.5-pro', name: 'MiMo V2.5 Pro', provider: 'xiaomi-direct', description: 'Best reasoning, 1M context. 99% cheaper than GPT-5. Recommended.', recommended: true, tier: 'free' },
   { id: 'xiaomi/mimo-v2.5', name: 'MiMo V2.5', provider: 'xiaomi-direct', description: 'Multimodal — images + text, 256K context. Fast.', tier: 'free' },
+  { id: 'openrouter/anthropic/claude-fable-5', name: 'Claude Fable 5', provider: 'openrouter', description: 'Anthropic frontier. Days-long autonomous tasks. Requires Label plan.', tier: 'label' },
   { id: 'openrouter/anthropic/claude-sonnet-4-5', name: 'Claude Sonnet 4.5', provider: 'openrouter', description: 'Anthropic premium. Requires Collective plan.', tier: 'collective' },
   { id: 'openrouter/deepseek/deepseek-r1', name: 'DeepSeek R1', provider: 'openrouter', description: 'Maximum reasoning. Requires Label plan.', tier: 'label' },
 ]
