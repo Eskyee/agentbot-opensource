@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { buildAppUrl } from '@/app/lib/app-url'
+import { Snippet } from '@/app/components/ui/snippet'
 
 export const metadata: Metadata = {
   title: 'OpenClaw — The Runtime Behind Agentbot',
@@ -247,11 +248,9 @@ export default function OpenClawPage() {
                 <div className="w-8 h-8 flex items-center justify-center border border-zinc-800 text-orange-500 text-xs font-bold shrink-0">
                   {s.step}
                 </div>
-                <div>
+                <div className="min-w-0 max-w-md flex-1">
                   <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">{s.title}</div>
-                  <code className="text-sm text-zinc-300 font-mono bg-zinc-950 px-3 py-1.5 inline-block border border-zinc-800">
-                    {s.code}
-                  </code>
+                  <Snippet text={s.code} className="rounded-none" />
                 </div>
               </div>
             ))}

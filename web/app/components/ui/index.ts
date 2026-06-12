@@ -18,3 +18,13 @@ export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip'
 export { Avatar, AvatarFallback, AvatarImage } from './avatar'
 export { Separator } from './separator'
+
+// vercel/ui (Geist) additions — brand-adapted
+export { StatusDot } from './status-dot'
+export { Kbd } from './kbd'
+export { Snippet } from './snippet'
+export { Gauge } from './gauge'
+export { Note } from './note'
+export { Spinner } from './spinner'
+export { LoadingDots } from './loading-dots'
+export { ShowMore } from './show-more'

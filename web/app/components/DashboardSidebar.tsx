@@ -13,6 +13,7 @@ import { usePathname } from 'next/navigation';
 import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control';
 import { customSignOut } from '@/app/lib/useCustomSession';
 import { useDashboardData } from '@/app/dashboard/DashboardDataProvider';
+import { StatusDot } from '@/app/components/ui/status-dot';
 
 export const navSections = [
   {
@@ -169,12 +170,6 @@ export const DashboardSidebar = memo(function DashboardSidebar({
       : runtimeStatus === 'live'
         ? 'text-red-500'
         : 'text-zinc-500';
-  const runtimeDot =
-    runtimeStatus === 'paired'
-      ? 'bg-green-400'
-      : runtimeStatus === 'live'
-        ? 'bg-red-500'
-        : 'bg-zinc-700';
   let runtimeHost: string | null = null;
   try {
     if (effectiveOpenclawUrl) runtimeHost = new URL(effectiveOpenclawUrl).host;
@@ -218,7 +213,10 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                   {runtimeStatus === 'paired' ? 'Online' : runtimeStatus === 'live' ? 'Unpaired' : 'No Agent'}
                 </div>
               </div>
-              <span className={`h-2.5 w-2.5 rounded-full ${runtimeDot}`} />
+              <StatusDot
+                state={runtimeStatus === 'paired' ? 'online' : runtimeStatus === 'live' ? 'error' : 'idle'}
+                pulse={runtimeStatus === 'paired'}
+              />
             </div>
             {runtimeHost && (
               <div className="mt-2 text-[10px] font-mono text-zinc-500/90 break-all">{runtimeHost}</div>
