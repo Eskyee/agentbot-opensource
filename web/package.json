@@ -19,7 +19,7 @@
     "design:fix": "find app -name '*.tsx' -exec sed -i '' 's/bg-gray-/bg-zinc-/g; s/text-gray-/text-zinc-/g; s/border-gray-/border-zinc-/g; s/hover:bg-gray-/hover:bg-zinc-/g; s/bg-purple-/bg-orange-/g; s/text-purple-/text-orange-/g; s/border-purple-/border-orange-/g; s/hover:bg-purple-/hover:bg-orange-/g' {} +"
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.199",
+    "@ai-sdk/react": "3.0.205",
     "@base-org/account": "^2.5.2",
     "@base-org/account-ui": "^1.0.1",
     "@base-ui/react": "^1.3.0",
