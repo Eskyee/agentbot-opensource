@@ -3,7 +3,7 @@ import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
 describe('probeOpenClawRuntime', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    process.env.OPENCLAW_IMAGE = 'ghcr.io/openclaw/openclaw:2026.6.5'
+    process.env.OPENCLAW_IMAGE = 'ghcr.io/openclaw/openclaw:2026.6.6'
     global.fetch = jest.fn()
   })
 
@@ -25,14 +25,14 @@ describe('probeOpenClawRuntime', () => {
         json: jest.fn().mockResolvedValue({
           configured: false,
           running: false,
-          version: '2026.6.5',
+          version: '2026.6.6',
         }),
       })
 
     const result = await probeOpenClawRuntime('https://runtime.example.com')
 
     expect(result.status).toBe('setup')
-    expect(result.openclawVersion).toBe('2026.6.5')
+    expect(result.openclawVersion).toBe('2026.6.6')
     expect(result.reason).toBe('Runtime reachable but setup is not complete')
     expect(result.checks).toEqual([
       {
@@ -62,7 +62,7 @@ describe('probeOpenClawRuntime', () => {
         ok: true,
         status: 200,
         json: jest.fn().mockResolvedValue({
-          version: '2026.6.5',
+          version: '2026.6.6',
           ffmpeg: {
             available: true,
             version: 'ffmpeg 5.1.8',

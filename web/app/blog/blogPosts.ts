@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'openclaw-2026-6-6',
+    dateLabel: '12 Jun',
+    isoDate: '2026-06-12',
+    title: 'OpenClaw v2026.6.6 — Stability, Security & Performance',
+    excerpt:
+      'OpenClaw 2026.6.6 is now the default runtime on Agentbot. Stability fixes, security hardening, and performance improvements across the gateway.',
+    tags: ['OpenClaw', 'Release', 'Security', 'Performance'],
+    track: 'Release',
+  },
+  {
     slug: 'opengateway-explained',
     dateLabel: '12 Jun',
     isoDate: '2026-06-12',
