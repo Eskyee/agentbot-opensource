@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'agentbot-api-collection-15-modules',
+    dateLabel: '12 Jun',
+    isoDate: '2026-06-12',
+    title: 'Agentbot API Collection — Full Coverage Across 15 Modules',
+    excerpt:
+      'The Agentbot API collection has been fully built out and synced from the codebase, covering all major surface areas across 15 organized folders.',
+    tags: ['API', 'Postman', 'Developer Tools', 'Integration'],
+    track: 'Shipping',
+  },
+  {
     slug: 'claude-fable-openclaw-agentbot',
     dateLabel: '11 Jun',
     isoDate: '2026-06-11',
