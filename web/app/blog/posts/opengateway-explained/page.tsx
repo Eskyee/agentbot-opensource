@@ -77,6 +77,29 @@ const reply = await client.chat.completions.create({
   -d '{"model": "mimo-v2.5-pro", "messages": [{"role": "user", "content": "hello"}]}'`}</code>
       </pre>
 
+      <h2 className="text-2xl font-bold mt-10">Smart routing — stop picking models</h2>
+
+      <p>
+        Send <code>model: &quot;auto&quot;</code> and the gateway does the choosing. It scores each
+        request from cheap structural signals — context size, tool definitions, code content,
+        reasoning params — and routes to the cheapest model expected to handle it. If that model
+        rate-limits, 5xxs, or returns an empty completion, it escalates up the cost/capability
+        ladder before you ever see an error. You&apos;re billed at the rate of the model that
+        actually served, and the <code>x-gateway-served-model</code> response header names it.
+      </p>
+
+      <p>
+        An optional route hint shapes the decision and is stripped before it reaches any provider:
+      </p>
+
+      <pre className="bg-zinc-950 border border-zinc-900 p-4 text-sm overflow-x-auto">
+        <code>{`{
+  "model": "auto",
+  "route": { "priority": "cost", "max_cost_usd": 0.01 },
+  "messages": [{ "role": "user", "content": "hello" }]
+}`}</code>
+      </pre>
+
       <h2 className="text-2xl font-bold mt-10">Keys that behave like production keys</h2>
 
       <p>

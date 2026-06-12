@@ -303,7 +303,7 @@ console.log(reply.choices[0].message.content)`,
       <section className="mx-auto grid max-w-6xl gap-px bg-zinc-900 px-6 pb-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
         {[
           ['One endpoint, many providers', 'Point any OpenAI-compatible client at /v1 and pass the model. Requests route through Vercel AI Gateway with OpenRouter failover — provider secrets stay server-side.'],
-          ['Failover built in', 'If an upstream rate-limits or errors, the gateway retries the next configured provider before your client ever sees a failure.'],
+          ['Smart routing — model: "auto"', 'Send model:"auto" and the gateway scores the request and routes to the cheapest capable model, escalating on failure. x-gateway-served-model names who answered.'],
           ['Manage your own keys', 'Generate a key per project or environment, revoke instantly. Keys are shown once and stored as SHA-256 hashes — never raw.'],
           ['Real-time usage, yours and global', 'Per-user and per-model token tracking written on every request. Read your spend in the console, not on next month\u2019s invoice.'],
         ].map(([title, body]) => (
@@ -312,6 +312,37 @@ console.log(reply.choices[0].message.content)`,
             <p className="mt-2 text-sm leading-6 text-zinc-500">{body}</p>
           </div>
         ))}
+      </section>
+
+      {/* Smart routing deep-dive */}
+      <section className="mx-auto max-w-6xl px-6 pb-10 lg:px-8">
+        <div className="border border-zinc-900 bg-zinc-950 p-5">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-white">Stop picking models. Send <code className="text-orange-500">model: &quot;auto&quot;</code>.</h2>
+            <span className="border border-orange-500/40 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-widest text-orange-500">New</span>
+          </div>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-500">
+            The gateway inspects each request and routes to the cheapest model expected to produce a
+            good answer, escalating up the ladder on rate limits, 5xx, or empty responses before you
+            ever see an error. You&apos;re billed at the serving model&apos;s rate, and{' '}
+            <code className="text-zinc-300">x-gateway-served-model</code> names who answered.
+          </p>
+          <div className="mt-4">
+            <Snippet
+              text={[
+                `curl ${origin}/v1/chat/completions \\`,
+                '  -H "authorization: Bearer ogw_live_..." \\',
+                '  -H "content-type: application/json" \\',
+                `  -d '{"model":"auto","route":{"priority":"cost","max_cost_usd":0.01},"messages":[{"role":"user","content":"hello"}]}'`,
+              ]}
+              prompt={false}
+              className="rounded-none text-[11px]"
+            />
+          </div>
+          <p className="mt-3 text-xs text-zinc-600">
+            Optional hint: <code className="text-zinc-400">{'{ "priority": "cost" | "balanced" | "quality", "max_cost_usd": 0.01 }'}</code> — stripped before it reaches any provider.
+          </p>
+        </div>
       </section>
 
       {models.length > 0 && (
