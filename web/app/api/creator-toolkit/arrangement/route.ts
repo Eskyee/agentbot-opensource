@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { masterCreatorSystemPrompt } from '@/app/lib/creator-toolkit'
+import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 import {
   gatewayUpstreamHeaders,
   normalizeGatewayModel,
@@ -199,6 +200,11 @@ async function generateWithVercelGateway(title: string, genre: string, mood: str
 }
 
 export async function POST(req: NextRequest) {
+  // Public endpoint that spends LLM credits per call — rate-limit by IP
+  if (await isRateLimited(getClientIP(req))) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   let body: Record<string, unknown> = {}
   try {
     body = await req.json()

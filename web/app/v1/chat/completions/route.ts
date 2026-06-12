@@ -10,6 +10,7 @@ import {
   resolveGatewayUpstreams,
   shouldTryNextGatewayUpstream,
 } from '@/app/lib/opengateway'
+import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -20,6 +21,11 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   const startedAt = Date.now()
+
+  // Abuse protection on a spend-per-request endpoint, before any upstream call
+  if (await isRateLimited(getClientIP(req))) {
+    return openAiError('Rate limit exceeded. Slow down and retry.', 429, 'rate_limited')
+  }
 
   // Dual auth: API key OR x402 payment signature
   const paymentSignature = req.headers.get('payment-signature') || req.headers.get('PAYMENT-SIGNATURE')
