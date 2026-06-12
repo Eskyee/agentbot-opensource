@@ -11,7 +11,7 @@
  * (x402); the card advertises the rail so callers know to pay. GET returns the
  * agent card for convenience.
  */
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { buildAgentCard } from '@/app/lib/agent-card'
 import {
@@ -23,6 +23,14 @@ import {
 } from '@/app/lib/opengateway'
 import { checkRateLimit } from '@/app/lib/api/rate-limit'
 import { verifyX402Payment } from '@/app/lib/x402-verify'
+import {
+  createTask,
+  getTask,
+  markWorking,
+  completeTask,
+  failTask,
+  toA2ATask,
+} from '@/app/lib/a2a-tasks'
 
 // USDC contract per chain (smallest unit; USDC = 6 decimals)
 const USDC_BY_NETWORK: Record<string, { asset: string; caip2: string }> = {
@@ -109,67 +117,13 @@ function agentSystemPrompt(agent: { name: string; installedSkills: Array<{ enabl
     .join('\n\n')
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  // A2A tasks run the model → AI-category rate limit
-  if (await checkRateLimit(req, 'ai')) {
-    return rpcError(null, -32029, 'Rate limit exceeded', 429)
-  }
+type LoadedAgent = NonNullable<Awaited<ReturnType<typeof loadAgent>>>
 
-  const { id } = await params
-  const agent = await loadAgent(id.trim())
-  if (!agent || !agent.showcaseOptIn) {
-    return rpcError(null, -32004, 'Agent not found or not discoverable', 404)
-  }
-
-  let rpc: { id?: JsonRpcId; method?: unknown; params?: unknown }
-  try {
-    rpc = await req.json()
-  } catch {
-    return rpcError(null, -32700, 'Parse error')
-  }
-  const rpcId: JsonRpcId = (rpc.id as JsonRpcId) ?? null
-  const method = typeof rpc.method === 'string' ? rpc.method : ''
-
-  // Payment gate: agents with a wallet require an x402 payment signature.
-  const wallet = await prisma.wallet
-    .findFirst({ where: { userId: agent.userId }, select: { address: true, network: true } })
-    .catch(() => null)
-  if (wallet) {
-    const usdc = USDC_BY_NETWORK[wallet.network] ?? USDC_BY_NETWORK.base
-    const paid = req.headers.get('payment-signature') || req.headers.get('PAYMENT-SIGNATURE')
-    const verdict = verifyX402Payment(paid, {
-      payTo: wallet.address,
-      asset: usdc.asset,
-      network: usdc.caip2,
-      minAmount: A2A_MIN_AMOUNT,
-    })
-    if (!verdict.valid) {
-      return rpcError(
-        rpcId,
-        -32003,
-        `Payment required (${verdict.reason}): authorize ≥ ${A2A_MIN_AMOUNT} USDC (smallest unit) to ${wallet.address} on ${usdc.caip2}, then resend with a payment-signature header.`,
-        402,
-      )
-    }
-  }
-
-  if (method !== 'message/send' && method !== 'tasks/send') {
-    return rpcError(rpcId, -32601, `Method not supported: ${method || '(none)'}. Use message/send.`)
-  }
-
-  const paramsObj = (rpc.params ?? {}) as { message?: unknown }
-  const taskText = extractText(paramsObj.message)
-  if (!taskText.trim()) {
-    return rpcError(rpcId, -32602, 'Invalid params: message.parts must contain text')
-  }
-
+/** Run the task through the gateway as this agent. Returns reply or throws. */
+async function runAgentTask(agent: LoadedAgent, taskText: string): Promise<string> {
   const upstreams = resolveGatewayUpstreams()
-  if (upstreams.length === 0) {
-    return rpcError(rpcId, -32011, 'No model backend configured', 503)
-  }
-
+  if (upstreams.length === 0) throw new Error('No model backend configured')
   const model = agent.model || 'mimo-v2.5-pro'
-  let replyText = ''
   let lastFailure = ''
 
   for (const upstream of upstreams) {
@@ -196,31 +150,120 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         break
       }
       const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> }
-      replyText = data.choices?.[0]?.message?.content ?? ''
-      if (replyText.trim()) break
+      const reply = data.choices?.[0]?.message?.content ?? ''
+      if (reply.trim()) return reply
       lastFailure = `${upstream.provider} returned empty reply`
     } catch (error) {
       lastFailure = error instanceof Error ? error.message : 'request failed'
     }
   }
+  throw new Error(lastFailure || 'agent could not complete the task')
+}
 
-  if (!replyText.trim()) {
-    return rpcError(rpcId, -32010, `Agent could not complete the task. ${lastFailure}`, 502)
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  // A2A tasks run the model → AI-category rate limit
+  if (await checkRateLimit(req, 'ai')) {
+    return rpcError(null, -32029, 'Rate limit exceeded', 429)
   }
 
-  // A2A result: a completed Task carrying the agent's reply Message.
-  const now = new Date().toISOString()
-  return rpcResult(rpcId, {
-    id: `task-${Date.now().toString(36)}`,
-    contextId: `a2a-${agent.id}`,
-    status: { state: 'completed', timestamp: now },
-    history: [],
-    artifacts: [],
-    message: {
-      role: 'agent',
-      parts: [{ kind: 'text', text: replyText }],
-      messageId: `msg-${Date.now().toString(36)}`,
-    },
-    kind: 'task',
-  })
+  const { id } = await params
+  const agent = await loadAgent(id.trim())
+  if (!agent || !agent.showcaseOptIn) {
+    return rpcError(null, -32004, 'Agent not found or not discoverable', 404)
+  }
+
+  let rpc: { id?: JsonRpcId; method?: unknown; params?: unknown }
+  try {
+    rpc = await req.json()
+  } catch {
+    return rpcError(null, -32700, 'Parse error')
+  }
+  const rpcId: JsonRpcId = (rpc.id as JsonRpcId) ?? null
+  const method = typeof rpc.method === 'string' ? rpc.method : ''
+
+  // Polling a task's status is free (no payment) — handle before the gate.
+  if (method === 'tasks/get') {
+    const taskId = (rpc.params as { id?: unknown })?.id
+    if (typeof taskId !== 'string' || !taskId) return rpcError(rpcId, -32602, 'tasks/get requires params.id')
+    const task = await getTask(taskId)
+    if (!task || task.contextId !== `a2a-${agent.id}`) return rpcError(rpcId, -32001, 'Task not found', 404)
+    return rpcResult(rpcId, toA2ATask(task))
+  }
+
+  // Payment gate: agents with a wallet require an x402 payment signature.
+  const wallet = await prisma.wallet
+    .findFirst({ where: { userId: agent.userId }, select: { address: true, network: true } })
+    .catch(() => null)
+  if (wallet) {
+    const usdc = USDC_BY_NETWORK[wallet.network] ?? USDC_BY_NETWORK.base
+    const paid = req.headers.get('payment-signature') || req.headers.get('PAYMENT-SIGNATURE')
+    const verdict = verifyX402Payment(paid, {
+      payTo: wallet.address,
+      asset: usdc.asset,
+      network: usdc.caip2,
+      minAmount: A2A_MIN_AMOUNT,
+    })
+    if (!verdict.valid) {
+      return rpcError(
+        rpcId,
+        -32003,
+        `Payment required (${verdict.reason}): authorize ≥ ${A2A_MIN_AMOUNT} USDC (smallest unit) to ${wallet.address} on ${usdc.caip2}, then resend with a payment-signature header.`,
+        402,
+      )
+    }
+  }
+
+  if (method !== 'message/send' && method !== 'tasks/send') {
+    return rpcError(rpcId, -32601, `Method not supported: ${method || '(none)'}. Use message/send or tasks/get.`)
+  }
+
+  const paramsObj = (rpc.params ?? {}) as { message?: unknown; configuration?: { blocking?: unknown } }
+  const taskText = extractText(paramsObj.message)
+  if (!taskText.trim()) {
+    return rpcError(rpcId, -32602, 'Invalid params: message.parts must contain text')
+  }
+
+  if (resolveGatewayUpstreams().length === 0) {
+    return rpcError(rpcId, -32011, 'No model backend configured', 503)
+  }
+
+  // Non-blocking mode (A2A configuration.blocking === false): persist a
+  // submitted task, run it in the background, and let the client poll tasks/get.
+  // Decouples completion from the 60s response window. (Background work is still
+  // bounded by maxDuration; swap the runner for the bus worker for unbounded.)
+  const blocking = paramsObj.configuration?.blocking !== false
+  if (!blocking) {
+    const task = await createTask(`a2a-${agent.id}`)
+    after(async () => {
+      try {
+        await markWorking(task.id)
+        const reply = await runAgentTask(agent, taskText)
+        await completeTask(task.id, reply)
+      } catch (error) {
+        await failTask(task.id, error instanceof Error ? error.message : 'task failed')
+      }
+    })
+    return rpcResult(rpcId, toA2ATask(task))
+  }
+
+  // Blocking mode: run synchronously and return the completed task.
+  try {
+    const replyText = await runAgentTask(agent, taskText)
+    const now = new Date().toISOString()
+    return rpcResult(rpcId, {
+      id: `task-${Date.now().toString(36)}`,
+      contextId: `a2a-${agent.id}`,
+      status: { state: 'completed', timestamp: now },
+      history: [],
+      artifacts: [],
+      message: {
+        role: 'agent',
+        parts: [{ kind: 'text', text: replyText }],
+        messageId: `msg-${Date.now().toString(36)}`,
+      },
+      kind: 'task',
+    })
+  } catch (error) {
+    return rpcError(rpcId, -32010, `Agent could not complete the task. ${error instanceof Error ? error.message : ''}`, 502)
+  }
 }

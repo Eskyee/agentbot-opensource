@@ -57,8 +57,11 @@ otherwise) — discovery + hire + pay, end to end. The payment gate now does rea
 structural + target verification (`lib/x402-verify.ts`: decodes the payload,
 checks scheme/network/payTo/asset/amount/freshness, fails closed) shared as the
 single upgrade point. Remaining: recover the EIP-712 signature (cryptographic
-payer proof) and confirm on-chain settlement via a facilitator; route long
-tasks through the bus async (`tasks/get` polling) instead of synchronously.
+payer proof) and confirm on-chain settlement via a facilitator. Async tasks
+SHIPPED: `configuration.blocking:false` returns a submitted task immediately,
+runs in the background, and clients poll `tasks/get` (Redis-backed store,
+`lib/a2a-tasks.ts`). Background work is still bounded by maxDuration — swap the
+runner for the backend bus worker for truly unbounded tasks.
 **What:** A2A (Google's protocol, now the Linux Foundation standard that absorbed
 IBM's ACP) describes each agent with a JSON "Agent Card": identity, capabilities,
 skills, auth. Any agent can discover any other by reading its card.
@@ -73,7 +76,7 @@ channels; accept inbound A2A task requests through the bus (which already has SS
 protection). Keep MCP for tools, add A2A for agent-to-agent.
 **Effort:** medium-high. **Moat:** very high — this is a genuine differentiator.
 
-### 5. Fast codebase search for coding-agent  ★ quick-ish win
+### 5. Fast codebase search for coding-agent  ✓ SHIPPED
 **What:** Sub-second semantic search across a repo; Morph runs 8 parallel queries
 in <6s. Cognition's data: coding agents spend ~60% of their time searching, not
 generating.
@@ -84,7 +87,7 @@ connected repo (GitLawb/GitHub), exposed to OpenClaude. Start with ripgrep + a
 re-rank pass; add embeddings later.
 **Effort:** low-medium. **Moat:** medium.
 
-### 6. Subagent orchestration with a lead planner  ★ quality multiplier
+### 6. Subagent orchestration with a lead planner  ✓ SHIPPED (planner)
 **What:** A planner agent fans work out to specialized sub-agents (search,
 generate, review), each with its own context.
 **Why:** Anthropic's own research found multi-agent + lead planner beats
