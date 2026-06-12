@@ -115,6 +115,20 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   const pathname = usePathname();
   const { data: dashboardData } = useDashboardData();
   const [isPendingTransition, startTransition] = useTransition();
+
+  // Exact match for /dashboard so it doesn't stay highlighted on every subpage
+  const isItemActive = useCallback(
+    (href: string) =>
+      href === '/dashboard'
+        ? pathname === '/dashboard'
+        : pathname === href || pathname.startsWith(href + '/'),
+    [pathname]
+  );
+
+  // Only close the sidebar on navigation when it's the mobile overlay
+  const handleNavigate = useCallback(() => {
+    if (isOpen) onToggle();
+  }, [isOpen, onToggle]);
   
   const { plan: contextPlan, openclawUrl, gatewayToken } = dashboardData;
   const effectiveOpenclawUrl = runtimeUrl || openclawUrl;
@@ -194,7 +208,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
           </svg>
         </button>
 
-        <nav className="flex-1 overflow-y-auto pt-16 md:pt-4 pb-4">
+        <nav aria-label="Dashboard navigation" className="flex-1 overflow-y-auto pt-16 md:pt-4 pb-4">
           {/* Agent status */}
           <div className="mx-4 mb-5 border border-zinc-800 bg-zinc-950 p-4">
             <div className="flex items-center justify-between gap-3">
@@ -213,9 +227,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
 
           {/* Nav sections */}
           {visibleNavSections.map((section, i) => {
-            const sectionHasActive = section.items.some(
-              (item) => pathname === item.href || pathname.startsWith(item.href + '/')
-            );
+            const sectionHasActive = section.items.some((item) => isItemActive(item.href));
             const isCollapsed = !sectionHasActive && !!collapsed[section.label ?? ''];
             const hasLabel = !!section.label;
 
@@ -239,13 +251,14 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                 {!isCollapsed && (
                   <div className="mt-0.5 space-y-0.5">
                     {section.items.map((item) => {
-                      const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                      const isActive = isItemActive(item.href);
                       return (
                         <Link
                           key={item.label}
                           href={item.href}
                           prefetch={false}
-                          onClick={onToggle}
+                          onClick={handleNavigate}
+                          aria-current={isActive ? 'page' : undefined}
                           className={`flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
                             isActive
                               ? 'bg-orange-500/10 text-orange-400'

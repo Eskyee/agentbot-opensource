@@ -18,13 +18,35 @@ const SEGMENT_LABELS: Record<string, string> = {
   faq: 'FAQ',
   openrouter: 'OpenRouter',
   mimo: 'MiMo',
+  'agent-team': 'Agent Team',
+  'creator-toolkit': 'Creator Toolkit',
+  'generate-music': 'Generate Music',
+  'generate-video': 'Generate Video',
+  'music-wizard': 'Music Wizard',
+  'open-agents': 'Open Agents',
+  'open-learning': 'Open Learning',
+  'expert-setup': 'Expert Setup',
+  ai: 'AI',
+  api: 'API',
+  nft: 'NFT',
+  tts: 'TTS',
+  usdc: 'USDC',
+}
+
+/** Opaque ids (uuids, hashes, long slugless strings) get truncated */
+function looksLikeId(segment: string): boolean {
+  return (
+    /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(segment) ||
+    (segment.length > 24 && !segment.includes('-'))
+  )
 }
 
 function labelFor(segment: string): string {
   if (SEGMENT_LABELS[segment]) return SEGMENT_LABELS[segment]
+  if (looksLikeId(segment)) return `${segment.slice(0, 8)}…`
   return segment
     .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : word))
     .join(' ')
 }
 
@@ -37,17 +59,24 @@ export default function SiteBreadcrumbs() {
   const segments = pathname.split('/').filter(Boolean)
   if (segments.length === 0) return null
 
-  const crumbs = segments.map((segment, i) => ({
+  const allCrumbs = segments.map((segment, i) => ({
     label: labelFor(decodeURIComponent(segment)),
     href: '/' + segments.slice(0, i + 1).join('/'),
   }))
+
+  // Collapse deep trails: keep first crumb, ellipsis, last two.
+  // JSON-LD below always uses the full trail.
+  const crumbs =
+    allCrumbs.length > 4
+      ? [allCrumbs[0], { label: '…', href: '' }, ...allCrumbs.slice(-2)]
+      : allCrumbs
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://agentbot.sh/' },
-      ...crumbs.map((crumb, i) => ({
+      ...allCrumbs.map((crumb, i) => ({
         '@type': 'ListItem',
         position: i + 2,
         name: crumb.label,
@@ -67,14 +96,16 @@ export default function SiteBreadcrumbs() {
         {crumbs.map((crumb, i) => {
           const isLast = i === crumbs.length - 1
           return (
-            <li key={crumb.href} className="flex items-center gap-1.5">
+            <li key={crumb.href || `ellipsis-${i}`} className="flex items-center gap-1.5">
               <span aria-hidden className="text-zinc-800">/</span>
               {isLast ? (
                 <span aria-current="page" className="text-orange-500">{crumb.label}</span>
-              ) : (
+              ) : crumb.href ? (
                 <Link href={crumb.href} className="text-zinc-600 transition-colors hover:text-white">
                   {crumb.label}
                 </Link>
+              ) : (
+                <span aria-hidden className="text-zinc-600">{crumb.label}</span>
               )}
             </li>
           )

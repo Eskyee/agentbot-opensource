@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
-import { Breadcrumbs } from '@/app/components/Breadcrumbs'
 
 interface ServiceStatus {
   name: string
@@ -65,7 +64,6 @@ export default function SupportPlaybook() {
 
   return (
       <div className="px-6 py-8">
-        <Breadcrumbs />
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-500">Support playbook</p>

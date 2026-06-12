@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useParams } from 'next/navigation'
-import { Breadcrumbs } from '@/app/components/Breadcrumbs'
 
 interface AgentStatus {
   name: string
@@ -29,7 +28,6 @@ function TeamDetailContent() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-6xl mx-auto px-6 py-6">
-        <Breadcrumbs />
         <div className="flex items-center justify-between mb-8">
           <div>
             <span className="text-[10px] uppercase tracking-widest text-zinc-600">Team</span>
