@@ -22,6 +22,9 @@ export async function generateXDraft(sourceText: string, tone: string) {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://agentbot.sh',
+      'X-OpenRouter-Title': 'Agentbot',
+      'X-OpenRouter-Categories': 'cli-agent,cloud-agent',
     },
     body: JSON.stringify({
       model: 'xiaomi/mimo-v2.5-pro',

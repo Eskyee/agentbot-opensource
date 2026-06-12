@@ -65,7 +65,9 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
-        'X-Title': 'Agentbot Coding Agent',
+        'HTTP-Referer': 'https://agentbot.sh',
+        'X-OpenRouter-Title': 'Agentbot',
+        'X-OpenRouter-Categories': 'cli-agent,cloud-agent',
       },
       body: JSON.stringify({
         model: 'anthropic/claude-sonnet-4-5',
