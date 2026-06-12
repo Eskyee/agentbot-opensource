@@ -437,7 +437,10 @@ export async function POST(request: Request) {
         : 'Skill installed. Use "Sync Runtime" to push skills to your OpenClaw agent.',
     })
   } catch (error) {
-    console.error('Skill install error:', error)
+    // Log Prisma error code + meta so production failures are diagnosable
+    const code = (error as { code?: string })?.code
+    const meta = (error as { meta?: unknown })?.meta
+    console.error('Skill install error:', code || '', meta ? JSON.stringify(meta) : '', error)
     const installError = getSkillInstallError(error)
     return NextResponse.json(
       { error: installError.message, code: installError.code },

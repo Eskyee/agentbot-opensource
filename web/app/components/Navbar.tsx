@@ -71,8 +71,9 @@ export default function Navbar() {
         {/* Desktop nav */}
         <div className="hidden lg:flex items-center gap-7">
           {!mounted || status === "loading" ? (
-            <div className="flex gap-6">
-              {[1,2,3].map(i => <div key={i} className="w-14 h-3 bg-zinc-900 animate-pulse rounded" />)}
+            <div className="flex gap-6" aria-hidden>
+              {/* invisible spacers — hold layout without a pulsing flash */}
+              {[1,2,3].map(i => <div key={i} className="w-14 h-3" />)}
             </div>
           ) : isLoggedIn ? (
             <>

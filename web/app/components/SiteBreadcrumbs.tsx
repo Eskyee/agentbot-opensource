@@ -4,10 +4,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 // Site-wide auto-derived breadcrumb trail with schema.org JSON-LD.
-// Hidden on the homepage, auth pages, full-bleed app surfaces, and the
-// dashboard (which renders its own Breadcrumbs component).
-const HIDDEN_PATHS = new Set(['/', '/login', '/signup', '/forgot-password', '/billing'])
-const HIDDEN_PREFIXES = ['/chat', '/playground', '/coding-agent', '/dashboard', '/admin', '/api']
+// Shown on EVERY page except the homepage (no trail exists there).
+const HIDDEN_PATHS = new Set(['/'])
+const HIDDEN_PREFIXES = ['/api']
 
 const SEGMENT_LABELS: Record<string, string> = {
   'vercel-gateway': 'Gateway',
