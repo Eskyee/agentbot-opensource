@@ -12,6 +12,7 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "test": "turbo run test",
+    "test:unit": "npm --workspace @agentbot/web run test:unit",
     "clean": "turbo run clean",
     "openclaude": "openclaude",
     "openclaude:agentbot": "node scripts/openclaude-agentbot.js"
