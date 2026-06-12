@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
+import { Snippet } from '@/app/components/ui/snippet'
+import { StatusDot } from '@/app/components/ui/status-dot'
 
 type GatewayUsage = {
   windowDays: number
@@ -49,8 +51,11 @@ export default function VercelGatewayPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [origin, setOrigin] = useState('https://agentbot.sh')
+  const [snippetTab, setSnippetTab] = useState<'curl' | 'python' | 'node'>('curl')
+  const [models, setModels] = useState<string[]>([])
 
-  const quickstart = useMemo(() => `curl ${origin}/v1/chat/completions \\
+  const snippets = useMemo(() => ({
+    curl: `curl ${origin}/v1/chat/completions \\
   -H "authorization: Bearer ogw_live_..." \\
   -H "content-type: application/json" \\
   -d '{
@@ -58,7 +63,26 @@ export default function VercelGatewayPage() {
     "messages": [
       {"role": "user", "content": "hello, gateway"}
     ]
-  }'`, [origin])
+  }'`,
+    python: `from openai import OpenAI
+
+client = OpenAI(base_url="${origin}/v1", api_key="ogw_live_...")
+
+reply = client.chat.completions.create(
+    model="mimo-v2.5-pro",
+    messages=[{"role": "user", "content": "hello, gateway"}],
+)
+print(reply.choices[0].message.content)`,
+    node: `import OpenAI from 'openai'
+
+const client = new OpenAI({ baseURL: '${origin}/v1', apiKey: 'ogw_live_...' })
+
+const reply = await client.chat.completions.create({
+  model: 'mimo-v2.5-pro',
+  messages: [{ role: 'user', content: 'hello, gateway' }],
+})
+console.log(reply.choices[0].message.content)`,
+  }), [origin])
 
   async function loadConsole() {
     const [usageRes, healthRes] = await Promise.all([
@@ -75,6 +99,15 @@ export default function VercelGatewayPage() {
     }
 
     setHealth(await healthRes.json())
+
+    // Live model list from the OpenAI-compatible /v1/models endpoint
+    fetch('/v1/models', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const ids = Array.isArray(data?.data) ? data.data.map((m: { id?: string }) => m?.id).filter(Boolean) : []
+        if (ids.length > 0) setModels(ids)
+      })
+      .catch(() => {})
   }
 
   useEffect(() => {
@@ -129,11 +162,36 @@ export default function VercelGatewayPage() {
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500">Open LLM Inference Gateway</p>
               <h1 className="mt-4 max-w-3xl text-5xl font-semibold tracking-tight text-white md:text-7xl">
-                Opengateway.
+                Every agent.<br />One <span className="text-orange-500">gateway.</span>
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-zinc-400">
-                One OpenAI-compatible Agentbot endpoint across providers. Generate an API key, swap the base URL, and ship.
+                The endpoint that powers every Agentbot container, the Playground, and the coding
+                agent — open for your keys too. OpenAI-compatible, provider failover, usage you can
+                read. Swap the base URL and ship.
               </p>
+              <div className="mt-6 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.18em]">
+                <a href="#keys" className="border border-orange-500 bg-orange-500 px-4 py-2 text-black hover:bg-orange-400">
+                  Generate a key →
+                </a>
+                <Link href="/playground" className="border border-zinc-800 px-4 py-2 text-zinc-400 hover:border-zinc-600 hover:text-white">
+                  Watch it work in the Playground
+                </Link>
+              </div>
+
+              {/* Routing path — what actually happens to a request */}
+              <div className="mt-8 overflow-x-auto">
+                <div className="flex items-center gap-2 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-600">
+                  <span className="border border-zinc-800 px-2 py-1 text-zinc-400">your client</span>
+                  <span className="text-zinc-700">──▶</span>
+                  <span className="border border-orange-500/40 px-2 py-1 text-orange-500">agentbot /v1</span>
+                  <span className="text-zinc-700">──▶</span>
+                  <span className="border border-zinc-800 px-2 py-1 text-zinc-400">vercel ai gateway</span>
+                  <span className="text-zinc-700">⇢ failover ⇢</span>
+                  <span className="border border-zinc-800 px-2 py-1 text-zinc-400">openrouter</span>
+                  <span className="text-zinc-700">──▶</span>
+                  <span className="border border-zinc-800 px-2 py-1 text-zinc-400">model</span>
+                </div>
+              </div>
             </div>
 
             <div className="border border-zinc-900 bg-zinc-950 p-5">
@@ -142,7 +200,7 @@ export default function VercelGatewayPage() {
                   <p className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Gateway health</p>
                   <p className="mt-2 text-2xl font-semibold text-white">{health?.status || 'checking'}</p>
                 </div>
-                <span className={`h-3 w-3 rounded-full ${health?.ok ? 'bg-emerald-400' : 'bg-orange-500'}`} />
+                <StatusDot state={health ? (health.ok ? 'online' : 'degraded') : 'queued'} pulse={health?.ok} />
               </div>
               <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
                 <div>
@@ -154,13 +212,19 @@ export default function VercelGatewayPage() {
                   <dd className="mt-1 text-zinc-200">{health?.latencyMs ? `${health.latencyMs}ms` : '-'}</dd>
                 </div>
               </dl>
+              <button
+                onClick={() => loadConsole().catch(() => {})}
+                className="mt-4 font-mono text-xs uppercase tracking-[0.18em] text-zinc-500 hover:text-white"
+              >
+                ↻ Refresh
+              </button>
             </div>
           </div>
         </div>
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-6 px-6 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-        <div className="border border-zinc-900 bg-zinc-950 p-5">
+        <div id="keys" className="border border-zinc-900 bg-zinc-950 p-5 scroll-mt-24">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-white">Generate a key</h2>
@@ -190,10 +254,32 @@ export default function VercelGatewayPage() {
         </div>
 
         <div className="border border-zinc-900 bg-zinc-950 p-5">
-          <h2 className="text-lg font-semibold text-white">Quickstart</h2>
-          <pre className="mt-4 overflow-x-auto bg-black p-4 text-xs leading-6 text-zinc-300">
-            <code>{quickstart}</code>
-          </pre>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-lg font-semibold text-white">Quickstart</h2>
+            <div className="flex gap-1">
+              {(['curl', 'python', 'node'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setSnippetTab(tab)}
+                  className={`border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors ${
+                    snippetTab === tab ? 'border-white bg-white text-black' : 'border-zinc-800 text-zinc-500 hover:text-white'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="mt-1 text-sm text-zinc-500">OpenAI-compatible — point any SDK at the gateway and keep your code.</p>
+          <div className="mt-4">
+            <Snippet text={snippets[snippetTab].split('\n')} prompt={false} className="rounded-none text-[11px]" />
+          </div>
+          <p className="mt-4 text-sm text-zinc-500">
+            New to the gateway?{' '}
+            <Link href="/blog/posts/opengateway-explained" className="text-orange-500 hover:underline">
+              Read how it works →
+            </Link>
+          </p>
         </div>
       </section>
 
@@ -212,6 +298,46 @@ export default function VercelGatewayPage() {
           </div>
         ))}
       </section>
+
+      <section className="mx-auto grid max-w-6xl gap-px bg-zinc-900 px-6 pb-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
+        {[
+          ['One endpoint, many providers', 'Point any OpenAI-compatible client at /v1 and pass the model. Requests route through Vercel AI Gateway with OpenRouter failover — provider secrets stay server-side.'],
+          ['Failover built in', 'If an upstream rate-limits or errors, the gateway retries the next configured provider before your client ever sees a failure.'],
+          ['Manage your own keys', 'Generate a key per project or environment, revoke instantly. Keys are shown once and stored as SHA-256 hashes — never raw.'],
+          ['Real-time usage, yours and global', 'Per-user and per-model token tracking written on every request. Read your spend in the console, not on next month\u2019s invoice.'],
+        ].map(([title, body]) => (
+          <div key={title} className="bg-zinc-950 p-5">
+            <h3 className="text-sm font-semibold text-white">{title}</h3>
+            <p className="mt-2 text-sm leading-6 text-zinc-500">{body}</p>
+          </div>
+        ))}
+      </section>
+
+      {models.length > 0 && (
+        <section className="mx-auto max-w-6xl px-6 pb-10 lg:px-8">
+          <div className="border border-zinc-900 bg-zinc-950 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Models</h2>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Live from <code className="text-zinc-400">/v1/models</code> — send the id exactly as listed. MiMo also accepts the short form.
+                </p>
+              </div>
+              <span className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-600">{models.length} available</span>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {models.map((id) => (
+                <div key={id} className="flex items-center justify-between gap-2 border border-zinc-900 bg-black px-3 py-2">
+                  <code className="truncate font-mono text-xs text-zinc-300">{id}</code>
+                  {id.endsWith(':free') && (
+                    <span className="shrink-0 border border-emerald-500/40 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-emerald-400">Free</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto grid max-w-6xl gap-6 px-6 pb-12 lg:grid-cols-2 lg:px-8">
         <div className="border border-zinc-900 bg-zinc-950 p-5">
@@ -242,6 +368,48 @@ export default function VercelGatewayPage() {
               </div>
             ))}
             {!usage?.byModel?.length ? <p className="py-4 text-sm text-zinc-500">No gateway traffic yet.</p> : null}
+          </div>
+        </div>
+      </section>
+
+      {/* What this gateway already runs */}
+      <section className="border-t border-zinc-900">
+        <div className="mx-auto max-w-6xl px-6 py-12 lg:px-8">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500">Already in production</p>
+          <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-white">
+            You&apos;re not the first request through this pipe.
+          </h2>
+          <div className="mt-8 grid gap-px bg-zinc-900 sm:grid-cols-3">
+            {[
+              ['Playground', 'Every app built in the Playground streams its generation through this gateway — multi-file React apps, live.', '/playground'],
+              ['Agent containers', 'Each OpenClaw runtime routes its inference here, with per-user token quotas tracked on every call.', '/dashboard'],
+              ['Coding agent', 'The hosted coding agent runs on the same endpoint and the same failover ladder you just read about.', '/coding-agent'],
+            ].map(([title, body, href]) => (
+              <Link key={title} href={href} className="group bg-black p-6 transition-colors hover:bg-zinc-950">
+                <h3 className="text-sm font-semibold text-white group-hover:text-orange-500">{title} →</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-500">{body}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="border-t border-zinc-900">
+        <div className="mx-auto max-w-6xl px-6 py-16 text-center lg:px-8">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500">Next step</p>
+          <h2 className="mt-4 text-4xl font-semibold tracking-tight text-white">Generate your first key.</h2>
+          <p className="mx-auto mt-4 max-w-xl text-zinc-500">
+            Sign in, create a key in seconds, and point your client at the gateway. Keys are shown
+            once, stored hashed, revocable in one click.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3 font-mono text-xs uppercase tracking-[0.18em]">
+            <a href="#keys" className="border border-orange-500 bg-orange-500 px-5 py-2.5 text-black hover:bg-orange-400">
+              Open console →
+            </a>
+            <Link href="/blog/posts/opengateway-explained" className="border border-zinc-800 px-5 py-2.5 text-zinc-400 hover:border-zinc-600 hover:text-white">
+              Read the field notes
+            </Link>
           </div>
         </div>
       </section>

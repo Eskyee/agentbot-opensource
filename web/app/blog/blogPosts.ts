@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'opengateway-explained',
+    dateLabel: '12 Jun',
+    isoDate: '2026-06-12',
+    title: 'Opengateway Explained — One OpenAI-Compatible Endpoint for Every Model',
+    excerpt:
+      'What the Agentbot gateway is, why it exists, and how to ship with it in five minutes: one API key, one base URL swap, provider failover, and live usage tracking built in.',
+    tags: ['Gateway', 'API', 'LLM', 'MiMo', 'Infrastructure'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'agentbot-api-collection-15-modules',
     dateLabel: '12 Jun',
     isoDate: '2026-06-12',
