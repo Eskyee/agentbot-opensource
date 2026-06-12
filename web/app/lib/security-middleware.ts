@@ -170,7 +170,7 @@ export function validateRequest(
   
   // Check content-length header
   const contentLength = headers['content-length']
-  if (contentLength && parseInt(contentLength) > SECURITY_CONFIG.MAX_BODY_LENGTH) {
+  if (contentLength && parseInt(contentLength, 10) > SECURITY_CONFIG.MAX_BODY_LENGTH) {
     return { valid: false, reason: 'Request body too large' }
   }
   

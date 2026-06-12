@@ -8,7 +8,7 @@ const patterns = [
   {
     regex: /every day at (\d+)(am|pm)/i,
     convert: (match: RegExpMatchArray) => {
-      let hour = parseInt(match[1])
+      let hour = parseInt(match[1], 10)
       if (match[2].toLowerCase() === 'pm' && hour !== 12) hour += 12
       if (match[2].toLowerCase() === 'am' && hour === 12) hour = 0
       return `0 ${hour} * * *`
@@ -18,7 +18,7 @@ const patterns = [
     regex: /every (monday|tuesday|wednesday|thursday|friday|saturday|sunday) at (\d+)(am|pm)/i,
     convert: (match: RegExpMatchArray) => {
       const days: Record<string, number> = { monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0 }
-      let hour = parseInt(match[2])
+      let hour = parseInt(match[2], 10)
       if (match[3].toLowerCase() === 'pm' && hour !== 12) hour += 12
       if (match[3].toLowerCase() === 'am' && hour === 12) hour = 0
       return `0 ${hour} * * ${days[match[1].toLowerCase()]}`

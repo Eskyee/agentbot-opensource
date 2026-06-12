@@ -9,7 +9,9 @@ export async function POST(request: NextRequest) {
     }
     
     // Validate with Telegram API
-    const response = await fetch(`https://api.telegram.org/bot${token}/getMe`)
+    const response = await fetch(`https://api.telegram.org/bot${token}/getMe`, {
+      signal: AbortSignal.timeout(5_000),
+    })
     
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error')

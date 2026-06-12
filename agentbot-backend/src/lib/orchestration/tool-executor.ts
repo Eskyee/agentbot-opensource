@@ -276,8 +276,19 @@ async function executeGrep(
     }
   }
 
-  // Use grep with safe flags
-  const command = `grep -rn --include='*.ts' --include='*.js' --include='*.json' --include='*.md' -l "${pattern.replace(/"/g, '\\"')}" ${searchPath} 2>/dev/null | head -50`
+  // Shell-injection hardening: single-quote the pattern (escaping embedded
+  // single quotes) so $(), backticks, and ; are inert, and allowlist the path.
+  const safePattern = `'${pattern.replace(/'/g, `'\\''`)}'`
+  if (!/^[a-zA-Z0-9._/-]+$/.test(searchPath)) {
+    return {
+      success: false,
+      error: 'Invalid search path',
+      durationMs: Date.now() - start,
+      truncated: false,
+    }
+  }
+
+  const command = `grep -rn --include='*.ts' --include='*.js' --include='*.json' --include='*.md' -l ${safePattern} ${searchPath} 2>/dev/null | head -50`
 
   return executeBash({ command }, timeoutMs, start)
 }

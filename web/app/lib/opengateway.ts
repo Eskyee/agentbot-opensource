@@ -189,7 +189,6 @@ export function normalizeGatewayModel(model: string, provider: string): string {
 
   if (provider === 'vercel-ai-gateway') {
     if (trimmed === 'mimo-v2.5-pro') return 'xiaomi/mimo-v2.5-pro'
-    if (trimmed === 'mimo-v2.5-pro') return 'xiaomi/mimo-v2.5-pro'
   }
 
   if (provider === 'openrouter') {

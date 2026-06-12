@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'onramp': {
-        const onrampUrl = `https://onramp.coinbase.com/buy?preset=base&defaultFlow=wallet&walletAddress=${walletAddress || ''}`
+        const onrampUrl = `https://onramp.coinbase.com/buy?preset=base&defaultFlow=wallet&walletAddress=${encodeURIComponent(walletAddress || '')}`
         return NextResponse.json({ url: onrampUrl })
       }
 

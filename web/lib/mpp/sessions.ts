@@ -226,9 +226,11 @@ export async function processVoucher(voucher: Voucher): Promise<{ success: boole
     return { success: false, session, error: 'Insufficient balance' }
   }
 
-  // Deduct
-  session.spent = (parseFloat(session.spent) + amount).toFixed(2)
-  session.remaining = (remaining - amount).toFixed(2)
+  // Deduct — integer-cent math so repeated accumulation can't drift
+  const spentCents = Math.round(parseFloat(session.spent) * 100) + Math.round(amount * 100)
+  const remainingCents = Math.round(remaining * 100) - Math.round(amount * 100)
+  session.spent = (spentCents / 100).toFixed(2)
+  session.remaining = (remainingCents / 100).toFixed(2)
   session.vouchers.push(voucher)
 
   await saveSession(session)

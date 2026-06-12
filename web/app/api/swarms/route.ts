@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
+// One corrupted row must not 500 the whole list/detail response
+function safeParseAgents(raw: string | null): unknown[] {
+  try {
+    const parsed = JSON.parse(raw || '[]')
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export async function GET(req: NextRequest) {
   const session = await getAuthSession()
   if (!session?.user?.id) {
@@ -19,7 +29,7 @@ export async function GET(req: NextRequest) {
         id: s.id,
         name: s.name,
         description: s.description,
-        agents: JSON.parse(s.agents || '[]'),
+        agents: safeParseAgents(s.agents),
         enabled: s.enabled,
         createdAt: s.createdAt,
       })),
@@ -61,7 +71,7 @@ export async function POST(req: NextRequest) {
       id: swarm.id,
       name: swarm.name,
       description: swarm.description,
-      agents: JSON.parse(swarm.agents || '[]'),
+      agents: safeParseAgents(swarm.agents),
       enabled: swarm.enabled,
       createdAt: swarm.createdAt,
     }, { status: 201 })

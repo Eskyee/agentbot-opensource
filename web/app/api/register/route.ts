@@ -68,32 +68,30 @@ export async function POST(request: NextRequest) {
     });
 
     if (referrer && referrer.id !== user.id) {
-      // Create referral record
-      await prisma.referral.create({
-        data: {
-          referrerId: referrer.id,
-          referredId: user.id,
-          referralCode: referralCode.toUpperCase(),
-          discountApplied: true,
-        },
-      });
-
-      // Give new user £10 discount credit
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { referralCredits: { increment: 10 } },
-      });
-
-      // Give referrer £10 credit
-      await prisma.user.update({
-        where: { id: referrer.id },
-        data: { referralCredits: { increment: 10 } },
-      });
+      // Atomic: referral record + both credit grants succeed or fail together
+      await prisma.$transaction([
+        prisma.referral.create({
+          data: {
+            referrerId: referrer.id,
+            referredId: user.id,
+            referralCode: referralCode.toUpperCase(),
+            discountApplied: true,
+          },
+        }),
+        prisma.user.update({
+          where: { id: user.id },
+          data: { referralCredits: { increment: 10 } },
+        }),
+        prisma.user.update({
+          where: { id: referrer.id },
+          data: { referralCredits: { increment: 10 } },
+        }),
+      ]);
     }
   }
 
   sendWelcomeEmail(email, user.name || 'there').catch(console.error);
-  alertNewUser(email, 'email').catch(() => {});
+  alertNewUser(email, 'email').catch((err) => console.error('[Register] alertNewUser failed:', err));
 
   // Auto-login after signup — no redirect to login page
   const sessionToken = await createUserSession(user.id);

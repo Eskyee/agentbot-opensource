@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomBytes } from 'crypto'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
@@ -131,7 +132,7 @@ export async function POST(req: NextRequest) {
 
   if (action === 'add') {
     // Generate verification token
-    const verificationToken = Math.random().toString(36).substring(2, 15)
+    const verificationToken = randomBytes(16).toString('hex')
 
     await prisma.userSetting.create({
       data: {

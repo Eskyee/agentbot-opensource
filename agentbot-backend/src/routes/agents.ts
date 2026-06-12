@@ -492,7 +492,7 @@ router.get('/:id/wallet', async (req: Request, res: Response) => {
     const userId = (req as any).userId || (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const ownership = await checkOwnership(agentId, userId, res);
+    const ownership = await assertOwnership(req, res, agentId);
     if (!ownership) return;
 
     const wallet = await AgentKitService.getOrCreateAgentWallet(userId, agentId);
@@ -512,7 +512,7 @@ router.get('/:id/wallet/balance', async (req: Request, res: Response) => {
     const userId = (req as any).userId || (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const ownership = await checkOwnership(agentId, userId, res);
+    const ownership = await assertOwnership(req, res, agentId);
     if (!ownership) return;
 
     const balances = await AgentKitService.getBalances(agentId);
@@ -532,7 +532,7 @@ router.post('/:id/wallet/send', async (req: Request, res: Response) => {
     const userId = (req as any).userId || (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const ownership = await checkOwnership(agentId, userId, res);
+    const ownership = await assertOwnership(req, res, agentId);
     if (!ownership) return;
 
     const { toAddress, amount } = req.body;

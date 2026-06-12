@@ -35,7 +35,7 @@ router.get('/x-monitor', authenticateCron, async (req: Request, res: Response) =
   try {
     // 1. Find users with X connected
     const usersWithX = await pool.query(
-      'SELECT "userId", value FROM "UserSetting" WHERE key = $1',
+      'SELECT "userId", value FROM "UserSetting" WHERE key = $1 LIMIT 500',
       ['x_api_account']
     );
 

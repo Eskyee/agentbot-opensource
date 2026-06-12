@@ -210,7 +210,7 @@ export async function getUserPoints(userId: string): Promise<number> {
     where: { userId, key: 'gamification_points' }
   })
 
-  return setting ? parseInt(setting.value) || 0 : 0
+  return setting ? parseInt(setting.value, 10) || 0 : 0
 }
 
 /**
@@ -263,7 +263,7 @@ export async function updateLoginStreak(userId: string): Promise<{ streak: numbe
       const streakSetting = await prisma.userSetting.findFirst({
         where: { userId, key: 'login_streak' }
       })
-      streak = streakSetting ? parseInt(streakSetting.value) + 1 : 1
+      streak = streakSetting ? parseInt(streakSetting.value, 10) + 1 : 1
     } else if (diffDays > 1) {
       // Streak broken
       streak = 1
@@ -272,7 +272,7 @@ export async function updateLoginStreak(userId: string): Promise<{ streak: numbe
       const streakSetting = await prisma.userSetting.findFirst({
         where: { userId, key: 'login_streak' }
       })
-      streak = streakSetting ? parseInt(streakSetting.value) : 1
+      streak = streakSetting ? parseInt(streakSetting.value, 10) : 1
     }
   }
 
@@ -322,7 +322,7 @@ export async function getLeaderboard(limit: number = 10): Promise<Array<{
   })
 
   return usersWithPoints.map(setting => {
-    const points = parseInt(setting.value) || 0
+    const points = parseInt(setting.value, 10) || 0
     const { level, title } = calculateLevel(points)
     return {
       userId: setting.userId,
