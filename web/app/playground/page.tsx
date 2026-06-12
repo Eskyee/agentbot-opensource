@@ -1074,11 +1074,14 @@ function BuilderView({
     setConsoleCleared(false)
   }, [generation, error, isGenerating])
 
-  // Rotate a build verb every 1.6s while generating
+  // Rotate a build verb every 1.3s while generating (Claude-style thinking words)
   const [verbIndex, setVerbIndex] = useState(0)
   useEffect(() => {
-    if (!isGenerating) return
-    const id = setInterval(() => setVerbIndex((i) => i + 1), 1600)
+    if (!isGenerating) {
+      setVerbIndex(0)
+      return
+    }
+    const id = setInterval(() => setVerbIndex((i) => i + 1), 1300)
     return () => clearInterval(id)
   }, [isGenerating])
   const spinnerVerb = SPINNER_VERBS[verbIndex % SPINNER_VERBS.length]

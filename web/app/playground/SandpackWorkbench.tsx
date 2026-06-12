@@ -18,7 +18,7 @@
  */
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   SandpackProvider,
   SandpackPreview,
@@ -171,6 +171,45 @@ function EditSync({ onFilesChange }: { onFilesChange?: (files: { path: string; c
   return null
 }
 
+// Claude-style "thinking" verbs shown while the live preview boots/bundles.
+const BOOT_VERBS = [
+  'Spinning up the sandbox',
+  'Installing dependencies',
+  'Transpiling components',
+  'Wiring up React',
+  'Bundling modules',
+  'Resolving imports',
+  'Warming the preview',
+  'Painting first frame',
+  'Almost there',
+]
+
+/** Overlay that shows rotating verbs until Sandpack reports the preview is running. */
+function BootOverlay() {
+  const { sandpack } = useSandpack()
+  const [verb, setVerb] = useState(0)
+  const booting = sandpack.status === 'initial' || sandpack.status === 'idle'
+
+  useEffect(() => {
+    if (!booting) return
+    const id = setInterval(() => setVerb((v) => v + 1), 1400)
+    return () => clearInterval(id)
+  }, [booting])
+
+  if (!booting) return null
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/85 backdrop-blur-sm">
+      <div className="text-center">
+        <div className="mx-auto mb-4 h-5 w-5 animate-spin rounded-full border-2 border-zinc-700 border-t-orange-500" />
+        <div className="font-mono text-[11px] uppercase tracking-[0.25em] text-orange-500" aria-live="polite">
+          {BOOT_VERBS[verb % BOOT_VERBS.length]}…
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /** Surfaces compile/runtime errors for the AI fix loop. */
 function ErrorReporter({ onError }: { onError?: (message: string | null) => void }) {
   const { sandpack } = useSandpack()
@@ -225,13 +264,16 @@ export default function SandpackWorkbench({
         autoReload: true,
         recompileMode: 'delayed',
         recompileDelay: 600,
+        // Generous bundler timeout — the hosted bundler can be slow on cold start
+        bundlerTimeOut: 60_000,
       }}
     >
       <FileUpdater files={files} />
       <EditSync onFilesChange={onFilesChange} />
       <ErrorReporter onError={onError} />
       {mode === 'preview' ? (
-        <div className="flex h-full min-h-[488px] flex-col">
+        <div className="relative flex h-full min-h-[488px] flex-col">
+          <BootOverlay />
           <SandpackPreview
             showOpenInCodeSandbox={false}
             showRefreshButton
