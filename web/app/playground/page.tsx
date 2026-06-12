@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import {
   Archive,
   Check,
@@ -12,7 +13,6 @@ import {
   ExternalLink,
   FileText,
   Globe2,
-  Loader2,
   Maximize2,
   Minus,
   Monitor,
@@ -23,6 +23,17 @@ import {
   Tablet,
   Terminal,
 } from 'lucide-react'
+import { Spinner } from '@/app/components/ui/spinner'
+
+// Sandpack is heavy — load it client-side only, when the builder renders.
+const SandpackWorkbench = dynamic(() => import('./SandpackWorkbench'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full min-h-[488px] items-center justify-center bg-black text-[10px] uppercase tracking-widest text-zinc-600">
+      Booting live preview…
+    </div>
+  ),
+})
 
 type PlaygroundFile = {
   path: string
@@ -360,6 +371,8 @@ export default function PlaygroundPage() {
   const [sessionId, setSessionId] = useState('LOCAL')
   const [hydrated, setHydrated] = useState(false)
   const [storage, setStorage] = useState<'local' | 'server'>('local')
+  // Bumped on every AI generation so the live workbench remounts with fresh files
+  const [generationVersion, setGenerationVersion] = useState(0)
 
   useEffect(() => {
     setSessionId(createSessionId())
@@ -431,7 +444,7 @@ export default function PlaygroundPage() {
         </div>
         <div className="min-h-[calc(100vh-9rem)] bg-black flex items-center justify-center">
           <div className="max-w-md px-6 text-center">
-            <Loader2 className="mx-auto h-6 w-6 animate-spin text-orange-500" />
+            <div className="mx-auto w-fit"><Spinner size={24} /></div>
             <div className="mt-4 text-[10px] uppercase tracking-widest text-orange-500">Booting sandbox</div>
             <p className="mt-3 text-sm leading-relaxed text-zinc-500">
               Spinning up a Fly machine for your session - takes a few seconds on first run.
@@ -465,6 +478,25 @@ export default function PlaygroundPage() {
       project.id === activeProjectId ? (nextProject = { ...project, ...patch }) : project
     )))
     if (nextProject) syncProject(nextProject, extra)
+  }
+
+  function handleWorkbenchEdit(edited: { path: string; content: string }[]) {
+    const current = activeProject?.generation
+    if (!current) return
+    const changed = edited.some(
+      (entry) => current.files.find((file) => file.path === entry.path)?.content !== entry.content,
+    )
+    if (!changed) return
+    updateActiveProject({
+      generation: {
+        ...current,
+        files: current.files.map((file) => {
+          const entry = edited.find((item) => item.path === file.path)
+          return entry ? { ...file, content: entry.content } : file
+        }),
+      },
+      lastActive: 'now',
+    })
   }
 
   function newProject() {
@@ -688,10 +720,18 @@ export default function PlaygroundPage() {
 
     try {
       // Abort hung generations so the builder never sticks in "generating"
+      // Follow-up prompts iterate on the current (possibly hand-edited) files
+      const currentFiles = activeProject.generation?.files
+        .filter((file) => file.path === 'src/App.tsx' || file.path === 'src/index.css')
+        .map((file) => ({ path: file.path, content: file.content }))
       const response = await fetch('/api/playground/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: cleanPrompt, model }),
+        body: JSON.stringify({
+          prompt: cleanPrompt,
+          model,
+          ...(currentFiles && currentFiles.length > 0 ? { files: currentFiles } : {}),
+        }),
         signal: AbortSignal.timeout(120_000),
       })
       const body = await response.json()
@@ -713,7 +753,8 @@ export default function PlaygroundPage() {
         status: activeProject.status === 'PUBLISHED' ? 'PUBLISHED' : 'IDLE',
         lastActive: 'now',
       }, { prompt: cleanPrompt, provider: data.provider, model: data.model })
-      setSelectedFile(data.generation.files[0]?.path ?? '.gitignore')
+      setSelectedFile(data.generation.files.find((file) => file.path === 'src/App.tsx')?.path ?? data.generation.files[0]?.path ?? '.gitignore')
+      setGenerationVersion((version) => version + 1)
     } catch (err) {
       if (err instanceof Error && err.name === 'TimeoutError') {
         setError('Generation timed out after 2 minutes. Try a shorter prompt or retry.')
@@ -813,6 +854,8 @@ export default function PlaygroundPage() {
           storage={storage}
           submit={submit}
           onDownload={() => downloadProject()}
+          workbenchKey={`${activeProjectId}:${generationVersion}`}
+          onWorkbenchEdit={handleWorkbenchEdit}
         />
       )}
     </main>
@@ -839,6 +882,8 @@ function BuilderView({
   storage,
   submit,
   onDownload,
+  workbenchKey,
+  onWorkbenchEdit,
 }: {
   prompt: string
   setPrompt: (value: string) => void
@@ -859,6 +904,8 @@ function BuilderView({
   storage: 'local' | 'server'
   submit: (prompt?: string) => Promise<void>
   onDownload: () => void
+  workbenchKey: string
+  onWorkbenchEdit: (files: { path: string; content: string }[]) => void
 }) {
   const [consoleFilter, setConsoleFilter] = useState<ConsoleLevel>('all')
   const [consoleCleared, setConsoleCleared] = useState(false)
@@ -941,7 +988,7 @@ function BuilderView({
                   disabled={isGenerating || prompt.trim().length < 12}
                   className="inline-flex h-8 items-center gap-2 bg-white px-3 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  {isGenerating ? <Spinner size={14} /> : <Send className="h-3.5 w-3.5" />}
                   Send
                 </button>
               </div>
@@ -1015,7 +1062,7 @@ function BuilderView({
             {isGenerating ? (
               <div className="h-full min-h-[520px] border border-zinc-900 bg-black flex items-center justify-center">
                 <div className="max-w-md px-6 text-center">
-                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-orange-500" />
+                  <div className="mx-auto w-fit"><Spinner size={24} /></div>
                   <div className="mt-4 text-[10px] uppercase tracking-widest text-orange-500" aria-live="polite">{spinnerVerb}…</div>
                   <h2 className="mt-3 text-2xl font-bold uppercase tracking-tighter">Building app</h2>
                   <p className="mt-3 text-sm leading-relaxed text-zinc-500">
@@ -1039,13 +1086,13 @@ function BuilderView({
               </div>
             ) : pane === 'preview' ? (
               <div className="h-full min-h-[520px] overflow-auto border border-zinc-900 bg-zinc-950 p-4">
-                <div className={`mx-auto h-full min-h-[488px] bg-white transition-all ${VIEWPORTS[viewport]}`}>
+                <div className={`mx-auto h-full min-h-[488px] transition-all ${VIEWPORTS[viewport]}`}>
                   {generation ? (
-                    <iframe
-                      title="OpenClaude playground preview"
-                      srcDoc={generation.previewHtml}
-                      sandbox="allow-scripts allow-forms"
-                      className="h-full min-h-[488px] w-full border-0 bg-white"
+                    <SandpackWorkbench
+                      generationKey={workbenchKey}
+                      files={files}
+                      mode="preview"
+                      onFilesChange={onWorkbenchEdit}
                     />
                   ) : (
                     <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
@@ -1077,10 +1124,22 @@ function BuilderView({
                 <div className="border-b border-zinc-900 px-3 py-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
                   <FileText className="h-3.5 w-3.5" />
                   {activeFile?.path ?? 'No file selected'}
+                  {generation && (activeFile?.path === 'src/App.tsx' || activeFile?.path === 'src/index.css') && (
+                    <span className="ml-auto text-orange-500">Editable · live reload</span>
+                  )}
                 </div>
-                <pre className="h-[488px] overflow-auto p-4 text-xs leading-relaxed text-zinc-300">
-                  <code>{activeFile?.content ?? 'Generate a project to inspect code.'}</code>
-                </pre>
+                {generation && (activeFile?.path === 'src/App.tsx' || activeFile?.path === 'src/index.css') ? (
+                  <SandpackWorkbench
+                    generationKey={workbenchKey}
+                    files={files}
+                    mode="code"
+                    onFilesChange={onWorkbenchEdit}
+                  />
+                ) : (
+                  <pre className="h-[488px] overflow-auto p-4 text-xs leading-relaxed text-zinc-300">
+                    <code>{activeFile?.content ?? 'Generate a project to inspect code.'}</code>
+                  </pre>
+                )}
               </div>
             )}
           </div>

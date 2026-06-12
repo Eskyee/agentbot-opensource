@@ -23,6 +23,7 @@
     "@base-org/account": "^2.5.2",
     "@base-org/account-ui": "^1.0.1",
     "@base-ui/react": "^1.3.0",
+    "@codesandbox/sandpack-react": "^2.20.0",
     "@coinbase/cdp-sdk": "^1.49.2",
     "@coinbase/onchainkit": "^1.1.2",
     "@neondatabase/serverless": "^1.0.2",

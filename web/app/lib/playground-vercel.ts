@@ -87,7 +87,8 @@ export async function deployPlaygroundToVercel(params: {
     body: JSON.stringify({
       name: projectName,
       project: process.env.VERCEL_PLAYGROUND_PROJECT_ID?.trim() || undefined,
-      target: 'preview',
+      // No `target`: omitting it creates a preview deployment. The API rejects
+      // target:'preview' (only 'production'/'staging'/custom env are valid).
       files,
       projectSettings: {
         framework: 'vite',

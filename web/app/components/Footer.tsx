@@ -23,6 +23,7 @@ const COLUMNS = [
     heading: 'Builders',
     links: [
       { href: '/documentation', label: 'Docs' },
+      { href: '/design-system', label: 'Design System' },
       { href: '/open-agents', label: 'Open Agents' },
       { href: '/coding-agent', label: 'Coding Agent' },
       { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },

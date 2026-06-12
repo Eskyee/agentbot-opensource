@@ -242,12 +242,14 @@ function synthesizePreviewHtml(title: string, summary: string, files: Playground
 </html>`
 }
 
-function buildSystemPrompt() {
+function buildSystemPrompt(isIteration: boolean) {
   return `You are an app-builder assistant running inside Agentbot Playground.
 
 Return ONLY valid JSON. Do not wrap it in markdown.
 
-Build a small, polished React app from the user's request. Output:
+${isIteration
+    ? 'The user already has an app. Apply their requested changes to the CURRENT FILES provided, preserving everything they did not ask to change. Return the complete updated files.'
+    : "Build a small, polished React app from the user's request."} Output:
 - title: short project title
 - summary: one sentence
 - files: produce only these editable app files:
@@ -265,7 +267,15 @@ Code requirements:
 - JSON strings must escape newlines correctly.`
 }
 
-function buildUserPrompt(prompt: string) {
+type CurrentFile = { path: string; content: string }
+
+function buildUserPrompt(prompt: string, currentFiles?: CurrentFile[]) {
+  if (currentFiles && currentFiles.length > 0) {
+    const fileBlocks = currentFiles
+      .map((file) => `--- CURRENT FILE: ${file.path} ---\n${file.content.slice(0, 12_000)}`)
+      .join('\n\n')
+    return `Apply this change to the existing app:\n\n${prompt}\n\n${fileBlocks}\n\nReturn the full updated src/App.tsx and src/index.css.`
+  }
   return `Create this app in the playground:\n\n${prompt}\n\nThe examples available in the UI are: ${EXAMPLE_PROMPTS.join(', ')}.`
 }
 
@@ -309,7 +319,7 @@ async function repairGenerationJson(content: string, upstream: ReturnType<typeof
   return normalizeGeneration(extractJson(repaired))
 }
 
-async function generateWithVercelGateway(prompt: string, model: string) {
+async function generateWithVercelGateway(prompt: string, model: string, currentFiles?: CurrentFile[]) {
   const upstreams = resolvePlaygroundGatewayUpstreams()
   if (upstreams.length === 0) {
     throw new Error('Vercel AI Gateway is not configured.')
@@ -324,8 +334,8 @@ async function generateWithVercelGateway(prompt: string, model: string) {
       body: JSON.stringify({
         model: normalizeGatewayModel(model, upstream.provider),
         messages: [
-          { role: 'system', content: buildSystemPrompt() },
-          { role: 'user', content: buildUserPrompt(prompt) },
+          { role: 'system', content: buildSystemPrompt(Boolean(currentFiles?.length)) },
+          { role: 'user', content: buildUserPrompt(prompt, currentFiles) },
         ],
         temperature: 0.35,
         max_tokens: PLAYGROUND_MAX_TOKENS,
@@ -530,7 +540,7 @@ export async function POST(req: NextRequest) {
     return jsonResponse('Too many requests', 429)
   }
 
-  let body: { prompt?: unknown; model?: unknown } = {}
+  let body: { prompt?: unknown; model?: unknown; files?: unknown } = {}
   try {
     body = await req.json()
   } catch {
@@ -539,6 +549,17 @@ export async function POST(req: NextRequest) {
 
   const prompt = asString(body.prompt).trim()
   const model = asString(body.model, DEFAULT_MODEL).trim() || DEFAULT_MODEL
+
+  // Optional current files → iteration mode (edit instead of regenerate)
+  const currentFiles: CurrentFile[] = Array.isArray(body.files)
+    ? (body.files as unknown[])
+        .map((entry) => {
+          const file = entry as { path?: unknown; content?: unknown }
+          return { path: asString(file?.path), content: asString(file?.content) }
+        })
+        .filter((file) => (file.path === 'src/App.tsx' || file.path === 'src/index.css') && file.content.length > 0)
+        .slice(0, 2)
+    : []
 
   if (prompt.length < 12) {
     return jsonResponse('Describe the app in at least 12 characters.', 400)
@@ -557,7 +578,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (resolvePlaygroundGatewayUpstreams().length > 0) {
-      const generation = await generateWithVercelGateway(prompt, model)
+      const generation = await generateWithVercelGateway(prompt, model, currentFiles.length > 0 ? currentFiles : undefined)
       return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation })
     }
 
