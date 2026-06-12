@@ -486,6 +486,27 @@ export default function PlaygroundPage() {
     })
   }
 
+  function remixProject(projectId: string) {
+    const source = projects.find((item) => item.id === projectId)
+    if (!source?.generation) return
+    const project: PlaygroundProject = {
+      id: createId(),
+      name: `${source.name.replace(/-remix(-\d+)?$/, '')}-remix`.slice(0, 64),
+      status: 'IDLE',
+      template: source.template,
+      lastActive: 'now',
+      generation: { ...source.generation, files: source.generation.files.map((file) => ({ ...file })) },
+      messages: source.messages ? [...source.messages] : undefined,
+    }
+    setProjects((current) => [project, ...current])
+    setActiveProjectId(project.id)
+    setSelectedFile('src/App.tsx')
+    setPane('preview')
+    setView('builder')
+    setError(null)
+    syncProject(project)
+  }
+
   function newProject() {
     const name = window.prompt('Project name', 'untitled')?.trim().slice(0, 64) || 'untitled'
     const project: PlaygroundProject = {
@@ -941,7 +962,7 @@ export default function PlaygroundPage() {
           onArchive={archiveProject}
         />
       ) : view === 'apps' ? (
-        <AppsView projects={publishedProjects} onOpen={openProject} onPublish={() => setView('publish')} onDownload={downloadProject} />
+        <AppsView projects={publishedProjects} onOpen={openProject} onPublish={() => setView('publish')} onDownload={downloadProject} onRemix={remixProject} />
       ) : view === 'publish' ? (
         <PublishView
           project={activeProject}
@@ -1061,6 +1082,88 @@ function BuilderView({
     return () => clearInterval(id)
   }, [isGenerating])
   const spinnerVerb = SPINNER_VERBS[verbIndex % SPINNER_VERBS.length]
+
+  const heroMode = !generation && messages.length === 0 && !isGenerating
+
+  if (heroMode) {
+    return (
+      <div className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-5 py-16">
+        <div className="w-full max-w-2xl text-center">
+          <div className="text-[10px] uppercase tracking-widest text-orange-500">Agentbot Playground</div>
+          <h1 className="mt-4 text-4xl font-bold uppercase leading-[0.9] tracking-tighter sm:text-5xl">
+            What do you want<br />to <span className="text-orange-500">create?</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-zinc-500">
+            Prompt. Build. Publish. Describe an app and watch it stream into a live preview.
+          </p>
+
+          <div className="mt-8 border border-zinc-800 bg-zinc-950 text-left">
+            <textarea
+              value={prompt}
+              onChange={(event) => setPrompt(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && (!event.shiftKey || event.metaKey || event.ctrlKey)) {
+                  event.preventDefault()
+                  void submit()
+                }
+              }}
+              autoFocus
+              className="min-h-32 w-full resize-none bg-transparent p-4 text-sm leading-relaxed text-white placeholder:text-zinc-600 focus:outline-none"
+              placeholder="Describe the app you want to build…"
+            />
+            <div className="flex items-center justify-between gap-2 border-t border-zinc-900 px-3 py-2">
+              <select
+                value={model}
+                onChange={(event) => setModel(event.target.value)}
+                aria-label="Model"
+                className="border border-zinc-800 bg-black px-1.5 py-1 text-[10px] uppercase tracking-widest text-zinc-400 focus:border-zinc-600 focus:outline-none"
+              >
+                {MODEL_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => void submit()}
+                disabled={prompt.trim().length < 12}
+                className="inline-flex h-8 items-center gap-2 bg-white px-4 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Send className="h-3.5 w-3.5" />
+                Build
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {EXAMPLES.map((example) => (
+              <button
+                key={example.title}
+                type="button"
+                onClick={() => setPrompt(example.prompt)}
+                className="border border-zinc-900 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:border-zinc-700 hover:text-white"
+              >
+                {example.title}
+              </button>
+            ))}
+          </div>
+
+          {error && (
+            <div className="mx-auto mt-5 max-w-md border border-red-900/70 bg-red-950/20 p-3 text-left text-xs leading-relaxed text-red-400">
+              {error}
+            </div>
+          )}
+
+          <div className="mt-10 text-[10px] uppercase tracking-widest text-zinc-700">
+            Powered by{' '}
+            <a href="https://x.com/XiaomiMiMo" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-orange-500">
+              Xiaomi MiMo
+            </a>
+            {' '}· MiMo-V2.5-Pro · Free
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="grid min-h-[calc(100vh-9rem)] lg:grid-cols-[440px_1fr]">
@@ -1184,6 +1287,9 @@ function BuilderView({
 
           <div className="border-t border-zinc-900 px-4 py-3 flex items-center justify-between text-[10px] uppercase tracking-widest text-zinc-600">
             <span>Files {files.length}</span>
+            <a href="https://x.com/XiaomiMiMo" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500">
+              MiMo · Free
+            </a>
             <span>Session {sessionId}</span>
           </div>
         </div>
@@ -1582,11 +1688,13 @@ function AppsView({
   onOpen,
   onPublish,
   onDownload,
+  onRemix,
 }: {
   projects: PlaygroundProject[]
   onOpen: (id: string) => void
   onPublish: () => void
   onDownload: (project: PlaygroundProject) => void
+  onRemix: (id: string) => void
 }) {
   return (
     <section className="max-w-5xl px-6 py-10">
@@ -1660,6 +1768,16 @@ function AppsView({
                 >
                   Zip
                   <Download className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onRemix(project.id)}
+                  disabled={!project.generation}
+                  title="Duplicate into a new project and keep building"
+                  className="inline-flex items-center gap-2 border border-orange-500/40 px-3 py-2 text-[10px] uppercase tracking-widest text-orange-500 hover:bg-orange-500/10 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  Remix
+                  <Copy className="h-3.5 w-3.5" />
                 </button>
               </div>
                   </>
