@@ -14,11 +14,11 @@ gateway and runtime, so these primitives are ours to build, not rent.
 
 ## Ranked recommendations
 
-### 1. Fast Apply — edit files without rewriting them  ◑ endpoint SHIPPED, wiring pending
-**Status:** `POST /v1/apply` is live (auth + AI rate-limit), backed by
-`lib/fast-apply.ts` (MiMo Flash merge, deterministic, fence-stripping, upstream
-failover). Next: rewire the Playground follow-up path and OpenClaude to emit lazy
-edits and call it, instead of regenerating whole files.
+### 1. Fast Apply — edit files without rewriting them  ✓ SHIPPED + wired
+**Status:** `POST /v1/apply` live (auth + AI rate-limit), backed by
+`lib/fast-apply.ts`. Wired into the Playground/OpenClaude follow-up path:
+iterations send lazy edits that the fast model merges, with safe fallback to a
+full regeneration. Initial builds keep the streaming preview.
 **What:** A cheap "apply model" merges a terse AI-generated edit into a file at
 thousands of tok/s, instead of the big model re-emitting the whole file.
 **Why it's #1 for us:** the Playground and coding-agent currently regenerate
@@ -31,7 +31,7 @@ the merged file. Playground's iteration path and OpenClaude both call it instead
 of full regeneration. Pairs perfectly with the streaming work already shipped.
 **Effort:** medium. **Moat:** high — this is the single biggest UX/cost lever.
 
-### 2. Context Compaction — keep 24/7 agents alive cheaply  ★ on-brand
+### 2. Context Compaction — keep 24/7 agents alive cheaply  ✓ SHIPPED
 **What:** Compress old conversation turns (verbatim-preserving the important bits)
 to reclaim context window space on long-running agents.
 **Why it fits:** Agentbot's whole pitch is "always on." An OpenClaw agent running
@@ -48,7 +48,7 @@ Morph sells this as a standalone product ("Model Router") — validates it's a r
 category. Next step: feed real per-model success/latency stats back into the
 ladder so routing improves from production data.
 
-### 4. A2A Agent Cards — make the agent bus interoperable  ★ strategic
+### 4. A2A Agent Cards — make the agent bus interoperable  ◑ discovery SHIPPED
 **What:** A2A (Google's protocol, now the Linux Foundation standard that absorbed
 IBM's ACP) describes each agent with a JSON "Agent Card": identity, capabilities,
 skills, auth. Any agent can discover any other by reading its card.
