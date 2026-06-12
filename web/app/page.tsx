@@ -94,6 +94,56 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ━━━ HOW IT WORKS — architecture diagram ━━━ */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-10 text-center">How it works</div>
+          <svg viewBox="0 0 720 200" role="img" aria-label="Architecture: you message your agent, the OpenClaw runtime in an isolated container thinks with MiMo and acts on Telegram, Discord and WhatsApp" className="w-full h-auto">
+            {/* You */}
+            <rect x="10" y="70" width="130" height="60" fill="none" stroke="#27272a" />
+            <text x="75" y="96" textAnchor="middle" fill="#f97316" fontSize="11" fontFamily="monospace" letterSpacing="2">YOU</text>
+            <text x="75" y="114" textAnchor="middle" fill="#71717a" fontSize="9" fontFamily="monospace">one message</text>
+            {/* arrow */}
+            <line x1="140" y1="100" x2="200" y2="100" stroke="#3f3f46" strokeDasharray="4 4" />
+            <polygon points="200,96 208,100 200,104" fill="#f97316" />
+            {/* Agent container */}
+            <rect x="210" y="20" width="300" height="160" fill="none" stroke="#f97316" strokeOpacity="0.5" />
+            <text x="360" y="40" textAnchor="middle" fill="#71717a" fontSize="9" fontFamily="monospace" letterSpacing="2">YOUR ISOLATED SERVER</text>
+            <rect x="235" y="55" width="115" height="50" fill="#09090b" stroke="#27272a" />
+            <text x="292" y="76" textAnchor="middle" fill="#fafafa" fontSize="10" fontFamily="monospace">OpenClaw</text>
+            <text x="292" y="92" textAnchor="middle" fill="#71717a" fontSize="8" fontFamily="monospace">runtime 24/7</text>
+            <rect x="370" y="55" width="115" height="50" fill="#09090b" stroke="#27272a" />
+            <text x="427" y="76" textAnchor="middle" fill="#fafafa" fontSize="10" fontFamily="monospace">MiMo v2.5</text>
+            <text x="427" y="92" textAnchor="middle" fill="#71717a" fontSize="8" fontFamily="monospace">reasoning</text>
+            <line x1="350" y1="80" x2="370" y2="80" stroke="#3f3f46" />
+            <rect x="235" y="120" width="250" height="40" fill="#09090b" stroke="#27272a" />
+            <text x="360" y="144" textAnchor="middle" fill="#71717a" fontSize="9" fontFamily="monospace">memory · skills · wallet · heartbeat</text>
+            {/* arrow out */}
+            <line x1="510" y1="100" x2="570" y2="100" stroke="#3f3f46" strokeDasharray="4 4" />
+            <polygon points="570,96 578,100 570,104" fill="#f97316" />
+            {/* Channels */}
+            <rect x="580" y="40" width="130" height="34" fill="none" stroke="#27272a" />
+            <text x="645" y="61" textAnchor="middle" fill="#a1a1aa" fontSize="9" fontFamily="monospace">Telegram</text>
+            <rect x="580" y="83" width="130" height="34" fill="none" stroke="#27272a" />
+            <text x="645" y="104" textAnchor="middle" fill="#a1a1aa" fontSize="9" fontFamily="monospace">Discord</text>
+            <rect x="580" y="126" width="130" height="34" fill="none" stroke="#27272a" />
+            <text x="645" y="147" textAnchor="middle" fill="#a1a1aa" fontSize="9" fontFamily="monospace">WhatsApp</text>
+          </svg>
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-px bg-zinc-900 text-left">
+            {[
+              { step: '01', title: 'Deploy', body: 'Pick a plan, name your agent. It boots on its own isolated server in about 2 minutes.' },
+              { step: '02', title: 'Connect', body: 'Link Telegram, Discord, or WhatsApp. Your agent shows up where you already are.' },
+              { step: '03', title: 'Delegate', body: 'Give it work. It remembers, learns your style, and runs while you sleep.' },
+            ].map((item) => (
+              <div key={item.step} className="bg-black p-6">
+                <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-2">{item.step} — {item.title}</div>
+                <p className="text-zinc-500 text-sm leading-relaxed">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ━━━ THREE TRUTHS ━━━ */}
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24 text-center">

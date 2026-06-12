@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import Providers from "./providers";
 import Navbar from "./components/Navbar";
+import SiteBreadcrumbs from "./components/SiteBreadcrumbs";
 import ConditionalFooter from "./components/ConditionalFooter";
 import { StatusBar } from "./components/StatusBar";
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -165,6 +166,7 @@ export default function RootLayout({
         <Providers>
           <DashboardDataProvider>
             <Navbar />
+            <SiteBreadcrumbs />
             <main id="main-content" className="flex-1" tabIndex={-1}>
               {children}
             </main>

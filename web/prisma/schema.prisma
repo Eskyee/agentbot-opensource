@@ -511,14 +511,15 @@ model UserSetting {
 }
 
 model ManagedAgentSession {
-  id                String              @id
+  id                String              @id @default(uuid())
   userId            String
   type              String
-  title             String
+  title             String              @default("")
   workflowRunId     String?             @unique
   providerSessionId String?
   agentId           String?
   environmentId     String?
+  metadata          Json?               @default("{}")
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)

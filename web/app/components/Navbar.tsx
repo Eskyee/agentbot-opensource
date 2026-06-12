@@ -11,13 +11,22 @@ import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 // LOGGED-IN:  Dashboard → user menu (Settings, Sign Out)
 // ─────────────────────────────────────────────────────────────────────────────
 
+const PRODUCT_LINKS = [
+  { href: '/playground', label: 'Playground', desc: 'Flagship AI app builder' },
+  { href: '/coding-agent', label: 'Coding Agent', desc: 'Agent that ships code' },
+  { href: '/vercel-gateway', label: 'Gateway', desc: 'OpenAI-compatible LLM API' },
+  { href: '/openclaw', label: 'OpenClaw', desc: 'The 24/7 agent runtime' },
+];
+
 export default function Navbar() {
   const { data: session, status } = useCustomSession();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const productsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
@@ -28,10 +37,14 @@ export default function Navbar() {
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false)
+      if (productsRef.current && !productsRef.current.contains(e.target as Node)) setProductsOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+
+  // Close dropdowns on route change
+  useEffect(() => { setProductsOpen(false); setUserMenuOpen(false); setMenuOpen(false); }, [pathname])
 
   const isAdmin = session?.user?.isAdmin === true;
   const walletAddress = getWalletAddress(session?.user?.email);
@@ -64,11 +77,11 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <NavLink href="/openclaw" current={pathname}>OpenClaw</NavLink>
+              <ProductsDropdown open={productsOpen} setOpen={setProductsOpen} dropdownRef={productsRef} current={pathname} />
             </>
           ) : (
             <>
-              <NavLink href="/openclaw" current={pathname}>OpenClaw</NavLink>
+              <ProductsDropdown open={productsOpen} setOpen={setProductsOpen} dropdownRef={productsRef} current={pathname} />
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
               <NavLink href="/social" current={pathname}>Social</NavLink>
@@ -155,22 +168,31 @@ export default function Navbar() {
           <div className="flex flex-col p-6 gap-1 pb-12">
             {isLoggedIn ? (
               <>
+                <MobileSection>Workspace</MobileSection>
                 <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
-                <MobileLink href="/openclaw" onClick={closeMenu}>OpenClaw</MobileLink>
                 <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                 <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
                 {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
+                <MobileSection>Products</MobileSection>
+                {PRODUCT_LINKS.map((p) => (
+                  <MobileLink key={p.href} href={p.href} onClick={closeMenu}>{p.label}</MobileLink>
+                ))}
                 <button
                   onClick={() => { closeMenu(); customSignOut(); }}
-                  className="text-left text-xs py-2.5 px-3 text-zinc-500 hover:text-white w-full uppercase tracking-wider"
+                  className="text-left text-xs py-2.5 px-3 mt-2 text-zinc-500 hover:text-white w-full uppercase tracking-wider"
                 >
                   Sign out
                 </button>
               </>
             ) : (
               <>
-                <MobileLink href="/openclaw" onClick={closeMenu}>OpenClaw</MobileLink>
+                <MobileSection>Products</MobileSection>
+                {PRODUCT_LINKS.map((p) => (
+                  <MobileLink key={p.href} href={p.href} onClick={closeMenu}>{p.label}</MobileLink>
+                ))}
+                <MobileSection>Resources</MobileSection>
                 <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
+                <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
                 <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
                   <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">
@@ -186,6 +208,52 @@ export default function Navbar() {
         </div>
       )}
     </>
+  );
+}
+
+function ProductsDropdown({ open, setOpen, dropdownRef, current }: {
+  open: boolean;
+  setOpen: (v: boolean) => void;
+  dropdownRef: React.RefObject<HTMLDivElement>;
+  current: string;
+}) {
+  const isActive = PRODUCT_LINKS.some(p => current === p.href || current.startsWith(p.href + '/'));
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className={`flex items-center gap-1.5 text-[11px] uppercase tracking-widest transition-colors ${
+          isActive || open ? 'text-white' : 'text-zinc-500 hover:text-white'
+        }`}
+      >
+        Products
+        <svg className={`w-2.5 h-2.5 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none">
+          <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && (
+        <div role="menu" className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl z-50 overflow-hidden">
+          <div className="py-2">
+            {PRODUCT_LINKS.map((p) => (
+              <Link
+                key={p.href}
+                href={p.href}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2.5 hover:bg-zinc-900 transition-colors"
+              >
+                <span className={`block text-[11px] uppercase tracking-widest ${current.startsWith(p.href) ? 'text-orange-500' : 'text-zinc-200'}`}>
+                  {p.label}
+                </span>
+                <span className="block mt-0.5 text-[10px] text-zinc-600 normal-case tracking-normal">{p.desc}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -212,6 +280,14 @@ function UserMenuLink({ href, onClick, children }: { href: string; onClick: () =
     >
       {children}
     </Link>
+  );
+}
+
+function MobileSection({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-3 pt-5 pb-1.5 text-[9px] uppercase tracking-[0.24em] text-zinc-700 first:pt-1">
+      {children}
+    </div>
   );
 }
 

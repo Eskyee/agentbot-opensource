@@ -168,6 +168,25 @@ function externalUrl(value?: string | null) {
   return `https://${value.replace(/^\/+/, '')}`
 }
 
+// Rotating verbs shown while OpenClaude builds — keeps the wait alive.
+const SPINNER_VERBS = [
+  'Observing', 'Hill-climbing', 'Reverse-engineering', 'Verifying', 'Pressure-testing',
+  'Iterating', 'Decomposing', 'Pattern-matching', 'Weaving', 'Shaping', 'Binding',
+  'Leveling up', 'Cultivating', 'Ascending', 'Looting', 'Min-maxing', 'Grinding XP',
+  'Skill-checking', 'Boss-fighting', 'Jacking in', 'Console-cowboying', 'Neuromancing',
+  'Metaversing', 'Tessering', 'Folding space', 'Warp-driving', 'Making it so',
+  'Boldly going', 'Replicating', 'Holodeck-running', 'Grokking', 'Foundation-building',
+  'Psychohistorying', 'Bullet-timing', 'Interstellaring', 'Spiraling-out', 'Evolving',
+  'World-modeling', 'Context-engineering', 'Next-token-predicting', 'Summarizing',
+  'Parallelizing', 'Agent-spawning', 'Delegating', 'Caffeinating', 'Kerning',
+  'Flow-stating', 'Kaizen-improving', 'Samurai-coding', 'Spell-weaving', 'Rune-carving',
+  'Quest-completing', 'Achievement-unlocking', 'Speed-running', 'Git-pushing',
+  'Branch-merging', 'TypeScript-compiling', 'Rubber-duck-debugging', 'Yak-shaving',
+  'Ship-it-squirreling', 'Gradient-descending', 'Attention-heading', 'Tokenizing',
+  'Latent-space-traversing', 'Diffusion-denoising', 'Beam-searching', 'Fine-tuning',
+  'Stormlight-archiving', 'Shardblade-summoning', 'Bridge-four-running', 'OASIS-logging-in',
+] as const
+
 function buildConsoleEntries(generation: PlaygroundGeneration | null, error: string | null, isGenerating: boolean): ConsoleEntry[] {
   const entries: ConsoleEntry[] = []
 
@@ -668,10 +687,12 @@ export default function PlaygroundPage() {
     setView('builder')
 
     try {
+      // Abort hung generations so the builder never sticks in "generating"
       const response = await fetch('/api/playground/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: cleanPrompt, model }),
+        signal: AbortSignal.timeout(120_000),
       })
       const body = await response.json()
 
@@ -694,7 +715,11 @@ export default function PlaygroundPage() {
       }, { prompt: cleanPrompt, provider: data.provider, model: data.model })
       setSelectedFile(data.generation.files[0]?.path ?? '.gitignore')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'OpenClaude generation failed')
+      if (err instanceof Error && err.name === 'TimeoutError') {
+        setError('Generation timed out after 2 minutes. Try a shorter prompt or retry.')
+      } else {
+        setError(err instanceof Error ? err.message : 'OpenClaude generation failed')
+      }
     } finally {
       setIsGenerating(false)
     }
@@ -736,6 +761,8 @@ export default function PlaygroundPage() {
               <Plus className="h-3 w-3" />
               New project
             </button>
+            <a href="/coding-agent" className="hidden px-2 py-1 hover:text-white md:inline">Coding Agent</a>
+            <a href="/vercel-gateway" className="hidden px-2 py-1 hover:text-white md:inline">Gateway</a>
             <a href="/logout" className="hidden px-2 py-1 hover:text-white sm:inline">Sign out</a>
           </div>
         </div>
@@ -850,6 +877,15 @@ function BuilderView({
     setConsoleCleared(false)
   }, [generation, error, isGenerating])
 
+  // Rotate a build verb every 1.6s while generating
+  const [verbIndex, setVerbIndex] = useState(0)
+  useEffect(() => {
+    if (!isGenerating) return
+    const id = setInterval(() => setVerbIndex((i) => i + 1), 1600)
+    return () => clearInterval(id)
+  }, [isGenerating])
+  const spinnerVerb = SPINNER_VERBS[verbIndex % SPINNER_VERBS.length]
+
   return (
     <div className="grid min-h-[calc(100vh-9rem)] lg:grid-cols-[440px_1fr]">
       <aside className="border-b border-zinc-900 lg:border-b-0 lg:border-r">
@@ -858,7 +894,7 @@ function BuilderView({
             <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest">
               <span className="text-white">Chat</span>
               <span className={isGenerating ? 'text-orange-500' : 'text-zinc-600'}>
-                {isGenerating ? 'Building' : 'Idle'}
+                {isGenerating ? `${spinnerVerb}…` : 'Idle'}
               </span>
             </div>
             <span className="text-[10px] uppercase tracking-widest text-orange-500">OpenClaude</span>
@@ -912,8 +948,16 @@ function BuilderView({
             </div>
 
             {error && (
-              <div className="border border-red-900/70 bg-red-950/20 p-3 text-xs leading-relaxed text-red-400">
-                {error}
+              <div className="flex items-start justify-between gap-3 border border-red-900/70 bg-red-950/20 p-3 text-xs leading-relaxed text-red-400">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  onClick={() => void submit()}
+                  disabled={isGenerating || prompt.trim().length < 12}
+                  className="shrink-0 border border-red-900/70 px-2 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-red-950/40 disabled:opacity-40"
+                >
+                  Retry
+                </button>
               </div>
             )}
           </div>
@@ -972,7 +1016,7 @@ function BuilderView({
               <div className="h-full min-h-[520px] border border-zinc-900 bg-black flex items-center justify-center">
                 <div className="max-w-md px-6 text-center">
                   <Loader2 className="mx-auto h-6 w-6 animate-spin text-orange-500" />
-                  <div className="mt-4 text-[10px] uppercase tracking-widest text-orange-500">Applying changes</div>
+                  <div className="mt-4 text-[10px] uppercase tracking-widest text-orange-500" aria-live="polite">{spinnerVerb}…</div>
                   <h2 className="mt-3 text-2xl font-bold uppercase tracking-tighter">Building app</h2>
                   <p className="mt-3 text-sm leading-relaxed text-zinc-500">
                     OpenClaude is editing files; the preview updates as changes land.

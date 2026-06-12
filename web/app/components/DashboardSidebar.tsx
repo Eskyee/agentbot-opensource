@@ -57,6 +57,8 @@ export const navSections = [
       { label: 'Time Tracking', href: '/dashboard/time', icon: '⏱' },
       { label: 'Vault', href: '/dashboard/vault', icon: '🗄' },
       { label: 'Export', href: '/dashboard/export', icon: '📤' },
+      { label: 'Bankr', href: '/bankr', icon: '🏦' },
+      { label: 'Robinhood', href: '/dashboard/robinhood', icon: '🏹' },
     ],
   },
   {
