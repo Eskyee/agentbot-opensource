@@ -309,6 +309,64 @@ export function buildUserPrompt(prompt: string, currentFiles?: CurrentFile[]) {
   return `Create this app in the playground:\n\n${prompt}`
 }
 
+/**
+ * Edit-mode (Fast Apply path): the model returns only the changed regions per
+ * file as lazy edits with "// ... existing code ..." placeholders. The server
+ * then Fast-Applies each edit against the current file — far cheaper than asking
+ * the model to re-emit whole files on every follow-up.
+ */
+export type EditInstruction = { path: string; edit: string }
+
+export function buildEditSystemPrompt() {
+  return `You are editing an existing React app in Agentbot Playground.
+
+Return ONLY valid JSON. No markdown fences. Shape:
+{
+  "title": "<short title>",
+  "summary": "<one sentence describing the change>",
+  "edits": [
+    { "path": "src/App.tsx", "edit": "<lazy edit>" }
+  ]
+}
+
+Lazy edit rules:
+- Include ONLY the files you change. Do not touch files that don't need changes.
+- In each edit, show the changed lines in context and replace unchanged regions
+  with a single line: // ... existing code ...
+- Keep enough surrounding lines that the change is unambiguous.
+- Valid paths: src/App.tsx, src/index.css, src/components/<Name>.tsx,
+  src/hooks/<name>.ts, src/lib/<name>.ts, src/<name>.css.
+- Only react and react-dom are available. No other packages.
+- JSON strings must escape newlines correctly.`
+}
+
+export function buildEditUserPrompt(prompt: string, currentFiles: CurrentFile[]) {
+  const fileBlocks = currentFiles
+    .map((file) => `--- CURRENT FILE: ${file.path} ---\n${file.content.slice(0, 12_000)}`)
+    .join('\n\n')
+  return `Make this change to the app:\n\n${prompt}\n\n${fileBlocks}\n\nReturn only the lazy edits for the files you change.`
+}
+
+/** Parse the edit-mode JSON payload into validated instructions. */
+export function parseEditInstructions(raw: unknown): { title: string; summary: string; edits: EditInstruction[] } {
+  if (!raw || typeof raw !== 'object') throw new Error('Edit payload is not an object')
+  const value = raw as Record<string, unknown>
+  const rawEdits = Array.isArray(value.edits) ? value.edits : []
+  const edits: EditInstruction[] = []
+  for (const entry of rawEdits) {
+    if (!entry || typeof entry !== 'object') continue
+    const e = entry as Record<string, unknown>
+    const path = normalizeFilePath(asString(e.path))
+    const edit = asString(e.edit)
+    if (isModelWritablePath(path) && edit.trim().length > 0) edits.push({ path, edit })
+  }
+  return {
+    title: asString(value.title, 'Untitled'),
+    summary: asString(value.summary, 'Applied your changes.'),
+    edits,
+  }
+}
+
 /** Parse current-files payload from a request body (iteration mode). */
 export function sanitizeCurrentFiles(raw: unknown): CurrentFile[] {
   if (!Array.isArray(raw)) return []

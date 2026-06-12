@@ -775,6 +775,30 @@ export default function PlaygroundPage() {
     finishGeneration(body as PlaygroundResponse, cleanPrompt)
   }
 
+  /**
+   * Fast Apply edit path for follow-ups: the model returns lazy edits, the
+   * server merges them with the fast model and returns the full app. Cheaper
+   * and quicker than a full regen. Returns false if the server fell back to a
+   * regeneration or no edit was produced, so the caller can take the stream path.
+   */
+  async function submitViaEdit(cleanPrompt: string): Promise<boolean> {
+    const currentFiles = collectCurrentFiles()
+    if (!currentFiles || currentFiles.length === 0) return false
+
+    const response = await fetch('/api/playground/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: cleanPrompt, model, mode: 'edit', files: currentFiles }),
+      signal: AbortSignal.timeout(120_000),
+    })
+    const body = await response.json()
+    if (!response.ok) throw new Error(body?.error || 'OpenClaude edit failed')
+    // Server only tags mode:'edit' when Fast Apply actually merged; otherwise it
+    // regenerated and we still got a valid generation — accept either.
+    finishGeneration(body as PlaygroundResponse, cleanPrompt)
+    return true
+  }
+
   /** Streaming generation: files land in the live workbench as they arrive. */
   async function submitViaStream(cleanPrompt: string): Promise<boolean> {
     const currentFiles = collectCurrentFiles()
@@ -883,18 +907,27 @@ export default function PlaygroundPage() {
     appendMessage({ role: 'user', content: cleanPrompt, at: Date.now() })
 
     try {
-      const streamed = await submitViaStream(cleanPrompt).catch((streamError) => {
-        if (streamError instanceof Error && streamError.name === 'TimeoutError') {
-          throw streamError
+      // Follow-up on an existing app → Fast Apply edit path first (cheap, quick).
+      const isFollowUp = (activeProject.generation?.files?.length ?? 0) > 0
+      let handled = false
+      if (isFollowUp) {
+        handled = await submitViaEdit(cleanPrompt).catch(() => false)
+      }
+
+      if (!handled) {
+        const streamed = await submitViaStream(cleanPrompt).catch((streamError) => {
+          if (streamError instanceof Error && streamError.name === 'TimeoutError') {
+            throw streamError
+          }
+          // Stream produced partial output then failed — surface it honestly
+          if (streamError instanceof Error && streamError.message !== 'STREAM_UNAVAILABLE') {
+            throw streamError
+          }
+          return false
+        })
+        if (!streamed) {
+          await submitViaJsonRoute(cleanPrompt)
         }
-        // Stream produced partial output then failed — surface it honestly
-        if (streamError instanceof Error && streamError.message !== 'STREAM_UNAVAILABLE') {
-          throw streamError
-        }
-        return false
-      })
-      if (!streamed) {
-        await submitViaJsonRoute(cleanPrompt)
       }
       setPrompt('')
     } catch (err) {

@@ -7,15 +7,20 @@ import {
   shouldTryNextGatewayUpstream,
 } from '@/app/lib/opengateway'
 import {
+  buildEditSystemPrompt,
+  buildEditUserPrompt,
   buildJsonSystemPrompt,
   buildUserPrompt,
   composeGeneration,
   extractJson,
+  inferLanguage,
   normalizeGeneration,
+  parseEditInstructions,
   sanitizeCurrentFiles,
   type CurrentFile,
   type PlaygroundGeneration,
 } from '@/app/lib/playground-generation'
+import { fastApply } from '@/app/lib/fast-apply'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -157,6 +162,94 @@ async function generateWithVercelGateway(prompt: string, model: string, currentF
   throw new Error(lastFailure || 'All configured playground model upstreams failed.')
 }
 
+/**
+ * Edit mode (Fast Apply): ask the model for lazy per-file edits, then merge each
+ * with the fast-apply model against the current file. Much cheaper than a full
+ * re-emit on follow-ups. Returns null if the model produced no usable edits so
+ * the caller can fall back to a full regeneration.
+ */
+async function generateEditsWithFastApply(
+  prompt: string,
+  model: string,
+  currentFiles: CurrentFile[],
+): Promise<PlaygroundGeneration | null> {
+  const upstreams = resolvePlaygroundGatewayUpstreams()
+  if (upstreams.length === 0) throw new Error('Vercel AI Gateway is not configured.')
+
+  let lastFailure = ''
+  let instructions: ReturnType<typeof parseEditInstructions> | null = null
+
+  for (const upstream of upstreams) {
+    const response = await fetch(`${upstream.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: gatewayUpstreamHeaders(upstream),
+      body: JSON.stringify({
+        model: normalizeGatewayModel(model, upstream.provider),
+        messages: [
+          { role: 'system', content: buildEditSystemPrompt() },
+          { role: 'user', content: buildEditUserPrompt(prompt, currentFiles) },
+        ],
+        temperature: 0.2,
+        max_tokens: PLAYGROUND_MAX_TOKENS,
+        ...(upstream.provider === 'openrouter' ? { reasoning: { max_tokens: 0 } } : {}),
+      }),
+      signal: AbortSignal.timeout(110_000),
+    })
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '')
+      lastFailure = `${upstream.provider} failed with ${response.status}${text ? `: ${text.slice(0, 200)}` : ''}`
+      if (shouldTryNextGatewayUpstream(response.status)) continue
+      throw new Error(lastFailure)
+    }
+
+    const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> }
+    const content = data.choices?.[0]?.message?.content
+    if (!content) {
+      lastFailure = `${upstream.provider} returned no content`
+      continue
+    }
+    try {
+      instructions = parseEditInstructions(extractJson(content))
+      break
+    } catch (error) {
+      lastFailure = error instanceof Error ? error.message : 'unparseable edit payload'
+      continue
+    }
+  }
+
+  if (!instructions || instructions.edits.length === 0) {
+    console.warn('[playground.generate.edit] no usable edits', { lastFailure })
+    return null
+  }
+
+  // Merge each edit against its current file via the fast-apply model.
+  const byPath = new Map(currentFiles.map((file) => [file.path, file.content]))
+  for (const edit of instructions.edits) {
+    const original = byPath.get(edit.path)
+    if (original == null) {
+      // New file the model is introducing — accept the edit body as the file.
+      byPath.set(edit.path, edit.edit)
+      continue
+    }
+    const merged = await fastApply({ code: original, edit: edit.edit, instructions: prompt, model: 'xiaomi/mimo-v2-flash' })
+    byPath.set(edit.path, merged.merged)
+  }
+
+  const modelFiles = Array.from(byPath.entries()).map(([path, content]) => ({
+    path,
+    language: inferLanguage(path),
+    content,
+  }))
+
+  return composeGeneration({
+    title: instructions.title,
+    summary: instructions.summary,
+    modelFiles,
+    console: [`Fast Apply merged ${instructions.edits.length} file(s)`, 'Preview updated'],
+  })
+}
+
 function localMockGeneration(prompt: string): PlaygroundGeneration {
   const title = prompt.split(/\s+/).filter(Boolean).slice(0, 4).join(' ') || 'Untitled'
   const safeTitle = title.replace(/[<>&"]/g, '')
@@ -221,7 +314,7 @@ export async function POST(req: NextRequest) {
     return jsonResponse('Too many requests', 429)
   }
 
-  let body: { prompt?: unknown; model?: unknown; files?: unknown } = {}
+  let body: { prompt?: unknown; model?: unknown; files?: unknown; mode?: unknown } = {}
   try {
     body = await req.json()
   } catch {
@@ -230,6 +323,7 @@ export async function POST(req: NextRequest) {
 
   const prompt = asString(body.prompt).trim()
   const model = asString(body.model, DEFAULT_MODEL).trim() || DEFAULT_MODEL
+  const mode = asString(body.mode).trim()
 
   if (prompt.length < 12) {
     return jsonResponse('Describe the app in at least 12 characters.', 400)
@@ -251,6 +345,19 @@ export async function POST(req: NextRequest) {
     }
 
     if (resolvePlaygroundGatewayUpstreams().length > 0) {
+      // Fast Apply path for follow-up edits: lazy edits merged by the fast model.
+      // Falls back to a full regeneration if the model produced no usable edits.
+      if (mode === 'edit' && currentFiles.length > 0) {
+        try {
+          const edited = await generateEditsWithFastApply(prompt, model, currentFiles)
+          if (edited) {
+            return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation: edited, mode: 'edit' })
+          }
+        } catch (editError) {
+          console.warn('[playground.generate] edit mode failed, regenerating', editError)
+        }
+      }
+
       const generation = await generateWithVercelGateway(prompt, model, currentFiles.length > 0 ? currentFiles : undefined)
       return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation })
     }
