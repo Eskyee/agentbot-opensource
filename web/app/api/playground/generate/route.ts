@@ -60,7 +60,7 @@ function resolvePlaygroundGatewayUpstreams() {
 async function repairGenerationJson(content: string, upstream: ReturnType<typeof resolveGatewayUpstreams>[number], model: string) {
   const response = await fetch(`${upstream.baseUrl}/chat/completions`, {
     method: 'POST',
-    headers: gatewayUpstreamHeaders(upstream, 'Agentbot Playground'),
+    headers: gatewayUpstreamHeaders(upstream),
     body: JSON.stringify({
       model: normalizeGatewayModel(model, upstream.provider),
       messages: [
@@ -104,7 +104,7 @@ async function generateWithVercelGateway(prompt: string, model: string, currentF
   for (const upstream of upstreams) {
     const response = await fetch(`${upstream.baseUrl}/chat/completions`, {
       method: 'POST',
-      headers: gatewayUpstreamHeaders(upstream, 'Agentbot Playground'),
+      headers: gatewayUpstreamHeaders(upstream),
       body: JSON.stringify({
         model: normalizeGatewayModel(model, upstream.provider),
         messages: [

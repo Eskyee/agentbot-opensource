@@ -159,7 +159,7 @@ async function generateWithVercelGateway(title: string, genre: string, mood: str
   for (const upstream of upstreams) {
     const response = await fetch(`${upstream.baseUrl}/chat/completions`, {
       method: 'POST',
-      headers: gatewayUpstreamHeaders(upstream, 'Agentbot Arrangement Agent'),
+      headers: gatewayUpstreamHeaders(upstream),
       body: JSON.stringify({
         model: normalizeGatewayModel(DEFAULT_MODEL, upstream.provider),
         messages: [

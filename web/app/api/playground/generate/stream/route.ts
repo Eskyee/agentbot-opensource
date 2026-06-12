@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       try {
         const upstreamResponse = await fetch(`${upstream.baseUrl}/chat/completions`, {
           method: 'POST',
-          headers: gatewayUpstreamHeaders(upstream, 'Agentbot Playground'),
+          headers: gatewayUpstreamHeaders(upstream),
           body: JSON.stringify({
             model: normalizeGatewayModel(model, upstream.provider),
             stream: true,
