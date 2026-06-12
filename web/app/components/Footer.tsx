@@ -29,6 +29,7 @@ const COLUMNS = [
       { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },
       { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
       { href: 'https://documenter.getpostman.com/view/53112924/2sBXwsMAeE', label: 'API Collection', external: true },
+      { href: 'https://gitlawb.com/z6MkqDnb',                            label: 'GitLawb', external: true },
       { href: 'https://openclaw.ai',                                     label: 'OpenClaw', external: true },
     ],
   },
