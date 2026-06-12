@@ -22,6 +22,15 @@ import {
   shouldTryNextGatewayUpstream,
 } from '@/app/lib/opengateway'
 import { checkRateLimit } from '@/app/lib/api/rate-limit'
+import { verifyX402Payment } from '@/app/lib/x402-verify'
+
+// USDC contract per chain (smallest unit; USDC = 6 decimals)
+const USDC_BY_NETWORK: Record<string, { asset: string; caip2: string }> = {
+  base: { asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', caip2: 'eip155:8453' },
+  'base-sepolia': { asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', caip2: 'eip155:84532' },
+}
+// Default A2A task price: 0.001 USDC (6 decimals)
+const A2A_MIN_AMOUNT = 1000n
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -126,12 +135,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .findFirst({ where: { userId: agent.userId }, select: { address: true, network: true } })
     .catch(() => null)
   if (wallet) {
+    const usdc = USDC_BY_NETWORK[wallet.network] ?? USDC_BY_NETWORK.base
     const paid = req.headers.get('payment-signature') || req.headers.get('PAYMENT-SIGNATURE')
-    if (!paid) {
+    const verdict = verifyX402Payment(paid, {
+      payTo: wallet.address,
+      asset: usdc.asset,
+      network: usdc.caip2,
+      minAmount: A2A_MIN_AMOUNT,
+    })
+    if (!verdict.valid) {
       return rpcError(
         rpcId,
         -32003,
-        `Payment required: pay USDC on ${wallet.network} to ${wallet.address}, then resend with a payment-signature header.`,
+        `Payment required (${verdict.reason}): authorize ≥ ${A2A_MIN_AMOUNT} USDC (smallest unit) to ${wallet.address} on ${usdc.caip2}, then resend with a payment-signature header.`,
         402,
       )
     }

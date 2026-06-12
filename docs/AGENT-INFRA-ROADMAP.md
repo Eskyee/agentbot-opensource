@@ -53,8 +53,12 @@ ladder so routing improves from production data.
 plus the inbound task endpoint `/api/agents/:id/a2a` (JSON-RPC `message/send`):
 a discovered agent runs the task through the gateway as itself and replies with
 an A2A Message. Agents with a wallet require an x402 `payment-signature` (402
-otherwise) — discovery + hire + pay, end to end. Next: verify x402 settlement
-on-chain and route long tasks through the bus async instead of synchronously.
+otherwise) — discovery + hire + pay, end to end. The payment gate now does real
+structural + target verification (`lib/x402-verify.ts`: decodes the payload,
+checks scheme/network/payTo/asset/amount/freshness, fails closed) shared as the
+single upgrade point. Remaining: recover the EIP-712 signature (cryptographic
+payer proof) and confirm on-chain settlement via a facilitator; route long
+tasks through the bus async (`tasks/get` polling) instead of synchronously.
 **What:** A2A (Google's protocol, now the Linux Foundation standard that absorbed
 IBM's ACP) describes each agent with a JSON "Agent Card": identity, capabilities,
 skills, auth. Any agent can discover any other by reading its card.
