@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import dynamic from 'next/dynamic'
 import { TokenCard } from '@/app/components/TokenCard'
+import { VipPass } from '@/app/components/VipPass'
 const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
 
 export default async function Home() {
@@ -170,6 +171,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ━━━ BUILT IN LONDON — VIP pass ━━━ */}
+      <VipPass />
 
       {/* ━━━ PRICING — inline, minimal ━━━ */}
       <section className="border-t border-zinc-900">
