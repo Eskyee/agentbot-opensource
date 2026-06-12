@@ -78,7 +78,9 @@
     },
     "@workflow/core@4.2.4": {
       "devalue": "5.8.1"
-    }
+    },
+    "esbuild": "^0.25.0",
+    "bn.js": "^5.2.1"
   },
   "dependencies": {
     "@ai-sdk/react": "3.0.205",
