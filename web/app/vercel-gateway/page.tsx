@@ -53,6 +53,7 @@ export default function VercelGatewayPage() {
   const [origin, setOrigin] = useState('https://agentbot.sh')
   const [snippetTab, setSnippetTab] = useState<'curl' | 'python' | 'node'>('curl')
   const [models, setModels] = useState<string[]>([])
+  const [modelQuery, setModelQuery] = useState('')
 
   const snippets = useMemo(() => ({
     curl: `curl ${origin}/v1/chat/completions \\
@@ -325,16 +326,39 @@ console.log(reply.choices[0].message.content)`,
               </div>
               <span className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-600">{models.length} available</span>
             </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {models.map((id) => (
-                <div key={id} className="flex items-center justify-between gap-2 border border-zinc-900 bg-black px-3 py-2">
-                  <code className="truncate font-mono text-xs text-zinc-300">{id}</code>
-                  {id.endsWith(':free') && (
-                    <span className="shrink-0 border border-emerald-500/40 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-emerald-400">Free</span>
+            <input
+              value={modelQuery}
+              onChange={(event) => setModelQuery(event.target.value)}
+              placeholder="Filter models — try 'free', 'claude', 'qwen'…"
+              className="mt-4 w-full border border-zinc-800 bg-black px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-orange-500"
+            />
+            {(() => {
+              const query = modelQuery.trim().toLowerCase()
+              const filtered = query ? models.filter((id) => id.toLowerCase().includes(query)) : models
+              const shown = filtered.slice(0, 30)
+              return (
+                <>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {shown.map((id) => (
+                      <div key={id} className="flex items-center justify-between gap-2 border border-zinc-900 bg-black px-3 py-2">
+                        <code className="truncate font-mono text-xs text-zinc-300">{id}</code>
+                        {id.endsWith(':free') && (
+                          <span className="shrink-0 border border-emerald-500/40 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-emerald-400">Free</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {filtered.length > shown.length && (
+                    <p className="mt-3 text-xs text-zinc-600">
+                      Showing {shown.length} of {filtered.length} — refine the filter to narrow down.
+                    </p>
                   )}
-                </div>
-              ))}
-            </div>
+                  {filtered.length === 0 && (
+                    <p className="mt-3 text-sm text-zinc-500">No models match &quot;{modelQuery}&quot;.</p>
+                  )}
+                </>
+              )
+            })()}
           </div>
         </section>
       )}

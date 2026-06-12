@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Opengateway — One OpenAI-compatible endpoint for every model | Agentbot',
+  title: 'Opengateway — One OpenAI-compatible endpoint for every model',
   description:
     'Generate an API key, swap your base URL, and route chat completions through the Agentbot gateway — provider failover, per-user usage tracking, and free Xiaomi MiMo access on one OpenAI-compatible endpoint.',
   openGraph: {
