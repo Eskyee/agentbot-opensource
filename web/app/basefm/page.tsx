@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowUpRight, Radio, Music, Users, Mic, TrendingUp, TrendingDown, Activity } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import BasefmChart from '@/app/components/BasefmChart'
 
 const BASEFM_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
 
@@ -89,18 +90,8 @@ function PriceTracker() {
         </div>
       </div>
 
-      {/* Embedded Chart */}
-      <div className="rounded-xl border border-zinc-800 bg-black overflow-hidden">
-        <iframe
-          src="https://dexscreener.com/base/pool/0xd54464bb6e5a0e1c49beddde0e02cd03e3239a49c71362902d48a034cd119894?embed=1"
-          width="100%"
-          height="400"
-          style={{ border: 0 }}
-          loading="lazy"
-          title="BASEFM Price Chart (DexScreener)"
-          allow="clipboard-write"
-        />
-      </div>
+      {/* Price Chart */}
+      <BasefmChart />
 
       {/* Live Market Stats */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
