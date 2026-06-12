@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'ai-agent-frameworks-2026',
+    dateLabel: '12 Jun',
+    isoDate: '2026-06-12',
+    title: 'AI Agent Frameworks in 2026 — An In-Depth Look at 8 SDKs',
+    excerpt:
+      'A comprehensive comparison of 8 AI agent frameworks in 2026: Claude Agent SDK, OpenAI Agents SDK, Google ADK, LangGraph, CrewAI, Smolagents, Pydantic AI, and Microsoft Agent Framework 1.0.',
+    tags: ['AI Agents', 'Frameworks', 'LLM', 'Claude', 'OpenAI', 'Google'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'openclaw-2026-6-6',
     dateLabel: '12 Jun',
     isoDate: '2026-06-12',
