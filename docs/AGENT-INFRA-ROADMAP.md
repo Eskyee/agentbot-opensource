@@ -48,7 +48,13 @@ Morph sells this as a standalone product ("Model Router") — validates it's a r
 category. Next step: feed real per-model success/latency stats back into the
 ladder so routing improves from production data.
 
-### 4. A2A Agent Cards — make the agent bus interoperable  ◑ discovery SHIPPED
+### 4. A2A Agent Cards — make the agent bus interoperable  ✓ SHIPPED (discovery + inbound tasks)
+**Status:** discovery cards (`/.well-known/agent.json`, `/api/agents/:id/card`)
+plus the inbound task endpoint `/api/agents/:id/a2a` (JSON-RPC `message/send`):
+a discovered agent runs the task through the gateway as itself and replies with
+an A2A Message. Agents with a wallet require an x402 `payment-signature` (402
+otherwise) — discovery + hire + pay, end to end. Next: verify x402 settlement
+on-chain and route long tasks through the bus async instead of synchronously.
 **What:** A2A (Google's protocol, now the Linux Foundation standard that absorbed
 IBM's ACP) describes each agent with a JSON "Agent Card": identity, capabilities,
 skills, auth. Any agent can discover any other by reading its card.

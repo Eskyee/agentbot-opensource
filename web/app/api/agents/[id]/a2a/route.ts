@@ -1,0 +1,210 @@
+/**
+ * /api/agents/:id/a2a — inbound A2A task endpoint (JSON-RPC 2.0).
+ *
+ * The action side of A2A Agent Cards: an external agent that discovered this
+ * agent's card can now send it work. Implements the core `message/send` method
+ * — the task runs through the Agentbot gateway as this agent (identity + skills
+ * in the system prompt) and returns an A2A Message.
+ *
+ * Discovery gate: only showcase-opted agents accept inbound tasks.
+ * Payment: if the agent has a wallet, a payment-signature header is required
+ * (x402); the card advertises the rail so callers know to pay. GET returns the
+ * agent card for convenience.
+ */
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/app/lib/prisma'
+import { buildAgentCard } from '@/app/lib/agent-card'
+import {
+  gatewayCorsHeaders,
+  gatewayUpstreamHeaders,
+  normalizeGatewayModel,
+  resolveGatewayUpstreams,
+  shouldTryNextGatewayUpstream,
+} from '@/app/lib/opengateway'
+import { checkRateLimit } from '@/app/lib/api/rate-limit'
+
+export const runtime = 'nodejs'
+export const maxDuration = 60
+
+type JsonRpcId = string | number | null
+
+function rpcResult(id: JsonRpcId, result: unknown) {
+  return NextResponse.json({ jsonrpc: '2.0', id, result }, { headers: gatewayCorsHeaders() })
+}
+function rpcError(id: JsonRpcId, code: number, message: string, status = 200) {
+  return NextResponse.json({ jsonrpc: '2.0', id, error: { code, message } }, { status, headers: gatewayCorsHeaders() })
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: gatewayCorsHeaders() })
+}
+
+async function loadAgent(id: string) {
+  return prisma.agent
+    .findUnique({
+      where: { id },
+      include: { installedSkills: { include: { skill: true } } },
+    })
+    .catch(() => null)
+}
+
+// GET → the agent card (same shape as /card), convenient for A2A clients.
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const agent = await loadAgent(id.trim())
+  if (!agent || !agent.showcaseOptIn) {
+    return NextResponse.json({ error: 'Agent not found' }, { status: 404, headers: gatewayCorsHeaders() })
+  }
+  const wallet = await prisma.wallet
+    .findFirst({ where: { userId: agent.userId }, select: { address: true, network: true } })
+    .catch(() => null)
+  const card = buildAgentCard(
+    {
+      id: agent.id,
+      name: agent.name,
+      model: agent.model,
+      status: agent.status,
+      showcaseDescription: agent.showcaseDescription,
+      installedSkills: agent.installedSkills.map((s) => ({
+        enabled: s.enabled,
+        skill: { name: s.skill.name, description: s.skill.description, category: s.skill.category },
+      })),
+    },
+    wallet ? { walletAddress: wallet.address, network: wallet.network } : undefined,
+  )
+  return NextResponse.json(card, { headers: gatewayCorsHeaders() })
+}
+
+function extractText(message: unknown): string {
+  if (!message || typeof message !== 'object') return ''
+  const parts = (message as { parts?: unknown }).parts
+  if (!Array.isArray(parts)) return ''
+  return parts
+    .map((p) => (p && typeof p === 'object' && typeof (p as { text?: unknown }).text === 'string' ? (p as { text: string }).text : ''))
+    .filter(Boolean)
+    .join('\n')
+    .slice(0, 8_000)
+}
+
+function agentSystemPrompt(agent: { name: string; installedSkills: Array<{ enabled: boolean; skill: { name: string; description: string } }> }) {
+  const skills = agent.installedSkills
+    .filter((s) => s.enabled)
+    .map((s) => `- ${s.skill.name}: ${s.skill.description}`)
+    .join('\n')
+  return [
+    `You are "${agent.name}", an autonomous Agentbot agent responding to an A2A task from another agent.`,
+    'Answer the task directly and concisely. If it is outside your skills, say so plainly.',
+    skills ? `Your skills:\n${skills}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n\n')
+}
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  // A2A tasks run the model → AI-category rate limit
+  if (await checkRateLimit(req, 'ai')) {
+    return rpcError(null, -32029, 'Rate limit exceeded', 429)
+  }
+
+  const { id } = await params
+  const agent = await loadAgent(id.trim())
+  if (!agent || !agent.showcaseOptIn) {
+    return rpcError(null, -32004, 'Agent not found or not discoverable', 404)
+  }
+
+  let rpc: { id?: JsonRpcId; method?: unknown; params?: unknown }
+  try {
+    rpc = await req.json()
+  } catch {
+    return rpcError(null, -32700, 'Parse error')
+  }
+  const rpcId: JsonRpcId = (rpc.id as JsonRpcId) ?? null
+  const method = typeof rpc.method === 'string' ? rpc.method : ''
+
+  // Payment gate: agents with a wallet require an x402 payment signature.
+  const wallet = await prisma.wallet
+    .findFirst({ where: { userId: agent.userId }, select: { address: true, network: true } })
+    .catch(() => null)
+  if (wallet) {
+    const paid = req.headers.get('payment-signature') || req.headers.get('PAYMENT-SIGNATURE')
+    if (!paid) {
+      return rpcError(
+        rpcId,
+        -32003,
+        `Payment required: pay USDC on ${wallet.network} to ${wallet.address}, then resend with a payment-signature header.`,
+        402,
+      )
+    }
+  }
+
+  if (method !== 'message/send' && method !== 'tasks/send') {
+    return rpcError(rpcId, -32601, `Method not supported: ${method || '(none)'}. Use message/send.`)
+  }
+
+  const paramsObj = (rpc.params ?? {}) as { message?: unknown }
+  const taskText = extractText(paramsObj.message)
+  if (!taskText.trim()) {
+    return rpcError(rpcId, -32602, 'Invalid params: message.parts must contain text')
+  }
+
+  const upstreams = resolveGatewayUpstreams()
+  if (upstreams.length === 0) {
+    return rpcError(rpcId, -32011, 'No model backend configured', 503)
+  }
+
+  const model = agent.model || 'mimo-v2.5-pro'
+  let replyText = ''
+  let lastFailure = ''
+
+  for (const upstream of upstreams) {
+    try {
+      const response = await fetch(`${upstream.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: gatewayUpstreamHeaders(upstream, `Agentbot A2A · ${agent.name}`),
+        body: JSON.stringify({
+          model: normalizeGatewayModel(model, upstream.provider),
+          messages: [
+            { role: 'system', content: agentSystemPrompt(agent) },
+            { role: 'user', content: taskText },
+          ],
+          temperature: 0.4,
+          max_tokens: 2_000,
+          ...(upstream.provider === 'openrouter' ? { reasoning: { max_tokens: 0 } } : {}),
+        }),
+        signal: AbortSignal.timeout(50_000),
+      })
+      if (!response.ok) {
+        const text = await response.text().catch(() => '')
+        lastFailure = `${upstream.provider} ${response.status}${text ? `: ${text.slice(0, 160)}` : ''}`
+        if (shouldTryNextGatewayUpstream(response.status)) continue
+        break
+      }
+      const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> }
+      replyText = data.choices?.[0]?.message?.content ?? ''
+      if (replyText.trim()) break
+      lastFailure = `${upstream.provider} returned empty reply`
+    } catch (error) {
+      lastFailure = error instanceof Error ? error.message : 'request failed'
+    }
+  }
+
+  if (!replyText.trim()) {
+    return rpcError(rpcId, -32010, `Agent could not complete the task. ${lastFailure}`, 502)
+  }
+
+  // A2A result: a completed Task carrying the agent's reply Message.
+  const now = new Date().toISOString()
+  return rpcResult(rpcId, {
+    id: `task-${Date.now().toString(36)}`,
+    contextId: `a2a-${agent.id}`,
+    status: { state: 'completed', timestamp: now },
+    history: [],
+    artifacts: [],
+    message: {
+      role: 'agent',
+      parts: [{ kind: 'text', text: replyText }],
+      messageId: `msg-${Date.now().toString(36)}`,
+    },
+    kind: 'task',
+  })
+}
