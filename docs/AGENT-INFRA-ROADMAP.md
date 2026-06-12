@@ -14,7 +14,11 @@ gateway and runtime, so these primitives are ours to build, not rent.
 
 ## Ranked recommendations
 
-### 1. Fast Apply — edit files without rewriting them  ★ highest impact
+### 1. Fast Apply — edit files without rewriting them  ◑ endpoint SHIPPED, wiring pending
+**Status:** `POST /v1/apply` is live (auth + AI rate-limit), backed by
+`lib/fast-apply.ts` (MiMo Flash merge, deterministic, fence-stripping, upstream
+failover). Next: rewire the Playground follow-up path and OpenClaude to emit lazy
+edits and call it, instead of regenerating whole files.
 **What:** A cheap "apply model" merges a terse AI-generated edit into a file at
 thousands of tok/s, instead of the big model re-emitting the whole file.
 **Why it's #1 for us:** the Playground and coding-agent currently regenerate
