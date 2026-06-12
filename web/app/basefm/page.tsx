@@ -92,12 +92,12 @@ function PriceTracker() {
       {/* Embedded Chart */}
       <div className="rounded-xl border border-zinc-800 bg-black overflow-hidden">
         <iframe
-          src="https://www.geckoterminal.com/base/pools/0xd54464bb6e5a0e1c49beddde0e02cd03e3239a49c71362902d48a034cd119894/embed?chart=price&palette=dark"
+          src="https://dexscreener.com/base/pool/0xd54464bb6e5a0e1c49beddde0e02cd03e3239a49c71362902d48a034cd119894?embed=1"
           width="100%"
           height="400"
           style={{ border: 0 }}
           loading="lazy"
-          title="BASEFM Price Chart"
+          title="BASEFM Price Chart (DexScreener)"
           allow="clipboard-write"
         />
       </div>
