@@ -1,20 +1,24 @@
 /**
  * SandpackWorkbench — real in-browser build of the generated app.
  *
- * Replaces the old static `previewHtml` iframe: the actual src/App.tsx and
- * src/index.css are bundled and run live via Sandpack's react-ts template,
- * with an editable code editor (hot reload) and a real runtime console.
+ * The actual src/* files are bundled and run live via Sandpack's react-ts
+ * template, with an editable code editor (hot reload) and a real runtime
+ * console. Files stream in live during generation (FileUpdater applies prop
+ * changes via sandpack.updateFile), edits flow back out (EditSync), and
+ * compile/runtime errors surface through onError for the AI fix loop.
  *
  * File mapping (Vite project ⇄ Sandpack react-ts template):
- *   src/App.tsx   ⇄ /App.tsx
- *   src/index.css ⇄ /styles.css
+ *   src/App.tsx            ⇄ /App.tsx
+ *   src/index.css          ⇄ /styles.css
+ *   src/components/X.tsx   ⇄ /components/X.tsx
+ *   src/hooks|lib/x.ts     ⇄ /hooks|lib/x.ts
+ *   src/extra.css          ⇄ /extra.css
  * Scaffold files (package.json, vite.config.ts, tsconfig…) are deployment
- * concerns — they're excluded from the in-browser bundle but still ship
- * unchanged on publish/download/GitLawb push.
+ * concerns — excluded from the in-browser bundle but shipped on publish.
  */
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import {
   SandpackProvider,
   SandpackPreview,
@@ -30,8 +34,21 @@ export type WorkbenchFile = {
   content: string
 }
 
-const APP_PATH = 'src/App.tsx'
-const CSS_PATH = 'src/index.css'
+const BUNDLED_RE = /^src\/(?:App\.tsx|index\.css|(?:components|hooks|lib)\/[A-Za-z0-9_-]+\.(?:tsx|ts)|[A-Za-z0-9_-]+\.css)$/
+
+function toSandpackPath(path: string): string | null {
+  if (!BUNDLED_RE.test(path)) return null
+  if (path === 'src/App.tsx') return '/App.tsx'
+  if (path === 'src/index.css') return '/styles.css'
+  return `/${path.slice('src/'.length)}`
+}
+
+function fromSandpackPath(path: string): string | null {
+  if (path === '/App.tsx') return 'src/App.tsx'
+  if (path === '/styles.css') return 'src/index.css'
+  if (path === '/index.tsx') return null
+  return `src${path}`
+}
 
 /** Brand theme — black base, zinc scale, orange accent, mono type. */
 const agentbotTheme: SandpackTheme = {
@@ -67,12 +84,7 @@ const agentbotTheme: SandpackTheme = {
 }
 
 function toSandpackFiles(files: WorkbenchFile[]) {
-  const app = files.find((f) => f.path === APP_PATH)?.content
-  const css = files.find((f) => f.path === CSS_PATH)?.content
-
-  return {
-    '/App.tsx': { code: app ?? 'export default function App() {\n  return <p>Generate an app to start.</p>\n}\n' },
-    '/styles.css': { code: css ?? '' },
+  const out: Record<string, { code: string; hidden?: boolean }> = {
     '/index.tsx': {
       code: [
         "import React from 'react'",
@@ -86,6 +98,40 @@ function toSandpackFiles(files: WorkbenchFile[]) {
       hidden: true,
     },
   }
+
+  for (const file of files) {
+    const path = toSandpackPath(file.path)
+    if (path) out[path] = { code: file.content }
+  }
+
+  if (!out['/App.tsx']) {
+    out['/App.tsx'] = { code: 'export default function App() {\n  return <p style={{ fontFamily: "monospace", padding: 24 }}>Generate an app to start.</p>\n}\n' }
+  }
+  if (!out['/styles.css']) {
+    out['/styles.css'] = { code: '' }
+  }
+
+  return out
+}
+
+/** Applies external file changes (e.g. streaming generation) into the running sandbox. */
+function FileUpdater({ files }: { files: WorkbenchFile[] }) {
+  const { sandpack } = useSandpack()
+  const sandpackRef = useRef(sandpack)
+  sandpackRef.current = sandpack
+
+  useEffect(() => {
+    for (const file of files) {
+      const path = toSandpackPath(file.path)
+      if (!path) continue
+      const existing = sandpackRef.current.files[path]?.code
+      if (existing !== file.content) {
+        sandpackRef.current.updateFile(path, file.content)
+      }
+    }
+  }, [files])
+
+  return null
 }
 
 /** Pushes editor changes back up so publish/download use the edited source. */
@@ -94,60 +140,96 @@ function EditSync({ onFilesChange }: { onFilesChange?: (files: { path: string; c
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const last = useRef<string>('')
 
-  const app = sandpack.files['/App.tsx']?.code ?? ''
-  const css = sandpack.files['/styles.css']?.code ?? ''
+  const signature = useMemo(
+    () =>
+      Object.entries(sandpack.files)
+        .map(([path, file]) => `${path}:${file.code.length}:${file.code.slice(-24)}`)
+        .join('|'),
+    [sandpack.files],
+  )
 
   useEffect(() => {
     if (!onFilesChange) return
-    const signature = `${app.length}:${css.length}:${app.slice(-40)}${css.slice(-40)}`
     if (signature === last.current) return
     if (timer.current) clearTimeout(timer.current)
+    const filesSnapshot = sandpack.files
     timer.current = setTimeout(() => {
       last.current = signature
-      onFilesChange([
-        { path: APP_PATH, content: app },
-        { path: CSS_PATH, content: css },
-      ])
+      const out: { path: string; content: string }[] = []
+      for (const [path, file] of Object.entries(filesSnapshot)) {
+        const projectPath = fromSandpackPath(path)
+        if (projectPath) out.push({ path: projectPath, content: file.code })
+      }
+      if (out.length > 0) onFilesChange(out)
     }, 900)
     return () => {
       if (timer.current) clearTimeout(timer.current)
     }
-  }, [app, css, onFilesChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature, onFilesChange])
+
+  return null
+}
+
+/** Surfaces compile/runtime errors for the AI fix loop. */
+function ErrorReporter({ onError }: { onError?: (message: string | null) => void }) {
+  const { sandpack } = useSandpack()
+  const message = sandpack.error?.message ?? null
+
+  useEffect(() => {
+    onError?.(message)
+  }, [message, onError])
 
   return null
 }
 
 interface SandpackWorkbenchProps {
-  /** Identity key — change to remount with fresh files (e.g. after AI regen) */
+  /** Identity key — change to remount with fresh files (e.g. project switch) */
   generationKey: string
   files: WorkbenchFile[]
   mode: 'preview' | 'code'
+  activeFile?: string
   showConsole?: boolean
   onFilesChange?: (files: { path: string; content: string }[]) => void
+  onError?: (message: string | null) => void
 }
 
 export default function SandpackWorkbench({
   generationKey,
   files,
   mode,
+  activeFile,
   showConsole,
   onFilesChange,
+  onError,
 }: SandpackWorkbenchProps) {
+  const initialFiles = useMemo(
+    () => toSandpackFiles(files),
+    // Only rebuild the initial file map when the workbench identity changes —
+    // live updates flow through FileUpdater without remounting.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [generationKey],
+  )
+
+  const active = activeFile ? toSandpackPath(activeFile) : null
+
   return (
     <SandpackProvider
       key={generationKey}
       template="react-ts"
       theme={agentbotTheme}
-      files={toSandpackFiles(files)}
+      files={initialFiles}
       options={{
-        activeFile: mode === 'code' ? '/App.tsx' : undefined,
+        activeFile: mode === 'code' ? (active ?? '/App.tsx') : undefined,
         autorun: true,
         autoReload: true,
         recompileMode: 'delayed',
         recompileDelay: 600,
       }}
     >
+      <FileUpdater files={files} />
       <EditSync onFilesChange={onFilesChange} />
+      <ErrorReporter onError={onError} />
       {mode === 'preview' ? (
         <div className="flex h-full min-h-[488px] flex-col">
           <SandpackPreview
@@ -157,7 +239,7 @@ export default function SandpackWorkbench({
             className="!h-full !min-h-[420px] flex-1"
           />
           {showConsole && (
-            <div className="h-[160px] border-t border-zinc-900">
+            <div className="h-[180px] border-t border-zinc-900">
               <SandpackConsole resetOnPreviewRestart className="!h-full" />
             </div>
           )}

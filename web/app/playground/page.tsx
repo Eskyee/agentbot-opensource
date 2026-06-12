@@ -24,6 +24,7 @@ import {
   Terminal,
 } from 'lucide-react'
 import { Spinner } from '@/app/components/ui/spinner'
+import { Kbd } from '@/app/components/ui/kbd'
 
 // Sandpack is heavy — load it client-side only, when the builder renders.
 const SandpackWorkbench = dynamic(() => import('./SandpackWorkbench'), {
@@ -49,6 +50,12 @@ type PlaygroundGeneration = {
   console: string[]
 }
 
+type ChatMessage = {
+  role: 'user' | 'assistant'
+  content: string
+  at: number
+}
+
 type PlaygroundProject = {
   id: string
   name: string
@@ -60,6 +67,7 @@ type PlaygroundProject = {
   deploymentId?: string
   deploymentState?: string
   generation: PlaygroundGeneration | null
+  messages?: ChatMessage[]
 }
 
 type PlaygroundResponse = {
@@ -133,36 +141,17 @@ function defaultProjects(): PlaygroundProject[] {
       name: 'untitled',
       status: 'IDLE',
       template: 'VITE-REACT-TS',
-      lastActive: '1h ago',
-      generation: null,
-    },
-    {
-      id: 'producercalc',
-      name: 'producercalc',
-      status: 'IDLE',
-      template: 'VITE-REACT-TS',
-      lastActive: '2h ago',
-      generation: null,
-    },
-    {
-      id: 'radio-basefm-9963',
-      name: 'radio-basefm-9963.gitlawb',
-      status: 'PUBLISHED',
-      template: 'VITE-REACT-TS',
-      lastActive: '1d ago',
-      publishedUrl: 'radio-basefm-9963.gitlawb.app/',
-      generation: null,
-    },
-    {
-      id: 'untitled-new',
-      name: 'untitled',
-      status: 'IDLE',
-      template: 'VITE-REACT-TS',
       lastActive: 'never',
       generation: null,
     },
   ]
 }
+
+const MODEL_OPTIONS = [
+  { value: 'xiaomi/mimo-v2.5-pro', label: 'MiMo V2.5 Pro' },
+  { value: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
+  { value: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4' },
+] as const
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes}b`
@@ -371,8 +360,6 @@ export default function PlaygroundPage() {
   const [sessionId, setSessionId] = useState('LOCAL')
   const [hydrated, setHydrated] = useState(false)
   const [storage, setStorage] = useState<'local' | 'server'>('local')
-  // Bumped on every AI generation so the live workbench remounts with fresh files
-  const [generationVersion, setGenerationVersion] = useState(0)
 
   useEffect(() => {
     setSessionId(createSessionId())
@@ -708,6 +695,161 @@ export default function PlaygroundPage() {
     }
   }
 
+  function appendMessage(message: ChatMessage) {
+    setProjects((current) => current.map((project) => (
+      project.id === activeProjectId
+        ? { ...project, messages: [...(project.messages ?? []).slice(-39), message] }
+        : project
+    )))
+  }
+
+  /** Local-only generation patch used while streaming (no server sync per chunk). */
+  function patchGenerationLocal(generation: PlaygroundGeneration) {
+    setProjects((current) => current.map((project) => (
+      project.id === activeProjectId ? { ...project, generation } : project
+    )))
+  }
+
+  function finishGeneration(data: PlaygroundResponse, cleanPrompt: string) {
+    if (!activeProject) return
+    const nextName = activeProject.name === 'untitled'
+      ? slugify(data.generation.title).replace(/-/g, ' ').slice(0, 42) || activeProject.name
+      : activeProject.name
+
+    setProvider(data.provider)
+    setModel(data.model)
+    updateActiveProject({
+      generation: data.generation,
+      name: nextName,
+      status: activeProject.status === 'PUBLISHED' ? 'PUBLISHED' : 'IDLE',
+      lastActive: 'now',
+    }, { prompt: cleanPrompt, provider: data.provider, model: data.model })
+    setSelectedFile(data.generation.files.find((file) => file.path === 'src/App.tsx')?.path ?? data.generation.files[0]?.path ?? '.gitignore')
+    appendMessage({ role: 'assistant', content: `${data.generation.title} — ${data.generation.summary}`, at: Date.now() })
+  }
+
+  /** Follow-up prompts iterate on the current (possibly hand-edited) app files. */
+  function collectCurrentFiles() {
+    return activeProject?.generation?.files
+      .filter((file) => /^src\//.test(file.path) && file.path !== 'src/main.tsx' && file.path !== 'src/vite-env.d.ts')
+      .map((file) => ({ path: file.path, content: file.content }))
+  }
+
+  async function submitViaJsonRoute(cleanPrompt: string) {
+    const currentFiles = collectCurrentFiles()
+    const response = await fetch('/api/playground/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: cleanPrompt,
+        model,
+        ...(currentFiles && currentFiles.length > 0 ? { files: currentFiles } : {}),
+      }),
+      signal: AbortSignal.timeout(120_000),
+    })
+    const body = await response.json()
+    if (!response.ok) {
+      throw new Error(body?.error || 'OpenClaude generation failed')
+    }
+    finishGeneration(body as PlaygroundResponse, cleanPrompt)
+  }
+
+  /** Streaming generation: files land in the live workbench as they arrive. */
+  async function submitViaStream(cleanPrompt: string): Promise<boolean> {
+    const currentFiles = collectCurrentFiles()
+    const baseGeneration: PlaygroundGeneration = activeProject?.generation ?? {
+      title: 'Streaming…',
+      summary: cleanPrompt.slice(0, 200),
+      previewHtml: '',
+      files: [],
+      console: [],
+    }
+
+    const response = await fetch('/api/playground/generate/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: cleanPrompt,
+        model,
+        ...(currentFiles && currentFiles.length > 0 ? { files: currentFiles } : {}),
+      }),
+      signal: AbortSignal.timeout(150_000),
+    })
+
+    if (!response.ok || !response.body || !response.headers.get('content-type')?.includes('text/event-stream')) {
+      return false // fall back to the JSON route
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let working = { ...baseGeneration, files: [...baseGeneration.files] }
+    let lastApply = 0
+    let sawFile = false
+    let finished = false
+
+    const upsert = (path: string, content: string) => {
+      const index = working.files.findIndex((file) => file.path === path)
+      const language = path.endsWith('.tsx') ? 'tsx' : path.endsWith('.ts') ? 'typescript' : path.endsWith('.css') ? 'css' : 'text'
+      if (index >= 0) {
+        working = { ...working, files: working.files.map((file, i) => (i === index ? { ...file, content } : file)) }
+      } else {
+        working = { ...working, files: [...working.files, { path, language, content }] }
+      }
+    }
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+
+      const frames = buffer.split('\n\n')
+      buffer = frames.pop() ?? ''
+
+      for (const frame of frames) {
+        const line = frame.split('\n').find((entry) => entry.startsWith('data:'))
+        if (!line) continue
+        let event: { type?: string; [key: string]: unknown }
+        try {
+          event = JSON.parse(line.slice(5).trim())
+        } catch {
+          continue
+        }
+
+        if (event.type === 'meta') {
+          working = { ...working, title: String(event.title || working.title), summary: String(event.summary || working.summary) }
+        } else if (event.type === 'file_chunk' && typeof event.path === 'string' && typeof event.text === 'string') {
+          sawFile = true
+          const existing = working.files.find((file) => file.path === event.path)?.content ?? ''
+          upsert(event.path, existing + event.text)
+          // Throttle live applies so the workbench re-renders smoothly
+          if (Date.now() - lastApply > 350) {
+            lastApply = Date.now()
+            patchGenerationLocal(working)
+          }
+        } else if (event.type === 'file_close' && typeof event.path === 'string' && typeof event.content === 'string') {
+          sawFile = true
+          upsert(event.path, event.content)
+          lastApply = Date.now()
+          patchGenerationLocal(working)
+        } else if (event.type === 'done' && event.generation) {
+          finished = true
+          finishGeneration(
+            { provider: String(event.provider || 'vercel-ai-gateway'), model: String(event.model || model), generation: event.generation as PlaygroundGeneration },
+            cleanPrompt,
+          )
+        } else if (event.type === 'error') {
+          if (!sawFile) return false // nothing streamed — let the JSON route try
+          throw new Error(String(event.error || 'Streaming generation failed'))
+        }
+      }
+    }
+
+    if (!finished && !sawFile) return false
+    if (!finished) throw new Error('Stream ended before generation completed. Try again.')
+    return true
+  }
+
   async function submit(nextPrompt = prompt) {
     const cleanPrompt = nextPrompt.trim()
     if (!cleanPrompt || isGenerating || !activeProject) return
@@ -717,47 +859,26 @@ export default function PlaygroundPage() {
     setError(null)
     setPane('preview')
     setView('builder')
+    appendMessage({ role: 'user', content: cleanPrompt, at: Date.now() })
 
     try {
-      // Abort hung generations so the builder never sticks in "generating"
-      // Follow-up prompts iterate on the current (possibly hand-edited) files
-      const currentFiles = activeProject.generation?.files
-        .filter((file) => file.path === 'src/App.tsx' || file.path === 'src/index.css')
-        .map((file) => ({ path: file.path, content: file.content }))
-      const response = await fetch('/api/playground/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: cleanPrompt,
-          model,
-          ...(currentFiles && currentFiles.length > 0 ? { files: currentFiles } : {}),
-        }),
-        signal: AbortSignal.timeout(120_000),
+      const streamed = await submitViaStream(cleanPrompt).catch((streamError) => {
+        if (streamError instanceof Error && streamError.name === 'TimeoutError') {
+          throw streamError
+        }
+        // Stream produced partial output then failed — surface it honestly
+        if (streamError instanceof Error && streamError.message !== 'STREAM_UNAVAILABLE') {
+          throw streamError
+        }
+        return false
       })
-      const body = await response.json()
-
-      if (!response.ok) {
-        throw new Error(body?.error || 'OpenClaude generation failed')
+      if (!streamed) {
+        await submitViaJsonRoute(cleanPrompt)
       }
-
-      const data = body as PlaygroundResponse
-      const nextName = activeProject.name === 'untitled'
-        ? slugify(data.generation.title).replace(/-/g, ' ').slice(0, 42) || activeProject.name
-        : activeProject.name
-
-      setProvider(data.provider)
-      setModel(data.model)
-      updateActiveProject({
-        generation: data.generation,
-        name: nextName,
-        status: activeProject.status === 'PUBLISHED' ? 'PUBLISHED' : 'IDLE',
-        lastActive: 'now',
-      }, { prompt: cleanPrompt, provider: data.provider, model: data.model })
-      setSelectedFile(data.generation.files.find((file) => file.path === 'src/App.tsx')?.path ?? data.generation.files[0]?.path ?? '.gitignore')
-      setGenerationVersion((version) => version + 1)
+      setPrompt('')
     } catch (err) {
       if (err instanceof Error && err.name === 'TimeoutError') {
-        setError('Generation timed out after 2 minutes. Try a shorter prompt or retry.')
+        setError('Generation timed out. Try a shorter prompt or retry.')
       } else {
         setError(err instanceof Error ? err.message : 'OpenClaude generation failed')
       }
@@ -854,8 +975,10 @@ export default function PlaygroundPage() {
           storage={storage}
           submit={submit}
           onDownload={() => downloadProject()}
-          workbenchKey={`${activeProjectId}:${generationVersion}`}
+          workbenchKey={activeProjectId}
           onWorkbenchEdit={handleWorkbenchEdit}
+          messages={activeProject?.messages ?? []}
+          setModel={setModel}
         />
       )}
     </main>
@@ -884,6 +1007,8 @@ function BuilderView({
   onDownload,
   workbenchKey,
   onWorkbenchEdit,
+  messages,
+  setModel,
 }: {
   prompt: string
   setPrompt: (value: string) => void
@@ -906,8 +1031,12 @@ function BuilderView({
   onDownload: () => void
   workbenchKey: string
   onWorkbenchEdit: (files: { path: string; content: string }[]) => void
+  messages: ChatMessage[]
+  setModel: (model: string) => void
 }) {
   const [consoleFilter, setConsoleFilter] = useState<ConsoleLevel>('all')
+  const [runtimeError, setRuntimeError] = useState<string | null>(null)
+  const [showSandboxConsole, setShowSandboxConsole] = useState(false)
   const [consoleCleared, setConsoleCleared] = useState(false)
   const [consoleCollapsed, setConsoleCollapsed] = useState(false)
   const consoleEntries = useMemo(
@@ -944,7 +1073,23 @@ function BuilderView({
                 {isGenerating ? `${spinnerVerb}…` : 'Idle'}
               </span>
             </div>
-            <span className="text-[10px] uppercase tracking-widest text-orange-500">OpenClaude</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest text-orange-500">OpenClaude</span>
+              <select
+                value={model}
+                onChange={(event) => setModel(event.target.value)}
+                disabled={isGenerating}
+                aria-label="Model"
+                className="border border-zinc-800 bg-black px-1.5 py-1 text-[10px] uppercase tracking-widest text-zinc-400 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
+              >
+                {MODEL_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+                {!MODEL_OPTIONS.some((option) => option.value === model) && (
+                  <option value={model}>{model}</option>
+                )}
+              </select>
+            </div>
           </div>
 
           <div className="p-5 space-y-5 flex-1">
@@ -953,7 +1098,33 @@ function BuilderView({
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">{PLAYGROUND_PROMISE}</p>
             </div>
 
-            <div className="space-y-2">
+            {messages.length > 0 && (
+              <div className="max-h-72 space-y-2 overflow-y-auto border border-zinc-900 bg-zinc-950/50 p-3">
+                {messages.map((message, index) => (
+                  <div key={`${message.at}-${index}`} className={message.role === 'user' ? 'text-right' : 'text-left'}>
+                    <div className={`inline-block max-w-[90%] border px-3 py-2 text-left text-xs leading-relaxed ${
+                      message.role === 'user'
+                        ? 'border-zinc-700 bg-zinc-900 text-zinc-200'
+                        : 'border-orange-500/30 bg-orange-500/5 text-zinc-300'
+                    }`}>
+                      <div className={`mb-1 text-[9px] uppercase tracking-widest ${message.role === 'user' ? 'text-zinc-500' : 'text-orange-500'}`}>
+                        {message.role === 'user' ? 'You' : 'OpenClaude'}
+                      </div>
+                      {message.content}
+                    </div>
+                  </div>
+                ))}
+                {isGenerating && (
+                  <div className="text-left">
+                    <div className="inline-flex items-center gap-2 border border-orange-500/30 bg-orange-500/5 px-3 py-2 text-xs text-orange-500">
+                      <Spinner size={12} /> {spinnerVerb}…
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className={messages.length > 0 ? 'hidden' : 'space-y-2'}>
               {EXAMPLES.map((example) => (
                 <button
                   key={example.title}
@@ -972,7 +1143,7 @@ function BuilderView({
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
+                  if (event.key === 'Enter' && (!event.shiftKey || event.metaKey || event.ctrlKey)) {
                     event.preventDefault()
                     void submit()
                   }
@@ -981,7 +1152,9 @@ function BuilderView({
                 placeholder="Describe the app you want OpenClaude to build..."
               />
               <div className="border-t border-zinc-900 px-3 py-2 flex items-center justify-between gap-2">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Enter send · Shift Enter newline</span>
+                <span className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-zinc-600">
+                  <Kbd small meta>↵</Kbd> send · <Kbd small shift>↵</Kbd> newline
+                </span>
                 <button
                   type="button"
                   onClick={() => void submit()}
@@ -1054,12 +1227,34 @@ function BuilderView({
                 <Icon className="h-3.5 w-3.5" />
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setShowSandboxConsole((value) => !value)}
+              title="Toggle runtime console"
+              className={`ml-2 inline-flex h-8 items-center gap-2 border px-3 text-[10px] font-bold uppercase tracking-widest transition-colors ${showSandboxConsole ? 'border-orange-500 text-orange-500' : 'border-zinc-800 text-zinc-500 hover:text-white'}`}
+            >
+              <Terminal className="h-3.5 w-3.5" />
+              Console
+            </button>
           </div>
         </div>
 
+        {runtimeError && !isGenerating && (
+          <div className="flex items-center justify-between gap-3 border-b border-red-900/70 bg-red-950/20 px-4 py-2 text-xs text-red-400">
+            <span className="min-w-0 truncate" title={runtimeError}>Runtime error: {runtimeError}</span>
+            <button
+              type="button"
+              onClick={() => void submit(`Fix this error in the app without changing anything else: ${runtimeError}`)}
+              className="shrink-0 border border-red-900/70 px-2 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-red-950/40"
+            >
+              Fix with AI
+            </button>
+          </div>
+        )}
+
         <div className="grid flex-1 min-h-[560px] xl:grid-cols-[1fr_280px]">
           <div className="min-w-0 bg-zinc-950/50 p-4">
-            {isGenerating ? (
+            {isGenerating && (!generation || generation.files.length === 0) ? (
               <div className="h-full min-h-[520px] border border-zinc-900 bg-black flex items-center justify-center">
                 <div className="max-w-md px-6 text-center">
                   <div className="mx-auto w-fit"><Spinner size={24} /></div>
@@ -1086,13 +1281,21 @@ function BuilderView({
               </div>
             ) : pane === 'preview' ? (
               <div className="h-full min-h-[520px] overflow-auto border border-zinc-900 bg-zinc-950 p-4">
+                {isGenerating && (
+                  <div className="mb-3 flex items-center gap-2 border border-orange-500/30 bg-orange-500/5 px-3 py-2 text-[10px] uppercase tracking-widest text-orange-500">
+                    <Spinner size={12} />
+                    {spinnerVerb}… files are streaming into the preview
+                  </div>
+                )}
                 <div className={`mx-auto h-full min-h-[488px] transition-all ${VIEWPORTS[viewport]}`}>
                   {generation ? (
                     <SandpackWorkbench
                       generationKey={workbenchKey}
                       files={files}
                       mode="preview"
+                      showConsole={showSandboxConsole}
                       onFilesChange={onWorkbenchEdit}
+                      onError={setRuntimeError}
                     />
                   ) : (
                     <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
@@ -1124,16 +1327,18 @@ function BuilderView({
                 <div className="border-b border-zinc-900 px-3 py-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
                   <FileText className="h-3.5 w-3.5" />
                   {activeFile?.path ?? 'No file selected'}
-                  {generation && (activeFile?.path === 'src/App.tsx' || activeFile?.path === 'src/index.css') && (
+                  {generation && activeFile && /^src\/(?:App\.tsx|index\.css|(?:components|hooks|lib)\/[A-Za-z0-9_-]+\.(?:tsx|ts)|[A-Za-z0-9_-]+\.css)$/.test(activeFile.path) && (
                     <span className="ml-auto text-orange-500">Editable · live reload</span>
                   )}
                 </div>
-                {generation && (activeFile?.path === 'src/App.tsx' || activeFile?.path === 'src/index.css') ? (
+                {generation && activeFile && /^src\/(?:App\.tsx|index\.css|(?:components|hooks|lib)\/[A-Za-z0-9_-]+\.(?:tsx|ts)|[A-Za-z0-9_-]+\.css)$/.test(activeFile.path) ? (
                   <SandpackWorkbench
                     generationKey={workbenchKey}
                     files={files}
                     mode="code"
+                    activeFile={activeFile?.path}
                     onFilesChange={onWorkbenchEdit}
+                    onError={setRuntimeError}
                   />
                 ) : (
                   <pre className="h-[488px] overflow-auto p-4 text-xs leading-relaxed text-zinc-300">

@@ -23,9 +23,52 @@ function slugify(value: string) {
     .slice(0, 52) || 'agentbot-playground'
 }
 
-function envProjectName(projectName: string) {
-  const configured = process.env.VERCEL_PLAYGROUND_PROJECT_NAME?.trim()
-  return slugify(configured || `agentbot-playground-${projectName}`)
+/**
+ * One Vercel project per playground project → stable production URL
+ * (https://<name>.vercel.app) that updates on each republish, with no
+ * preview-deployment auth wall. The id suffix avoids cross-user collisions.
+ */
+function stableProjectName(projectName: string, projectId: string) {
+  const suffix = projectId.replace(/[^a-z0-9]/gi, '').slice(-6).toLowerCase() || 'app'
+  return `${slugify(`agentbot-play-${projectName}`).slice(0, 44)}-${suffix}`
+}
+
+function teamSearch() {
+  const search = new URLSearchParams()
+  const teamId = process.env.VERCEL_TEAM_ID?.trim()
+  const teamSlug = process.env.VERCEL_TEAM_SLUG?.trim()
+  if (teamId) search.set('teamId', teamId)
+  if (!teamId && teamSlug) search.set('slug', teamSlug)
+  return search
+}
+
+/** Find-or-create the per-project Vercel project. Returns its name. */
+async function ensureVercelProject(token: string, name: string): Promise<string> {
+  const search = teamSearch()
+  const suffix = search.size > 0 ? `?${search.toString()}` : ''
+
+  const existing = await fetch(`https://api.vercel.com/v9/projects/${encodeURIComponent(name)}${suffix}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(15_000),
+  })
+  if (existing.ok) return name
+
+  const created = await fetch(`https://api.vercel.com/v10/projects${suffix}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, framework: 'vite' }),
+    signal: AbortSignal.timeout(20_000),
+  })
+
+  if (!created.ok && created.status !== 409) {
+    const text = await created.text().catch(() => '')
+    throw new Error(`Vercel project create failed with ${created.status}${text ? `: ${text.slice(0, 300)}` : ''}`)
+  }
+
+  return name
 }
 
 function deploymentUrl(url: string) {
@@ -46,16 +89,12 @@ export async function deployPlaygroundToVercel(params: {
     throw new Error('VERCEL_TOKEN is not configured')
   }
 
-  const projectName = envProjectName(params.projectName)
-  const search = new URLSearchParams({
-    forceNew: '1',
-    skipAutoDetectionConfirmation: '1',
-  })
+  const projectName = stableProjectName(params.projectName, params.projectId)
+  await ensureVercelProject(token, projectName)
 
-  const teamId = process.env.VERCEL_TEAM_ID?.trim()
-  const teamSlug = process.env.VERCEL_TEAM_SLUG?.trim()
-  if (teamId) search.set('teamId', teamId)
-  if (!teamId && teamSlug) search.set('slug', teamSlug)
+  const search = teamSearch()
+  search.set('forceNew', '1')
+  search.set('skipAutoDetectionConfirmation', '1')
 
   const hasVercelConfig = params.generation.files.some((file) => file.path === 'vercel.json')
   const files = [
@@ -86,9 +125,10 @@ export async function deployPlaygroundToVercel(params: {
     },
     body: JSON.stringify({
       name: projectName,
-      project: process.env.VERCEL_PLAYGROUND_PROJECT_ID?.trim() || undefined,
-      // No `target`: omitting it creates a preview deployment. The API rejects
-      // target:'preview' (only 'production'/'staging'/custom env are valid).
+      project: projectName,
+      // Production target on the per-project Vercel project → stable URL,
+      // no preview-deployment auth wall.
+      target: 'production',
       files,
       projectSettings: {
         framework: 'vite',
@@ -117,7 +157,8 @@ export async function deployPlaygroundToVercel(params: {
 
   return {
     id: deployment.id,
-    url: deploymentUrl(deployment.url),
+    // Stable production alias rather than the per-deployment hash URL
+    url: `https://${projectName}.vercel.app`,
     state: deployment.readyState || deployment.readySubstate || deployment.state || 'QUEUED',
     provider: 'vercel',
   }
