@@ -53,6 +53,38 @@ export function UseCases() {
           </h2>
         </div>
 
+        {/* One agent, every industry — hub & spoke */}
+        <div className="mb-10 border border-zinc-900 bg-zinc-950/40 p-4 sm:p-6 overflow-x-auto">
+          <svg viewBox="0 0 880 320" className="w-full min-w-[560px]" role="img" aria-label="One Agentbot agent adapts to every industry: a central agent connects out to music and audio, creative agency, crypto community, e-commerce, creator studio, and solo-founder workflows." xmlns="http://www.w3.org/2000/svg">
+            {/* spokes (drawn first, behind boxes) */}
+            {[
+              { x: 8, cy: 57, side: 'L' }, { x: 8, cy: 160, side: 'L' }, { x: 8, cy: 263, side: 'L' },
+              { x: 722, cy: 57, side: 'R' }, { x: 722, cy: 160, side: 'R' }, { x: 722, cy: 263, side: 'R' },
+            ].map((n, i) => (
+              <line key={i} x1={n.side === 'L' ? 158 : 722} y1={n.cy} x2={n.side === 'L' ? 365 : 515} y2="156" stroke="#27272a" strokeWidth="1" />
+            ))}
+            {/* left verticals */}
+            {[['🎵', 'Music & Audio', 30], ['🪙', 'Crypto Community', 133], ['📡', 'Creator Studio', 236]].map(([ic, t, y]) => (
+              <g key={t as string}>
+                <rect x="8" y={y as number} width="150" height="54" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+                <text x="22" y={(y as number) + 32} fontFamily="ui-monospace,monospace" fontSize="11" fill="#a1a1aa">{ic as string} {t as string}</text>
+              </g>
+            ))}
+            {/* right verticals */}
+            {[['🏢', 'Creative Agency', 30], ['🛒', 'E-Commerce', 133], ['🎯', 'Solo Founder', 236]].map(([ic, t, y]) => (
+              <g key={t as string}>
+                <rect x="722" y={y as number} width="150" height="54" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+                <text x="858" y={(y as number) + 32} textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="11" fill="#a1a1aa">{t as string} {ic as string}</text>
+              </g>
+            ))}
+            {/* center hub */}
+            <rect x="365" y="120" width="150" height="72" fill="#09090b" stroke="#f97316" strokeWidth="1.5" />
+            <text x="440" y="150" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="12" fill="#ffffff" letterSpacing="1.5" fontWeight="bold">YOUR AGENT</text>
+            <text x="440" y="168" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#f97316">one runtime</text>
+            <text x="440" y="182" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">adapts to any vertical</text>
+          </svg>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
           {cases.map((c) => (
             <Link

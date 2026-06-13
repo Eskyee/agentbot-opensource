@@ -96,6 +96,36 @@ export default function PricingPage() {
           </p>
         </section>
 
+        {/* What you're actually paying for */}
+        <section className="border-t border-zinc-800 pt-16 mb-4">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">You scale agents, not features</div>
+          <div className="border border-zinc-900 bg-zinc-950/40 p-4 sm:p-6 overflow-x-auto">
+            <svg viewBox="0 0 880 250" className="w-full min-w-[560px]" role="img" aria-label="Every Agentbot plan includes all channels, all skills, 24/7 runtime, and your own server. The tiers differ only by how many agents you run: Solo is 1 agent at £29, Collective is 3 agents at £69, Label is 10 agents at £149." xmlns="http://www.w3.org/2000/svg">
+              {/* tiers */}
+              {[
+                { x: 8, name: 'SOLO', price: '£29', n: 1, accent: false },
+                { x: 300, name: 'COLLECTIVE', price: '£69', n: 3, accent: true },
+                { x: 592, name: 'LABEL', price: '£149', n: 10, accent: false },
+              ].map((t) => (
+                <g key={t.name}>
+                  <rect x={t.x} y="8" width="280" height="150" fill="#09090b" stroke={t.accent ? '#f97316' : '#27272a'} strokeWidth={t.accent ? 1.5 : 1} />
+                  <text x={t.x + 18} y="34" fontFamily="ui-monospace,monospace" fontSize="11" fill={t.accent ? '#f97316' : '#a1a1aa'} letterSpacing="1" fontWeight="bold">{t.name}</text>
+                  <text x={t.x + 262} y="34" textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="13" fill="#ffffff" fontWeight="bold">{t.price}<tspan fontSize="8" fill="#52525b">/mo</tspan></text>
+                  <text x={t.x + 18} y="52" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b" letterSpacing="1">{t.n} agent{t.n > 1 ? 's' : ''}, 24/7</text>
+                  {/* agent dots */}
+                  {Array.from({ length: t.n }).map((_, i) => (
+                    <rect key={i} x={t.x + 18 + (i % 5) * 26} y={70 + Math.floor(i / 5) * 26} width="18" height="18" fill={t.accent ? '#f97316' : '#3f3f46'} />
+                  ))}
+                </g>
+              ))}
+              {/* shared foundation */}
+              <rect x="8" y="178" width="864" height="56" fill="#0a0a0a" stroke="#22c55e" strokeWidth="1" />
+              <text x="28" y="200" fontFamily="ui-monospace,monospace" fontSize="9" fill="#22c55e" letterSpacing="2" fontWeight="bold">INCLUDED IN EVERY PLAN</text>
+              <text x="28" y="220" fontFamily="ui-monospace,monospace" fontSize="10" fill="#a1a1aa">all channels · all skills · 24/7 runtime · your own server · no feature gates</text>
+            </svg>
+          </div>
+        </section>
+
         {/* Plans */}
         <section className="border-t border-zinc-800 pt-16 mb-16">
           <div className="grid sm:grid-cols-3 gap-px bg-zinc-800">
