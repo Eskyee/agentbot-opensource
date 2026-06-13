@@ -75,6 +75,7 @@
     "node_modules",
     "tests",
     "agentbot-backend",
+    "packages/sdk/tsup.config.ts",
     "**/*.test.ts",
     "lib/usage-logger.ts",
     "test-usage-logging.ts",

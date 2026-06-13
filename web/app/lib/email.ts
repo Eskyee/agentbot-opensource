@@ -43,7 +43,7 @@ export async function sendCardEmail({
   subject: string;
   component: React.ReactElement;
 }) {
-  const html = render(component);
+  const html = await render(component);
   return sendEmail({ to, subject, html });
 }
 
