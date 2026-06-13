@@ -1089,10 +1089,18 @@ function BuilderView({
   setModel: (model: string) => void
 }) {
   const [consoleFilter, setConsoleFilter] = useState<ConsoleLevel>('all')
-  const [runtimeError, setRuntimeError] = useState<string | null>(null)
+  const [runtimeError, setRuntimeError] = useState<{ message: string; filePath?: string; line?: number } | null>(null)
+  const [fixCount, setFixCount] = useState(0)
   const [showSandboxConsole, setShowSandboxConsole] = useState(false)
   const [consoleCleared, setConsoleCleared] = useState(false)
   const [consoleCollapsed, setConsoleCollapsed] = useState(false)
+
+  // Reset fix count when generation changes (new build)
+  useEffect(() => {
+    setFixCount(0)
+    setRuntimeError(null)
+  }, [generation])
+
   const consoleEntries = useMemo(
     () => buildConsoleEntries(generation, error, isGenerating),
     [generation, error, isGenerating],
@@ -1383,14 +1391,26 @@ function BuilderView({
 
         {runtimeError && !isGenerating && (
           <div className="flex items-center justify-between gap-3 border-b border-red-900/70 bg-red-950/20 px-4 py-2 text-xs text-red-400">
-            <span className="min-w-0 truncate" title={runtimeError}>Runtime error: {runtimeError}</span>
-            <button
-              type="button"
-              onClick={() => void submit(`Fix this error in the app without changing anything else: ${runtimeError}`)}
-              className="shrink-0 border border-red-900/70 px-2 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-red-950/40"
-            >
-              Fix with AI
-            </button>
+            <span className="min-w-0 truncate" title={runtimeError.message}>
+              Runtime error: {runtimeError.filePath ? `${runtimeError.filePath}${runtimeError.line ? `:${runtimeError.line}` : ''} — ` : ''}{runtimeError.message}
+            </span>
+            {fixCount < 3 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setFixCount((c) => c + 1)
+                  const loc = runtimeError.filePath ? ` in ${runtimeError.filePath}${runtimeError.line ? ` line ${runtimeError.line}` : ''}` : ''
+                  void submit(`Fix this error${loc} without changing anything else: ${runtimeError.message}`)
+                }}
+                className="shrink-0 border border-red-900/70 px-2 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-red-950/40"
+              >
+                Fix with AI{fixCount > 0 ? ` (${fixCount + 1}/3)` : ''}
+              </button>
+            ) : (
+              <span className="shrink-0 text-[10px] uppercase tracking-widest text-red-500">
+                Manual fix needed
+              </span>
+            )}
           </div>
         )}
 

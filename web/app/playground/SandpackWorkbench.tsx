@@ -18,12 +18,15 @@
  */
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   SandpackProvider,
+  SandpackLayout,
   SandpackPreview,
   SandpackCodeEditor,
   SandpackConsole,
+  SandpackFileExplorer,
+  UnstyledOpenInCodeSandboxButton,
   useSandpack,
   type SandpackTheme,
 } from '@codesandbox/sandpack-react'
@@ -48,6 +51,18 @@ function fromSandpackPath(path: string): string | null {
   if (path === '/styles.css') return 'src/index.css'
   if (path === '/index.tsx') return null
   return `src${path}`
+}
+
+/** Extract npm dependencies from a generated package.json file. */
+function extractDependencies(files: WorkbenchFile[]): Record<string, string> {
+  const pkgFile = files.find((f) => f.path === 'package.json')
+  if (!pkgFile) return {}
+  try {
+    const pkg = JSON.parse(pkgFile.content) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> }
+    return { ...pkg.dependencies, ...pkg.devDependencies }
+  } catch {
+    return {}
+  }
 }
 
 /** Brand theme — black base, zinc scale, orange accent, mono type. */
@@ -210,14 +225,29 @@ function BootOverlay() {
   )
 }
 
-/** Surfaces compile/runtime errors for the AI fix loop. */
-function ErrorReporter({ onError }: { onError?: (message: string | null) => void }) {
+export type ErrorInfo = {
+  message: string
+  filePath?: string
+  line?: number
+}
+
+/** Surfaces compile/runtime errors for the AI fix loop with file + line context. */
+function ErrorReporter({ onError }: { onError?: (error: ErrorInfo | null) => void }) {
   const { sandpack } = useSandpack()
   const message = sandpack.error?.message ?? null
 
+  const errorInfo = useMemo<ErrorInfo | null>(() => {
+    if (!message) return null
+    return {
+      message,
+      filePath: sandpack.error?.path,
+      line: sandpack.error?.line,
+    }
+  }, [message, sandpack.error?.path, sandpack.error?.line])
+
   useEffect(() => {
-    onError?.(message)
-  }, [message, onError])
+    onError?.(errorInfo)
+  }, [errorInfo, onError])
 
   return null
 }
@@ -230,7 +260,7 @@ interface SandpackWorkbenchProps {
   activeFile?: string
   showConsole?: boolean
   onFilesChange?: (files: { path: string; content: string }[]) => void
-  onError?: (message: string | null) => void
+  onError?: (error: ErrorInfo | null) => void
 }
 
 export default function SandpackWorkbench({
@@ -250,6 +280,8 @@ export default function SandpackWorkbench({
     [generationKey],
   )
 
+  const dependencies = useMemo(() => extractDependencies(files), [generationKey])
+
   const active = activeFile ? toSandpackPath(activeFile) : null
 
   return (
@@ -258,13 +290,15 @@ export default function SandpackWorkbench({
       template="react-ts"
       theme={agentbotTheme}
       files={initialFiles}
+      customSetup={{
+        dependencies,
+      }}
       options={{
         activeFile: mode === 'code' ? (active ?? '/App.tsx') : undefined,
         autorun: true,
         autoReload: true,
         recompileMode: 'delayed',
         recompileDelay: 600,
-        // Generous bundler timeout — the hosted bundler can be slow on cold start
         bundlerTimeOut: 60_000,
       }}
     >
@@ -278,6 +312,7 @@ export default function SandpackWorkbench({
             showOpenInCodeSandbox={false}
             showRefreshButton
             showRestartButton={false}
+            showSandpackErrorOverlay
             className="!h-full !min-h-[420px] flex-1"
           />
           {showConsole && (
@@ -287,14 +322,25 @@ export default function SandpackWorkbench({
           )}
         </div>
       ) : (
-        <SandpackCodeEditor
-          showTabs
-          showLineNumbers
-          showInlineErrors
-          wrapContent
-          closableTabs={false}
-          className="!h-full !min-h-[488px]"
-        />
+        <SandpackLayout>
+          <SandpackFileExplorer autoHiddenFiles className="!h-full !min-h-[488px] !w-[200px] !flex-none" />
+          <div className="flex flex-1 flex-col">
+            <SandpackCodeEditor
+              showTabs
+              showLineNumbers
+              showInlineErrors
+              wrapContent
+              closableTabs={false}
+              initMode="user-visible"
+              className="!h-full !min-h-[488px] flex-1"
+            />
+            <div className="border-t border-zinc-900 p-2">
+              <UnstyledOpenInCodeSandboxButton className="w-full border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:border-zinc-600 hover:text-white">
+                Open in CodeSandbox ↗
+              </UnstyledOpenInCodeSandboxButton>
+            </div>
+          </div>
+        </SandpackLayout>
       )}
     </SandpackProvider>
   )
