@@ -26,6 +26,7 @@ const COLUMNS = [
       { href: '/design-system', label: 'Design System' },
       { href: '/open-agents', label: 'Open Agents' },
       { href: '/coding-agent', label: 'Coding Agent' },
+      { href: '/playground/gallery', label: 'Gallery' },
       { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },
       { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
       { href: 'https://documenter.getpostman.com/view/53112924/2sBXwsMAeE', label: 'API Collection', external: true },
