@@ -687,6 +687,16 @@ export default function PlaygroundPage() {
     if (archivedProject) syncProject(archivedProject, { prompt, provider, model })
   }
 
+  function deleteProject(projectId: string) {
+    setProjects((current) => current.filter((project) => project.id !== projectId))
+    if (activeProjectId === projectId) {
+      const next = projects.find((project) => project.id !== projectId)
+      if (next) setActiveProjectId(next.id)
+    }
+    // Best-effort server delete
+    fetch(`/api/playground/projects/${encodeURIComponent(projectId)}`, { method: 'DELETE' }).catch(() => {})
+  }
+
   function duplicateProject(projectId: string) {
     const source = projects.find((project) => project.id === projectId)
     if (!source) return
@@ -1200,6 +1210,7 @@ export default function PlaygroundPage() {
           onDuplicate={duplicateProject}
           onDownload={downloadProject}
           onArchive={archiveProject}
+          onDelete={deleteProject}
         />
       ) : view === 'apps' ? (
         <AppsView projects={publishedProjects} onOpen={openProject} onPublish={() => setView('publish')} onDownload={downloadProject} onRemix={remixProject} />
@@ -1979,6 +1990,7 @@ function ProjectsView({
   onDuplicate,
   onDownload,
   onArchive,
+  onDelete,
 }: {
   projects: PlaygroundProject[]
   onNewProject: () => void
@@ -1987,6 +1999,7 @@ function ProjectsView({
   onDuplicate: (id: string) => void
   onDownload: (project: PlaygroundProject) => void
   onArchive: (id: string) => void
+  onDelete: (id: string) => void
 }) {
   return (
     <section className="max-w-5xl px-6 py-10">
@@ -2044,6 +2057,13 @@ function ProjectsView({
               <button type="button" onClick={() => onArchive(project.id)} className="inline-flex items-center gap-2 border border-zinc-800 px-3 py-2 text-zinc-500 hover:border-zinc-600 hover:text-white">
                 <Archive className="h-3.5 w-3.5" />
                 Archive
+              </button>
+              <button
+                type="button"
+                onClick={() => { if (window.confirm(`Delete "${project.name}"? This cannot be undone.`)) onDelete(project.id) }}
+                className="inline-flex items-center gap-2 border border-zinc-800 px-3 py-2 text-zinc-600 hover:border-red-900 hover:text-red-400"
+              >
+                Delete
               </button>
             </div>
           </div>

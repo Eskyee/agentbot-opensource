@@ -104,3 +104,37 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     )
   }
 }
+
+export async function DELETE(_req: NextRequest, { params }: RouteContext) {
+  const session = await getAuthSession()
+  if (!session?.user?.id) return unauthorized()
+
+  const { id } = await params
+  const projectId = id.trim()
+  if (!projectId) {
+    return NextResponse.json({ error: 'Missing project id' }, { status: 400 })
+  }
+
+  try {
+    const existing = await prisma.playgroundProject.findUnique({
+      where: { id: projectId },
+      select: { userId: true },
+    })
+
+    if (!existing || existing.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    }
+
+    await prisma.playgroundProject.delete({ where: { id: projectId } })
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    if (isMissingPlaygroundProjectTable(error)) {
+      return NextResponse.json({ ok: true })
+    }
+    console.error('[playground.projects] delete failed', error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to delete project' },
+      { status: 500 },
+    )
+  }
+}
