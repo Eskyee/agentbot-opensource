@@ -176,6 +176,35 @@ export default function WhyAgentbotPage() {
             Agentbot is not a wrapper around an LLM. It is a four-layer runtime that gives every agent an isolated container, persistent state, onchain identity, and a bridge to every other agent on the network.
           </p>
 
+          {/* Four-layer stack diagram */}
+          <div className="mb-8 border border-zinc-900 bg-zinc-950/40 p-4 sm:p-6 overflow-x-auto">
+            <svg viewBox="0 0 880 312" className="w-full min-w-[520px]" role="img" aria-label="Agentbot's four-layer stack: the Agent Interface layer (CLI, API, web, chat channels) sits on top of the OpenClaw Agent Runtime (memory, decisions, skills, isolated container), which sits on the Bridge Protocol (agent-to-agent messaging, USDC payments, onchain identity), which rests on the Blockchain layer (Base, Solana, Bitcoin, CDP wallets). Requests flow down, responses flow back up." xmlns="http://www.w3.org/2000/svg">
+              {[
+                { y: 8, t: 'AGENT INTERFACE', s: 'CLI · API · Web · Discord · WhatsApp · Telegram', accent: false },
+                { y: 82, t: 'AGENT RUNTIME — OpenClaw', s: 'memory · decisions · skills · isolated Docker container', accent: true },
+                { y: 156, t: 'BRIDGE PROTOCOL', s: 'A2A messaging · USDC payments · onchain identity', accent: false },
+                { y: 230, t: 'BLOCKCHAIN', s: 'Base · Solana · Bitcoin · Coinbase CDP wallets', accent: false },
+              ].map((l) => (
+                <g key={l.t}>
+                  <rect x="40" y={l.y} width="800" height="62" fill="#09090b" stroke={l.accent ? '#f97316' : '#27272a'} strokeWidth={l.accent ? 1.5 : 1} />
+                  <text x="60" y={l.y + 27} fontFamily="ui-monospace,monospace" fontSize="12" fill={l.accent ? '#f97316' : '#ffffff'} letterSpacing="1" fontWeight="bold">{l.t}</text>
+                  <text x="60" y={l.y + 46} fontFamily="ui-monospace,monospace" fontSize="9" fill="#52525b">{l.s}</text>
+                </g>
+              ))}
+              {/* between-layer flow arrows (down = request, up = response) */}
+              {[70, 144, 218].map((y) => (
+                <g key={y}>
+                  <line x1="20" y1={y} x2="20" y2={y + 12} stroke="#3f3f46" strokeWidth="1" />
+                  <polygon points={`16,${y + 8} 20,${y + 14} 24,${y + 8}`} fill="#3f3f46" />
+                  <line x1="860" y1={y + 12} x2="860" y2={y} stroke="#22c55e" strokeWidth="1" />
+                  <polygon points={`856,${y + 4} 860,${y - 2} 864,${y + 4}`} fill="#22c55e" />
+                </g>
+              ))}
+              <text x="20" y="304" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">↓ request</text>
+              <text x="860" y="304" textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="8" fill="#22c55e">response ↑</text>
+            </svg>
+          </div>
+
           <div className="space-y-4">
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Agent Interface Layer</h3>
