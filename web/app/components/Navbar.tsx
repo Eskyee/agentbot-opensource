@@ -263,14 +263,18 @@ function ProductsDropdown({ open, setOpen, dropdownRef, current }: {
 function NavLink({ href, current, children }: { href: string; current: string; children: React.ReactNode }) {
   const isActive = current === href || current.startsWith(href + '/');
   const isExternal = href.startsWith('http');
+  const cls = `text-[11px] uppercase tracking-widest transition-colors ${isActive ? 'text-white' : 'text-zinc-500 hover:text-white'}`;
+
+  if (isExternal) {
+    return (
+      <a href={href} className={cls} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    );
+  }
+
   return (
-    <Link
-      href={href}
-      className={`text-[11px] uppercase tracking-widest transition-colors ${
-        isActive ? 'text-white' : 'text-zinc-500 hover:text-white'
-      }`}
-      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-    >
+    <Link href={href} className={cls}>
       {children}
     </Link>
   );
@@ -298,12 +302,26 @@ function MobileSection({ children }: { children: React.ReactNode }) {
 
 function MobileLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   const isExternal = href.startsWith('http');
+
+  if (isExternal) {
+    return (
+      <a
+        href={href}
+        onClick={onClick}
+        className="block text-xs py-2.5 px-3 text-zinc-400 hover:text-white uppercase tracking-wider transition-colors"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {children}
+      </a>
+    );
+  }
+
   return (
     <Link
       href={href}
       onClick={onClick}
       className="block text-xs py-2.5 px-3 text-zinc-400 hover:text-white uppercase tracking-wider transition-colors"
-      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
       {children}
     </Link>
