@@ -211,19 +211,26 @@ const BOOT_VERBS = [
   'Almost there',
 ]
 
-/** Overlay that shows rotating verbs until Sandpack reports the preview is running. */
+/** Overlay that shows rotating verbs until Sandpack reports the preview is running.
+ *  Stays visible for at least 3 seconds so users can read the status messages. */
 function BootOverlay() {
   const { sandpack } = useSandpack()
   const [verb, setVerb] = useState(0)
+  const [hidden, setHidden] = useState(false)
   const booting = sandpack.status === 'initial' || sandpack.status === 'idle'
 
   useEffect(() => {
-    if (!booting) return
-    const id = setInterval(() => setVerb((v) => v + 1), 1400)
+    if (!booting) {
+      // Keep overlay visible for 2 more seconds after Sandpack finishes booting
+      const hideTimer = setTimeout(() => setHidden(true), 2000)
+      return () => clearTimeout(hideTimer)
+    }
+    setHidden(false)
+    const id = setInterval(() => setVerb((v) => v + 1), 2000)
     return () => clearInterval(id)
   }, [booting])
 
-  if (!booting) return null
+  if (!booting && hidden) return null
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/85 backdrop-blur-sm">
