@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/social/agents/mine"
+method: GET
+order: 11000

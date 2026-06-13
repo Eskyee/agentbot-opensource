@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/csrf"
+method: GET
+order: 2000

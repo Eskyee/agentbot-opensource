@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/registration/token"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "token": ""
+    }
+order: 1000

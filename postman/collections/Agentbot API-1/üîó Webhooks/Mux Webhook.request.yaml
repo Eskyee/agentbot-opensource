@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/webhooks/mux"
+method: POST
+order: 3000

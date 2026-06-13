@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/wallet/cdp"
+method: GET
+order: 4000

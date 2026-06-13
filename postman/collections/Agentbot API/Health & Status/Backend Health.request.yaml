@@ -1,4 +1,24 @@
 $kind: http-request
 url: "{{backendUrl}}/health"
 method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response time is acceptable", function () {
+        pm.expect(pm.response.responseTime).to.be.below(3000);
+      });
+      pm.test("Response body has status field", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData).to.have.property("status");
+      });
+      pm.test("Status value is ok or healthy", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData.status.toLowerCase()).to.be.oneOf(["ok", "healthy"]);
+      });
+    language: text/javascript
 order: 2000

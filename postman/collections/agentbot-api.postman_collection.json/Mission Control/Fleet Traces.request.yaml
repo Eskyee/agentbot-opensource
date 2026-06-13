@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/mission-control/fleet/traces"
+method: GET
+order: 2000

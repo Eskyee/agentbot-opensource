@@ -1,4 +1,16 @@
 $kind: http-request
 url: "{{baseUrl}}/api/agents/{{agentId}}/stats"
 method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response is JSON object", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData).to.be.an("object");
+      });
+    language: text/javascript
 order: 9000

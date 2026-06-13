@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/solana/rpc-config"
+method: GET
+order: 7000

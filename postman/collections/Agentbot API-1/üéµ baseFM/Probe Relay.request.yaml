@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/basefm/relays/{{relayKey}}/probe"
+method: GET
+order: 8000

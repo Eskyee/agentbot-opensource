@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/link"
+method: GET
+order: 8000

@@ -4,4 +4,6 @@ url: "{{baseUrl}}/api/underground/bitcoin/wallets/:walletId/address/unused"
 method: GET
 headers:
   Cookie: next-auth.session-token={{sessionToken}}
+pathVariables:
+  walletId: ""
 order: 11000

@@ -10,4 +10,25 @@ body:
       "email": "",
       "password": ""
     }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 or 201", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 201]);
+      });
+      pm.test("Response body has token or user field", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData).to.satisfy(function (d) {
+          return d.hasOwnProperty("token") || d.hasOwnProperty("user");
+        }, "Expected response to have 'token' or 'user' field");
+      });
+      pm.test("Save authToken to environment if present", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { return; }
+        if (jsonData.token) {
+          pm.environment.set("authToken", jsonData.token);
+        }
+      });
+    language: text/javascript
 order: 4000

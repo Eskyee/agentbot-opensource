@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/instance/{{userId}}/reset-memory"
+method: POST
+order: 9000

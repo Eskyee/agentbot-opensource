@@ -4,4 +4,6 @@ url: "{{baseUrl}}/api/metrics/:userId/performance"
 method: GET
 headers:
   Cookie: next-auth.session-token={{sessionToken}}
+pathVariables:
+  userId: ""
 order: 3000

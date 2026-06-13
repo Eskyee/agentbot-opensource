@@ -4,4 +4,6 @@ url: "{{baseUrl}}/api/agents/definitions/:name"
 method: GET
 headers:
   Cookie: next-auth.session-token={{sessionToken}}
+pathVariables:
+  name: ""
 order: 17000

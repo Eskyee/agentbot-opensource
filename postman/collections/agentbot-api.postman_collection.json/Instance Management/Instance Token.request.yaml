@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/instance/{{userId}}/token"
+method: GET
+order: 7000

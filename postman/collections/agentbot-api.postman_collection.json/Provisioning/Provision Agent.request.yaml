@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/provision"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "agentId": "",
+      "plan": "solo"
+    }
+order: 1000

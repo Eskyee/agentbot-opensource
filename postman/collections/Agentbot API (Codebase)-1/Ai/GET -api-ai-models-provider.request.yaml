@@ -4,4 +4,6 @@ url: "{{baseUrl}}/api/ai/models/:provider"
 method: GET
 headers:
   Cookie: next-auth.session-token={{sessionToken}}
+pathVariables:
+  provider: ""
 order: 3000

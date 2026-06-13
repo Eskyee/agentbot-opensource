@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/gateway/status"
+method: GET
+order: 8000

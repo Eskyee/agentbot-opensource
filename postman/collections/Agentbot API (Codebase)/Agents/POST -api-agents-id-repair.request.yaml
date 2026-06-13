@@ -5,6 +5,8 @@ method: POST
 headers:
   Cookie: next-auth.session-token={{sessionToken}}
   Content-Type: application/json
+pathVariables:
+  id: ""
 body:
   type: json
   content: "{}"

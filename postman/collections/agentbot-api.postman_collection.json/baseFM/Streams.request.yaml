@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/basefm/streams"
+method: GET
+order: 1000

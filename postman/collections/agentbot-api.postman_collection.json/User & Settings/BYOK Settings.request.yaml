@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/user/byok"
+method: GET
+order: 6000

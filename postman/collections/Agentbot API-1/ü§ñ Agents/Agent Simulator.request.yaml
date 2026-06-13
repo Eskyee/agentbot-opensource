@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/agents/simulator"
+method: POST
+order: 14000

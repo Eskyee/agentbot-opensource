@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/health"
+method: GET
+order: 2000

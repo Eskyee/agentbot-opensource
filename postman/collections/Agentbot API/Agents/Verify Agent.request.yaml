@@ -1,4 +1,18 @@
 $kind: http-request
 url: "{{baseUrl}}/api/agents/{{agentId}}/verify"
 method: POST
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response body has verified or valid field", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData).to.satisfy(function (d) {
+          return d.hasOwnProperty("verified") || d.hasOwnProperty("valid");
+        }, "Expected response to have 'verified' or 'valid' field");
+      });
+    language: text/javascript
 order: 11000

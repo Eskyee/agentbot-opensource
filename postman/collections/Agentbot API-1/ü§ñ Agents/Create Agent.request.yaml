@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/agents"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "",
+      "description": ""
+    }
+order: 2000

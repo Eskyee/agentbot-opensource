@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/[...nextauth]"
+method: POST
+headers:
+  Content-Type: application/json
+order: 3000

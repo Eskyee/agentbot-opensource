@@ -4,4 +4,6 @@ url: "{{baseUrl}}/api/agents/:id/verification"
 method: GET
 headers:
   Cookie: next-auth.session-token={{sessionToken}}
+pathVariables:
+  id: ""
 order: 29000

@@ -1,0 +1,41 @@
+owner: "53112924"
+team: "14191374"
+lastUpdatedBy: "53112924"
+lastRevision: 1776126660000
+name: Agentbot - Local Development
+color: 0
+values:
+  - key: WEB_URL
+    value: http://localhost:3000
+    enabled: true
+    description: Main web frontend URL
+  - key: BACKEND_URL
+    value: http://localhost:3001
+    enabled: true
+    description: Backend API URL
+  - key: GATEWAY_URL
+    value: http://localhost:8080
+    enabled: true
+    description: OpenClaw gateway URL
+  - key: BACKEND_API_KEY
+    value: ""
+    enabled: true
+    description: Your INTERNAL_API_KEY from backend .env
+  - key: AUTH_TOKEN
+    value: ""
+    enabled: true
+    description: Auto-populated by Login endpoint
+  - key: USER_ID
+    value: ""
+    enabled: true
+    description: Auto-populated by Login endpoint
+  - key: AGENT_ID
+    value: ""
+    enabled: true
+    description: Auto-populated by Deploy Agent endpoint
+  - key: DEPLOYMENT_URL
+    value: ""
+    enabled: true
+    description: Auto-populated by Deploy Agent endpoint
+createdAt: 2026-04-14T00:26:39.000Z
+updatedAt: 2026-04-14T00:31:00.000Z

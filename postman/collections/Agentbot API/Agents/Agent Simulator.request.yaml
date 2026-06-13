@@ -1,4 +1,14 @@
 $kind: http-request
 url: "{{baseUrl}}/api/agents/simulator"
 method: POST
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response is JSON", function () {
+        pm.response.to.be.json;
+      });
+    language: text/javascript
 order: 14000

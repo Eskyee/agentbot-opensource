@@ -2,6 +2,12 @@ $kind: http-example
 request:
   url: ""
   method: GET
+  headers:
+    sec-ch-ua-platform: '"macOS"'
+    referer: http://localhost:3000/
+    user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36
+    sec-ch-ua: '"HeadlessChrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"'
+    sec-ch-ua-mobile: ?0
 response:
   statusCode: 200
   statusText: "200"

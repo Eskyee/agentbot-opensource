@@ -2,4 +2,6 @@ $kind: http-request
 name: GET /api/openclaw/instances/:id/stats
 url: "{{baseUrl}}/api/openclaw/instances/:id/stats"
 method: GET
+pathVariables:
+  id: ""
 order: 12000

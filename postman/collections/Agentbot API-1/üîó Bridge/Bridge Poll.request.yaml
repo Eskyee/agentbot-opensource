@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/bridge/poll"
+method: GET
+headers:
+  X-Bridge-Secret: "{{bridgeSecret}}"
+order: 6000

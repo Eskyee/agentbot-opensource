@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/bridge/send"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Bridge-Secret: "{{bridgeSecret}}"
+body:
+  type: text
+  content: |-
+    {
+      "channel": "general",
+      "message": "Hello from Postman"
+    }
+order: 4000

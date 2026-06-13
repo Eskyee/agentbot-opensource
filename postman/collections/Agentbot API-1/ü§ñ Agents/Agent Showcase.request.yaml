@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/agents/showcase"
+method: GET
+order: 13000

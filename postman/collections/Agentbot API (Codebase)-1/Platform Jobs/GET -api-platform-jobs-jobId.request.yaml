@@ -2,4 +2,6 @@ $kind: http-request
 name: GET /api/platform-jobs/:jobId
 url: "{{baseUrl}}/api/platform-jobs/:jobId"
 method: GET
+pathVariables:
+  jobId: ""
 order: 4000

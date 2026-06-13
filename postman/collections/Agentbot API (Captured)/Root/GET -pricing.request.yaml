@@ -8,5 +8,52 @@ headers:
   sec-ch-ua: '"HeadlessChrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"'
   sec-ch-ua-mobile: ?0
   sec-ch-ua-platform: '"macOS"'
+scripts:
+  - type: afterResponse
+    code: |-
+      const template = `
+      <html>
+      <head>
+      <style>
+        body { font-family: sans-serif; padding: 16px; background: #f9f9f9; }
+        h2 { color: #333; }
+        .meta { margin-bottom: 16px; font-size: 14px; color: #555; }
+        .meta span { font-weight: bold; color: #222; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #4a4a8a; color: white; text-align: left; padding: 8px 12px; }
+        td { padding: 7px 12px; border-bottom: 1px solid #ddd; vertical-align: top; word-break: break-all; }
+        tr:nth-child(even) { background: #f0f0f8; }
+        tr:hover { background: #e8e8f8; }
+        .header-name { font-weight: 600; color: #333; width: 30%; }
+        .header-value { font-family: monospace; color: #555; }
+      </style>
+      </head>
+      <body>
+        <h2>GET /pricing — Response Headers</h2>
+        <div class="meta">
+          Status: <span>{{status}}</span> &nbsp;|&nbsp; Time: <span>{{responseTime}}ms</span> &nbsp;|&nbsp; Size: <span>{{responseSize}} bytes</span>
+        </div>
+        <table>
+          <tr><th>Header</th><th>Value</th></tr>
+          {{#each headers}}
+          <tr>
+            <td class="header-name">{{name}}</td>
+            <td class="header-value">{{value}}</td>
+          </tr>
+          {{/each}}
+        </table>
+      </body>
+      </html>
+      `;
+
+      const headers = pm.response.headers.all().map(h => ({ name: h.key, value: h.value }));
+
+      pm.visualizer.set(template, {
+        status: pm.response.status,
+        responseTime: pm.response.responseTime,
+        responseSize: pm.response.responseSize,
+        headers: headers
+      });
+    language: text/javascript
 examples: ./.resources/GET -pricing.resources/examples
 order: 3000

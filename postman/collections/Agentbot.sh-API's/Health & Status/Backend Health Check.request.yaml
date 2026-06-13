@@ -1,0 +1,5 @@
+$kind: http-request
+description: GET backend health endpoint.
+url: "{{BACKEND_URL}}/health"
+method: GET
+order: 2000

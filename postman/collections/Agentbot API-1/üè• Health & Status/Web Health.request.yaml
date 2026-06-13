@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/health"
+method: GET
+order: 1000

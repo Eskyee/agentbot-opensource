@@ -1,0 +1,5 @@
+$kind: http-request
+description: GET web health endpoint.
+url: "{{WEB_URL}}/api/health"
+method: GET
+order: 1000

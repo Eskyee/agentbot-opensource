@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/webhooks/railway-status"
+method: POST
+order: 4000

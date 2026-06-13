@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/webhooks/resend"
+method: POST
+order: 5000

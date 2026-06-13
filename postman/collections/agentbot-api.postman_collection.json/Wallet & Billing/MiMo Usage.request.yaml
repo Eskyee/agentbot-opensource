@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/credits/mimo-usage"
+method: GET
+order: 11000

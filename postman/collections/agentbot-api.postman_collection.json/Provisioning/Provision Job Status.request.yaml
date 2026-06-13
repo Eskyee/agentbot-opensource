@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/provision/jobs/{{jobId}}"
+method: GET
+order: 4000

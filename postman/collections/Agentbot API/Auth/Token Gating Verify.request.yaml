@@ -10,4 +10,14 @@ body:
       "address": "",
       "chain": "base"
     }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 or 403", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 403]);
+      });
+      pm.test("Response is JSON", function () {
+        pm.response.to.be.json;
+      });
+    language: text/javascript
 order: 11000

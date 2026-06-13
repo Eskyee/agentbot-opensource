@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/debug"
+method: GET
+order: 1000

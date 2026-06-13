@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/wallet/create"
+method: POST
+order: 2000

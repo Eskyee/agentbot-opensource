@@ -1,0 +1,894 @@
+$kind: http-example
+request:
+  url: https://agentbot.sh
+  method: GET
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    :status: "200"
+    age: "0"
+    cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+    content-encoding: br
+    content-security-policy: "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self' blob: data: https://*.mux.com; connect-src 'self' https://api.openrouter.ai https://api.stripe.com https://m.stripe.com https://vitals.vercel-insights.com https://*.base.org https://*.coinbase.com https://*.mux.com wss: ws:; font-src 'self' data:; frame-src https://keys.coinbase.com; frame-ancestors 'none'; upgrade-insecure-requests;"
+    content-type: text/html; charset=utf-8
+    cross-origin-opener-policy: same-origin-allow-popups
+    date: Tue, 14 Apr 2026 00:38:40 GMT
+    link: </_next/static/media/27834908180db20f-s.p.woff2?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/78fec81b34c4a365.p.woff2?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/css/f46e0dfe21327f1f.css?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL>; rel=preload; as="style", </_next/static/css/b187f585a7f580ec.css?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL>; rel=preload; as="style"
+    permissions-policy: camera=(), microphone=(), geolocation=()
+    referrer-policy: strict-origin-when-cross-origin
+    server: Vercel
+    strict-transport-security: max-age=63072000
+    vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+    x-content-type-options: nosniff
+    x-frame-options: DENY
+    x-matched-path: /
+    x-vercel-cache: MISS
+    x-vercel-id: lhr1::lhr1::gpg49-1776127120686-3c384acad9b6
+  body:
+    type: text
+    content: |-
+      <!DOCTYPE html>
+      <html data-dpl-id="dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" lang="en" class="__variable_7b9324 __variable_cadeeb font-sans">
+          <head>
+              <meta charSet="utf-8"/>
+              <meta name="viewport" content="width=device-width, initial-scale=1"/>
+              <link rel="preload" as="image" imageSrcSet="/_next/image?url=%2Ficons%2Ficon-192x192.png&amp;w=32&amp;q=75&amp;dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL 1x, /_next/image?url=%2Ficons%2Ficon-192x192.png&amp;w=48&amp;q=75&amp;dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL 2x"/>
+              <link rel="preload" as="image" href="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje"/>
+              <link rel="stylesheet" href="/_next/static/css/f46e0dfe21327f1f.css?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" data-precedence="next"/>
+              <link rel="stylesheet" href="/_next/static/css/b187f585a7f580ec.css?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" data-precedence="next"/>
+              <link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/webpack-250fb7733f4da553.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL"/>
+              <script src="/_next/static/chunks/4bd1b696-31ce98238bd5c316.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/85594-049a2d1bfc834152.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/main-app-7a59585daff20c2a.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/62789-2dd68eb5f44b92b7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/40471-4837f0018c705fc7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/73579-05b18284766b9944.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/43871-e791b40f195ec948.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/app/layout-27992655bfcc9fc3.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/app/error-0c7726a10709f441.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/91603-e0f8cb155250a02d.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/98285-cb10c63e21c0e0b2.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/app/page-a986e83817fc99a4.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script src="/_next/static/chunks/app/global-error-679585ed98a1ee68.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" async=""></script>
+              <script async="" src="https://platform.twitter.com/widgets.js" charSet="utf-8"></script>
+              <link rel="preload" href="https://cdn.jsdelivr.net/npm/@mux/mux-player" as="script"/>
+              <meta name="next-size-adjust" content=""/>
+              <link rel="manifest" href="/manifest.json"/>
+              <meta name="theme-color" content="#000000"/>
+              <title>Agentbot — Focus on the Work. Agents Handle the Rest.</title>
+              <meta name="description" content="Deploy autonomous AI agents for your creative practice in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol."/>
+              <link rel="author" href="https://agentbot.raveculture.xyz"/>
+              <meta name="author" content="Agentbot"/>
+              <meta name="keywords" content="AI agent deployment,autonomous AI agents,BYOK AI,agent hosting,deploy AI agent,creative industry AI,AI for creators,Base blockchain,agent orchestration,AI infrastructure"/>
+              <meta name="creator" content="Agentbot"/>
+              <meta name="publisher" content="Agentbot"/>
+              <meta name="robots" content="index, follow"/>
+              <meta name="googlebot" content="index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1"/>
+              <meta name="google-site-verification" content="zCtxfWmpS5bIT2JSGipE04GN85VYLaUEb4Xkkcb-ZCQ"/>
+              <meta name="talentapp:project_verification" content="02b6e4586b25009b3b24cd6f9e0d35e036960b2f0c037ccfefe8cc9e83e6c5c88a85efdeb3f7f4e97f7003d6b4e103e8858f0e5fe03c8c6a2207514f1b6449ff"/>
+              <meta name="base:app_id" content="6951feb4c63ad876c90817aa"/>
+              <meta property="og:title" content="Agentbot | Focus on the Work. Agents Handle the Rest."/>
+              <meta property="og:description" content="Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation."/>
+              <meta property="og:url" content="https://agentbot.raveculture.xyz"/>
+              <meta property="og:site_name" content="Agentbot"/>
+              <meta property="og:locale" content="en_US"/>
+              <meta property="og:image" content="https://agentbot.raveculture.xyz/opengraph-image?a43f9fd43927ccf7"/>
+              <meta property="og:image:type" content="image/png"/>
+              <meta property="og:image:width" content="1200"/>
+              <meta property="og:image:height" content="630"/>
+              <meta property="og:image:alt" content="Agentbot — Your 24/7 Autonomous Agent Platform"/>
+              <meta property="og:type" content="website"/>
+              <meta name="twitter:card" content="summary_large_image"/>
+              <meta name="twitter:creator" content="@Esky33junglist"/>
+              <meta name="twitter:title" content="Agentbot | Focus on the Work. Agents Handle the Rest."/>
+              <meta name="twitter:description" content="Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation."/>
+              <meta name="twitter:image" content="https://agentbot.raveculture.xyz/opengraph-image"/>
+              <link rel="icon" href="/favicon.svg"/>
+              <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+              <link rel="apple-touch-icon" href="/icons/apple-touch-icon-120x120.png" sizes="120x120"/>
+              <link rel="apple-touch-icon" href="/icons/apple-touch-icon-152x152.png" sizes="152x152"/>
+              <link rel="apple-touch-icon" href="/icons/apple-touch-icon-167x167.png" sizes="167x167"/>
+              <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180x180.png" sizes="180x180"/>
+              <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Agentbot","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://agentbot.raveculture.xyz","description":"Deploy autonomous AI agents in under a minute. BYOK infrastructure — bring your own AI key and pay wholesale rates.","offers":[{"@type":"Offer","name":"Solo","price":"29.00","priceCurrency":"GBP","priceSpecification":{"@type":"RecurringChargeSpecification","billingDuration":1,"billingIncrement":1,"unitCode":"MON"}},{"@type":"Offer","name":"Collective","price":"69.00","priceCurrency":"GBP","priceSpecification":{"@type":"RecurringChargeSpecification","billingDuration":1,"billingIncrement":1,"unitCode":"MON"}},{"@type":"Offer","name":"Label","price":"149.00","priceCurrency":"GBP","priceSpecification":{"@type":"RecurringChargeSpecification","billingDuration":1,"billingIncrement":1,"unitCode":"MON"}},{"@type":"Offer","name":"Network","price":"499.00","priceCurrency":"GBP","priceSpecification":{"@type":"RecurringChargeSpecification","billingDuration":1,"billingIncrement":1,"unitCode":"MON"}}]}</script>
+              <script src="/_next/static/chunks/polyfills-42372ed130431b0a.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" noModule=""></script>
+          </head>
+          <body class="bg-black text-white antialiased pt-14 pb-10 flex flex-col min-h-screen font-sans">
+              <div hidden="">
+                  <!--$-->
+                  <!--/$-->
+              </div>
+              <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded-lg focus:font-bold">Skip to main content</a>
+              <!--$-->
+              <!--/$-->
+              <!--$-->
+              <!--/$-->
+              <nav class="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-black border-b border-zinc-900 font-mono">
+                  <a class="flex items-center gap-2 shrink-0" href="/">
+                      <img alt="Agentbot" width="22" height="22" decoding="async" data-nimg="1" class="rounded" style="color:transparent" srcSet="/_next/image?url=%2Ficons%2Ficon-192x192.png&amp;w=32&amp;q=75&amp;dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL 1x, /_next/image?url=%2Ficons%2Ficon-192x192.png&amp;w=48&amp;q=75&amp;dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL 2x" src="/_next/image?url=%2Ficons%2Ficon-192x192.png&amp;w=48&amp;q=75&amp;dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL"/>
+                      <span class="text-xs font-bold uppercase tracking-widest text-white">Agentbot</span>
+                  </a>
+                  <div class="hidden lg:flex items-center gap-7">
+                      <div class="flex gap-6">
+                          <div class="w-16 h-3 bg-zinc-900 animate-pulse rounded"></div>
+                          <div class="w-16 h-3 bg-zinc-900 animate-pulse rounded"></div>
+                          <div class="w-16 h-3 bg-zinc-900 animate-pulse rounded"></div>
+                          <div class="w-16 h-3 bg-zinc-900 animate-pulse rounded"></div>
+                      </div>
+                  </div>
+                  <div class="hidden lg:flex items-center gap-4 shrink-0">
+                      <div class="w-24 h-8"></div>
+                  </div>
+                  <button class="lg:hidden p-2 -mr-2" aria-label="Open menu" aria-expanded="false">
+                      <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path>
+                      </svg>
+                  </button>
+              </nav>
+              <main id="main-content" class="flex-1" tabindex="-1">
+                  <main class="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono overflow-x-hidden">
+                      <section class="relative max-w-7xl mx-auto px-5 sm:px-6 py-20 sm:py-32 md:py-44 overflow-hidden">
+                          <div class="hidden lg:block absolute top-0 right-0 w-[55%] h-full">
+                              <!--$!-->
+                              <template data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"></template>
+                              <div class="hidden lg:block absolute top-0 right-0 w-[55%] h-full bg-gradient-to-l from-zinc-900/20 to-transparent"></div>
+                              <!--/$-->
+                          </div>
+                          <div class="relative z-10 max-w-3xl">
+                              <div class="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
+                                  <div class="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">Production Private Cloud</div>
+                                  <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3 py-1 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-white text-[10px] uppercase tracking-widest transition-colors">
+                                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                                      </svg>Open Source Starter
+                                      <span class="text-green-400 ml-1">⭐ 
+                                          <!-- -->6
+                                      </span>
+                                      <span class="text-zinc-500 ml-1">forks 
+                                          <!-- -->1
+                                      </span>
+                                  </a>
+                              </div>
+                              <h1 class="text-[2.5rem] sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter uppercase leading-[0.9]">Deploy an
+                                  <br/>
+                                  <span class="text-zinc-700">Autonomous X Team.</span>
+                              </h1>
+                              <p class="text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed mt-6 sm:mt-8">Agentbot gives you private-cloud social agents for X: monitor mentions, draft replies and threads, detect opportunities, and route actions through approvals. Run it with us, or fork the open-source starter.</p>
+                              <div class="flex flex-col sm:flex-row gap-3 mt-8 sm:mt-10">
+                                  <a class="inline-flex items-center justify-center bg-white text-black px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors" href="/onboard?plan=collective">Deploy Private Cloud</a>
+                                  <a class="inline-flex items-center justify-center border border-zinc-800 px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors" href="https://github.com/Eskyee/agentbot-opensource">View Open Source</a>
+                              </div>
+                          </div>
+                      </section>
+                      <div class="max-w-7xl mx-auto px-5 sm:px-6 pb-8">
+                          <div class="relative w-full overflow-hidden border border-zinc-800">
+                              <picture>
+                                  <source srcSet="/hero-image-320.webp 320w, /hero-image-400.webp 400w, /hero-image.webp 800w" sizes="(max-width: 640px) 320px, (max-width: 1024px) 400px, 800px" type="image/webp"/>
+                                  <img src="/hero-image.webp" alt="Agentbot — Command Center" width="800" height="800" loading="eager" fetchPriority="high" class="w-full h-auto object-cover"/>
+                              </picture>
+                              <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black to-transparent"></div>
+                          </div>
+                      </div>
+                      <div class="max-w-7xl mx-auto px-5 sm:px-6 pb-8">
+                          <div class="relative mt-8 sm:mt-12">
+                              <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10 pointer-events-none h-20 bottom-0 top-auto"></div>
+                              <div class="border border-zinc-800 bg-zinc-950 overflow-hidden shadow-2xl shadow-black/50">
+                                  <div class="flex items-center gap-2 px-4 py-2.5 border-b border-zinc-800 bg-zinc-900/50">
+                                      <div class="flex gap-1.5">
+                                          <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+                                          <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+                                          <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+                                      </div>
+                                      <div class="flex-1 mx-4">
+                                          <div class="bg-zinc-800 rounded px-3 py-1 text-[10px] text-zinc-500 font-mono text-center">agentbot.raveculture.xyz/dashboard</div>
+                                      </div>
+                                  </div>
+                                  <div class="flex">
+                                      <div class="w-48 border-r border-zinc-800 p-4 hidden sm:block">
+                                          <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Agentbot</div>
+                                          <div class="text-[10px] py-1.5 px-2 rounded text-white bg-zinc-800">◈ Mission Control</div>
+                                          <div class="text-[10px] py-1.5 px-2 rounded text-zinc-600">◎ Wallet</div>
+                                          <div class="text-[10px] py-1.5 px-2 rounded text-zinc-600">⚡ Activity</div>
+                                          <div class="text-[10px] py-1.5 px-2 rounded text-zinc-600">📊 Analytics</div>
+                                          <div class="text-[10px] py-1.5 px-2 rounded text-zinc-600">⚙ Settings</div>
+                                          <div class="mt-6 pt-4 border-t border-zinc-800">
+                                              <div class="text-[10px] uppercase tracking-widest text-zinc-700 mb-2">Agents</div>
+                                              <div class="flex items-center gap-2 py-1">
+                                                  <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                                  <span class="text-[9px] text-zinc-500 font-mono">the-strategist</span>
+                                              </div>
+                                              <div class="flex items-center gap-2 py-1">
+                                                  <div class="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
+                                                  <span class="text-[9px] text-zinc-500 font-mono">crew-manager</span>
+                                              </div>
+                                              <div class="flex items-center gap-2 py-1">
+                                                  <div class="w-1.5 h-1.5 rounded-full bg-zinc-600"></div>
+                                                  <span class="text-[9px] text-zinc-500 font-mono">sound-system</span>
+                                              </div>
+                                          </div>
+                                      </div>
+                                      <div class="flex-1 p-4 sm:p-6">
+                                          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                                              <div class="border border-zinc-800 p-3">
+                                                  <div class="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">AGENTS</div>
+                                                  <div class="text-lg font-bold text-white font-mono">3</div>
+                                                  <div class="text-[8px] text-zinc-700">active</div>
+                                              </div>
+                                              <div class="border border-zinc-800 p-3">
+                                                  <div class="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">TASKS</div>
+                                                  <div class="text-lg font-bold text-white font-mono">47</div>
+                                                  <div class="text-[8px] text-zinc-700">completed today</div>
+                                              </div>
+                                              <div class="border border-zinc-800 p-3">
+                                                  <div class="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">UPTIME</div>
+                                                  <div class="text-lg font-bold text-white font-mono">99.9%</div>
+                                                  <div class="text-[8px] text-zinc-700">last 30 days</div>
+                                              </div>
+                                              <div class="border border-zinc-800 p-3">
+                                                  <div class="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">REVENUE</div>
+                                                  <div class="text-lg font-bold text-white font-mono">$1.2k</div>
+                                                  <div class="text-[8px] text-zinc-700">this month</div>
+                                              </div>
+                                          </div>
+                                          <div class="border border-zinc-800 p-4">
+                                              <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Recent Activity</div>
+                                              <div class="flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0">
+                                                  <div class="w-1 h-1 rounded-full bg-green-500"></div>
+                                                  <span class="text-[9px] text-zinc-600 font-mono w-16 shrink-0">2m ago</span>
+                                                  <span class="text-[9px] text-zinc-500 font-mono w-24 shrink-0">the-strategist</span>
+                                                  <span class="text-[9px] text-zinc-400 truncate">Reviewed PR #47 — approved</span>
+                                              </div>
+                                              <div class="flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0">
+                                                  <div class="w-1 h-1 rounded-full bg-green-500"></div>
+                                                  <span class="text-[9px] text-zinc-600 font-mono w-16 shrink-0">8m ago</span>
+                                                  <span class="text-[9px] text-zinc-500 font-mono w-24 shrink-0">crew-manager</span>
+                                                  <span class="text-[9px] text-zinc-400 truncate">Invoice sent to client — £450</span>
+                                              </div>
+                                              <div class="flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0">
+                                                  <div class="w-1 h-1 rounded-full bg-blue-500"></div>
+                                                  <span class="text-[9px] text-zinc-600 font-mono w-16 shrink-0">15m ago</span>
+                                                  <span class="text-[9px] text-zinc-500 font-mono w-24 shrink-0">sound-system</span>
+                                                  <span class="text-[9px] text-zinc-400 truncate">Stream monitored — 1.2k listeners</span>
+                                              </div>
+                                              <div class="flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0">
+                                                  <div class="w-1 h-1 rounded-full bg-green-500"></div>
+                                                  <span class="text-[9px] text-zinc-600 font-mono w-16 shrink-0">23m ago</span>
+                                                  <span class="text-[9px] text-zinc-500 font-mono w-24 shrink-0">the-strategist</span>
+                                                  <span class="text-[9px] text-zinc-400 truncate">Standup summary generated</span>
+                                              </div>
+                                              <div class="flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0">
+                                                  <div class="w-1 h-1 rounded-full bg-yellow-500"></div>
+                                                  <span class="text-[9px] text-zinc-600 font-mono w-16 shrink-0">41m ago</span>
+                                                  <span class="text-[9px] text-zinc-500 font-mono w-24 shrink-0">crew-manager</span>
+                                                  <span class="text-[9px] text-zinc-400 truncate">Booking confirmed — Apr 12</span>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                      <section class="border-t border-zinc-900">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
+                              <div class="text-center space-y-6">
+                                  <div class="text-[10px] uppercase tracking-widest text-zinc-600">Private cloud + open source</div>
+                                  <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+                                      <div class="text-center">
+                                          <div class="text-2xl sm:text-3xl font-bold text-white">Vercel</div>
+                                          <div class="text-[10px] text-zinc-600 uppercase tracking-widest">Managed web control plane</div>
+                                      </div>
+                                      <div class="w-px h-8 bg-zinc-800"></div>
+                                      <div class="text-center">
+                                          <div class="text-2xl sm:text-3xl font-bold text-white">Railway</div>
+                                          <div class="text-[10px] text-zinc-600 uppercase tracking-widest">Private runtime ops</div>
+                                      </div>
+                                      <div class="w-px h-8 bg-zinc-800"></div>
+                                      <div class="text-center">
+                                          <div class="text-2xl sm:text-3xl font-bold text-white">34</div>
+                                          <div class="text-[10px] text-zinc-600 uppercase tracking-widest">AI Models</div>
+                                      </div>
+                                      <div class="w-px h-8 bg-zinc-800"></div>
+                                      <div class="text-center">
+                                          <div class="text-2xl sm:text-3xl font-bold text-white">MIT</div>
+                                          <div class="text-[10px] text-zinc-600 uppercase tracking-widest">Open Source</div>
+                                      </div>
+                                  </div>
+                                  <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+                                      <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">GitHub ↗</a>
+                                      <a href="https://raveculture.mintlify.app" target="_blank" rel="noopener noreferrer" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">Docs ↗</a>
+                                      <a href="https://dev.to/agentbot" target="_blank" rel="noopener noreferrer" class="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">Dev.to ↗</a>
+                                      <span class="text-[10px] uppercase tracking-widest text-zinc-700 border border-zinc-800 px-3 py-1.5">Base-native</span>
+                                  </div>
+                                  <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-8 pt-6 opacity-50">
+                                      <span class="text-[10px] uppercase tracking-widest text-zinc-700">Built with</span>
+                                      <span class="text-xs text-zinc-600 font-bold">Base</span>
+                                      <span class="text-xs text-zinc-600 font-bold">OpenClaw</span>
+                                      <span class="text-xs text-zinc-600 font-bold">Next.js</span>
+                                      <span class="text-xs text-zinc-600 font-bold">Vercel</span>
+                                      <span class="text-xs text-zinc-600 font-bold">Railway</span>
+                                      <span class="text-xs text-zinc-600 font-bold">Neon</span>
+                                  </div>
+                              </div>
+                          </div>
+                      </section>
+                      <section class="border-t border-zinc-900">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+                              <div class="max-w-2xl mb-10 sm:mb-16">
+                                  <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Teams</div>
+                                  <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">Built For Teams
+                                      <br/>
+                                      <span class="text-zinc-700">That Already Live On X.</span>
+                                  </h2>
+                              </div>
+                              <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
+                                  <div class="bg-black p-6 sm:p-8">
+                                      <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Founders</div>
+                                      <p class="text-zinc-500 text-sm leading-relaxed">Run signal capture, draft replies, and move faster without living in your notifications.</p>
+                                  </div>
+                                  <div class="bg-black p-6 sm:p-8">
+                                      <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Crypto Teams</div>
+                                      <p class="text-zinc-500 text-sm leading-relaxed">Monitor the timeline, respond faster, and connect attention to onchain payment flows.</p>
+                                  </div>
+                                  <div class="bg-black p-6 sm:p-8">
+                                      <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Creators</div>
+                                      <p class="text-zinc-500 text-sm leading-relaxed">Keep the conversation moving while protecting voice, approvals, and publishing quality.</p>
+                                  </div>
+                                  <div class="bg-black p-6 sm:p-8">
+                                      <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Agencies</div>
+                                      <p class="text-zinc-500 text-sm leading-relaxed">Operate multiple social workflows with a command center instead of fragmented tooling.</p>
+                                  </div>
+                              </div>
+                          </div>
+                      </section>
+                      <section class="border-t border-zinc-900">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+                              <div class="max-w-2xl mb-10 sm:mb-16">
+                                  <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Product</div>
+                                  <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">Private Cloud
+                                      <br/>
+                                      <span class="text-zinc-700">Or Open Source.</span>
+                                  </h2>
+                                  <p class="text-zinc-500 text-sm max-w-xl leading-relaxed mt-6">Use Agentbot as a managed production control plane for X-native social agents, or fork the open-source starter and self-host the workflow yourself.</p>
+                              </div>
+                              <div class="grid lg:grid-cols-2 gap-px bg-zinc-900">
+                                  <div class="bg-black p-6 sm:p-8">
+                                      <div class="text-[10px] uppercase tracking-widest text-blue-500 mb-4">Production Private Cloud</div>
+                                      <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Managed runtime for teams that need speed and control.</h3>
+                                      <div class="space-y-3 text-zinc-500 text-sm">
+                                          <p>Approval queues, dashboards, billing, and operator tooling around your X workflow.</p>
+                                          <p>Agentbot handles provisioning, observability, and the command center so your team stays focused on output.</p>
+                                      </div>
+                                  </div>
+                                  <div class="bg-black p-6 sm:p-8">
+                                      <div class="text-[10px] uppercase tracking-widest text-zinc-400 mb-4">Open Source Starter</div>
+                                      <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Forkable self-host path for builders.</h3>
+                                      <div class="space-y-3 text-zinc-500 text-sm">
+                                          <p>Connect one X account, monitor mentions, draft replies and threads, and extend the workflow with your own logic.</p>
+                                          <p>Own the runtime, inspect the code, and use the starter as the public entrypoint into the wider Agentbot platform.</p>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </section>
+                      <section class="border-t border-zinc-900">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+                              <div class="max-w-2xl space-y-8 sm:space-y-10">
+                                  <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">Monitor.
+                                      <br/>
+                                      <span class="text-zinc-700">Draft. Detect. Monetize.</span>
+                                  </h2>
+                                  <div class="space-y-6 sm:space-y-8 pt-2 sm:pt-4">
+                                      <div>
+                                          <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-1">Watch the signal.</h3>
+                                          <p class="text-zinc-500 text-sm">Monitor mentions, keywords, and high-signal posts without running a custom ops stack.</p>
+                                      </div>
+                                      <div>
+                                          <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-1">Draft with approvals.</h3>
+                                          <p class="text-zinc-500 text-sm">Generate reply and thread drafts fast, but keep a clear human approval step for public actions.</p>
+                                      </div>
+                                      <div>
+                                          <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-1">Turn attention into action.</h3>
+                                          <p class="text-zinc-500 text-sm">Route the right conversations into bookings, payments, or paid API actions with x402.</p>
+                                      </div>
+                                  </div>
+                                  <a class="inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-white transition-colors" href="/documentation">Read docs →</a>
+                              </div>
+                          </div>
+                      </section>
+                      <section class="border-t border-zinc-900 overflow-hidden">
+                          <div class="py-6 sm:py-8">
+                              <div class="text-[10px] uppercase tracking-widest text-zinc-600 text-center mb-4 sm:mb-6">What Your Agent Can Do</div>
+                              <div class="relative">
+                                  <div class="flex animate-ticker whitespace-nowrap">
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Summarize emails
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Auto-reply to messages
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Draft contracts
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Schedule meetings
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Track invoices
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Monitor competitors
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Generate content
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Manage communities
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Handle bookings
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Run payroll
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Research markets
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Create proposals
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Translate in real time
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Screen leads
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Track order shipments
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Draft social posts
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Analyze documents
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Coordinate outreach
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Monitor news
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Generate reports
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Manage files
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Execute shell commands
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Deploy code
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Run web scrapers
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Summarize emails
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Auto-reply to messages
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Draft contracts
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Schedule meetings
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Track invoices
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Monitor competitors
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Generate content
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Manage communities
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Handle bookings
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Run payroll
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Research markets
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Create proposals
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Translate in real time
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Screen leads
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Track order shipments
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Draft social posts
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Analyze documents
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Coordinate outreach
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Monitor news
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Generate reports
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Manage files
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Execute shell commands
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Deploy code
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                      <span class="inline-block px-4 sm:px-6 text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors cursor-default shrink-0">Run web scrapers
+                                          <span class="text-zinc-800 ml-4 sm:ml-6">·</span>
+                                      </span>
+                                  </div>
+                              </div>
+                          </div>
+                      </section>
+                      <section class="border-t border-zinc-900 bg-zinc-950">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20 text-center space-y-6">
+                              <div class="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Managed product + open source starter</div>
+                              <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase">Launch On X.
+                                  <br/>
+                                  <span class="text-zinc-700">Then Scale The Team.</span>
+                              </h2>
+                              <p class="text-zinc-400 text-sm max-w-md mx-auto leading-relaxed">Start with one narrow workflow, validate the signal, then scale into a full private-cloud social agent team with Agentbot + OpenClaw.</p>
+                              <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                                  <a class="inline-flex items-center justify-center bg-white text-black px-8 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors w-full sm:w-auto" href="/signup">Start Private Cloud →</a>
+                                  <a class="inline-flex items-center justify-center border border-zinc-800 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors w-full sm:w-auto" href="https://github.com/Eskyee/agentbot-opensource">Fork Starter</a>
+                              </div>
+                          </div>
+                      </section>
+                      <section id="pricing" class="border-t border-zinc-900 scroll-mt-20">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+                              <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10 sm:mb-16">
+                                  <div>
+                                      <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Pricing</div>
+                                      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">Simple.
+                                          <br/>
+                                          <span class="text-zinc-700">No Markup.</span>
+                                      </h2>
+                                  </div>
+                                  <a class="inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-white transition-colors" href="/pricing">Full breakdown →</a>
+                              </div>
+                              <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
+                                  <div class="bg-black p-4 sm:p-6 lg:p-8 flex flex-col">
+                                      <div class="flex items-center gap-2 mb-4">
+                                          <span class="text-[10px] uppercase tracking-widest text-zinc-500">Solo</span>
+                                      </div>
+                                      <div class="text-2xl sm:text-3xl font-bold tracking-tighter mb-6">£
+                                          <!-- -->29
+                                          <span class="text-[10px] sm:text-sm font-normal text-zinc-600">/mo</span>
+                                      </div>
+                                      <a class="mt-auto block w-full py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-colors border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600" href="/api/stripe/checkout?plan=solo">Select</a>
+                                  </div>
+                                  <div class="bg-black p-4 sm:p-6 lg:p-8 flex flex-col">
+                                      <div class="flex items-center gap-2 mb-4">
+                                          <span class="text-[10px] uppercase tracking-widest text-zinc-500">Collective</span>
+                                          <span class="text-[8px] uppercase tracking-widest text-blue-500 border border-blue-500/30 px-1.5 py-0.5">Popular</span>
+                                      </div>
+                                      <div class="text-2xl sm:text-3xl font-bold tracking-tighter mb-6">£
+                                          <!-- -->69
+                                          <span class="text-[10px] sm:text-sm font-normal text-zinc-600">/mo</span>
+                                      </div>
+                                      <a class="mt-auto block w-full py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-colors bg-white text-black hover:bg-zinc-200" href="/api/stripe/checkout?plan=collective">Select</a>
+                                  </div>
+                                  <div class="bg-black p-4 sm:p-6 lg:p-8 flex flex-col">
+                                      <div class="flex items-center gap-2 mb-4">
+                                          <span class="text-[10px] uppercase tracking-widest text-zinc-500">Label</span>
+                                      </div>
+                                      <div class="text-2xl sm:text-3xl font-bold tracking-tighter mb-6">£
+                                          <!-- -->149
+                                          <span class="text-[10px] sm:text-sm font-normal text-zinc-600">/mo</span>
+                                      </div>
+                                      <a class="mt-auto block w-full py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-colors border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600" href="/api/stripe/checkout?plan=label">Select</a>
+                                  </div>
+                                  <div class="bg-black p-4 sm:p-6 lg:p-8 flex flex-col">
+                                      <div class="flex items-center gap-2 mb-4">
+                                          <span class="text-[10px] uppercase tracking-widest text-zinc-500">Network</span>
+                                      </div>
+                                      <div class="text-2xl sm:text-3xl font-bold tracking-tighter mb-6">£
+                                          <!-- -->499
+                                          <span class="text-[10px] sm:text-sm font-normal text-zinc-600">/mo</span>
+                                      </div>
+                                      <a class="mt-auto block w-full py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-colors border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600" href="/api/stripe/checkout?plan=network">Select</a>
+                                  </div>
+                              </div>
+                          </div>
+                      </section>
+                      <section class="border-t border-zinc-900">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-6 sm:py-8">
+                              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                                  <div class="flex items-center gap-3 sm:gap-6 flex-wrap">
+                                      <div class="text-[10px] uppercase tracking-widest text-zinc-700">$AGENTBOT</div>
+                                      <div class="text-[10px] text-zinc-700 font-mono">Pump.fun · Solana</div>
+                                  </div>
+                                  <div class="flex items-center gap-3">
+                                      <a href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump" target="_blank" rel="noopener noreferrer" class="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">Scanner</a>
+                                      <span class="text-zinc-800">·</span>
+                                      <a href="https://dexscreener.com/solana/l3lctrhv2geqzkrgccqqczqmuutgt6hklnpqv4fmhcp" target="_blank" rel="noopener noreferrer" class="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">View Market</a>
+                                  </div>
+                              </div>
+                          </div>
+                      </section>
+                      <section class="border-t border-zinc-900">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+                              <div class="flex flex-col md:flex-row gap-10 md:gap-16 items-start">
+                                  <div class="flex-1 space-y-5 sm:space-y-6">
+                                      <div class="text-[10px] uppercase tracking-widest text-zinc-600">See It In Action</div>
+                                      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">baseFM</h2>
+                                      <p class="text-zinc-400 text-sm max-w-md leading-relaxed">AI-ready underground radio on Base. Agent DJs and human selectors can go live, and the main stream plays directly here.</p>
+                                      <div class="flex flex-col sm:flex-row gap-3">
+                                          <a href="/basefm/live" class="inline-flex items-center justify-center bg-white text-black px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">Play Live</a>
+                                          <a href="https://bankr.bot/agents/basefm" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center border border-zinc-800 px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Support $BASEFM</a>
+                                      </div>
+                                  </div>
+                                  <div class="w-full md:max-w-2xl">
+                                      <section class="border border-zinc-800 bg-zinc-950/80 p-4 sm:p-5">
+                                          <div class="flex flex-wrap items-center justify-between gap-3">
+                                              <div>
+                                                  <div class="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-zinc-500">
+                                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-radio h-3.5 w-3.5 text-zinc-600" aria-hidden="true">
+                                                          <path d="M16.247 7.761a6 6 0 0 1 0 8.478"></path>
+                                                          <path d="M19.075 4.933a10 10 0 0 1 0 14.134"></path>
+                                                          <path d="M4.925 19.067a10 10 0 0 1 0-14.134"></path>
+                                                          <path d="M7.753 16.239a6 6 0 0 1 0-8.478"></path>
+                                                          <circle cx="12" cy="12" r="2"></circle>
+                                                      </svg>Standby
+                                                  </div>
+                                                  <h2 class="mt-3 text-xl sm:text-2xl font-bold uppercase tracking-tighter text-white">🎧 baseFM Live</h2>
+                                                  <p class="mt-2 max-w-2xl text-xs sm:text-sm text-zinc-400">Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base.</p>
+                                              </div>
+                                              <div class="rounded-full border px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] border-zinc-700 bg-zinc-900 text-zinc-400">Loading</div>
+                                          </div>
+                                          <div class="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+                                              <div class="overflow-hidden border border-zinc-800 bg-black aspect-video">
+                                                  <div class="relative h-full w-full">
+                                                      <img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje" alt="baseFM standby artwork" class="h-full w-full object-cover"/>
+                                                      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10"></div>
+                                                      <div class="absolute inset-0 flex items-center justify-center px-6 text-center">
+                                                          <div>
+                                                              <p class="text-sm text-zinc-100">Checking the main stream…</p>
+                                                              <p class="mt-2 text-xs text-zinc-300">When a DJ or agent goes live, the player appears here automatically.</p>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                              <div class="space-y-4">
+                                                  <div class="border border-zinc-800 bg-black p-4">
+                                                      <div class="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Now Playing</div>
+                                                      <div class="mt-2 text-lg font-bold text-white">Loading stream</div>
+                                                      <div class="mt-2 text-xs text-zinc-500">The main stream wakes up automatically when a DJ starts broadcasting.</div>
+                                                  </div>
+                                                  <div class="border border-zinc-800 bg-black p-4">
+                                                      <div class="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Access</div>
+                                                      <div class="mt-2 text-sm text-zinc-200">Hold 
+                                                          <span class="font-bold text-white">$BASEFM</span> on Base or claim the
+                                                          <span class="font-bold text-white">Agentbot</span> Solana token perks to unlock DJ access.
+                                                      </div>
+                                                  </div>
+                                                  <div class="flex flex-wrap gap-3">
+                                                      <a class="inline-flex items-center gap-2 bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-zinc-200" href="/dashboard/dj-stream">Create Stream</a>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </section>
+                                  </div>
+                              </div>
+                          </div>
+                      </section>
+                      <section class="border-t border-zinc-900">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
+                              <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">From the community</div>
+                              <div class="max-w-lg">
+                                  <blockquote class="twitter-tweet" data-theme="dark">
+                                      <p lang="zxx" dir="ltr">
+                                          <a href="https://t.co/SbyUPtltwe">https://t.co/SbyUPtltwe</a>
+                                      </p>— esky33 (@Esky33junglist)
+                                      <!-- -->
+                                      <a href="https://twitter.com/Esky33junglist/status/2043491562479329427?ref_src=twsrc%5Etfw">April 13, 2026</a>
+                                  </blockquote>
+                              </div>
+                          </div>
+                      </section>
+                      <section class="border-t border-zinc-900">
+                          <div class="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
+                              <div class="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Explore</div>
+                              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                                  <a class="border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center" href="/use-cases">Use Cases</a>
+                                  <a class="border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center" href="/capabilities">Capabilities</a>
+                                  <a class="border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center" href="/demo">Demo</a>
+                                  <a class="border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center" href="/marketplace">Marketplace</a>
+                                  <a class="border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center" href="/open-learning">Open Learning</a>
+                              </div>
+                          </div>
+                      </section>
+                  </main>
+                  <!--$-->
+                  <!--/$-->
+              </main>
+              <footer class="w-full border-t border-zinc-900 bg-black font-mono">
+                  <div class="max-w-7xl mx-auto px-6 py-12">
+                      <div class="grid grid-cols-2 gap-8 sm:grid-cols-4 mb-12">
+                          <div>
+                              <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4">Platform</p>
+                              <ul class="space-y-2.5">
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/pricing">Pricing</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/demo">Demo</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/agents">Agents</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/marketplace">Marketplace</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/capabilities">Capabilities</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/use-cases">Use Cases</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/partner">Partner</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/advertise">Advertise</a>
+                                  </li>
+                              </ul>
+                          </div>
+                          <div>
+                              <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4">Music</p>
+                              <ul class="space-y-2.5">
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/basefm">baseFM Live</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/dashboard/mixtape">DJ Mix Uploads</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/advertise">Advertise on baseFM</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/solana">Solana</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/token">$AGENTBOT</a>
+                                  </li>
+                              </ul>
+                          </div>
+                          <div>
+                              <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4">Developers</p>
+                              <ul class="space-y-2.5">
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/guide">Guide</a>
+                                  </li>
+                                  <li>
+                                      <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" class="text-zinc-600 text-[11px] hover:text-white transition-colors">GitHub</a>
+                                  </li>
+                                  <li>
+                                      <a href="https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource" target="_blank" rel="noopener noreferrer" class="text-zinc-600 text-[11px] hover:text-white transition-colors">Gitlawb</a>
+                                  </li>
+                                  <li>
+                                      <a href="https://deepwiki.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" class="text-zinc-600 text-[11px] hover:text-white transition-colors">DeepWiki</a>
+                                  </li>
+                                  <li>
+                                      <a href="https://dev.to/agentbot" target="_blank" rel="noopener noreferrer" class="text-zinc-600 text-[11px] hover:text-white transition-colors">Dev.to</a>
+                                  </li>
+                                  <li>
+                                      <a href="https://openwebui.com/u/jaieskyravecult115142e2f8" target="_blank" rel="noopener noreferrer" class="text-zinc-600 text-[11px] hover:text-white transition-colors">Open WebUI</a>
+                                  </li>
+                              </ul>
+                          </div>
+                          <div>
+                              <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4">Community</p>
+                              <ul class="space-y-2.5">
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/claim">Claim Credits</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/buddies">Buddies</a>
+                                  </li>
+                                  <li>
+                                      <a href="https://talent.app/raveculture.base.eth" target="_blank" rel="noopener noreferrer" class="text-zinc-600 text-[11px] hover:text-white transition-colors">Talent</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/terms">Terms</a>
+                                  </li>
+                                  <li>
+                                      <a class="text-zinc-600 text-[11px] hover:text-white transition-colors" href="/privacy">Privacy</a>
+                                  </li>
+                              </ul>
+                          </div>
+                      </div>
+                      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-zinc-900 pt-6">
+                          <div class="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">© 2026 Agentbot · Zero Human Company</div>
+                          <div class="flex flex-wrap items-center gap-4">
+                              <div class="flex items-center gap-2">
+                                  <div class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
+                                  <span class="text-[10px] uppercase tracking-widest text-zinc-600">Checking Status</span>
+                              </div>
+                              <span class="text-zinc-800 text-[10px]">|</span>
+                              <span class="text-[10px] uppercase tracking-widest text-zinc-700">Agentbot 
+                                  <!-- -->v0.0.0
+                              </span>
+                              <span class="text-zinc-800 text-[10px]">|</span>
+                              <span class="text-[10px] uppercase tracking-widest text-zinc-700">OpenClaw 
+                                  <!-- -->loading...
+                              </span>
+                          </div>
+                      </div>
+                  </div>
+              </footer>
+              <div class="fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/90 backdrop-blur-md border-t border-zinc-800/50">
+                  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                      <div class="flex items-center justify-between h-10 text-[10px]">
+                          <div class="flex items-center gap-4 text-zinc-500 overflow-x-auto">
+                              <span class="flex items-center gap-2 whitespace-nowrap">
+                                  <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                  <span class="font-mono font-bold text-green-500">ONLINE</span>
+                              </span>
+                              <span class="hidden sm:inline text-zinc-800">·</span>
+                              <span class="hidden md:inline text-zinc-800">·</span>
+                              <span class="hidden md:inline whitespace-nowrap font-mono text-zinc-600"></span>
+                          </div>
+                          <span class="text-zinc-600 whitespace-nowrap font-mono">© 2026 Agentbot</span>
+                      </div>
+                  </div>
+              </div>
+              <section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"></section>
+              <script src="/_next/static/chunks/webpack-250fb7733f4da553.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL" id="_R_" async=""></script>
+              <script>(self.__next_f=self.__next_f||[]).push([0])</script>
+              <script>self.__next_f.push([1,"1:\"$Sreact.fragment\"\n3:I[48387,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"62789\",\"static/chunks/62789-2dd68eb5f44b92b7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"40471\",\"static/chunks/40471-4837f0018c705fc7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"73579\",\"static/chunks/73579-05b18284766b9944.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"43871\",\"static/chunks/43871-e791b40f195ec948.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"7177\",\"static/chunks/app/layout-27992655bfcc9fc3.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"SpeedInsights\"]\n4:I[60372,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"62789\",\"static/chunks/62789-2dd68eb5f44b92b7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"40471\",\"static/chunks/40471-4837f0018c705fc7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"73579\",\"static/chunks/73579-05b18284766b9944.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"43871\",\"static/chunks/43871-e791b40f195ec948.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"7177\",\"static/chunks/app/layout-27992655bfcc9fc3.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"Analytics\"]\n5:I[11206,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"62789\",\"static/chunks/62789-2dd68eb5f44b92b7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"40471\",\"static/chunks/40471-4837f0018c705fc7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"73579\",\"static/chunks/73579-05b18284766b9944.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"43871\",\"static/chunks/43871-e791b40f195ec948.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"7177\",\"static/chunks/app/layout-27992655bfcc9fc3.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"default\"]\n6:I[69537,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"62789\",\"static/chunks/62789-2dd68eb5f44b92b7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"40471\",\"static/chunks/40471-4837f0018c705fc7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"73579\",\"static/chunks/73579-05b18284766b9944.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"43871\",\"static/chunks/43871-e791b40f195ec948.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"7177\",\"static/chunks/app/layout-27992655bfcc9fc3.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"default\"]\n7:I[53491,[],\"\"]\n8:I[71894,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"18039\",\"static/chunks/app/error-0c7726a10709f441.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"default\"]\n9:I[35887,[],\"\"]\na:I[37866,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"91603\",\"static/chunks/91603-e0f8cb155250a02d.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"98285\",\"static/chunks/98285-cb10c63e21c0e0b2.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"58974\",\"static/chunks/app/page-a986e83817fc99a4.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"\"]\nb:I[40578,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"62789\",\"static/chunks/62789-2dd68eb5f44b92b7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"40471\",\"static/chunks/40471-4837f0018c705fc7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"73579\",\"static/chunks/73579-05b18284766b9944.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"43871\",\"static/chunks/43871-e791b40f195ec948.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"7177\",\"static/chunks/app/layout-27992655bfcc9fc3.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"default\"]\nc:I[43224,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"62789\",\"static/chunks/62789-2dd68eb5f44b92b7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"40471\",\"static/chunks/40471-4837f0018c705fc7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"73579\",\"static/chunks/73579-05b18284766b9944.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"43871\",\"static/chunks/43871-e791b40f195ec948.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"7177\",\"static/chunks/app/layout-27992655bfcc9fc3.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"StatusBar\"]\nd:I[73579,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"62789\",\"static/chunks/62789-2dd68eb5f44b92b7.js?dpl=dpl_J1fbp1QuZEUDpu"])</script>
+              <script>self.__next_f.push([1,"jGG243JyMaHYoL\",\"40471\",\"static/chunks/40471-4837f0018c705fc7.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"73579\",\"static/chunks/73579-05b18284766b9944.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"43871\",\"static/chunks/43871-e791b40f195ec948.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"7177\",\"static/chunks/app/layout-27992655bfcc9fc3.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"Toaster\"]\nf:I[99738,[],\"OutletBoundary\"]\n10:\"$Sreact.suspense\"\n12:I[99738,[],\"ViewportBoundary\"]\n14:I[99738,[],\"MetadataBoundary\"]\n16:I[52612,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"34219\",\"static/chunks/app/global-error-679585ed98a1ee68.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"default\"]\n17:I[95567,[],\"IconMark\"]\n:HL[\"/_next/static/media/27834908180db20f-s.p.woff2?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/media/78fec81b34c4a365.p.woff2?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/css/f46e0dfe21327f1f.css?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"style\"]\n:HL[\"/_next/static/css/b187f585a7f580ec.css?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"style\"]\n2:T453,{\"@context\":\"https://schema.org\",\"@type\":\"SoftwareApplication\",\"name\":\"Agentbot\",\"applicationCategory\":\"BusinessApplication\",\"operatingSystem\":\"Web\",\"url\":\"https://agentbot.raveculture.xyz\",\"description\":\"Deploy autonomous AI agents in under a minute. BYOK infrastructure — bring your own AI key and pay wholesale rates.\",\"offers\":[{\"@type\":\"Offer\",\"name\":\"Solo\",\"price\":\"29.00\",\"priceCurrency\":\"GBP\",\"priceSpecification\":{\"@type\":\"RecurringChargeSpecification\",\"billingDuration\":1,\"billingIncrement\":1,\"unitCode\":\"MON\"}},{\"@type\":\"Offer\",\"name\":\"Collective\",\"price\":\"69.00\",\"priceCurrency\":\"GBP\",\"priceSpecification\":{\"@type\":\"RecurringChargeSpecification\",\"billingDuration\":1,\"billingIncrement\":1,\"unitCode\":\"MON\"}},{\"@type\":\"Offer\",\"name\":\"Label\",\"price\":\"149.00\",\"priceCurrency\":\"GBP\",\"priceSpecification\":{\"@type\":\"RecurringChargeSpecification\",\"billingDuration\":1,\"billingIncrement\":1,\"unitCode\":\"MON\"}},{\"@type\":\"Offer\",\"name\":\"Network\",\"price\":\"499.00\",\"priceCurrency\":\"GBP\",\"priceSpecification\":{\"@type\":\"RecurringChargeSpecification\",\"billingDuration\":1,\"billingIncrement\":1,\"unitCode\":\"MON\"}}]}"])</script>
+              <script>self.__next_f.push([1,"0:{\"P\":null,\"c\":[\"\",\"\"],\"q\":\"\",\"i\":false,\"f\":[[[\"\",{\"children\":[\"__PAGE__\",{}]},\"$undefined\",\"$undefined\",16],[[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/f46e0dfe21327f1f.css?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"link\",\"1\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/b187f585a7f580ec.css?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"en\",\"className\":\"__variable_7b9324 __variable_cadeeb font-sans\",\"children\":[[\"$\",\"head\",null,{\"children\":[[\"$\",\"link\",null,{\"rel\":\"manifest\",\"href\":\"/manifest.json\"}],[\"$\",\"script\",null,{\"type\":\"application/ld+json\",\"dangerouslySetInnerHTML\":{\"__html\":\"$2\"}}]]}],[\"$\",\"body\",null,{\"className\":\"bg-black text-white antialiased pt-14 pb-10 flex flex-col min-h-screen font-sans\",\"children\":[[\"$\",\"a\",null,{\"href\":\"#main-content\",\"className\":\"sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded-lg focus:font-bold\",\"children\":\"Skip to main content\"}],[\"$\",\"$L3\",null,{}],[\"$\",\"$L4\",null,{}],[\"$\",\"$L5\",null,{\"children\":[[\"$\",\"$L6\",null,{}],[\"$\",\"main\",null,{\"id\":\"main-content\",\"className\":\"flex-1\",\"tabIndex\":-1,\"children\":[\"$\",\"$L7\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$8\",\"errorStyles\":[],\"errorScripts\":[],\"template\":[\"$\",\"$L9\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[\"$\",\"main\",null,{\"className\":\"min-h-screen bg-black text-white font-mono flex flex-col items-center justify-center px-6\",\"children\":[\"$\",\"div\",null,{\"className\":\"text-center max-w-lg\",\"children\":[[\"$\",\"div\",null,{\"className\":\"inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest mb-8\",\"children\":\"Error 404\"}],[\"$\",\"h1\",null,{\"className\":\"text-[6rem] sm:text-[9rem] font-bold tracking-tighter leading-none text-zinc-800 select-none\",\"children\":\"404\"}],[\"$\",\"p\",null,{\"className\":\"text-zinc-400 text-sm mt-4 mb-8\",\"children\":\"This page doesn't exist — or it was moved.\"}],[\"$\",\"$La\",null,{\"href\":\"/\",\"className\":\"inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors\",\"children\":\"Back to Home\"}]]}]}],[]],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]}],[\"$\",\"$Lb\",null,{}],[\"$\",\"$Lc\",null,{}],[\"$\",\"$Ld\",null,{\"theme\":\"dark\",\"position\":\"bottom-right\",\"richColors\":true,\"closeButton\":true}]]}]]}]]}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[\"$Le\",null,[\"$\",\"$Lf\",null,{\"children\":[\"$\",\"$10\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@11\"}]}]]}],{},null,false,null]},null,false,null],[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$L12\",null,{\"children\":\"$L13\"}],[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$L14\",null,{\"children\":[\"$\",\"$10\",null,{\"name\":\"Next.Metadata\",\"children\":\"$L15\"}]}]}],[\"$\",\"meta\",null,{\"name\":\"next-size-adjust\",\"content\":\"\"}]]}],false]],\"m\":\"$undefined\",\"G\":[\"$16\",[]],\"S\":false,\"h\":null,\"s\":\"$undefined\",\"l\":\"$undefined\",\"p\":\"$undefined\",\"d\":\"$undefined\"}\n"])</script>
+              <script>self.__next_f.push([1,"13:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}],[\"$\",\"meta\",\"2\",{\"name\":\"theme-color\",\"content\":\"#000000\"}]]\n11:null\n"])</script>
+              <script>self.__next_f.push([1,"15:[[\"$\",\"title\",\"0\",{\"children\":\"Agentbot — Focus on the Work. Agents Handle the Rest.\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Deploy autonomous AI agents for your creative practice in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol.\"}],[\"$\",\"link\",\"2\",{\"rel\":\"author\",\"href\":\"https://agentbot.raveculture.xyz\"}],[\"$\",\"meta\",\"3\",{\"name\":\"author\",\"content\":\"Agentbot\"}],[\"$\",\"meta\",\"4\",{\"name\":\"keywords\",\"content\":\"AI agent deployment,autonomous AI agents,BYOK AI,agent hosting,deploy AI agent,creative industry AI,AI for creators,Base blockchain,agent orchestration,AI infrastructure\"}],[\"$\",\"meta\",\"5\",{\"name\":\"creator\",\"content\":\"Agentbot\"}],[\"$\",\"meta\",\"6\",{\"name\":\"publisher\",\"content\":\"Agentbot\"}],[\"$\",\"meta\",\"7\",{\"name\":\"robots\",\"content\":\"index, follow\"}],[\"$\",\"meta\",\"8\",{\"name\":\"googlebot\",\"content\":\"index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1\"}],[\"$\",\"meta\",\"9\",{\"name\":\"google-site-verification\",\"content\":\"zCtxfWmpS5bIT2JSGipE04GN85VYLaUEb4Xkkcb-ZCQ\"}],[\"$\",\"meta\",\"10\",{\"name\":\"talentapp:project_verification\",\"content\":\"02b6e4586b25009b3b24cd6f9e0d35e036960b2f0c037ccfefe8cc9e83e6c5c88a85efdeb3f7f4e97f7003d6b4e103e8858f0e5fe03c8c6a2207514f1b6449ff\"}],[\"$\",\"meta\",\"11\",{\"name\":\"base:app_id\",\"content\":\"6951feb4c63ad876c90817aa\"}],[\"$\",\"meta\",\"12\",{\"property\":\"og:title\",\"content\":\"Agentbot | Focus on the Work. Agents Handle the Rest.\"}],[\"$\",\"meta\",\"13\",{\"property\":\"og:description\",\"content\":\"Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.\"}],[\"$\",\"meta\",\"14\",{\"property\":\"og:url\",\"content\":\"https://agentbot.raveculture.xyz\"}],[\"$\",\"meta\",\"15\",{\"property\":\"og:site_name\",\"content\":\"Agentbot\"}],[\"$\",\"meta\",\"16\",{\"property\":\"og:locale\",\"content\":\"en_US\"}],[\"$\",\"meta\",\"17\",{\"property\":\"og:image\",\"content\":\"https://agentbot.raveculture.xyz/opengraph-image?a43f9fd43927ccf7\"}],[\"$\",\"meta\",\"18\",{\"property\":\"og:image:type\",\"content\":\"image/png\"}],[\"$\",\"meta\",\"19\",{\"property\":\"og:image:width\",\"content\":\"1200\"}],[\"$\",\"meta\",\"20\",{\"property\":\"og:image:height\",\"content\":\"630\"}],[\"$\",\"meta\",\"21\",{\"property\":\"og:image:alt\",\"content\":\"Agentbot — Your 24/7 Autonomous Agent Platform\"}],[\"$\",\"meta\",\"22\",{\"property\":\"og:type\",\"content\":\"website\"}],[\"$\",\"meta\",\"23\",{\"name\":\"twitter:card\",\"content\":\"summary_large_image\"}],[\"$\",\"meta\",\"24\",{\"name\":\"twitter:creator\",\"content\":\"@Esky33junglist\"}],[\"$\",\"meta\",\"25\",{\"name\":\"twitter:title\",\"content\":\"Agentbot | Focus on the Work. Agents Handle the Rest.\"}],[\"$\",\"meta\",\"26\",{\"name\":\"twitter:description\",\"content\":\"Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.\"}],[\"$\",\"meta\",\"27\",{\"name\":\"twitter:image\",\"content\":\"https://agentbot.raveculture.xyz/opengraph-image\"}],[\"$\",\"link\",\"28\",{\"rel\":\"icon\",\"href\":\"/favicon.svg\"}],[\"$\",\"link\",\"29\",{\"rel\":\"apple-touch-icon\",\"href\":\"/apple-touch-icon.png\"}],[\"$\",\"link\",\"30\",{\"rel\":\"apple-touch-icon\",\"href\":\"/icons/apple-touch-icon-120x120.png\",\"sizes\":\"120x120\"}],[\"$\",\"link\",\"31\",{\"rel\":\"apple-touch-icon\",\"href\":\"/icons/apple-touch-icon-152x152.png\",\"sizes\":\"152x152\"}],[\"$\",\"link\",\"32\",{\"rel\":\"apple-touch-icon\",\"href\":\"/icons/apple-touch-icon-167x167.png\",\"sizes\":\"167x167\"}],[\"$\",\"link\",\"33\",{\"rel\":\"apple-touch-icon\",\"href\":\"/icons/apple-touch-icon-180x180.png\",\"sizes\":\"180x180\"}],[\"$\",\"$L17\",\"34\",{}]]\n"])</script>
+              <script>self.__next_f.push([1,"18:I[41375,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"91603\",\"static/chunks/91603-e0f8cb155250a02d.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"98285\",\"static/chunks/98285-cb10c63e21c0e0b2.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"58974\",\"static/chunks/app/page-a986e83817fc99a4.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"PreloadChunks\"]\n"])</script>
+              <script>self.__next_f.push([1,"e:[\"$\",\"main\",null,{\"className\":\"min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono overflow-x-hidden\",\"children\":[[\"$\",\"section\",null,{\"className\":\"relative max-w-7xl mx-auto px-5 sm:px-6 py-20 sm:py-32 md:py-44 overflow-hidden\",\"children\":[[\"$\",\"div\",null,{\"className\":\"hidden lg:block absolute top-0 right-0 w-[55%] h-full\",\"children\":[[\"$\",\"$L18\",null,{\"moduleIds\":[\"app/page.tsx -\u003e @/app/components/HeroSphereClient\"]}],\"$L19\"]}],[\"$\",\"div\",null,{\"className\":\"relative z-10 max-w-3xl\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex flex-wrap items-center gap-3 mb-6 sm:mb-8\",\"children\":[[\"$\",\"div\",null,{\"className\":\"inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest\",\"children\":\"Production Private Cloud\"}],[\"$\",\"a\",null,{\"href\":\"https://github.com/Eskyee/agentbot-opensource\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\",\"className\":\"inline-flex items-center gap-2 px-3 py-1 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-white text-[10px] uppercase tracking-widest transition-colors\",\"children\":[[\"$\",\"svg\",null,{\"className\":\"w-3 h-3\",\"fill\":\"currentColor\",\"viewBox\":\"0 0 24 24\",\"children\":[\"$\",\"path\",null,{\"d\":\"M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z\"}]}],\"Open Source Starter\",[\"$\",\"span\",null,{\"className\":\"text-green-400 ml-1\",\"children\":[\"⭐ \",6]}],[\"$\",\"span\",null,{\"className\":\"text-zinc-500 ml-1\",\"children\":[\"forks \",1]}]]}]]}],[\"$\",\"h1\",null,{\"className\":\"text-[2.5rem] sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter uppercase leading-[0.9]\",\"children\":[\"Deploy an\",[\"$\",\"br\",null,{}],[\"$\",\"span\",null,{\"className\":\"text-zinc-700\",\"children\":\"Autonomous X Team.\"}]]}],[\"$\",\"p\",null,{\"className\":\"text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed mt-6 sm:mt-8\",\"children\":\"Agentbot gives you private-cloud social agents for X: monitor mentions, draft replies and threads, detect opportunities, and route actions through approvals. Run it with us, or fork the open-source starter.\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-col sm:flex-row gap-3 mt-8 sm:mt-10\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/onboard?plan=collective\",\"className\":\"inline-flex items-center justify-center bg-white text-black px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors\",\"children\":\"Deploy Private Cloud\"}],[\"$\",\"$La\",null,{\"href\":\"https://github.com/Eskyee/agentbot-opensource\",\"className\":\"inline-flex items-center justify-center border border-zinc-800 px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors\",\"children\":\"View Open Source\"}]]}]]}]]}],[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 pb-8\",\"children\":[[\"$\",\"$L18\",null,{\"moduleIds\":[\"app/page.tsx -\u003e @/app/components/HeroImage\"]}],\"$L1a\"]}],[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 pb-8\",\"children\":[[\"$\",\"$L18\",null,{\"moduleIds\":[\"app/page.tsx -\u003e @/app/components/DashboardPreview\"]}],\"$L1b\"]}],[\"$\",\"section\",null,{\"className\":\"border-t border-zinc-900\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14\",\"children\":\"$L1c\"}]}],\"$L1d\",\"$L1e\",\"$L1f\",\"$L20\",\"$L21\",\"$L22\",\"$L23\",\"$L24\",\"$L25\",\"$L26\"]}]\n"])</script>
+              <script>self.__next_f.push([1,"28:I[98285,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"91603\",\"static/chunks/91603-e0f8cb155250a02d.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"98285\",\"static/chunks/98285-cb10c63e21c0e0b2.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"58974\",\"static/chunks/app/page-a986e83817fc99a4.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"BasefmLivePlayer\"]\n29:I[18497,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"91603\",\"static/chunks/91603-e0f8cb155250a02d.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"98285\",\"static/chunks/98285-cb10c63e21c0e0b2.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"58974\",\"static/chunks/app/page-a986e83817fc99a4.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"default\"]\n"])</script>
+              <script>self.__next_f.push([1,"1c:[\"$\",\"div\",null,{\"className\":\"text-center space-y-6\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600\",\"children\":\"Private cloud + open source\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-wrap items-center justify-center gap-6 sm:gap-10\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-center\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-2xl sm:text-3xl font-bold text-white\",\"children\":\"Vercel\"}],[\"$\",\"div\",null,{\"className\":\"text-[10px] text-zinc-600 uppercase tracking-widest\",\"children\":\"Managed web control plane\"}]]}],[\"$\",\"div\",null,{\"className\":\"w-px h-8 bg-zinc-800\"}],[\"$\",\"div\",null,{\"className\":\"text-center\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-2xl sm:text-3xl font-bold text-white\",\"children\":\"Railway\"}],[\"$\",\"div\",null,{\"className\":\"text-[10px] text-zinc-600 uppercase tracking-widest\",\"children\":\"Private runtime ops\"}]]}],[\"$\",\"div\",null,{\"className\":\"w-px h-8 bg-zinc-800\"}],[\"$\",\"div\",null,{\"className\":\"text-center\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-2xl sm:text-3xl font-bold text-white\",\"children\":\"34\"}],[\"$\",\"div\",null,{\"className\":\"text-[10px] text-zinc-600 uppercase tracking-widest\",\"children\":\"AI Models\"}]]}],[\"$\",\"div\",null,{\"className\":\"w-px h-8 bg-zinc-800\"}],[\"$\",\"div\",null,{\"className\":\"text-center\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-2xl sm:text-3xl font-bold text-white\",\"children\":\"MIT\"}],[\"$\",\"div\",null,{\"className\":\"text-[10px] text-zinc-600 uppercase tracking-widest\",\"children\":\"Open Source\"}]]}]]}],[\"$\",\"div\",null,{\"className\":\"flex flex-wrap items-center justify-center gap-4 pt-2\",\"children\":[[\"$\",\"a\",null,{\"href\":\"https://github.com/Eskyee/agentbot-opensource\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\",\"className\":\"text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5\",\"children\":\"GitHub ↗\"}],[\"$\",\"a\",null,{\"href\":\"https://raveculture.mintlify.app\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\",\"className\":\"text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5\",\"children\":\"Docs ↗\"}],[\"$\",\"a\",null,{\"href\":\"https://dev.to/agentbot\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\",\"className\":\"text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5\",\"children\":\"Dev.to ↗\"}],[\"$\",\"span\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-700 border border-zinc-800 px-3 py-1.5\",\"children\":\"Base-native\"}]]}],[\"$\",\"div\",null,{\"className\":\"flex flex-wrap items-center justify-center gap-6 sm:gap-8 pt-6 opacity-50\",\"children\":[[\"$\",\"span\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-700\",\"children\":\"Built with\"}],[\"$\",\"span\",null,{\"className\":\"text-xs text-zinc-600 font-bold\",\"children\":\"Base\"}],[\"$\",\"span\",null,{\"className\":\"text-xs text-zinc-600 font-bold\",\"children\":\"OpenClaw\"}],[\"$\",\"span\",null,{\"className\":\"text-xs text-zinc-600 font-bold\",\"children\":\"Next.js\"}],[\"$\",\"span\",null,{\"className\":\"text-xs text-zinc-600 font-bold\",\"children\":\"Vercel\"}],[\"$\",\"span\",null,{\"className\":\"text-xs text-zinc-600 font-bold\",\"children\":\"Railway\"}],[\"$\",\"span\",null,{\"className\":\"text-xs text-zinc-600 font-bold\",\"children\":\"Neon\"}]]}]]}]\n"])</script>
+              <script>self.__next_f.push([1,"1d:[\"$\",\"section\",null,{\"className\":\"border-t border-zinc-900\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20\",\"children\":[[\"$\",\"div\",null,{\"className\":\"max-w-2xl mb-10 sm:mb-16\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-4\",\"children\":\"Teams\"}],[\"$\",\"h2\",null,{\"className\":\"text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase\",\"children\":[\"Built For Teams\",[\"$\",\"br\",null,{}],[\"$\",\"span\",null,{\"className\":\"text-zinc-700\",\"children\":\"That Already Live On X.\"}]]}]]}],[\"$\",\"div\",null,{\"className\":\"grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900\",\"children\":[[\"$\",\"div\",\"Founders\",{\"className\":\"bg-black p-6 sm:p-8\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-4\",\"children\":\"Founders\"}],[\"$\",\"p\",null,{\"className\":\"text-zinc-500 text-sm leading-relaxed\",\"children\":\"Run signal capture, draft replies, and move faster without living in your notifications.\"}]]}],[\"$\",\"div\",\"Crypto Teams\",{\"className\":\"bg-black p-6 sm:p-8\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-4\",\"children\":\"Crypto Teams\"}],[\"$\",\"p\",null,{\"className\":\"text-zinc-500 text-sm leading-relaxed\",\"children\":\"Monitor the timeline, respond faster, and connect attention to onchain payment flows.\"}]]}],[\"$\",\"div\",\"Creators\",{\"className\":\"bg-black p-6 sm:p-8\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-4\",\"children\":\"Creators\"}],[\"$\",\"p\",null,{\"className\":\"text-zinc-500 text-sm leading-relaxed\",\"children\":\"Keep the conversation moving while protecting voice, approvals, and publishing quality.\"}]]}],[\"$\",\"div\",\"Agencies\",{\"className\":\"bg-black p-6 sm:p-8\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-4\",\"children\":\"Agencies\"}],[\"$\",\"p\",null,{\"className\":\"text-zinc-500 text-sm leading-relaxed\",\"children\":\"Operate multiple social workflows with a command center instead of fragmented tooling.\"}]]}]]}]]}]}]\n"])</script>
+              <script>self.__next_f.push([1,"1e:[\"$\",\"section\",null,{\"className\":\"border-t border-zinc-900\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20\",\"children\":[[\"$\",\"div\",null,{\"className\":\"max-w-2xl mb-10 sm:mb-16\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-4\",\"children\":\"Product\"}],[\"$\",\"h2\",null,{\"className\":\"text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase\",\"children\":[\"Private Cloud\",[\"$\",\"br\",null,{}],[\"$\",\"span\",null,{\"className\":\"text-zinc-700\",\"children\":\"Or Open Source.\"}]]}],[\"$\",\"p\",null,{\"className\":\"text-zinc-500 text-sm max-w-xl leading-relaxed mt-6\",\"children\":\"Use Agentbot as a managed production control plane for X-native social agents, or fork the open-source starter and self-host the workflow yourself.\"}]]}],[\"$\",\"div\",null,{\"className\":\"grid lg:grid-cols-2 gap-px bg-zinc-900\",\"children\":[[\"$\",\"div\",null,{\"className\":\"bg-black p-6 sm:p-8\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-blue-500 mb-4\",\"children\":\"Production Private Cloud\"}],[\"$\",\"h3\",null,{\"className\":\"text-sm font-bold text-white uppercase tracking-wider mb-3\",\"children\":\"Managed runtime for teams that need speed and control.\"}],[\"$\",\"div\",null,{\"className\":\"space-y-3 text-zinc-500 text-sm\",\"children\":[[\"$\",\"p\",null,{\"children\":\"Approval queues, dashboards, billing, and operator tooling around your X workflow.\"}],[\"$\",\"p\",null,{\"children\":\"Agentbot handles provisioning, observability, and the command center so your team stays focused on output.\"}]]}]]}],[\"$\",\"div\",null,{\"className\":\"bg-black p-6 sm:p-8\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-400 mb-4\",\"children\":\"Open Source Starter\"}],[\"$\",\"h3\",null,{\"className\":\"text-sm font-bold text-white uppercase tracking-wider mb-3\",\"children\":\"Forkable self-host path for builders.\"}],[\"$\",\"div\",null,{\"className\":\"space-y-3 text-zinc-500 text-sm\",\"children\":[[\"$\",\"p\",null,{\"children\":\"Connect one X account, monitor mentions, draft replies and threads, and extend the workflow with your own logic.\"}],[\"$\",\"p\",null,{\"children\":\"Own the runtime, inspect the code, and use the starter as the public entrypoint into the wider Agentbot platform.\"}]]}]]}]]}]]}]}]\n"])</script>
+              <script>self.__next_f.push([1,"1f:[\"$\",\"section\",null,{\"className\":\"border-t border-zinc-900\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-2xl space-y-8 sm:space-y-10\",\"children\":[[\"$\",\"h2\",null,{\"className\":\"text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase\",\"children\":[\"Monitor.\",[\"$\",\"br\",null,{}],[\"$\",\"span\",null,{\"className\":\"text-zinc-700\",\"children\":\"Draft. Detect. Monetize.\"}]]}],[\"$\",\"div\",null,{\"className\":\"space-y-6 sm:space-y-8 pt-2 sm:pt-4\",\"children\":[[\"$\",\"div\",null,{\"children\":[[\"$\",\"h3\",null,{\"className\":\"text-sm font-bold text-white uppercase tracking-wider mb-1\",\"children\":\"Watch the signal.\"}],[\"$\",\"p\",null,{\"className\":\"text-zinc-500 text-sm\",\"children\":\"Monitor mentions, keywords, and high-signal posts without running a custom ops stack.\"}]]}],[\"$\",\"div\",null,{\"children\":[[\"$\",\"h3\",null,{\"className\":\"text-sm font-bold text-white uppercase tracking-wider mb-1\",\"children\":\"Draft with approvals.\"}],[\"$\",\"p\",null,{\"className\":\"text-zinc-500 text-sm\",\"children\":\"Generate reply and thread drafts fast, but keep a clear human approval step for public actions.\"}]]}],[\"$\",\"div\",null,{\"children\":[[\"$\",\"h3\",null,{\"className\":\"text-sm font-bold text-white uppercase tracking-wider mb-1\",\"children\":\"Turn attention into action.\"}],[\"$\",\"p\",null,{\"className\":\"text-zinc-500 text-sm\",\"children\":\"Route the right conversations into bookings, payments, or paid API actions with x402.\"}]]}]]}],[\"$\",\"$La\",null,{\"href\":\"/documentation\",\"className\":\"inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-white transition-colors\",\"children\":\"Read docs →\"}]]}]}]}]\n"])</script>
+              <script>self.__next_f.push([1,"20:[[\"$\",\"$L18\",null,{\"moduleIds\":[\"app/page.tsx -\u003e @/app/components/landing\"]}],\"$L27\"]\n"])</script>
+              <script>self.__next_f.push([1,"21:[\"$\",\"section\",null,{\"className\":\"border-t border-zinc-900 bg-zinc-950\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20 text-center space-y-6\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-400 font-bold\",\"children\":\"Managed product + open source starter\"}],[\"$\",\"h2\",null,{\"className\":\"text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase\",\"children\":[\"Launch On X.\",[\"$\",\"br\",null,{}],[\"$\",\"span\",null,{\"className\":\"text-zinc-700\",\"children\":\"Then Scale The Team.\"}]]}],[\"$\",\"p\",null,{\"className\":\"text-zinc-400 text-sm max-w-md mx-auto leading-relaxed\",\"children\":\"Start with one narrow workflow, validate the signal, then scale into a full private-cloud social agent team with Agentbot + OpenClaw.\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-col sm:flex-row items-center justify-center gap-3 pt-2\",\"children\":[[\"$\",\"$La\",null,{\"href\":\"/signup\",\"className\":\"inline-flex items-center justify-center bg-white text-black px-8 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors w-full sm:w-auto\",\"children\":\"Start Private Cloud →\"}],[\"$\",\"$La\",null,{\"href\":\"https://github.com/Eskyee/agentbot-opensource\",\"className\":\"inline-flex items-center justify-center border border-zinc-800 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors w-full sm:w-auto\",\"children\":\"Fork Starter\"}]]}]]}]}]\n"])</script>
+              <script>self.__next_f.push([1,"22:[\"$\",\"section\",null,{\"id\":\"pricing\",\"className\":\"border-t border-zinc-900 scroll-mt-20\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10 sm:mb-16\",\"children\":[[\"$\",\"div\",null,{\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-4\",\"children\":\"Pricing\"}],[\"$\",\"h2\",null,{\"className\":\"text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase\",\"children\":[\"Simple.\",[\"$\",\"br\",null,{}],[\"$\",\"span\",null,{\"className\":\"text-zinc-700\",\"children\":\"No Markup.\"}]]}]]}],[\"$\",\"$La\",null,{\"href\":\"/pricing\",\"className\":\"inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-white transition-colors\",\"children\":\"Full breakdown →\"}]]}],[\"$\",\"div\",null,{\"className\":\"grid grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900\",\"children\":[[\"$\",\"div\",\"solo\",{\"className\":\"bg-black p-4 sm:p-6 lg:p-8 flex flex-col\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex items-center gap-2 mb-4\",\"children\":[[\"$\",\"span\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-500\",\"children\":\"Solo\"}],\"$undefined\"]}],[\"$\",\"div\",null,{\"className\":\"text-2xl sm:text-3xl font-bold tracking-tighter mb-6\",\"children\":[\"£\",\"29\",[\"$\",\"span\",null,{\"className\":\"text-[10px] sm:text-sm font-normal text-zinc-600\",\"children\":\"/mo\"}]]}],[\"$\",\"$La\",null,{\"href\":\"/api/stripe/checkout?plan=solo\",\"className\":\"mt-auto block w-full py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-colors border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600\",\"children\":\"Select\"}]]}],[\"$\",\"div\",\"collective\",{\"className\":\"bg-black p-4 sm:p-6 lg:p-8 flex flex-col\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex items-center gap-2 mb-4\",\"children\":[[\"$\",\"span\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-500\",\"children\":\"Collective\"}],[\"$\",\"span\",null,{\"className\":\"text-[8px] uppercase tracking-widest text-blue-500 border border-blue-500/30 px-1.5 py-0.5\",\"children\":\"Popular\"}]]}],[\"$\",\"div\",null,{\"className\":\"text-2xl sm:text-3xl font-bold tracking-tighter mb-6\",\"children\":[\"£\",\"69\",[\"$\",\"span\",null,{\"className\":\"text-[10px] sm:text-sm font-normal text-zinc-600\",\"children\":\"/mo\"}]]}],[\"$\",\"$La\",null,{\"href\":\"/api/stripe/checkout?plan=collective\",\"className\":\"mt-auto block w-full py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-colors bg-white text-black hover:bg-zinc-200\",\"children\":\"Select\"}]]}],[\"$\",\"div\",\"label\",{\"className\":\"bg-black p-4 sm:p-6 lg:p-8 flex flex-col\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex items-center gap-2 mb-4\",\"children\":[[\"$\",\"span\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-500\",\"children\":\"Label\"}],\"$undefined\"]}],[\"$\",\"div\",null,{\"className\":\"text-2xl sm:text-3xl font-bold tracking-tighter mb-6\",\"children\":[\"£\",\"149\",[\"$\",\"span\",null,{\"className\":\"text-[10px] sm:text-sm font-normal text-zinc-600\",\"children\":\"/mo\"}]]}],[\"$\",\"$La\",null,{\"href\":\"/api/stripe/checkout?plan=label\",\"className\":\"mt-auto block w-full py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-colors border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600\",\"children\":\"Select\"}]]}],[\"$\",\"div\",\"network\",{\"className\":\"bg-black p-4 sm:p-6 lg:p-8 flex flex-col\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex items-center gap-2 mb-4\",\"children\":[[\"$\",\"span\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-500\",\"children\":\"Network\"}],\"$undefined\"]}],[\"$\",\"div\",null,{\"className\":\"text-2xl sm:text-3xl font-bold tracking-tighter mb-6\",\"children\":[\"£\",\"499\",[\"$\",\"span\",null,{\"className\":\"text-[10px] sm:text-sm font-normal text-zinc-600\",\"children\":\"/mo\"}]]}],[\"$\",\"$La\",null,{\"href\":\"/api/stripe/checkout?plan=network\",\"className\":\"mt-auto block w-full py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-colors border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600\",\"children\":\"Select\"}]]}]]}]]}]}]\n"])</script>
+              <script>self.__next_f.push([1,"23:[\"$\",\"section\",null,{\"className\":\"border-t border-zinc-900\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-6 sm:py-8\",\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex items-center gap-3 sm:gap-6 flex-wrap\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-700\",\"children\":\"$$AGENTBOT\"}],[\"$\",\"div\",null,{\"className\":\"text-[10px] text-zinc-700 font-mono\",\"children\":\"Pump.fun · Solana\"}]]}],[\"$\",\"div\",null,{\"className\":\"flex items-center gap-3\",\"children\":[[\"$\",\"a\",null,{\"href\":\"https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\",\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors\",\"children\":\"Scanner\"}],[\"$\",\"span\",null,{\"className\":\"text-zinc-800\",\"children\":\"·\"}],[\"$\",\"a\",null,{\"href\":\"https://dexscreener.com/solana/l3lctrhv2geqzkrgccqqczqmuutgt6hklnpqv4fmhcp\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\",\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors\",\"children\":\"View Market\"}]]}]]}]}]}]\n"])</script>
+              <script>self.__next_f.push([1,"24:[\"$\",\"section\",null,{\"className\":\"border-t border-zinc-900\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20\",\"children\":[\"$\",\"div\",null,{\"className\":\"flex flex-col md:flex-row gap-10 md:gap-16 items-start\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex-1 space-y-5 sm:space-y-6\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600\",\"children\":\"See It In Action\"}],[\"$\",\"h2\",null,{\"className\":\"text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase\",\"children\":\"baseFM\"}],[\"$\",\"p\",null,{\"className\":\"text-zinc-400 text-sm max-w-md leading-relaxed\",\"children\":\"AI-ready underground radio on Base. Agent DJs and human selectors can go live, and the main stream plays directly here.\"}],[\"$\",\"div\",null,{\"className\":\"flex flex-col sm:flex-row gap-3\",\"children\":[[\"$\",\"a\",null,{\"href\":\"/basefm/live\",\"className\":\"inline-flex items-center justify-center bg-white text-black px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors\",\"children\":\"Play Live\"}],[\"$\",\"a\",null,{\"href\":\"https://bankr.bot/agents/basefm\",\"target\":\"_blank\",\"rel\":\"noopener noreferrer\",\"className\":\"inline-flex items-center justify-center border border-zinc-800 px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors\",\"children\":\"Support $BASEFM\"}]]}]]}],[\"$\",\"div\",null,{\"className\":\"w-full md:max-w-2xl\",\"children\":[\"$\",\"$L28\",null,{\"compact\":true,\"title\":\"🎧 baseFM Live\",\"subtitle\":\"Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base.\"}]}]]}]}]}]\n"])</script>
+              <script>self.__next_f.push([1,"25:[\"$\",\"section\",null,{\"className\":\"border-t border-zinc-900\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-6\",\"children\":\"From the community\"}],[\"$\",\"div\",null,{\"className\":\"max-w-lg\",\"children\":[[\"$\",\"blockquote\",null,{\"className\":\"twitter-tweet\",\"data-theme\":\"dark\",\"children\":[[\"$\",\"p\",null,{\"lang\":\"zxx\",\"dir\":\"ltr\",\"children\":[\"$\",\"a\",null,{\"href\":\"https://t.co/SbyUPtltwe\",\"children\":\"https://t.co/SbyUPtltwe\"}]}],\"— esky33 (@Esky33junglist)\",\" \",[\"$\",\"a\",null,{\"href\":\"https://twitter.com/Esky33junglist/status/2043491562479329427?ref_src=twsrc%5Etfw\",\"children\":\"April 13, 2026\"}]]}],[\"$\",\"script\",null,{\"async\":true,\"src\":\"https://platform.twitter.com/widgets.js\",\"charSet\":\"utf-8\"}]]}]]}]}]\n"])</script>
+              <script>self.__next_f.push([1,"26:[\"$\",\"section\",null,{\"className\":\"border-t border-zinc-900\",\"children\":[\"$\",\"div\",null,{\"className\":\"max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-6\",\"children\":\"Explore\"}],[\"$\",\"div\",null,{\"className\":\"grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4\",\"children\":[[\"$\",\"$La\",\"/use-cases\",{\"href\":\"/use-cases\",\"className\":\"border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center\",\"children\":\"Use Cases\"}],[\"$\",\"$La\",\"/capabilities\",{\"href\":\"/capabilities\",\"className\":\"border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center\",\"children\":\"Capabilities\"}],[\"$\",\"$La\",\"/demo\",{\"href\":\"/demo\",\"className\":\"border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center\",\"children\":\"Demo\"}],[\"$\",\"$La\",\"/marketplace\",{\"href\":\"/marketplace\",\"className\":\"border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center\",\"children\":\"Marketplace\"}],[\"$\",\"$La\",\"/open-learning\",{\"href\":\"/open-learning\",\"className\":\"border border-zinc-800 hover:border-zinc-600 px-4 py-3 text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors text-center\",\"children\":\"Open Learning\"}]]}]]}]}]\n"])</script>
+              <script>self.__next_f.push([1,"19:[\"$\",\"$L29\",null,{}]\n2a:[[\"$\",\"source\",null,{\"srcSet\":\"/hero-image-320.webp 320w, /hero-image-400.webp 400w, /hero-image.webp 800w\",\"sizes\":\"(max-width: 640px) 320px, (max-width: 1024px) 400px, 800px\",\"type\":\"image/webp\"}],[\"$\",\"img\",null,{\"src\":\"/hero-image.webp\",\"alt\":\"Agentbot — Command Center\",\"width\":800,\"height\":800,\"loading\":\"eager\",\"fetchPriority\":\"high\",\"className\":\"w-full h-auto object-cover\"}]]\n1a:[\"$\",\"div\",null,{\"className\":\"relative w-full overflow-hidden border border-zinc-800\",\"children\":[[\"$\",\"picture\",null,{\"children\":\"$2a\"}],[\"$\",\"div\",null,{\"className\":\"absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black to-transparent\"}]]}]\n"])</script>
+              <script>self.__next_f.push([1,"1b:[\"$\",\"div\",null,{\"className\":\"relative mt-8 sm:mt-12\",\"children\":[[\"$\",\"div\",null,{\"className\":\"absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10 pointer-events-none h-20 bottom-0 top-auto\"}],[\"$\",\"div\",null,{\"className\":\"border border-zinc-800 bg-zinc-950 overflow-hidden shadow-2xl shadow-black/50\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex items-center gap-2 px-4 py-2.5 border-b border-zinc-800 bg-zinc-900/50\",\"children\":[[\"$\",\"div\",null,{\"className\":\"flex gap-1.5\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-2.5 h-2.5 rounded-full bg-zinc-700\"}],[\"$\",\"div\",null,{\"className\":\"w-2.5 h-2.5 rounded-full bg-zinc-700\"}],[\"$\",\"div\",null,{\"className\":\"w-2.5 h-2.5 rounded-full bg-zinc-700\"}]]}],[\"$\",\"div\",null,{\"className\":\"flex-1 mx-4\",\"children\":[\"$\",\"div\",null,{\"className\":\"bg-zinc-800 rounded px-3 py-1 text-[10px] text-zinc-500 font-mono text-center\",\"children\":\"agentbot.raveculture.xyz/dashboard\"}]}]]}],[\"$\",\"div\",null,{\"className\":\"flex\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-48 border-r border-zinc-800 p-4 hidden sm:block\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-4\",\"children\":\"Agentbot\"}],[[\"$\",\"div\",\"◈ Mission Control\",{\"className\":\"text-[10px] py-1.5 px-2 rounded text-white bg-zinc-800\",\"children\":\"◈ Mission Control\"}],[\"$\",\"div\",\"◎ Wallet\",{\"className\":\"text-[10px] py-1.5 px-2 rounded text-zinc-600\",\"children\":\"◎ Wallet\"}],[\"$\",\"div\",\"⚡ Activity\",{\"className\":\"text-[10px] py-1.5 px-2 rounded text-zinc-600\",\"children\":\"⚡ Activity\"}],[\"$\",\"div\",\"📊 Analytics\",{\"className\":\"text-[10px] py-1.5 px-2 rounded text-zinc-600\",\"children\":\"📊 Analytics\"}],[\"$\",\"div\",\"⚙ Settings\",{\"className\":\"text-[10px] py-1.5 px-2 rounded text-zinc-600\",\"children\":\"⚙ Settings\"}]],[\"$\",\"div\",null,{\"className\":\"mt-6 pt-4 border-t border-zinc-800\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-700 mb-2\",\"children\":\"Agents\"}],[[\"$\",\"div\",\"the-strategist\",{\"className\":\"flex items-center gap-2 py-1\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-1.5 h-1.5 rounded-full bg-green-500\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-500 font-mono\",\"children\":\"the-strategist\"}]]}],[\"$\",\"div\",\"crew-manager\",{\"className\":\"flex items-center gap-2 py-1\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-1.5 h-1.5 rounded-full bg-yellow-500\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-500 font-mono\",\"children\":\"crew-manager\"}]]}],[\"$\",\"div\",\"sound-system\",{\"className\":\"flex items-center gap-2 py-1\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-1.5 h-1.5 rounded-full bg-zinc-600\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-500 font-mono\",\"children\":\"sound-system\"}]]}]]]}]]}],[\"$\",\"div\",null,{\"className\":\"flex-1 p-4 sm:p-6\",\"children\":[[\"$\",\"div\",null,{\"className\":\"grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6\",\"children\":[[\"$\",\"div\",\"AGENTS\",{\"className\":\"border border-zinc-800 p-3\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[9px] uppercase tracking-widest text-zinc-600 mb-1\",\"children\":\"AGENTS\"}],[\"$\",\"div\",null,{\"className\":\"text-lg font-bold text-white font-mono\",\"children\":\"3\"}],[\"$\",\"div\",null,{\"className\":\"text-[8px] text-zinc-700\",\"children\":\"active\"}]]}],[\"$\",\"div\",\"TASKS\",{\"className\":\"border border-zinc-800 p-3\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[9px] uppercase tracking-widest text-zinc-600 mb-1\",\"children\":\"TASKS\"}],[\"$\",\"div\",null,{\"className\":\"text-lg font-bold text-white font-mono\",\"children\":\"47\"}],[\"$\",\"div\",null,{\"className\":\"text-[8px] text-zinc-700\",\"children\":\"completed today\"}]]}],[\"$\",\"div\",\"UPTIME\",{\"className\":\"border border-zinc-800 p-3\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[9px] uppercase tracking-widest text-zinc-600 mb-1\",\"children\":\"UPTIME\"}],[\"$\",\"div\",null,{\"className\":\"text-lg font-bold text-white font-mono\",\"children\":\"99.9%\"}],[\"$\",\"div\",null,{\"className\":\"text-[8px] text-zinc-700\",\"children\":\"last 30 days\"}]]}],[\"$\",\"div\",\"REVENUE\",{\"className\":\"border border-zinc-800 p-3\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[9px] uppercase tracking-widest text-zinc-600 mb-1\",\"children\":\"REVENUE\"}],\"$L2b\",\"$L2c\"]}]]}],\"$L2d\"]}]]}]]}]]}]\n"])</script>
+              <script>self.__next_f.push([1,"2e:I[62207,[\"37866\",\"static/chunks/37866-b9f32810cfee3685.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"91603\",\"static/chunks/91603-e0f8cb155250a02d.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"98285\",\"static/chunks/98285-cb10c63e21c0e0b2.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\",\"58974\",\"static/chunks/app/page-a986e83817fc99a4.js?dpl=dpl_J1fbp1QuZEUDpujGG243JyMaHYoL\"],\"CapabilitiesTicker\"]\n2b:[\"$\",\"div\",null,{\"className\":\"text-lg font-bold text-white font-mono\",\"children\":\"$$1.2k\"}]\n2c:[\"$\",\"div\",null,{\"className\":\"text-[8px] text-zinc-700\",\"children\":\"this month\"}]\n"])</script>
+              <script>self.__next_f.push([1,"2d:[\"$\",\"div\",null,{\"className\":\"border border-zinc-800 p-4\",\"children\":[[\"$\",\"div\",null,{\"className\":\"text-[10px] uppercase tracking-widest text-zinc-600 mb-3\",\"children\":\"Recent Activity\"}],[[\"$\",\"div\",\"0\",{\"className\":\"flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-1 h-1 rounded-full bg-green-500\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-600 font-mono w-16 shrink-0\",\"children\":\"2m ago\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-500 font-mono w-24 shrink-0\",\"children\":\"the-strategist\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-400 truncate\",\"children\":\"Reviewed PR #47 — approved\"}]]}],[\"$\",\"div\",\"1\",{\"className\":\"flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-1 h-1 rounded-full bg-green-500\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-600 font-mono w-16 shrink-0\",\"children\":\"8m ago\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-500 font-mono w-24 shrink-0\",\"children\":\"crew-manager\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-400 truncate\",\"children\":\"Invoice sent to client — £450\"}]]}],[\"$\",\"div\",\"2\",{\"className\":\"flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-1 h-1 rounded-full bg-blue-500\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-600 font-mono w-16 shrink-0\",\"children\":\"15m ago\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-500 font-mono w-24 shrink-0\",\"children\":\"sound-system\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-400 truncate\",\"children\":\"Stream monitored — 1.2k listeners\"}]]}],[\"$\",\"div\",\"3\",{\"className\":\"flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-1 h-1 rounded-full bg-green-500\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-600 font-mono w-16 shrink-0\",\"children\":\"23m ago\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-500 font-mono w-24 shrink-0\",\"children\":\"the-strategist\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-400 truncate\",\"children\":\"Standup summary generated\"}]]}],[\"$\",\"div\",\"4\",{\"className\":\"flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0\",\"children\":[[\"$\",\"div\",null,{\"className\":\"w-1 h-1 rounded-full bg-yellow-500\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-600 font-mono w-16 shrink-0\",\"children\":\"41m ago\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-500 font-mono w-24 shrink-0\",\"children\":\"crew-manager\"}],[\"$\",\"span\",null,{\"className\":\"text-[9px] text-zinc-400 truncate\",\"children\":\"Booking confirmed — Apr 12\"}]]}]]]}]\n"])</script>
+              <script>self.__next_f.push([1,"27:[\"$\",\"$L2e\",null,{}]\n"])</script>
+          </body>
+      </html>
+order: 1000

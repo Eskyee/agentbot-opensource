@@ -1,0 +1,15 @@
+$kind: http-request
+description: POST register endpoint with sample JSON body.
+url: "{{WEB_URL}}/api/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "user@example.com",
+      "password": "SecurePass123!",
+      "username": "myusername"
+    }
+order: 2000

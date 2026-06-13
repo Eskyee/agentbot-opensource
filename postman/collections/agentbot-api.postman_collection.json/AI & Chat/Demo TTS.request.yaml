@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/demo/tts"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "text": "Hello world"
+    }
+order: 11000

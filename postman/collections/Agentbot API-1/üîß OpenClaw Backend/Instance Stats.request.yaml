@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/openclaw/instances/{{instanceId}}/stats"
+method: GET
+order: 2000

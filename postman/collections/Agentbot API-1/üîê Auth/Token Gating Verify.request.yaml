@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/token-gating/verify"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "address": "",
+      "chain": "base"
+    }
+order: 11000

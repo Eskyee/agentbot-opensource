@@ -4,4 +4,6 @@ url: "{{baseUrl}}/api/agents/:id/verify"
 method: DELETE
 headers:
   Cookie: next-auth.session-token={{sessionToken}}
+pathVariables:
+  id: ""
 order: 8000

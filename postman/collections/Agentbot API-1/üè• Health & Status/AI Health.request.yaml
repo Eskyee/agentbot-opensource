@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/ai/health"
+method: GET
+order: 5000

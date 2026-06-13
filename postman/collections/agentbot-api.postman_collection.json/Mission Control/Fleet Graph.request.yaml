@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/mission-control/fleet/graph"
+method: GET
+order: 1000

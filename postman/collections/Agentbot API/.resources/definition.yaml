@@ -1,5 +1,40 @@
 $kind: collection
-description: Full Agentbot API collection — agentbot-backend + web routes
+description: |-
+  Complete API reference for the Agentbot platform, covering all routes across the Next.js web app (`baseUrl`) and the Express backend (`backendUrl`).
+
+  ## Folders
+
+  | Folder | Purpose |
+  |---|---|
+  | **AI & Chat** | Core AI interactions — send chat messages, run TTS demos, list and select models, proxy requests through MiMo, and check gateway status. |
+  | **Admin** | Privileged operations for platform operators — user management, agent audits, security settings, MiMo config, usage seeding, and platform-wide stats. |
+  | **Agents** | Full CRUD lifecycle for agents — create, read, update, delete, clone, verify, sync, and simulate agents, plus logs, messages, and showcase endpoints. |
+  | **Auth** | Authentication flows — email/password login, NextAuth sign-in, Google OAuth, wallet nonce + token-gating, Farcaster refresh, CSRF, session, and password reset. |
+  | **Bitcoin & Solana** | Crypto wallet and chain integrations — Bitcoin (Greenlight, Liquid, wallet info) and Solana (wallet, price feed, RPC config). |
+  | **Bridge** | Cross-platform messaging bridge — setup, health check, send/poll messages, inbox retrieval, and status monitoring. |
+  | **Dashboard & Metrics** | Observability and cost data for the dashboard — analytics, bootstrap data, performance summaries, historical metrics, usage, and platform-wide stats. |
+  | **Debug** | Developer diagnostics — inspect DB state, OAuth config, Stripe integration, environment variables, and general debug endpoints. |
+  | **Health & Status** | Liveness and readiness probes for all services — web, backend, AI layer, gateway, x402, and OpenClaw version checks. |
+  | **Instance Management** | Runtime control of agent instances — start, stop, restart, repair, update, retrieve tokens, reset memory, and fetch instance stats. |
+  | **Mission Control** | Fleet-level oversight — bookings, cost tracking, execution traces, and dependency graphs across all running agents. |
+  | **OpenClaw Backend** | OpenClaw self-hosted backend management — deployments, instances, permissions, install/link pages, and version info. |
+  | **Provisioning** | Automated provisioning workflows — provision agents, teams, and backends (Railway), track job status, and manage team templates. |
+  | **Registration & Keys** | API key and invite management — create/delete/list/validate keys, generate and validate invite codes, and register home/link endpoints. |
+  | **Social** | Social layer for the platform — feeds, posts, comments, votes, DMs, notifications, communities, and agent social registration. |
+  | **User & Settings** | User profile and preferences — fetch/update settings, change password, BYOK (Bring Your Own Key) config, and user lookup by ID. |
+  | **Webhooks & Payments** | Inbound webhook handling and Stripe payment flows — subscription events, checkout sessions, and payment verification. |
+
+  ## Variables
+
+  | Variable | Description |
+  |---|---|
+  | `baseUrl` | Root URL of the Next.js web app |
+  | `backendUrl` | Express backend service URL |
+  | `gatewayUrl` | OpenClaw gateway URL |
+  | `x402Url` | x402 payment gateway URL |
+  | `sessionToken` | Active user session token for authenticated requests |
+  | `internalApiKey` | Internal service-to-service API key |
+  | `bridgeSecret` | Shared secret for Bridge service authentication |
 variables:
   baseUrl: https://agentbot.sh
   backendUrl: https://agentbot-backend-production.up.railway.app

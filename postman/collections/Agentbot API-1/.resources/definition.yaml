@@ -1,0 +1,11 @@
+$kind: collection
+name: Agentbot API
+description: Full Agentbot API collection ‚Äî agentbot-backend + web routes
+variables:
+  baseUrl: https://agentbot.sh
+  backendUrl: https://agentbot-backend-production.up.railway.app
+  gatewayUrl: https://openclaw-production-a09d.up.railway.app
+  x402Url: https://x402-gateway-production.up.railway.app
+  sessionToken: ""
+  internalApiKey: ""
+  bridgeSecret: ""

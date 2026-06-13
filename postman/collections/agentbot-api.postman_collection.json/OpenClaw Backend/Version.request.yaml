@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/openclaw/version"
+method: GET
+order: 3000

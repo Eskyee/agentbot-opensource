@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/mission-control/fleet/bookings"
+method: GET
+order: 4000

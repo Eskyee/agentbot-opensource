@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/openclaw/mimo"
+method: GET
+order: 10000

@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/install"
+method: GET
+order: 7000
