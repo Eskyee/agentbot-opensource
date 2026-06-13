@@ -85,6 +85,7 @@ export default function Navbar() {
               <ProductsDropdown open={productsOpen} setOpen={setProductsOpen} dropdownRef={productsRef} current={pathname} />
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
+              <NavLink href="https://agentbot.sh/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/social" current={pathname}>Social</NavLink>
               <NavLink href="/partner/openrouter" current={pathname}>OpenRouter</NavLink>
               <NavLink href="/partner/mimo" current={pathname}>MiMo</NavLink>
@@ -194,6 +195,7 @@ export default function Navbar() {
                 <MobileSection>Resources</MobileSection>
                 <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                 <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
+                <MobileLink href="https://agentbot.sh/agents" onClick={closeMenu}>Agents</MobileLink>
                 <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
                   <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">
@@ -260,12 +262,14 @@ function ProductsDropdown({ open, setOpen, dropdownRef, current }: {
 
 function NavLink({ href, current, children }: { href: string; current: string; children: React.ReactNode }) {
   const isActive = current === href || current.startsWith(href + '/');
+  const isExternal = href.startsWith('http');
   return (
     <Link
       href={href}
       className={`text-[11px] uppercase tracking-widest transition-colors ${
         isActive ? 'text-white' : 'text-zinc-500 hover:text-white'
       }`}
+      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
       {children}
     </Link>
@@ -293,11 +297,13 @@ function MobileSection({ children }: { children: React.ReactNode }) {
 }
 
 function MobileLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
+  const isExternal = href.startsWith('http');
   return (
     <Link
       href={href}
       onClick={onClick}
       className="block text-xs py-2.5 px-3 text-zinc-400 hover:text-white uppercase tracking-wider transition-colors"
+      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
       {children}
     </Link>
