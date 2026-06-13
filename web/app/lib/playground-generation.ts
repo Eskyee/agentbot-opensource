@@ -45,7 +45,7 @@ const SCAFFOLD_PATHS = new Set([
 
 /** Dynamic, model-writable app files */
 const DYNAMIC_FILE_RE =
-  /^src\/(?:App\.tsx|index\.css|(?:components|hooks|lib)\/[A-Za-z0-9_-]{1,48}\.(?:tsx|ts)|[A-Za-z0-9_-]{1,48}\.css)$/
+  /^src\/(?:App\.tsx|index\.css|(?:components|hooks|lib)\/[A-Za-z0-9_-]{1,48}\.(?:tsx|ts|css)|[A-Za-z0-9_-]{1,48}\.css)$/
 
 export function isModelWritablePath(path: string): boolean {
   return DYNAMIC_FILE_RE.test(path) && !path.includes('..')
