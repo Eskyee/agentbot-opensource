@@ -467,6 +467,7 @@ export default function PlaygroundPage() {
   const [activeProjectId, setActiveProjectId] = useState('untitled-active')
   const [provider, setProvider] = useState('openclaude')
   const [model, setModel] = useState('xiaomi/mimo-v2.5-pro')
+  const [autoApprove, setAutoApprove] = useState(true)
   const [selectedFile, setSelectedFile] = useState('.gitignore')
   const [pane, setPane] = useState<Pane>('preview')
   const [viewport, setViewport] = useState<Viewport>('desktop')
@@ -1080,6 +1081,12 @@ export default function PlaygroundPage() {
     const cleanPrompt = nextPrompt.trim()
     if (!cleanPrompt || isGenerating || !activeProject) return
 
+    // When auto-approve is off, confirm before generating
+    if (!autoApprove) {
+      const confirmed = window.confirm(`Generate app for: "${cleanPrompt.slice(0, 80)}${cleanPrompt.length > 80 ? '…' : ''}"?`)
+      if (!confirmed) return
+    }
+
     setPrompt(cleanPrompt)
     setIsGenerating(true)
     setError(null)
@@ -1155,10 +1162,18 @@ export default function PlaygroundPage() {
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto text-[10px] uppercase tracking-widest text-zinc-500 lg:overflow-visible">
-            <span className="inline-flex items-center gap-1 border border-orange-500/40 px-2 py-1 text-orange-500">
-              <Check className="h-3 w-3" />
-              Auto-approve on
-            </span>
+            <button
+              type="button"
+              onClick={() => setAutoApprove((v) => !v)}
+              className={`inline-flex items-center gap-1 border px-2 py-1 transition-colors ${
+                autoApprove
+                  ? 'border-orange-500/40 text-orange-500 hover:bg-orange-500/10'
+                  : 'border-zinc-800 text-zinc-600 hover:text-zinc-400'
+              }`}
+            >
+              {autoApprove ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+              Auto-approve {autoApprove ? 'on' : 'off'}
+            </button>
             <button type="button" onClick={() => setView('templates')} className="px-2 py-1 hover:text-white">Templates</button>
             <button type="button" onClick={() => setView('apps')} className="px-2 py-1 hover:text-white">Apps</button>
             <button type="button" onClick={() => setView('projects')} className="px-2 py-1 hover:text-white">Projects</button>
@@ -1229,6 +1244,7 @@ export default function PlaygroundPage() {
           onWorkbenchEdit={handleWorkbenchEdit}
           messages={activeProject?.messages ?? []}
           setModel={setModel}
+          autoApprove={autoApprove}
         />
       )}
 
@@ -1354,6 +1370,7 @@ function BuilderView({
   onWorkbenchEdit,
   messages,
   setModel,
+  autoApprove,
 }: {
   prompt: string
   setPrompt: (value: string) => void
@@ -1378,6 +1395,7 @@ function BuilderView({
   onWorkbenchEdit: (files: { path: string; content: string }[]) => void
   messages: ChatMessage[]
   setModel: (model: string) => void
+  autoApprove: boolean
 }) {
   const [consoleFilter, setConsoleFilter] = useState<ConsoleLevel>('all')
   const [runtimeError, setRuntimeError] = useState<{ message: string; filePath?: string; line?: number } | null>(null)
@@ -1880,7 +1898,7 @@ function BuilderView({
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span>Mode</span>
-                <span className="text-zinc-300">auto-approve</span>
+                <span className={autoApprove ? 'text-orange-500' : 'text-zinc-300'}>{autoApprove ? 'auto-approve' : 'manual'}</span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span>Gateway</span>
