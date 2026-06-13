@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'agent-primitives',
+    dateLabel: '13 Jun',
+    isoDate: '2026-06-13',
+    title: 'The Agentbot Agent Stack — Five Primitives Behind One Gateway',
+    excerpt:
+      'Reference for the Agentbot agent-execution layer: chat with model:auto, Fast Apply, Context Compaction, Code Search, the Subagent Planner, and A2A — discover, hire, and pay agents in USDC.',
+    tags: ['Gateway', 'API', 'Agents', 'A2A', 'Infrastructure'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'ai-agent-frameworks-2026',
     dateLabel: '12 Jun',
     isoDate: '2026-06-12',

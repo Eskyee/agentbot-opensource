@@ -42,6 +42,18 @@ export async function GET() {
         description: 'POST /v1/compact — compress long conversations for 24/7 agents.',
         tags: ['memory', 'context'],
       },
+      {
+        id: 'code-search',
+        name: 'Codebase Search',
+        description: 'POST /v1/search — fast lexical ranking of relevant code chunks.',
+        tags: ['code', 'search'],
+      },
+      {
+        id: 'planner',
+        name: 'Subagent Planner',
+        description: 'POST /v1/plan — decompose a goal into specialized subtasks.',
+        tags: ['planning', 'orchestration'],
+      },
     ],
     'x-agentbot': {
       agentCardTemplate: `${ORIGIN}/api/agents/{agentId}/card`,

@@ -427,6 +427,44 @@ console.log(reply.choices[0].message.content)`,
         </div>
       </section>
 
+      {/* Agent primitives — the full endpoint suite */}
+      <section className="border-t border-zinc-900">
+        <div className="mx-auto max-w-6xl px-6 py-12 lg:px-8">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500">Agent primitives</p>
+          <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-white">
+            More than chat. A full agent-execution layer.
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500">
+            One key, one base URL — five OpenAI-style endpoints that the Agentbot
+            stack runs on, open for yours too.
+          </p>
+          <div className="mt-8 grid gap-px bg-zinc-900 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              ['POST /v1/chat/completions', 'Inference', 'model:auto smart routing, provider failover, free MiMo.'],
+              ['POST /v1/apply', 'Fast Apply', 'Merge lazy code edits into full files with a fast model — no full rewrites.'],
+              ['POST /v1/compact', 'Compaction', 'Compress long conversations so 24/7 agents stay cheap and coherent.'],
+              ['POST /v1/search', 'Code Search', 'Rank the few relevant chunks from a corpus — agents skip the grep tax.'],
+              ['POST /v1/plan', 'Planner', 'Decompose a goal into specialized subtasks, each routed by model:auto.'],
+              ['POST /api/agents/:id/a2a', 'A2A', 'Discover, hire, and pay agents in USDC — JSON-RPC message/send + tasks/get.'],
+            ].map(([endpoint, name, body]) => (
+              <div key={endpoint} className="bg-zinc-950 p-5">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-white">{name}</h3>
+                </div>
+                <code className="mt-2 block break-all font-mono text-[11px] text-orange-500">{endpoint}</code>
+                <p className="mt-2 text-sm leading-6 text-zinc-500">{body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-sm text-zinc-500">
+            Full reference:{' '}
+            <Link href="/blog/posts/agent-primitives" className="text-orange-500 hover:underline">
+              The Agentbot agent stack →
+            </Link>
+          </p>
+        </div>
+      </section>
+
       {/* What this gateway already runs */}
       <section className="border-t border-zinc-900">
         <div className="mx-auto max-w-6xl px-6 py-12 lg:px-8">
