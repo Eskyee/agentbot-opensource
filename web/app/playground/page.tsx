@@ -71,7 +71,16 @@ type PlaygroundProject = {
   deploymentState?: string
   generation: PlaygroundGeneration | null
   messages?: ChatMessage[]
+  history?: GenerationSnapshot[]
 }
+
+type GenerationSnapshot = {
+  at: number
+  label: string
+  generation: PlaygroundGeneration
+}
+
+const MAX_HISTORY = 20
 
 type PlaygroundResponse = {
   provider: string
@@ -237,7 +246,7 @@ const PLAYGROUND_PROMISE = 'Build and publish Vite + React apps with OpenClaude,
 
 type Viewport = keyof typeof VIEWPORTS
 type Pane = 'preview' | 'code'
-type View = 'builder' | 'templates' | 'apps' | 'projects' | 'publish'
+type View = 'builder' | 'templates' | 'apps' | 'projects' | 'publish' | 'history'
 type ConsoleLevel = 'all' | 'error' | 'warn' | 'log'
 type ConsoleEntry = {
   level: Exclude<ConsoleLevel, 'all'>
@@ -487,6 +496,8 @@ export default function PlaygroundPage() {
   const [hydrated, setHydrated] = useState(false)
   const [storage, setStorage] = useState<'local' | 'server'>('local')
   const [shareCopied, setShareCopied] = useState(false)
+  // Bumped to force the live workbench to remount after a history restore
+  const [restoreNonce, setRestoreNonce] = useState(0)
 
   useEffect(() => {
     setSessionId(createSessionId())
@@ -1026,6 +1037,17 @@ export default function PlaygroundPage() {
     )))
   }
 
+  /** Snapshot the current generation into history before it's replaced (undo). */
+  function snapshotForHistory(project: PlaygroundProject, label: string): GenerationSnapshot[] | undefined {
+    if (!project.generation) return project.history
+    const snap: GenerationSnapshot = {
+      at: Date.now(),
+      label: label.slice(0, 80),
+      generation: project.generation,
+    }
+    return [snap, ...(project.history ?? [])].slice(0, MAX_HISTORY)
+  }
+
   function finishGeneration(data: PlaygroundResponse, cleanPrompt: string) {
     if (!activeProject) return
     const nextName = activeProject.name === 'untitled'
@@ -1039,9 +1061,28 @@ export default function PlaygroundPage() {
       name: nextName,
       status: activeProject.status === 'PUBLISHED' ? 'PUBLISHED' : 'IDLE',
       lastActive: 'now',
+      // Keep the previous version so users can roll back
+      history: snapshotForHistory(activeProject, cleanPrompt || activeProject.generation?.title || 'edit'),
     }, { prompt: cleanPrompt, provider: data.provider, model: data.model })
     setSelectedFile(data.generation.files.find((file) => file.path === 'src/App.tsx')?.path ?? data.generation.files[0]?.path ?? '.gitignore')
     appendMessage({ role: 'assistant', content: `${data.generation.title} — ${data.generation.summary}`, at: Date.now() })
+  }
+
+  /** Roll back to a snapshot. The current version is itself snapshotted first,
+   *  so restoring is undoable too. */
+  function restoreSnapshot(at: number) {
+    if (!activeProject) return
+    const snap = activeProject.history?.find((s) => s.at === at)
+    if (!snap) return
+    updateActiveProject({
+      generation: snap.generation,
+      lastActive: 'now',
+      history: snapshotForHistory(activeProject, `before restore · ${new Date(snap.at).toLocaleTimeString()}`),
+    })
+    setSelectedFile('src/App.tsx')
+    setRestoreNonce((v) => v + 1)
+    setView('builder')
+    setPane('preview')
   }
 
   /** Follow-up prompts iterate on the current (possibly hand-edited) app files. */
@@ -1290,6 +1331,15 @@ export default function PlaygroundPage() {
             <button type="button" onClick={() => setView('templates')} className="px-2 py-1 hover:text-white">Templates</button>
             <button type="button" onClick={() => setView('apps')} className="px-2 py-1 hover:text-white">Apps</button>
             <button type="button" onClick={() => setView('projects')} className="px-2 py-1 hover:text-white">Projects</button>
+            <button
+              type="button"
+              onClick={() => setView('history')}
+              disabled={!activeProject?.history?.length}
+              className="px-2 py-1 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              title="Roll back to a previous version"
+            >
+              History{activeProject?.history?.length ? ` · ${activeProject.history.length}` : ''}
+            </button>
             <button type="button" onClick={() => setView('publish')} className="px-2 py-1 hover:text-white">Publish</button>
             <button
               type="button"
@@ -1326,6 +1376,12 @@ export default function PlaygroundPage() {
         />
       ) : view === 'apps' ? (
         <AppsView projects={publishedProjects} onOpen={openProject} onPublish={() => setView('publish')} onDownload={downloadProject} onRemix={remixProject} />
+      ) : view === 'history' ? (
+        <HistoryView
+          history={activeProject?.history ?? []}
+          onRestore={restoreSnapshot}
+          onBack={() => setView('builder')}
+        />
       ) : view === 'publish' ? (
         <PublishView
           project={activeProject}
@@ -1363,7 +1419,7 @@ export default function PlaygroundPage() {
           storage={storage}
           submit={submit}
           onDownload={() => downloadProject()}
-          workbenchKey={activeProjectId}
+          workbenchKey={`${activeProjectId}:${restoreNonce}`}
           onWorkbenchEdit={handleWorkbenchEdit}
           messages={activeProject?.messages ?? []}
           setModel={setModel}
@@ -2181,6 +2237,57 @@ function ProjectsView({
           </div>
         ))}
       </div>
+    </section>
+  )
+}
+
+function HistoryView({
+  history,
+  onRestore,
+  onBack,
+}: {
+  history: GenerationSnapshot[]
+  onRestore: (at: number) => void
+  onBack: () => void
+}) {
+  return (
+    <section className="max-w-3xl px-6 py-10">
+      <button onClick={onBack} className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400">← Builder</button>
+      <h1 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Version history</h1>
+      <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-500">
+        Every generation and AI edit is snapshotted automatically. Roll back to any previous version
+        — restoring is itself undoable, so you never lose work. Keeps the last {MAX_HISTORY} versions
+        on this device.
+      </p>
+
+      {history.length === 0 ? (
+        <div className="mt-8 border border-zinc-900 p-8 text-center text-sm text-zinc-600">
+          No history yet. Build or edit an app and previous versions will appear here.
+        </div>
+      ) : (
+        <div className="mt-8 space-y-px bg-zinc-900">
+          {history.map((snap, i) => (
+            <div key={snap.at} className="flex items-center justify-between gap-4 bg-black p-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-widest text-orange-500">
+                    {i === 0 ? 'Most recent' : `#${history.length - i}`}
+                  </span>
+                  <span className="text-[10px] text-zinc-600">{new Date(snap.at).toLocaleString()}</span>
+                </div>
+                <div className="mt-1 truncate text-sm text-zinc-300">{snap.generation.title}</div>
+                <div className="truncate text-xs text-zinc-600">{snap.label}</div>
+              </div>
+              <button
+                onClick={() => onRestore(snap.at)}
+                className="shrink-0 border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:border-orange-500 hover:text-orange-500"
+              >
+                Restore
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
