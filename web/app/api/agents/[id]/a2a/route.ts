@@ -30,6 +30,7 @@ import {
   completeTask,
   failTask,
   toA2ATask,
+  recordCompletion,
 } from '@/app/lib/a2a-tasks'
 
 // USDC contract per chain (smallest unit; USDC = 6 decimals)
@@ -239,6 +240,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         await markWorking(task.id)
         const reply = await runAgentTask(agent, taskText)
         await completeTask(task.id, reply)
+        await recordCompletion(agent.id, !!wallet)
       } catch (error) {
         await failTask(task.id, error instanceof Error ? error.message : 'task failed')
       }
@@ -249,6 +251,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // Blocking mode: run synchronously and return the completed task.
   try {
     const replyText = await runAgentTask(agent, taskText)
+    await recordCompletion(agent.id, !!wallet)
     const now = new Date().toISOString()
     return rpcResult(rpcId, {
       id: `task-${Date.now().toString(36)}`,

@@ -93,6 +93,64 @@ export async function failTask(id: string, error: string): Promise<void> {
   if (t) await putTask({ ...t, state: 'failed', error })
 }
 
+/**
+ * Durable on-chain-anchored reputation. Unlike task state (TTL'd), these
+ * counters never expire — they're the agent's earned track record. `paid`
+ * counts tasks that cleared the x402 gate, so reputation reflects real,
+ * settled work that can't be faked or ported to a competitor.
+ */
+export type AgentReputation = { completed: number; paid: number; lastAt: string | null }
+
+const repMem = new Map<string, AgentReputation>()
+function repKey(agentId: string): string {
+  return `a2a:rep:${agentId}`
+}
+
+export async function recordCompletion(agentId: string, paid: boolean): Promise<void> {
+  const now = new Date().toISOString()
+  if (redis) {
+    try {
+      await redis.hincrby(repKey(agentId), 'completed', 1)
+      if (paid) await redis.hincrby(repKey(agentId), 'paid', 1)
+      await redis.hset(repKey(agentId), { lastAt: now })
+      return
+    } catch {
+      /* fall through to memory */
+    }
+  }
+  const cur = repMem.get(agentId) ?? { completed: 0, paid: 0, lastAt: null }
+  repMem.set(agentId, { completed: cur.completed + 1, paid: cur.paid + (paid ? 1 : 0), lastAt: now })
+}
+
+export async function getReputation(agentId: string): Promise<AgentReputation> {
+  if (redis) {
+    try {
+      const h = await redis.hgetall<Record<string, string>>(repKey(agentId))
+      if (h) {
+        return {
+          completed: Number(h.completed ?? 0) || 0,
+          paid: Number(h.paid ?? 0) || 0,
+          lastAt: typeof h.lastAt === 'string' ? h.lastAt : null,
+        }
+      }
+    } catch {
+      /* fall through to memory */
+    }
+  }
+  return repMem.get(agentId) ?? { completed: 0, paid: 0, lastAt: null }
+}
+
+/** Fetch reputation for many agents at once (directory ranking). */
+export async function getReputations(agentIds: string[]): Promise<Map<string, AgentReputation>> {
+  const out = new Map<string, AgentReputation>()
+  await Promise.all(
+    agentIds.map(async (id) => {
+      out.set(id, await getReputation(id))
+    }),
+  )
+  return out
+}
+
 /** Shape a stored task as an A2A Task object for JSON-RPC responses. */
 export function toA2ATask(task: A2ATask) {
   return {

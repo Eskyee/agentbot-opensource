@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/app/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { normalizeGeneration, isMissingPlaygroundProjectTable, formatLastActive } from '@/app/api/playground/projects/_shared'
 
 export const runtime = 'nodejs'
@@ -33,7 +34,7 @@ async function loadSharedApps(): Promise<SharedApp[]> {
     .findMany({
       where: {
         status: { not: 'ARCHIVED' },
-        generation: { not: null },
+        generation: { not: Prisma.DbNull },
       },
       select: {
         id: true,
