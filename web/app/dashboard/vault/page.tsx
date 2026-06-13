@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Upload, File, Trash2, Download, Eye, Folder, Search, Lock } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Upload, File, Trash2, Folder, Search, Lock, Eye, Loader2 } from 'lucide-react'
 
 interface VaultFile {
   id: string
@@ -16,15 +16,21 @@ interface VaultFile {
 const CATEGORIES = ['All', 'Contracts', 'Invoices', 'Receipts', 'Documents', 'Other']
 
 export default function VaultPage() {
-  const [files, setFiles] = useState<VaultFile[]>([
-    { id: '1', name: 'Service Agreement - Q1 2026.pdf', size: 245000, type: 'application/pdf', category: 'Contracts', uploadedAt: '2026-06-10', encrypted: true },
-    { id: '2', name: 'Invoice INV-0042.pdf', size: 128000, type: 'application/pdf', category: 'Invoices', uploadedAt: '2026-06-09', encrypted: true },
-    { id: '3', name: 'AWS Receipt May 2026.pdf', size: 89000, type: 'application/pdf', category: 'Receipts', uploadedAt: '2026-06-05', encrypted: true },
-  ])
+  const [files, setFiles] = useState<VaultFile[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('All')
   const [search, setSearch] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [notice, setNotice] = useState('')
   const fileInput = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetch('/api/vault')
+      .then((r) => r.json())
+      .then((d) => { if (d.ok && Array.isArray(d.files)) setFiles(d.files) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   const filtered = files.filter((f) => {
     const matchCategory = activeCategory === 'All' || f.category === activeCategory
@@ -38,26 +44,44 @@ export default function VaultPage() {
     return `${(bytes / 1048576).toFixed(1)} MB`
   }
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploaded = e.target.files
-    if (!uploaded) return
+    if (!uploaded || uploaded.length === 0) return
     setUploading(true)
-    setTimeout(() => {
-      const newFiles: VaultFile[] = Array.from(uploaded).map((f) => ({
-        id: String(Date.now() + Math.random()),
-        name: f.name,
-        size: f.size,
-        type: f.type,
-        category: 'Other',
-        uploadedAt: new Date().toISOString().split('T')[0],
-        encrypted: true,
-      }))
-      setFiles((prev) => [...newFiles, ...prev])
+    setNotice('')
+    const category = activeCategory === 'All' ? 'Other' : activeCategory
+    try {
+      for (const f of Array.from(uploaded)) {
+        const fd = new FormData()
+        fd.append('file', f)
+        fd.append('category', category)
+        const res = await fetch('/api/vault', { method: 'POST', body: fd })
+        const data = await res.json()
+        if (res.ok && data.ok) {
+          setFiles((prev) => [data.file, ...prev])
+        } else {
+          setNotice(data.error || 'Upload failed')
+        }
+      }
+    } catch {
+      setNotice('Upload failed — please try again')
+    } finally {
       setUploading(false)
-    }, 1000)
+      if (fileInput.current) fileInput.current.value = ''
+    }
   }
 
-  const deleteFile = (id: string) => setFiles((prev) => prev.filter((f) => f.id !== id))
+  const openFile = (id: string) => window.open(`/api/vault/${id}`, '_blank')
+
+  const deleteFile = async (id: string) => {
+    if (!confirm('Delete this file permanently?')) return
+    setFiles((prev) => prev.filter((f) => f.id !== id))
+    try {
+      await fetch(`/api/vault/${id}`, { method: 'DELETE' })
+    } catch {
+      // best-effort; list already updated optimistically
+    }
+  }
 
   return (
     <main className="min-h-screen bg-black text-white font-mono pt-14">
@@ -67,12 +91,18 @@ export default function VaultPage() {
             <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600 mb-2">Storage</div>
             <h1 className="text-3xl font-bold uppercase tracking-tight">Vault</h1>
           </div>
-          <button onClick={() => fileInput.current?.click()} className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors">
-            <Upload className="h-4 w-4" />
-            Upload
+          <button onClick={() => fileInput.current?.click()} disabled={uploading} className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50">
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            {uploading ? 'Uploading' : 'Upload'}
           </button>
           <input ref={fileInput} type="file" multiple onChange={handleUpload} className="hidden" />
         </div>
+
+        {notice && (
+          <div className="mb-6 rounded-xl border border-yellow-800 bg-yellow-950/20 p-4 text-xs text-yellow-300">
+            {notice}
+          </div>
+        )}
 
         {/* Search */}
         <div className="relative mb-6">
@@ -107,10 +137,15 @@ export default function VaultPage() {
 
         {/* File List */}
         <div className="space-y-2">
-          {filtered.length === 0 && (
+          {loading && (
+            <div className="text-center py-12 text-zinc-600 flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading vault…
+            </div>
+          )}
+          {!loading && filtered.length === 0 && (
             <div className="text-center py-12 text-zinc-600">
               <Folder className="h-12 w-12 mx-auto mb-4 opacity-30" />
-              <p className="text-sm">No files found.</p>
+              <p className="text-sm">{files.length === 0 ? 'Your vault is empty. Upload a document to get started.' : 'No files match your search.'}</p>
             </div>
           )}
           {filtered.map((file) => (
@@ -126,8 +161,8 @@ export default function VaultPage() {
                 <div className="text-xs text-zinc-500 mt-0.5">{formatSize(file.size)} · {file.category} · {file.uploadedAt}</div>
               </div>
               <div className="flex items-center gap-2">
-                <button className="p-2 text-zinc-600 hover:text-white transition-colors"><Download className="h-4 w-4" /></button>
-                <button onClick={() => deleteFile(file.id)} className="p-2 text-zinc-600 hover:text-red-400 transition-colors"><Trash2 className="h-4 w-4" /></button>
+                <button onClick={() => openFile(file.id)} title="Open / download" className="p-2 text-zinc-600 hover:text-white transition-colors"><Eye className="h-4 w-4" /></button>
+                <button onClick={() => deleteFile(file.id)} title="Delete" className="p-2 text-zinc-600 hover:text-red-400 transition-colors"><Trash2 className="h-4 w-4" /></button>
               </div>
             </div>
           ))}
