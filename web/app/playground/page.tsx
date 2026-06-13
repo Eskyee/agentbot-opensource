@@ -356,6 +356,8 @@ export default function PlaygroundPage() {
   const [isPublishing, setIsPublishing] = useState(false)
   const [isRefreshingPublish, setIsRefreshingPublish] = useState(false)
   const [isPushingGitlawb, setIsPushingGitlawb] = useState(false)
+  const [isSandboxing, setIsSandboxing] = useState(false)
+  const [sandboxUrl, setSandboxUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [publishError, setPublishError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState('LOCAL')
@@ -641,6 +643,44 @@ export default function PlaygroundPage() {
       setPublishError(err instanceof Error ? err.message : 'Publish failed')
     } finally {
       setIsPublishing(false)
+    }
+  }
+
+  async function openInSandbox() {
+    if (!activeProject?.generation) return
+
+    setIsSandboxing(true)
+    setPublishError(null)
+    setSandboxUrl(null)
+
+    try {
+      const response = await fetch('/api/playground/sandbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: activeProject.name,
+          files: activeProject.generation.files,
+        }),
+      })
+
+      if (response.status === 401) {
+        setPublishError('Sign in to open a full sandbox.')
+        return
+      }
+      if (response.status === 403) {
+        setPublishError('Subscribe to open a full sandbox. Free tier uses the in-browser preview.')
+        return
+      }
+
+      const body = await response.json()
+      if (!response.ok) throw new Error(body?.error || 'Failed to create sandbox')
+
+      setSandboxUrl(body.editorUrl)
+      window.open(body.editorUrl, '_blank')
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : 'Sandbox creation failed')
+    } finally {
+      setIsSandboxing(false)
     }
   }
 
@@ -1004,10 +1044,13 @@ export default function PlaygroundPage() {
           onGitlawbPush={pushProjectToGitlawb}
           onRefresh={refreshPublishedProject}
           onOpen={() => setView('builder')}
+          onOpenSandbox={openInSandbox}
           isPublishing={isPublishing}
           isPushingGitlawb={isPushingGitlawb}
           isRefreshing={isRefreshingPublish}
+          isSandboxing={isSandboxing}
           publishError={publishError}
+          sandboxUrl={sandboxUrl}
         />
       ) : (
         <BuilderView
@@ -1854,20 +1897,26 @@ function PublishView({
   onGitlawbPush,
   onRefresh,
   onOpen,
+  onOpenSandbox,
   isPublishing,
   isPushingGitlawb,
   isRefreshing,
+  isSandboxing,
   publishError,
+  sandboxUrl,
 }: {
   project: PlaygroundProject | undefined
   onPublish: () => Promise<void>
   onGitlawbPush: () => Promise<void>
   onRefresh: () => Promise<void>
   onOpen: () => void
+  onOpenSandbox: () => Promise<void>
   isPublishing: boolean
   isPushingGitlawb: boolean
   isRefreshing: boolean
+  isSandboxing: boolean
   publishError: string | null
+  sandboxUrl: string | null
 }) {
   const canPublish = Boolean(project?.generation)
 
@@ -1958,6 +2007,28 @@ function PublishView({
           >
             Open builder
           </button>
+          <div className="mt-4 border-t border-zinc-900 pt-4">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Full Sandbox (Paid)</div>
+            <button
+              type="button"
+              onClick={() => void onOpenSandbox()}
+              disabled={!canPublish || isSandboxing}
+              className="w-full border border-zinc-800 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:border-zinc-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {isSandboxing ? 'Creating sandbox…' : 'Open in CodeSandbox'}
+            </button>
+            {sandboxUrl && (
+              <a
+                href={sandboxUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 block text-center text-[10px] uppercase tracking-widest text-green-500 hover:text-green-400"
+              >
+                {sandboxUrl}
+                <ExternalLink className="ml-1 inline h-3 w-3" />
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </section>
