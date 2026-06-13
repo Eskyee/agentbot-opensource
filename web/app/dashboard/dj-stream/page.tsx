@@ -809,6 +809,28 @@ export default function DJStreamPage() {
                   </div>
                 ))}
               </div>
+              <div className="overflow-x-auto mt-3">
+                <svg viewBox="0 0 500 52" className="w-full min-w-[320px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="0" y="8" width="110" height="36" fill="#09090b" stroke="#27272a" strokeWidth="1"/>
+                  <text x="55" y="21" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#52525b" letterSpacing="2">SOURCE</text>
+                  <text x="55" y="35" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#a1a1aa">CDJ / XDJ</text>
+                  <line x1="110" y1="26" x2="126" y2="26" stroke="#3f3f46" strokeWidth="1"/>
+                  <polygon points="122,23 128,26 122,29" fill="#3f3f46"/>
+                  <rect x="130" y="8" width="110" height="36" fill="#09090b" stroke="#27272a" strokeWidth="1"/>
+                  <text x="185" y="21" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#52525b" letterSpacing="2">MIXER</text>
+                  <text x="185" y="35" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#a1a1aa">Master Out</text>
+                  <line x1="240" y1="26" x2="256" y2="26" stroke="#3f3f46" strokeWidth="1"/>
+                  <polygon points="252,23 258,26 252,29" fill="#3f3f46"/>
+                  <rect x="260" y="8" width="110" height="36" fill="#09090b" stroke="#27272a" strokeWidth="1"/>
+                  <text x="315" y="21" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#52525b" letterSpacing="2">ENCODER</text>
+                  <text x="315" y="35" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#a1a1aa">OBS / RTMP</text>
+                  <line x1="370" y1="26" x2="386" y2="26" stroke="#f97316" strokeWidth="1" strokeDasharray="3 2"/>
+                  <polygon points="382,23 388,26 382,29" fill="#f97316"/>
+                  <rect x="390" y="8" width="110" height="36" fill="#09090b" stroke="#27272a" strokeWidth="1"/>
+                  <text x="445" y="21" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#52525b" letterSpacing="2">STATION</text>
+                  <text x="445" y="35" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#a1a1aa">baseFM / Relays</text>
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -1039,6 +1061,42 @@ export default function DJStreamPage() {
               title="Station Health"
               description="Agentbot is the main station. Relays like basefm.space sit downstream and are tracked separately."
             />
+
+            <div className="mb-4 border border-zinc-800 bg-black p-4">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Simulcast Fan-Out</div>
+              <div className="overflow-x-auto">
+                <svg viewBox="0 0 460 150" className="w-full min-w-[340px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                  {/* Encoder */}
+                  <rect x="4" y="58" width="96" height="34" fill="#09090b" stroke="#27272a" strokeWidth="1"/>
+                  <text x="52" y="71" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#52525b" letterSpacing="1.5">ENCODER</text>
+                  <text x="52" y="84" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#a1a1aa">OBS</text>
+                  {/* Encoder -> Relay */}
+                  <line x1="100" y1="75" x2="156" y2="75" stroke="#3f3f46" strokeWidth="1"/>
+                  <polygon points="152,72 158,75 152,78" fill="#3f3f46"/>
+                  {/* Relay Server */}
+                  <rect x="160" y="56" width="110" height="38" fill="#09090b" stroke="#10b981" strokeWidth="1"/>
+                  <text x="215" y="70" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#10b981" letterSpacing="1.5">RELAY SERVER</text>
+                  <text x="215" y="83" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#a1a1aa">Single RTMP in</text>
+                  {/* Fan-out lines */}
+                  <line x1="270" y1="65" x2="330" y2="26" stroke="#f97316" strokeWidth="1" strokeDasharray="3 2"/>
+                  <polygon points="326,24 333,24 329,30" fill="#f97316"/>
+                  <line x1="270" y1="75" x2="330" y2="75" stroke="#f97316" strokeWidth="1" strokeDasharray="3 2"/>
+                  <polygon points="326,72 332,75 326,78" fill="#f97316"/>
+                  <line x1="270" y1="85" x2="330" y2="124" stroke="#f97316" strokeWidth="1" strokeDasharray="3 2"/>
+                  <polygon points="326,120 333,126 329,127" fill="#f97316"/>
+                  {/* Destinations */}
+                  <rect x="334" y="10" width="120" height="30" fill="#09090b" stroke="#27272a" strokeWidth="1"/>
+                  <text x="394" y="29" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#a1a1aa">Mux / baseFM</text>
+                  <rect x="334" y="60" width="120" height="30" fill="#09090b" stroke="#27272a" strokeWidth="1"/>
+                  <text x="394" y="79" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#a1a1aa">X (Twitter) Live</text>
+                  <rect x="334" y="110" width="120" height="30" fill="#09090b" stroke="#27272a" strokeWidth="1"/>
+                  <text x="394" y="129" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#a1a1aa">YouTube Live</text>
+                </svg>
+              </div>
+              <p className="mt-2 text-xs text-zinc-500">
+                One OBS output to the relay server fans out to Mux, X, and YouTube — no per-platform encoder.
+              </p>
+            </div>
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-zinc-800">

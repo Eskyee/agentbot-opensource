@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthSession } from '@/app/lib/getAuthSession';
 
 const CDP_API_KEY_NAME = process.env.CDP_API_KEY_NAME;
 const CDP_API_KEY_PRIVATE_KEY = process.env.CDP_API_KEY_PRIVATE_KEY;
@@ -40,16 +41,24 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { action, fromToken, toToken, fromAmount, walletAddress, slippageBps } = await req.json();
+  let body: { action?: string; fromToken?: string; toToken?: string; fromAmount?: string; walletAddress?: string; slippageBps?: number };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+  const { action, fromToken, toToken, fromAmount, walletAddress, slippageBps } = body;
 
   if (!CDP_API_KEY_NAME || !CDP_API_KEY_PRIVATE_KEY) {
     return NextResponse.json({ error: 'CDP not configured' }, { status: 500 });
   }
 
-  // Auth check for swap execution
+  // Auth check for swap execution — require authenticated session
   if (action === 'swap') {
-    // TODO: Add session auth check when next-auth is configured
-    // For now, require walletAddress to be provided
+    const session = await getAuthSession();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     if (!walletAddress) {
       return NextResponse.json({ error: 'walletAddress required for swap' }, { status: 400 });
     }
@@ -62,15 +71,19 @@ export async function POST(req: NextRequest) {
 
     if (action === 'quote') {
       // Get swap price estimate
-      const fromMeta = TOKEN_META[fromToken];
-      const toMeta = TOKEN_META[toToken];
+      const fromMeta = TOKEN_META[fromToken ?? ''];
+      const toMeta = TOKEN_META[toToken ?? ''];
 
       if (!fromMeta || !toMeta) {
         return NextResponse.json({ error: 'Unknown token' }, { status: 400 });
       }
 
       // Convert human amount to raw amount
-      const rawAmount = BigInt(Math.floor(parseFloat(fromAmount) * Math.pow(10, fromMeta.decimals)));
+      const parsedAmount = parseFloat(fromAmount ?? '');
+      if (!isFinite(parsedAmount) || parsedAmount <= 0) {
+        return NextResponse.json({ error: 'Invalid fromAmount' }, { status: 400 });
+      }
+      const rawAmount = BigInt(Math.floor(parsedAmount * Math.pow(10, fromMeta.decimals)));
 
       const swapPrice = await cdp.evm.getSwapPrice({
         fromToken: fromToken,
@@ -93,8 +106,8 @@ export async function POST(req: NextRequest) {
 
     if (action === 'preview') {
       // Dry-run: build calldata without submitting
-      const fromMeta = TOKEN_META[fromToken];
-      const toMeta = TOKEN_META[toToken];
+      const fromMeta = TOKEN_META[fromToken ?? ''];
+      const toMeta = TOKEN_META[toToken ?? ''];
 
       if (!fromMeta || !toMeta) {
         return NextResponse.json({ error: 'Unknown token' }, { status: 400 });
@@ -104,7 +117,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'walletAddress required for preview' }, { status: 400 });
       }
 
-      const rawAmount = BigInt(Math.floor(parseFloat(fromAmount) * Math.pow(10, fromMeta.decimals)));
+      const parsedAmountPreview = parseFloat(fromAmount ?? '');
+      if (!isFinite(parsedAmountPreview) || parsedAmountPreview <= 0) {
+        return NextResponse.json({ error: 'Invalid fromAmount' }, { status: 400 });
+      }
+      const rawAmount = BigInt(Math.floor(parsedAmountPreview * Math.pow(10, fromMeta.decimals)));
 
       // Get quote first to verify liquidity
       const swapPrice = await cdp.evm.getSwapPrice({
@@ -154,8 +171,15 @@ export async function POST(req: NextRequest) {
       // Execute swap via CDP account
       const account = await cdp.evm.getOrCreateAccount({ name: 'AgentbotSwap' });
 
-      const fromMeta = TOKEN_META[fromToken];
-      const rawAmount = BigInt(Math.floor(parseFloat(fromAmount) * Math.pow(10, fromMeta.decimals)));
+      const fromMeta = TOKEN_META[fromToken ?? ''];
+      if (!fromMeta) {
+        return NextResponse.json({ error: 'Unknown token' }, { status: 400 });
+      }
+      const parsedAmountSwap = parseFloat(fromAmount ?? '');
+      if (!isFinite(parsedAmountSwap) || parsedAmountSwap <= 0) {
+        return NextResponse.json({ error: 'Invalid fromAmount' }, { status: 400 });
+      }
+      const rawAmount = BigInt(Math.floor(parsedAmountSwap * Math.pow(10, fromMeta.decimals)));
 
       const swapQuote = await account.quoteSwap({
         network: 'base',
