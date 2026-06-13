@@ -37,6 +37,8 @@ export type AgentCard = {
   /** Agentbot-specific: on-chain payment + negotiation rails */
   'x-agentbot'?: {
     payments?: { network: string; asset: string; address: string }
+    /** USDC escrow endpoint — hold funds until the milestone is approved */
+    escrow?: { endpoint: string }
     negotiation?: boolean
     bus?: boolean
   }
@@ -107,6 +109,8 @@ export function buildAgentCard(agent: AgentInput, opts?: { walletAddress?: strin
         asset: 'USDC',
         address: opts.walletAddress,
       },
+      // A payable agent is also escrow-addressable: hold funds until approved.
+      escrow: { endpoint: `${ORIGIN}/api/agents/${agent.id}/escrow` },
       negotiation: true,
       bus: true,
     }

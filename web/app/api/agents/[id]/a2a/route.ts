@@ -23,6 +23,7 @@ import {
 } from '@/app/lib/opengateway'
 import { checkRateLimit } from '@/app/lib/api/rate-limit'
 import { verifyX402Payment } from '@/app/lib/x402-verify'
+import { USDC_BY_NETWORK } from '@/app/lib/usdc'
 import {
   createTask,
   getTask,
@@ -33,11 +34,6 @@ import {
   recordCompletion,
 } from '@/app/lib/a2a-tasks'
 
-// USDC contract per chain (smallest unit; USDC = 6 decimals)
-const USDC_BY_NETWORK: Record<string, { asset: string; caip2: string }> = {
-  base: { asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', caip2: 'eip155:8453' },
-  'base-sepolia': { asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', caip2: 'eip155:84532' },
-}
 // Default A2A task price: 0.001 USDC (6 decimals)
 const A2A_MIN_AMOUNT = 1000n
 

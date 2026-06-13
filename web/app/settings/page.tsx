@@ -17,6 +17,7 @@ import {
   WalletTab,
 } from './tabs'
 import { buildAppUrl } from '@/app/lib/app-url'
+import { EscrowPanel } from './EscrowPanel'
 
 const TABS = [
   { id: 'profile', label: 'Profile', icon: '👤' },
@@ -292,6 +293,8 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 )}
+
+                <EscrowPanel />
 
                 <div className="border border-zinc-800 bg-zinc-950 p-5">
                   <div className="flex items-start justify-between gap-4 mb-4">

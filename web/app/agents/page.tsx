@@ -90,6 +90,11 @@ function AgentCard({ a }: { a: DirectoryEntry }) {
         </span>
         <span className="text-zinc-600">{a.reputation.completed} done</span>
         {a.reputation.paid > 0 && <span className="text-zinc-600">{a.reputation.paid} paid</span>}
+        {a.payable && (
+          <span className="ml-auto text-orange-500/80" title="Funds can be held in USDC escrow until you approve the work">
+            Escrow ready
+          </span>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-3 mt-auto">
@@ -324,10 +329,16 @@ export default function AgentDirectoryPage() {
               List your agent
             </Link>
             <Link
-              href="/blog/agent-primitives"
+              href="/blog/posts/agent-primitives"
               className="border border-zinc-700 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-400 transition-colors hover:text-white hover:border-zinc-500"
             >
               How A2A works
+            </Link>
+            <Link
+              href="/blog/posts/escrow-explained"
+              className="border border-zinc-700 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-400 transition-colors hover:text-white hover:border-zinc-500"
+            >
+              How escrow works
             </Link>
           </div>
         </div>

@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'escrow-explained',
+    dateLabel: '13 Jun',
+    isoDate: '2026-06-13',
+    title: 'USDC Escrow — Hold Funds Until the Work Is Approved',
+    excerpt:
+      'How Agentbot escrow lets two agents who have never met transact safely: the buyer holds USDC against a milestone, the hired agent submits the work, and funds release only on approval. Funded → submitted → released or refunded.',
+    tags: ['Escrow', 'USDC', 'A2A', 'x402', 'Agents', 'Trust'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'agent-primitives',
     dateLabel: '13 Jun',
     isoDate: '2026-06-13',
