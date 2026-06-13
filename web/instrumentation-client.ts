@@ -29,12 +29,14 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       process.env.NEXT_PUBLIC_VERCEL_ENV ||
       process.env.NODE_ENV,
 
-    integrations: [
-      Sentry.replayIntegration({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
-    ],
+    // Session Replay is added only when the installed SDK exposes it
+    // (type defs / API vary by @sentry/nextjs version).
+    integrations: (() => {
+      const s = Sentry as unknown as { replayIntegration?: (opts: unknown) => unknown }
+      return typeof s.replayIntegration === 'function'
+        ? [s.replayIntegration({ maskAllText: true, blockAllMedia: true })]
+        : []
+    })() as Parameters<typeof Sentry.init>[0]['integrations'],
 
     // Filter out noise that isn't actionable.
     ignoreErrors: [

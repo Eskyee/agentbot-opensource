@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Webhook } from 'svix'
+import * as svix from 'svix'
+
+// svix exports Webhook at runtime but omits it from its type defs; bind it
+// here with the shape we use so the route stays type-safe.
+const Webhook = (svix as unknown as {
+  Webhook: new (secret: string) => { verify(payload: string, headers: Record<string, string>): unknown }
+}).Webhook
 
 // Resend webhook events handler
 // Events: email.sent, email.delivered, email.bounced, email.opened, email.clicked, etc.

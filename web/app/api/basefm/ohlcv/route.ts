@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   try {
     const res = await fetch(
       `https://api.geckoterminal.com/api/v2/networks/base/pools/${BASEFM_POOL}/ohlcv/minute?aggregate=${aggregate}&limit=${limit}`,
-      { next: { reuse: 60 } }
+      { next: { revalidate: 60 } }
     )
 
     if (!res.ok) {

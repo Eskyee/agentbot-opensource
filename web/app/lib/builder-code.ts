@@ -21,7 +21,7 @@ export const wagmiConfig = createConfig({
   connectors: [
     coinbaseWallet({
       appName: 'Agentbot',
-      preference: 'eoaOnly',
+      preference: { options: 'eoaOnly' },
       appLogoUrl: 'https://agentbot.sh/icons/icon-192x192.png',
     }),
   ],

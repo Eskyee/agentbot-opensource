@@ -100,7 +100,7 @@ export default function InvoicePage() {
       })
       const data = await res.json()
       if (data.ok) {
-        setInvoices((prev) => [{ id: data.invoice.id, ...invoice }, ...prev])
+        setInvoices((prev) => [{ ...invoice, id: data.invoice.id } as Invoice, ...prev])
         setShowForm(false)
         setForm({
           invoiceNumber: `INV-${Date.now().toString(36).toUpperCase()}`,

@@ -2,9 +2,6 @@
   "name": "@agentbot/web",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "."
-  ],
   "scripts": {
     "demo": "next dev --hostname 127.0.0.1 --port 3007",
     "dev": "next dev",

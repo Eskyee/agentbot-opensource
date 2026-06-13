@@ -21,12 +21,13 @@ if (process.env.SENTRY_DSN) {
 
     environment: process.env.SENTRY_ENVIRONMENT || process.env.VERCEL_ENV || process.env.NODE_ENV,
 
-    // Auto-instrument Prisma + outgoing fetch + http alongside the existing
-    // @vercel/otel setup. Sentry detects @vercel/otel and integrates with the
-    // same trace context, so we get one unified trace per request.
-    integrations: [
-      Sentry.prismaIntegration(),
-    ],
+    // Tracing is provided by @vercel/otel (one unified trace per request);
+    // Sentry integrates with the same context. Prisma auto-instrumentation is
+    // added when the installed SDK exposes it (type defs lag the runtime).
+    integrations: (() => {
+      const s = Sentry as unknown as { prismaIntegration?: () => unknown }
+      return typeof s.prismaIntegration === 'function' ? [s.prismaIntegration()] : []
+    })() as Parameters<typeof Sentry.init>[0]['integrations'],
 
     // Ignore noisy errors that aren't actionable.
     ignoreErrors: [
@@ -38,7 +39,7 @@ if (process.env.SENTRY_DSN) {
     ],
 
     // Strip out predictable PII before send.
-    beforeSend(event) {
+    beforeSend(event: Sentry.ErrorEvent) {
       if (event.request?.headers) {
         delete event.request.headers['cookie']
         delete event.request.headers['authorization']
