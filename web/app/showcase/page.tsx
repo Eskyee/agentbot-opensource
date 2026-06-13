@@ -93,6 +93,14 @@ export default async function ShowcasePage() {
             autonomous, always-on, and wired into the scene. Our community learning labs span
             London and the USA, giving OpenClaw operators a shared space to build together.
           </p>
+          <div className="mt-6">
+            <Link
+              href="/agents"
+              className="inline-block border border-zinc-700 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-400 transition-colors hover:text-white hover:border-orange-500/50"
+            >
+              Browse the A2A directory →
+            </Link>
+          </div>
         </div>
 
         {failed ? (

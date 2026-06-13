@@ -318,10 +318,10 @@ export default function AgentDirectoryPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/dashboard"
+              href="/settings#showcase"
               className="border border-white bg-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-black transition-colors hover:bg-zinc-200"
             >
-              Go to Dashboard
+              List your agent
             </Link>
             <Link
               href="/blog/agent-primitives"

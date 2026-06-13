@@ -1316,6 +1316,12 @@ export default function PlaygroundPage() {
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto text-[10px] uppercase tracking-widest text-zinc-500 lg:overflow-visible">
+            <a
+              href="/playground/gallery"
+              className="inline-flex items-center gap-1 border border-zinc-800 px-2 py-1 text-zinc-500 hover:text-orange-500 hover:border-orange-500/40 transition-colors shrink-0"
+            >
+              Gallery
+            </a>
             <button
               type="button"
               onClick={() => setAutoApprove((v) => !v)}
