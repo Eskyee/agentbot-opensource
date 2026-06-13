@@ -74,6 +74,7 @@ type PlaygroundResponse = {
   provider: string
   model: string
   generation: PlaygroundGeneration
+  usage?: { remaining: number; limit: number }
 }
 
 type PlaygroundProjectsResponse = {

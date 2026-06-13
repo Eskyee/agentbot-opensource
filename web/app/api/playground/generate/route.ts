@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
+import { getAuthSession } from '@/app/lib/getAuthSession'
+import { prisma } from '@/app/lib/prisma'
+import { checkPlaygroundAllowance, incrementDailyGenerationCount, FREE_DAILY_LIMIT } from '@/app/lib/playground-usage'
 import {
   gatewayUpstreamHeaders,
   normalizeGatewayModel,
@@ -335,13 +338,37 @@ export async function POST(req: NextRequest) {
   // Optional current files → iteration mode (edit instead of regenerate)
   const currentFiles = sanitizeCurrentFiles(body.files)
 
+  // Usage gating: check daily generation limit
+  const session = await getAuthSession()
+  const userId = session?.user?.id
+  const identifier = userId || ip
+
+  let isPaidUser = false
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { subscriptionStatus: true, trialEndsAt: true },
+    })
+    const trialActive = !!(user?.trialEndsAt && user.trialEndsAt > new Date())
+    isPaidUser = user?.subscriptionStatus === 'active' || trialActive
+  }
+
+  const allowance = await checkPlaygroundAllowance(identifier, isPaidUser)
+  if (!allowance.allowed) {
+    return jsonResponse(
+      `Free tier limit reached (${allowance.limit}/day). Subscribe to generate unlimited apps.`,
+      402,
+      { remaining: allowance.remaining, limit: allowance.limit, upgradeUrl: '/pricing' },
+    )
+  }
+
+  // Count this generation attempt (before execution to prevent abuse via retries)
+  const newCount = await incrementDailyGenerationCount(identifier)
+  const remainingAfter = isPaidUser ? Infinity : Math.max(0, FREE_DAILY_LIMIT - newCount)
+
   try {
     if (process.env.PLAYGROUND_ALLOW_LOCAL_MOCK === '1') {
-      return NextResponse.json({
-        provider: 'local-mock',
-        model,
-        generation: localMockGeneration(prompt),
-      })
+      return NextResponse.json({ provider: 'local-mock', model, generation: localMockGeneration(prompt), usage: { remaining: remainingAfter, limit: isPaidUser ? Infinity : FREE_DAILY_LIMIT } })
     }
 
     if (resolvePlaygroundGatewayUpstreams().length > 0) {
@@ -351,7 +378,7 @@ export async function POST(req: NextRequest) {
         try {
           const edited = await generateEditsWithFastApply(prompt, model, currentFiles)
           if (edited) {
-            return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation: edited, mode: 'edit' })
+            return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation: edited, mode: 'edit', usage: { remaining: remainingAfter, limit: isPaidUser ? Infinity : FREE_DAILY_LIMIT } })
           }
         } catch (editError) {
           console.warn('[playground.generate] edit mode failed, regenerating', editError)
@@ -359,7 +386,7 @@ export async function POST(req: NextRequest) {
       }
 
       const generation = await generateWithVercelGateway(prompt, model, currentFiles.length > 0 ? currentFiles : undefined)
-      return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation })
+      return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation, usage: { remaining: remainingAfter, limit: isPaidUser ? Infinity : FREE_DAILY_LIMIT } })
     }
 
     return jsonResponse('Playground model backend is not configured.', 503, {

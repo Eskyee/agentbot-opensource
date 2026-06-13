@@ -231,10 +231,12 @@ export type ErrorInfo = {
   line?: number
 }
 
-/** Surfaces compile/runtime errors for the AI fix loop with file + line context. */
+/** Surfaces compile/runtime errors for the AI fix loop with file + line context.
+ *  Debounced to avoid flashing on transient compile errors during streaming. */
 function ErrorReporter({ onError }: { onError?: (error: ErrorInfo | null) => void }) {
   const { sandpack } = useSandpack()
   const message = sandpack.error?.message ?? null
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const errorInfo = useMemo<ErrorInfo | null>(() => {
     if (!message) return null
@@ -246,7 +248,14 @@ function ErrorReporter({ onError }: { onError?: (error: ErrorInfo | null) => voi
   }, [message, sandpack.error?.path, sandpack.error?.line])
 
   useEffect(() => {
-    onError?.(errorInfo)
+    if (timer.current) clearTimeout(timer.current)
+    // Debounce 800ms — transient errors during streaming won't flash the UI
+    timer.current = setTimeout(() => {
+      onError?.(errorInfo)
+    }, 800)
+    return () => {
+      if (timer.current) clearTimeout(timer.current)
+    }
   }, [errorInfo, onError])
 
   return null
@@ -312,7 +321,6 @@ export default function SandpackWorkbench({
             showOpenInCodeSandbox={false}
             showRefreshButton
             showRestartButton={false}
-            showSandpackErrorOverlay
             className="!h-full !min-h-[420px] flex-1"
           />
           {showConsole && (
