@@ -90,7 +90,7 @@ router.post('/', authenticate, async (req, res) => {
       yaml_config: generateTeamYAML(result.template),
     })
   } catch (err: unknown) {
-    log.error('[TeamProvision] Error:', err)
+    log.error('[TeamProvision] Error:', { error: err instanceof Error ? err.message : String(err) })
     const message = err instanceof Error ? err.message : 'Team provisioning failed'
     res.status(500).json({ error: message })
   }

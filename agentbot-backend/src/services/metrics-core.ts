@@ -50,7 +50,7 @@ export async function recordMetricSample(userId: string): Promise<{ cpu: number;
         `INSERT INTO container_metrics (user_id, container_name, cpu_percent, mem_percent, sampled_at)
          VALUES ($1, $2, $3, $4, NOW())`,
         [userId, containerName, cpu, mem]
-      ).catch((err: Error) => log.error('[Metrics] Failed to write sample:', { error: err.message) })
+      ).catch((err: Error) => log.error('[Metrics] Failed to write sample:', { error: err.message }))
     }
 
     return { cpu, mem };

@@ -498,7 +498,7 @@ router.get('/:id/wallet', async (req: Request, res: Response) => {
     const wallet = await AgentKitService.getOrCreateAgentWallet(userId, agentId);
     res.json({ ok: true, wallet });
   } catch (error: unknown) {
-    log.error('[AgentKit] Wallet error:', error);
+    log.error('[AgentKit] Wallet error:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : 'Wallet error' });
   }
 });
@@ -518,7 +518,7 @@ router.get('/:id/wallet/balance', async (req: Request, res: Response) => {
     const balances = await AgentKitService.getBalances(agentId);
     res.json({ ok: true, balances });
   } catch (error: unknown) {
-    log.error('[AgentKit] Balance error:', error);
+    log.error('[AgentKit] Balance error:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : 'Balance error' });
   }
 });
@@ -543,7 +543,7 @@ router.post('/:id/wallet/send', async (req: Request, res: Response) => {
     const result = await AgentKitService.sendUSDC(agentId, toAddress, amount);
     res.json({ ok: true, ...result });
   } catch (error: unknown) {
-    log.error('[AgentKit] Send error:', error);
+    log.error('[AgentKit] Send error:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({ error: error instanceof Error ? error.message : 'Send error' });
   }
 });

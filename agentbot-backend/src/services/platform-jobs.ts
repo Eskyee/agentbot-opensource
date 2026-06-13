@@ -375,7 +375,7 @@ async function processProvisionJob(job: PlatformJobRow) {
     persistFailure = err instanceof Error ? err.message : String(err);
     log.error(
       `[Platform-jobs] Persist failed for ${payload.agentId} (Railway service is live at ${result.url}); recording orphan_railway_service for manual reconciliation:`,
-      persistFailure
+      { error: persistFailure }
     );
     await pool.query(
       `INSERT INTO treasury_transactions (type, category, action, description, status, metadata)
@@ -556,8 +556,7 @@ export async function processPlatformJobs(maxJobs = 2): Promise<void> {
       const permanent = error instanceof PermanentJobError;
       log.error(
         `[PlatformJobs] Job failed${permanent ? ' (permanent)' : ''}:`,
-        job.id,
-        message
+        { jobId: job.id, error: message }
       );
       await failJob(job, message, permanent);
     }

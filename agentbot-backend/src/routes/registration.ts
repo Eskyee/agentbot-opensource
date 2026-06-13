@@ -46,7 +46,7 @@ router.post('/validate-key', async (req: Request, res: Response) => {
       pool.query(
         'UPDATE api_keys SET last_used_at = NOW() WHERE key_hash = $1',
         [keyHash]
-      ).catch((err: Error) => log.error('[ValidateKey] last_used_at update failed:', { error: err.message) })
+      ).catch((err: Error) => log.error('[ValidateKey] last_used_at update failed:', { error: err.message }))
     }
   } catch (err: any) {
     log.error('[ValidateKey] DB lookup failed:', { error: err.message })
@@ -170,7 +170,7 @@ router.post('/heartbeat', authenticate, async (req: Request, res: Response) => {
     pool.query(
       `UPDATE agent_registrations SET last_seen = NOW(), status = 'active' WHERE user_id = $1`,
       [userId]
-    ).catch((err: Error) => log.error('[Heartbeat] DB update failed:', { error: err.message) })
+    ).catch((err: Error) => log.error('[Heartbeat] DB update failed:', { error: err.message }))
   }
 
   res.json({ success: true, timestamp: new Date().toISOString() });

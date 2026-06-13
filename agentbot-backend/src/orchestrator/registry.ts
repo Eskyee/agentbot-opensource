@@ -130,16 +130,7 @@ export class RegistryService implements INetworkManager, IStorageProvider {
       metadata: row.metadata
     };
 
-    // --- Onchain Governance Enforcement ---
-    // If we have a walletAddress in the metadata, dynamically check staking tier
-    const walletAddress = row.metadata?.walletAddress as string | undefined;
-    if (walletAddress) {
-      const dynamicTier = await governance.getResourceTier(walletAddress);
-      if (dynamicTier !== baseInstance.plan) {
-        log.info('Registry', { details: { event: 'dynamic_plan_override', agentId: id, oldPlan: baseInstance.plan, newPlan: dynamicTier } })
-        baseInstance.plan = dynamicTier;
-      }
-    }
+    // Onchain governance enforcement is not yet wired — placeholder for future integration
 
     return baseInstance;
   }

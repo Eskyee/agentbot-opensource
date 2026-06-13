@@ -323,7 +323,7 @@ export class AIProviderService {
         success,
         source,
       ]
-    ).catch((err: Error) => log.error('[AI] Usage logging failed', { error: { message: err.message }) })
+    ).catch((err: Error) => log.error('[AI] Usage logging failed', { error: { message: err.message } }))
   }
 
   /**
@@ -448,7 +448,7 @@ export class AIProviderService {
         throw new Error(`Vercel AI Gateway chat failed: ${response.status}`);
       }
 
-      const data = await response.json() as { usage?: { prompt_tokens?: number; completion_tokens?: number }; choices?: Array<{ message?: { content?: string } }> };
+      const data = await response.json() as { id?: string; usage?: { prompt_tokens?: number; completion_tokens?: number }; choices?: Array<{ message?: { content?: string } }> };
       success = true;
       const latencyMs = Date.now() - startMs;
 

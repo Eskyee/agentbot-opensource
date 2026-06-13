@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { authenticate } from '../middleware/authenticate';
-import { getContainerName, containerStatus, sanitizeAgentId, ensureDataDirs, OPENCLAW_IMAGE } from '../lib/docker';
+import { getContainerName, containerStatus, sanitizeAgentId, ensureDataDirs } from '../lib/docker';
+import { DEFAULT_OPENCLAW_IMAGE as OPENCLAW_IMAGE } from '../lib/openclaw-version';
 import { readAgentMetadata, writeAgentMetadata } from '../lib/agent-metadata';
 import { getNextPortAndAssign } from '../lib/ports';
 import { createOpenClawConfig } from '../lib/openclaw-config';

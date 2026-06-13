@@ -1,4 +1,6 @@
-import { keccak256, toUtf8Bytes, verifyMessage as ethersVerifyMessage } from 'ethers';
+import { keccak256 } from '@ethersproject/keccak256';
+import { toUtf8Bytes } from '@ethersproject/strings';
+import { verifyMessage as ethersVerifyMessage } from '@ethersproject/wallet';
 import dotenv from 'dotenv';
 import { pool } from '../lib/db';
 import { log } from '../lib/logger';

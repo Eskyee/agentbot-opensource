@@ -1,4 +1,4 @@
-import { log } from "./lib/logger";
+import { log } from "../logger";
 /**
  * WebSocket Handler — Real-time Permission Notifications
  *

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyMessage, getAddress } from 'ethers';
+import { verifyMessage } from '@ethersproject/wallet';
+import { getAddress } from '@ethersproject/address';
 import { canonicalJsonStringify } from '../utils/canonical-json';
 import { log } from '../lib/logger';
 

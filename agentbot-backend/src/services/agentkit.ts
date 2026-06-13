@@ -5,30 +5,30 @@
  * Provides: wallet creation, USDC transfers, token swaps, balance checks.
  */
 
-import { AgentKit, CdpWalletProvider, walletActionProvider, erc20ActionProvider } from '@coinbase/agentkit';
+import { AgentKit, CdpEvmWalletProvider, walletActionProvider, erc20ActionProvider } from '@coinbase/agentkit';
 import { getVercelAITools } from '@coinbase/agentkit-vercel-ai-sdk';
 import { log } from '../lib/logger';
 import { pool } from '../lib/db';
 
-// Lazy-initialized AgentKit instance
+// Lazy-initialized AgentKit + wallet provider
 let agentKit: AgentKit | null = null;
+let walletProvider: CdpEvmWalletProvider | null = null;
 
-async function getAgentKit(): Promise<AgentKit> {
-  if (agentKit) return agentKit;
+async function getAgentKit(): Promise<{ kit: AgentKit; wp: CdpEvmWalletProvider }> {
+  if (agentKit && walletProvider) return { kit: agentKit, wp: walletProvider };
 
   const apiKeyId = process.env.CDP_API_KEY_NAME;
-  const privateKey = process.env.CDP_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const apiKeySecret = process.env.CDP_PRIVATE_KEY?.replace(/\\n/g, '\n');
   const walletSecret = process.env.CDP_WALLET_SECRET;
 
-  if (!apiKeyId || !privateKey || !walletSecret) {
+  if (!apiKeyId || !apiKeySecret || !walletSecret) {
     throw new Error('CDP credentials not configured for AgentKit. Set CDP_API_KEY_NAME, CDP_PRIVATE_KEY, CDP_WALLET_SECRET.');
   }
 
-  // Create wallet provider from CDP credentials
-  const walletProvider = await CdpWalletProvider.configure({
-    apiKeyName: apiKeyId,
-    apiKeyPrivateKey: privateKey,
-    chainId: '8453', // Base Mainnet
+  walletProvider = await CdpEvmWalletProvider.configureWithWallet({
+    apiKeyId,
+    apiKeySecret,
+    networkId: 'base-mainnet',
     walletSecret,
   });
 
@@ -40,8 +40,8 @@ async function getAgentKit(): Promise<AgentKit> {
     ],
   });
 
-  log.info('[AgentKit] Initialized with CDP wallet provider on Base Mainnet');
-  return agentKit;
+  log.info('[AgentKit] Initialized with CDP EVM wallet provider on Base Mainnet');
+  return { kit: agentKit, wp: walletProvider };
 }
 
 export interface AgentWalletInfo {
@@ -81,8 +81,8 @@ export class AgentKitService {
     }
 
     // Create new wallet via AgentKit
-    const kit = await getAgentKit();
-    const address = kit.wallet.getAddress();
+    const { wp } = await getAgentKit();
+    const address = wp.getAddress();
 
     // Store in DB
     const result = await pool.query(
@@ -114,12 +114,11 @@ export class AgentKitService {
    * Get balances for an agent's wallet.
    */
   static async getBalances(agentId: string): Promise<WalletBalance[]> {
-    const kit = await getAgentKit();
-    const address = kit.wallet.getAddress();
+    const { wp } = await getAgentKit();
+    const address = wp.getAddress();
 
-    // Get native ETH balance
-    const provider = kit.wallet.getClient();
-    const ethBalance = await provider.getBalance({ address });
+    // Get native ETH balance via public client
+    const ethBalance = await wp.getPublicClient().getBalance({ address: address as `0x${string}` });
 
     const balances: WalletBalance[] = [
       {
@@ -140,7 +139,7 @@ export class AgentKitService {
     toAddress: string,
     amount: string
   ): Promise<{ txHash: string; amount: string; to: string }> {
-    const kit = await getAgentKit();
+    const { wp } = await getAgentKit();
 
     // Use AgentKit's wallet to send USDC
     const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base Mainnet USDC
@@ -150,7 +149,7 @@ export class AgentKitService {
     // Encode ERC-20 transfer
     const data = `0xa9059cbb${toAddress.slice(2).padStart(64, '0')}${rawAmount.toString(16).padStart(64, '0')}`;
 
-    const txHash = await kit.wallet.sendTransaction({
+    const txHash = await wp.sendTransaction({
       to: usdcAddress as `0x${string}`,
       data: data as `0x${string}`,
       value: 0n,
@@ -165,7 +164,7 @@ export class AgentKitService {
    * Get Vercel AI SDK tools for an agent — use with generateText()/streamText().
    */
   static async getAgentTools() {
-    const kit = await getAgentKit();
+    const { kit } = await getAgentKit();
     return getVercelAITools(kit);
   }
 
@@ -176,25 +175,21 @@ export class AgentKitService {
     actionName: string,
     args: Record<string, unknown>
   ): Promise<unknown> {
-    const kit = await getAgentKit();
+    const { kit } = await getAgentKit();
 
-    // Find the action provider that has this action
-    const action = kit.actionProviders
-      .flatMap((p) => p.actions)
-      .find((a) => a.name === actionName);
+    const action = kit.getActions().find((a) => a.name === actionName);
 
     if (!action) {
       throw new Error(`Unknown AgentKit action: ${actionName}`);
     }
 
-    return action.handler(kit.wallet, args);
+    return action.invoke(args);
   }
 
   /**
    * List available AgentKit actions (for agent discovery).
    */
   static listActions(): Array<{ name: string; description: string; inputSchema: unknown }> {
-    // This requires a kit instance — return static info for now
     return [
       {
         name: 'wallet_action',

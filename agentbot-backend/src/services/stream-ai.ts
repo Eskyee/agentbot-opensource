@@ -73,7 +73,8 @@ export async function streamChat(
     const stream = await openrouter.chat.send({
       chatGenerationParams: {
         model: options.model || 'openai/gpt-4o-mini',
-        messages: messages as Array<{ role: string; content: string }>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        messages: messages as any,
         stream: true,
         temperature: options.temperature ?? 0.7,
         maxTokens: options.max_tokens,
@@ -139,7 +140,7 @@ export async function streamChat(
             0, // latency tracked client-side for streaming
           ]
         )
-        .catch((err) => log.error('[StreamAI] Usage logging failed:', { error: err.message) })
+        .catch((err) => log.error('[StreamAI] Usage logging failed:', { error: err.message }))
     }
   } catch (error: any) {
     res.write(

@@ -120,7 +120,7 @@ router.post('/playground/generate', async (req: Request, res: Response) => {
       raw: content,
     });
   } catch (error) {
-    log.error('[openclaude] playground generation failed', error);
+    log.error('[openclaude] playground generation failed', { error: error instanceof Error ? error.message : String(error) });
     res.status(502).json({ error: error instanceof Error ? error.message : 'OpenClaude generation failed' });
   }
 });

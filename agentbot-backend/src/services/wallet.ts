@@ -105,6 +105,7 @@ export class WalletService {
       const account = await client.evm.createAccount({ name: `agent-${agentId}` });
       cdpAccountName = account.name || null;
       cdpAddress = account.address || null;
+      if (!cdpAddress) throw new Error('CDP account creation returned no address');
 
       // 2. Encrypt and store metadata
       const encryptedMetadata = this.encrypt(JSON.stringify({ address: cdpAddress, name: cdpAccountName }));

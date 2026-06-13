@@ -1,4 +1,4 @@
-import { log } from "./lib/logger";
+import { log } from "./logger";
 /**
  * Team Provisioning — Multi-Agent Docker Sandbox
  * 
@@ -623,7 +623,7 @@ export async function provisionTeam(
         container: `${teamId}/${agent.name}`,
       })
     } catch (err) {
-      log.error(`[TeamProvision] Failed to provision agent ${agent.name}:`, err)
+      log.error(`[TeamProvision] Failed to provision agent ${agent.name}:`, { error: err instanceof Error ? err.message : String(err) })
       agents.push({
         container: `${teamId}/${agent.name}`,
         status: 'failed',
