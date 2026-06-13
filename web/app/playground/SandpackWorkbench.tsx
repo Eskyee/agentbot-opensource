@@ -119,6 +119,11 @@ function toSandpackFiles(files: WorkbenchFile[]) {
     if (path) out[path] = { code: file.content }
   }
 
+  // Alias App.css → styles.css so `import './App.css'` resolves correctly
+  if (out['/styles.css'] && !out['/App.css']) {
+    out['/App.css'] = out['/styles.css']
+  }
+
   if (!out['/App.tsx']) {
     out['/App.tsx'] = { code: 'export default function App() {\n  return <p style={{ fontFamily: "monospace", padding: 24 }}>Generate an app to start.</p>\n}\n' }
   }
@@ -142,6 +147,13 @@ function FileUpdater({ files }: { files: WorkbenchFile[] }) {
       const existing = sandpackRef.current.files[path]?.code
       if (existing !== file.content) {
         sandpackRef.current.updateFile(path, file.content)
+      }
+      // Keep App.css alias in sync with styles.css
+      if (path === '/styles.css') {
+        const alias = sandpackRef.current.files['/App.css']
+        if (alias && alias.code !== file.content) {
+          sandpackRef.current.updateFile('/App.css', file.content)
+        }
       }
     }
   }, [files])

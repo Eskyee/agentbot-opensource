@@ -257,8 +257,10 @@ ${isIteration
     : "Build a polished React app from the user's request."} Output:
 - title: short project title
 - summary: one sentence
-- files: array of { path, content }
+- files: array of { path, content } — ORDER MATTERS: list CSS files first, then components (src/components/*), then src/App.tsx LAST
 - console: 3-6 concise build log lines
+
+CRITICAL: In the files array, put src/index.css first, then component files, then src/App.tsx last. App.tsx imports components — wrong order causes "missing module" errors in the live preview.
 
 ${FILE_RULES}
 - Do not include previewHtml.
@@ -288,11 +290,18 @@ Respond in EXACTLY this plain-text format (no markdown, no code fences):
 
 @@@TITLE: <short project title>
 @@@SUMMARY: <one sentence>
-@@@FILE: src/App.tsx
-<complete file content>
 @@@FILE: src/index.css
 <complete file content>
+@@@FILE: src/components/ComponentA.tsx
+<complete file content>
+@@@FILE: src/components/ComponentB.tsx
+<complete file content>
+@@@FILE: src/App.tsx
+<complete file content>
 @@@DONE
+
+CRITICAL ORDER RULE: Output CSS files first, then component files (src/components/*), then App.tsx LAST.
+App.tsx imports the components — if it is output first, the preview will crash with "missing module" errors.
 
 ${FILE_RULES}
 - Every file starts with an @@@FILE: line and runs until the next @@@ marker.
