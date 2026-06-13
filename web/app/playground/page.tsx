@@ -486,6 +486,7 @@ export default function PlaygroundPage() {
   const [sessionId, setSessionId] = useState('LOCAL')
   const [hydrated, setHydrated] = useState(false)
   const [storage, setStorage] = useState<'local' | 'server'>('local')
+  const [shareCopied, setShareCopied] = useState(false)
 
   useEffect(() => {
     setSessionId(createSessionId())
@@ -528,6 +529,43 @@ export default function PlaygroundPage() {
     if (!hydrated) return
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ projects, activeProjectId }))
   }, [projects, activeProjectId, hydrated])
+
+  // ?remix=<id> → load a shared app into a fresh local project (viral entry point)
+  useEffect(() => {
+    if (!hydrated) return
+    const remixId = new URLSearchParams(window.location.search).get('remix')
+    if (!remixId) return
+    let cancelled = false
+    void fetch(`/api/playground/share/${encodeURIComponent(remixId)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.files) return
+        const project: PlaygroundProject = {
+          id: createId(),
+          name: `${(data.name || data.title || 'remix').toString().replace(/-remix$/, '')}-remix`.slice(0, 64),
+          status: 'IDLE',
+          template: 'VITE-REACT-TS',
+          lastActive: 'now',
+          generation: {
+            title: data.title || 'Remixed app',
+            summary: data.summary || '',
+            previewHtml: '',
+            files: data.files,
+            console: [],
+          },
+        }
+        setProjects((current) => [project, ...current])
+        setActiveProjectId(project.id)
+        setSelectedFile('src/App.tsx')
+        setView('builder')
+        // Clean the URL so a refresh doesn't re-remix
+        window.history.replaceState({}, '', '/playground')
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [hydrated])
 
   const activeProject = useMemo(
     () => projects.find((project) => project.id === activeProjectId) ?? projects[0],
@@ -611,6 +649,37 @@ export default function PlaygroundPage() {
       lastActive: 'now',
     })
   }
+
+  function shareProject() {
+    if (!activeProject?.generation) return
+    const url = `${window.location.origin}/playground/s/${activeProject.id}`
+    navigator.clipboard.writeText(url).then(() => {
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 1800)
+    })
+  }
+
+  // Power-user shortcuts: ⌘S save · ⌘D duplicate · ⌘⇧S share
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const mod = e.metaKey || e.ctrlKey
+      if (!mod) return
+      const k = e.key.toLowerCase()
+      if (k === 's' && e.shiftKey) {
+        e.preventDefault()
+        shareProject()
+      } else if (k === 's') {
+        e.preventDefault()
+        if (activeProject) syncProject(activeProject)
+      } else if (k === 'd') {
+        e.preventDefault()
+        if (activeProject?.generation) remixProject(activeProject.id)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProject])
 
   function remixProject(projectId: string) {
     const source = projects.find((item) => item.id === projectId)
@@ -1188,6 +1257,15 @@ export default function PlaygroundPage() {
             <button type="button" onClick={() => setView('apps')} className="px-2 py-1 hover:text-white">Apps</button>
             <button type="button" onClick={() => setView('projects')} className="px-2 py-1 hover:text-white">Projects</button>
             <button type="button" onClick={() => setView('publish')} className="px-2 py-1 hover:text-white">Publish</button>
+            <button
+              type="button"
+              onClick={shareProject}
+              disabled={!activeProject?.generation}
+              className="px-2 py-1 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              title="Copy a public share link"
+            >
+              {shareCopied ? '✓ Link copied' : 'Share'}
+            </button>
             <button type="button" onClick={newProject} className="inline-flex items-center gap-1 border border-zinc-800 px-2 py-1 hover:text-white">
               <Plus className="h-3 w-3" />
               New project
