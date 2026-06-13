@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Playground — Build & publish apps with AI, free | Agentbot',
+  /* v2026.6.13 */
   description:
     'Chat to build a Vite + React app, watch it stream into a live preview, edit the code, and publish to a stable URL — free, powered by Xiaomi MiMo on the Agentbot gateway.',
   openGraph: {
