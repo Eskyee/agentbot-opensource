@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import {
   Archive,
@@ -583,6 +583,62 @@ export default function PlaygroundPage() {
     ? (activeProject?.name || generation?.title || 'untitled')
     : view
 
+  // Refs so keyboard shortcut handler can access latest values without being
+  // listed as useEffect deps (which would re-register the listener on every render).
+  const activeProjectRef = useRef(activeProject)
+  activeProjectRef.current = activeProject
+  const projectsRef = useRef(projects)
+  projectsRef.current = projects
+
+  // Power-user shortcuts: ⌘S save · ⌘D duplicate · ⌘⇧S share
+  // Must be declared before the early return to obey Rules of Hooks.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const mod = e.metaKey || e.ctrlKey
+      if (!mod) return
+      const k = e.key.toLowerCase()
+      const proj = activeProjectRef.current
+      if (k === 's' && e.shiftKey) {
+        e.preventDefault()
+      } else if (k === 's') {
+        e.preventDefault()
+        if (proj) {
+          void persistServerProject(proj)
+            .then((sp) => {
+              if (!sp) return
+              setStorage('server')
+              setProjects((cur) => cur.map((it) => it.id === sp.id ? { ...it, ...sp } : it))
+            })
+            .catch(() => setStorage('local'))
+        }
+      } else if (k === 'd') {
+        e.preventDefault()
+        if (proj?.generation) {
+          const source = projectsRef.current.find((item) => item.id === proj.id)
+          if (source?.generation) {
+            const newProj: PlaygroundProject = {
+              id: createId(),
+              name: `${source.name.replace(/-remix(-\d+)?$/, '')}-remix`.slice(0, 64),
+              status: 'IDLE',
+              template: source.template,
+              lastActive: 'now',
+              generation: { ...source.generation, files: source.generation.files.map((f) => ({ ...f })) },
+              messages: source.messages ? [...source.messages] : undefined,
+            }
+            setProjects((cur) => [newProj, ...cur])
+            setActiveProjectId(newProj.id)
+            setSelectedFile('src/App.tsx')
+            setPane('preview')
+            setView('builder')
+            setError(null)
+          }
+        }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   if (!hydrated) {
     return (
       <main className="min-h-[calc(100vh-6rem)] bg-black text-white font-mono selection:bg-orange-500/30">
@@ -658,28 +714,6 @@ export default function PlaygroundPage() {
       setTimeout(() => setShareCopied(false), 1800)
     })
   }
-
-  // Power-user shortcuts: ⌘S save · ⌘D duplicate · ⌘⇧S share
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      const mod = e.metaKey || e.ctrlKey
-      if (!mod) return
-      const k = e.key.toLowerCase()
-      if (k === 's' && e.shiftKey) {
-        e.preventDefault()
-        shareProject()
-      } else if (k === 's') {
-        e.preventDefault()
-        if (activeProject) syncProject(activeProject)
-      } else if (k === 'd') {
-        e.preventDefault()
-        if (activeProject?.generation) remixProject(activeProject.id)
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeProject])
 
   function remixProject(projectId: string) {
     const source = projects.find((item) => item.id === projectId)
