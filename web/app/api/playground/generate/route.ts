@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { checkPlaygroundAllowance, incrementDailyGenerationCount, FREE_DAILY_LIMIT } from '@/app/lib/playground-usage'
+import { isAdminEmail } from '@/app/lib/admin'
+import { checkPlaygroundAllowance, incrementDailyGenerationCount, FREE_DAILY_LIMIT, ADMIN_DAILY_LIMIT } from '@/app/lib/playground-usage'
 import {
   gatewayUpstreamHeaders,
   normalizeGatewayModel,
@@ -342,6 +343,7 @@ export async function POST(req: NextRequest) {
   const session = await getAuthSession()
   const userId = session?.user?.id
   const identifier = userId || ip
+  const isAdmin = isAdminEmail(session?.user?.email)
 
   let isPaidUser = false
   if (userId) {
@@ -353,7 +355,7 @@ export async function POST(req: NextRequest) {
     isPaidUser = user?.subscriptionStatus === 'active' || trialActive
   }
 
-  const allowance = await checkPlaygroundAllowance(identifier, isPaidUser)
+  const allowance = await checkPlaygroundAllowance(identifier, isPaidUser, isAdmin)
   if (!allowance.allowed) {
     return jsonResponse(
       `Free tier limit reached (${allowance.limit}/day). Subscribe to generate unlimited apps.`,
@@ -364,11 +366,12 @@ export async function POST(req: NextRequest) {
 
   // Count this generation attempt (before execution to prevent abuse via retries)
   const newCount = await incrementDailyGenerationCount(identifier)
-  const remainingAfter = isPaidUser ? Infinity : Math.max(0, FREE_DAILY_LIMIT - newCount)
+  const dailyLimit = isAdmin ? ADMIN_DAILY_LIMIT : isPaidUser ? Infinity : FREE_DAILY_LIMIT
+  const remainingAfter = isAdmin ? Math.max(0, ADMIN_DAILY_LIMIT - newCount) : isPaidUser ? Infinity : Math.max(0, FREE_DAILY_LIMIT - newCount)
 
   try {
     if (process.env.PLAYGROUND_ALLOW_LOCAL_MOCK === '1') {
-      return NextResponse.json({ provider: 'local-mock', model, generation: localMockGeneration(prompt), usage: { remaining: remainingAfter, limit: isPaidUser ? Infinity : FREE_DAILY_LIMIT } })
+      return NextResponse.json({ provider: 'local-mock', model, generation: localMockGeneration(prompt), usage: { remaining: remainingAfter, limit: dailyLimit } })
     }
 
     if (resolvePlaygroundGatewayUpstreams().length > 0) {
@@ -378,7 +381,7 @@ export async function POST(req: NextRequest) {
         try {
           const edited = await generateEditsWithFastApply(prompt, model, currentFiles)
           if (edited) {
-            return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation: edited, mode: 'edit', usage: { remaining: remainingAfter, limit: isPaidUser ? Infinity : FREE_DAILY_LIMIT } })
+            return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation: edited, mode: 'edit', usage: { remaining: remainingAfter, limit: dailyLimit } })
           }
         } catch (editError) {
           console.warn('[playground.generate] edit mode failed, regenerating', editError)
@@ -386,7 +389,7 @@ export async function POST(req: NextRequest) {
       }
 
       const generation = await generateWithVercelGateway(prompt, model, currentFiles.length > 0 ? currentFiles : undefined)
-      return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation, usage: { remaining: remainingAfter, limit: isPaidUser ? Infinity : FREE_DAILY_LIMIT } })
+      return NextResponse.json({ provider: 'vercel-ai-gateway', model, generation, usage: { remaining: remainingAfter, limit: dailyLimit } })
     }
 
     return jsonResponse('Playground model backend is not configured.', 503, {

@@ -2,6 +2,7 @@
  * Playground usage — daily generation counter + gating.
  *
  * Free tier: 3 generations/day (per user or per IP for anonymous).
+ * Admin tier: unlimited (for testing/debugging).
  * Paid tier: unlimited (subscription active).
  *
  * Uses Redis when available, falls back to in-memory Map.
@@ -9,6 +10,7 @@
 import { redis } from '@/app/lib/redis'
 
 export const FREE_DAILY_LIMIT = 3
+export const ADMIN_DAILY_LIMIT = 50
 const REDIS_PREFIX = 'playground:gens:'
 
 /** In-memory fallback when Redis is unavailable. */
@@ -75,9 +77,17 @@ export async function incrementDailyGenerationCount(identifier: string): Promise
 export async function checkPlaygroundAllowance(
   identifier: string,
   isPaidUser: boolean,
+  isAdmin: boolean = false,
 ): Promise<{ allowed: boolean; remaining: number; limit: number }> {
-  if (isPaidUser) {
-    return { allowed: true, remaining: Infinity, limit: Infinity }
+  if (isPaidUser || isAdmin) {
+    const limit = isAdmin ? ADMIN_DAILY_LIMIT : Infinity
+    const count = await getDailyGenerationCount(identifier)
+    const remaining = Math.max(0, limit - count)
+    return {
+      allowed: isAdmin ? count < ADMIN_DAILY_LIMIT : true,
+      remaining: isAdmin ? remaining : Infinity,
+      limit,
+    }
   }
 
   const count = await getDailyGenerationCount(identifier)
