@@ -13,15 +13,18 @@ import {
   ExternalLink,
   FileText,
   Globe2,
+  Layout,
   Maximize2,
   Minus,
   Monitor,
+  Music,
   Plus,
   RotateCw,
   Send,
   Smartphone,
   Tablet,
   Terminal,
+  X,
 } from 'lucide-react'
 import { Spinner } from '@/app/components/ui/spinner'
 import { Kbd } from '@/app/components/ui/kbd'
@@ -84,28 +87,144 @@ type PlaygroundProjectsResponse = {
 
 const STORAGE_KEY = 'agentbot:openclaude-playground:projects:v1'
 
-const EXAMPLES = [
+type Template = {
+  id: string
+  title: string
+  description: string
+  category: 'landing' | 'dashboard' | 'tool' | 'portfolio' | 'agent'
+  icon: typeof Layout
+  prompt: string
+  tags: string[]
+}
+
+const TEMPLATES: Template[] = [
   {
-    title: 'AI startup landing',
-    prompt:
-      'Build a landing page in src/App.tsx for an AI infrastructure startup called Nimbus. Hero with gradient backdrop, three feature cards, a pricing table with three tiers (Free / Pro / Enterprise), a testimonials row, and a footer. Dark theme with subtle gradients in src/index.css. Keep it semantic and accessible.',
+    id: 'scout-agent',
+    title: 'Scout — Research Agent',
+    description: 'Autonomous research dashboard. Web scraping, competitor monitoring, briefing reports.',
+    category: 'agent',
+    icon: Terminal,
+    prompt: 'Build a research agent dashboard in src/App.tsx. Header with agent status (Running/Idle). Three panels: a search input with results list, a briefing generator that shows structured reports, and a monitoring feed with live updates. Include sample research data. Dark theme with green status accents.',
+    tags: ['research', 'monitoring', 'agent'],
   },
   {
-    title: 'Habit tracker',
-    prompt:
-      'Build a single-page habit tracker in src/App.tsx with daily check-ins for 5 sample habits, a 7-day streak visualization (colored squares), and a weekly stats panel. Persist state to localStorage. Use React hooks; style in src/index.css.',
+    id: 'promoter-agent',
+    title: 'Promoter — Social Agent',
+    description: 'Social media management. Content scheduling, post drafting, engagement tracking.',
+    category: 'agent',
+    icon: Globe2,
+    prompt: 'Build a social media promoter dashboard in src/App.tsx. Content calendar grid showing scheduled posts, a post composer with platform toggles (Twitter/Instagram/LinkedIn), engagement metrics cards (likes, shares, comments), and a draft queue. Dark theme with platform-specific accent colors.',
+    tags: ['social', 'marketing', 'agent'],
   },
   {
+    id: 'booker-agent',
+    title: 'Booker — Finance Agent',
+    description: 'Bookings, invoicing, payments. Autonomous royalty splits via Base wallets.',
+    category: 'agent',
+    icon: FileText,
+    prompt: 'Build a bookings and finance agent dashboard in src/App.tsx. Booking calendar with upcoming events, an invoice generator with line items and totals, a payment history table with status badges (Paid/Pending/Overdue), and a wallet balance card showing USDC on Base. Dark theme with orange accents.',
+    tags: ['finance', 'bookings', 'agent'],
+  },
+  {
+    id: 'dj-agent',
+    title: 'DJ — Live Radio Agent',
+    description: 'Autonomous AI DJ. Streams 24/7, reactive track selection, community vibes.',
+    category: 'agent',
+    icon: Music,
+    prompt: 'Build a live DJ dashboard in src/App.tsx. Now playing card with track info and waveform, queue of upcoming tracks, listener count, a BPM mixer panel with tempo controls, and a chat feed. Dark theme with neon purple/green accents. Include sample track data.',
+    tags: ['music', 'streaming', 'agent'],
+  },
+  {
+    id: 'analyst-agent',
+    title: 'Analyst — Data Agent',
+    description: 'Metrics tracking, trend analysis, automated reports. Token usage and costs.',
+    category: 'agent',
+    icon: Monitor,
+    prompt: 'Build a data analyst dashboard in src/App.tsx. KPI cards with sparklines, a bar chart for daily metrics, a line chart for trend analysis, a data table with sorting, and an export button. Seed with 30 days of sample data. Dark theme with blue accent colors.',
+    tags: ['analytics', 'data', 'agent'],
+  },
+  {
+    id: 'ai-landing',
+    title: 'AI Startup Landing',
+    description: 'Hero, features, pricing tiers, testimonials, footer. Dark theme with gradients.',
+    category: 'landing',
+    icon: Layout,
+    prompt: 'Build a landing page in src/App.tsx for an AI infrastructure startup. Hero with gradient backdrop, three feature cards, a pricing table with three tiers (Free / Pro / Enterprise), a testimonials row, and a footer. Dark theme with subtle gradients in src/index.css. Keep it semantic and accessible.',
+    tags: ['marketing', 'startup', 'dark'],
+  },
+  {
+    id: 'saas-pricing',
+    title: 'SaaS Pricing Page',
+    description: 'Three-tier pricing with feature comparison, FAQ accordion, CTA.',
+    category: 'landing',
+    icon: Layout,
+    prompt: 'Build a SaaS pricing page in src/App.tsx with three tiers. Feature comparison grid, toggle for monthly/annual with discount, FAQ accordion with 4 questions, and a prominent CTA button. Clean dark theme with accent color on the popular tier.',
+    tags: ['pricing', 'saas', 'conversion'],
+  },
+  {
+    id: 'crm-pipeline',
     title: 'Pipeline CRM',
-    prompt:
-      'Build a lightweight CRM dashboard in src/App.tsx with a 4-column Kanban pipeline (Lead -> Qualified -> Proposal -> Closed), drag-to-move cards using the HTML5 Drag and Drop API, an activity feed sidebar, and a search input that filters cards. Seed 8-10 realistic sample contacts.',
+    description: '4-column Kanban, drag-and-drop cards, activity feed, search.',
+    category: 'dashboard',
+    icon: Monitor,
+    prompt: 'Build a lightweight CRM dashboard in src/App.tsx with a 4-column Kanban pipeline (Lead -> Qualified -> Proposal -> Closed), drag-to-move cards using the HTML5 Drag and Drop API, an activity feed sidebar, and a search input that filters cards. Seed 8-10 realistic sample contacts.',
+    tags: ['business', 'kanban', 'drag-drop'],
   },
   {
-    title: 'Designer portfolio',
-    prompt:
-      'Build a portfolio site in src/App.tsx for a product designer named Ava Chen. Hero, three case-study cards with hover states, a selected-work gallery (CSS grid), and a contact form that validates email format and shows inline errors. Sans-serif typography, warm neutrals.',
+    id: 'crypto-portfolio',
+    title: 'Crypto Portfolio',
+    description: 'Token holdings, price cards, allocation bar, transaction history.',
+    category: 'dashboard',
+    icon: Monitor,
+    prompt: 'Build a crypto portfolio tracker in src/App.tsx. Header with total balance and 24h change. Grid of token cards (ETH, USDC, BTC, SOL) with price and holding value. A simple allocation bar chart. Transaction history list with type (buy/sell), amount, and timestamp. Dark theme.',
+    tags: ['crypto', 'finance', 'web3'],
+  },
+  {
+    id: 'habit-tracker',
+    title: 'Habit Tracker',
+    description: 'Daily check-ins, 7-day streak visualization, weekly stats.',
+    category: 'tool',
+    icon: Check,
+    prompt: 'Build a single-page habit tracker in src/App.tsx with daily check-ins for 5 sample habits, a 7-day streak visualization (colored squares), and a weekly stats panel. Persist state to localStorage. Use React hooks; style in src/index.css.',
+    tags: ['productivity', 'personal', 'hooks'],
+  },
+  {
+    id: 'invoice-generator',
+    title: 'Invoice Generator',
+    description: 'Line items, totals, VAT calc, PDF-ready layout. For freelancers.',
+    category: 'tool',
+    icon: FileText,
+    prompt: 'Build an invoice generator in src/App.tsx. Form with client name/email, dynamic line items (description, quantity, rate), auto-calculated subtotal/VAT/total. A live invoice preview panel on the right with professional formatting. Add/remove line items dynamically. Dark theme.',
+    tags: ['business', 'freelancer', 'forms'],
+  },
+  {
+    id: 'chat-interface',
+    title: 'Chat Interface',
+    description: 'Messaging UI with bubbles, typing indicator, message input.',
+    category: 'tool',
+    icon: Send,
+    prompt: 'Build a chat interface in src/App.tsx. Message list with sent/received bubbles (different colors), timestamps, a typing indicator animation, and a message input with send button. Seed with 8 sample messages. Use React state for sending new messages that appear instantly.',
+    tags: ['messaging', 'ui', 'animation'],
+  },
+  {
+    id: 'designer-portfolio',
+    title: 'Designer Portfolio',
+    description: 'Hero, case studies, work gallery, contact form with validation.',
+    category: 'portfolio',
+    icon: Globe2,
+    prompt: 'Build a portfolio site in src/App.tsx for a product designer. Hero, three case-study cards with hover states, a selected-work gallery (CSS grid), and a contact form that validates email format and shows inline errors. Sans-serif typography, warm neutrals.',
+    tags: ['creative', 'portfolio', 'form'],
   },
 ]
+
+const TEMPLATE_CATEGORIES = [
+  { id: 'all', label: 'All' },
+  { id: 'agent', label: 'Agent' },
+  { id: 'landing', label: 'Landing' },
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'tool', label: 'Tool' },
+  { id: 'portfolio', label: 'Portfolio' },
+] as const
 
 const VIEWPORTS = {
   mobile: 'w-[390px]',
@@ -118,7 +237,7 @@ const PLAYGROUND_PROMISE = 'Build and publish Vite + React apps with OpenClaude,
 
 type Viewport = keyof typeof VIEWPORTS
 type Pane = 'preview' | 'code'
-type View = 'builder' | 'apps' | 'projects' | 'publish'
+type View = 'builder' | 'templates' | 'apps' | 'projects' | 'publish'
 type ConsoleLevel = 'all' | 'error' | 'warn' | 'log'
 type ConsoleEntry = {
   level: Exclude<ConsoleLevel, 'all'>
@@ -359,6 +478,9 @@ export default function PlaygroundPage() {
   const [isSandboxing, setIsSandboxing] = useState(false)
   const [sandboxUrl, setSandboxUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showPaywall, setShowPaywall] = useState(false)
+  const [showEmailCapture, setShowEmailCapture] = useState(false)
+  const [emailCaptureSent, setEmailCaptureSent] = useState(false)
   const [publishError, setPublishError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState('LOCAL')
   const [hydrated, setHydrated] = useState(false)
@@ -989,11 +1111,19 @@ export default function PlaygroundPage() {
         }
       }
       setPrompt('')
+      // Show email capture after first generation (for anonymous/free users)
+      if (!emailCaptureSent && files.length > 0) {
+        setTimeout(() => setShowEmailCapture(true), 2000)
+      }
     } catch (err) {
-      if (err instanceof Error && err.name === 'TimeoutError') {
+      const msg = err instanceof Error ? err.message : 'OpenClaude generation failed'
+      // Detect paywall (402) errors
+      if (/402|free tier limit|subscribe to generate/i.test(msg)) {
+        setShowPaywall(true)
+      } else if (err instanceof Error && err.name === 'TimeoutError') {
         setError('Generation timed out. Try a shorter prompt or retry.')
       } else {
-        setError(err instanceof Error ? err.message : 'OpenClaude generation failed')
+        setError(msg)
       }
     } finally {
       setIsGenerating(false)
@@ -1029,6 +1159,7 @@ export default function PlaygroundPage() {
               <Check className="h-3 w-3" />
               Auto-approve on
             </span>
+            <button type="button" onClick={() => setView('templates')} className="px-2 py-1 hover:text-white">Templates</button>
             <button type="button" onClick={() => setView('apps')} className="px-2 py-1 hover:text-white">Apps</button>
             <button type="button" onClick={() => setView('projects')} className="px-2 py-1 hover:text-white">Projects</button>
             <button type="button" onClick={() => setView('publish')} className="px-2 py-1 hover:text-white">Publish</button>
@@ -1043,7 +1174,9 @@ export default function PlaygroundPage() {
         </div>
       </div>
 
-      {view === 'projects' ? (
+      {view === 'templates' ? (
+        <TemplatesView onSelect={(template) => { setPrompt(template.prompt); setView('builder') }} />
+      ) : view === 'projects' ? (
         <ProjectsView
           projects={visibleProjects}
           onNewProject={newProject}
@@ -1097,6 +1230,101 @@ export default function PlaygroundPage() {
           messages={activeProject?.messages ?? []}
           setModel={setModel}
         />
+      )}
+
+      {/* Paywall Modal */}
+      {showPaywall && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-md border border-zinc-800 bg-black p-8">
+            <button type="button" onClick={() => setShowPaywall(false)} className="absolute right-4 top-4 text-zinc-600 hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
+            <div className="text-[10px] uppercase tracking-widest text-orange-500">Free tier limit reached</div>
+            <h2 className="mt-3 text-2xl font-bold uppercase tracking-tighter">Upgrade to Pro</h2>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+              You&apos;ve used all 3 free generations today. Subscribe to generate unlimited apps, open full sandboxes, and deploy to production.
+            </p>
+            <div className="mt-6 space-y-3">
+              <a
+                href="/pricing"
+                className="block w-full bg-white py-3 text-center text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200"
+              >
+                View plans — from £29/mo
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowPaywall(false)}
+                className="w-full border border-zinc-800 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white"
+              >
+                Maybe later
+              </button>
+            </div>
+            <div className="mt-6 border-t border-zinc-900 pt-4 text-xs text-zinc-600">
+              <div className="font-bold text-zinc-400">Every plan includes:</div>
+              <ul className="mt-2 space-y-1">
+                <li>→ Unlimited generations</li>
+                <li>→ Full CodeSandbox environments</li>
+                <li>→ Deploy to Vercel / GitLawb</li>
+                <li>→ Fork to OpenClaw agents</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Capture Modal */}
+      {showEmailCapture && !emailCaptureSent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-md border border-zinc-800 bg-black p-8">
+            <button type="button" onClick={() => setShowEmailCapture(false)} className="absolute right-4 top-4 text-zinc-600 hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
+            <div className="text-[10px] uppercase tracking-widest text-orange-500">Save your work</div>
+            <h2 className="mt-3 text-2xl font-bold uppercase tracking-tighter">Don&apos;t lose your app</h2>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+              Enter your email to save this project. We&apos;ll also send you tips on how to deploy it.
+            </p>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault()
+                const form = new FormData(e.currentTarget)
+                const email = String(form.get('email') || '')
+                if (!email) return
+                try {
+                  await fetch('/api/playground/capture', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, projectId: activeProject?.id }),
+                  })
+                } catch { /* best effort */ }
+                setEmailCaptureSent(true)
+                setShowEmailCapture(false)
+              }}
+              className="mt-6 space-y-3"
+            >
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder="you@example.com"
+                className="w-full border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="w-full bg-white py-3 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200"
+              >
+                Save project
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEmailCapture(false)}
+                className="w-full border border-zinc-800 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white"
+              >
+                Skip
+              </button>
+            </form>
+          </div>
+        </div>
       )}
     </main>
   )
@@ -1242,14 +1470,14 @@ function BuilderView({
           </div>
 
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {EXAMPLES.map((example) => (
+            {TEMPLATES.slice(0, 6).map((template) => (
               <button
-                key={example.title}
+                key={template.id}
                 type="button"
-                onClick={() => setPrompt(example.prompt)}
+                onClick={() => setPrompt(template.prompt)}
                 className="border border-zinc-900 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:border-zinc-700 hover:text-white"
               >
-                {example.title}
+                {template.title}
               </button>
             ))}
           </div>
@@ -1335,15 +1563,18 @@ function BuilderView({
             )}
 
             <div className={messages.length > 0 ? 'hidden' : 'space-y-2'}>
-              {EXAMPLES.map((example) => (
+              {TEMPLATES.slice(0, 6).map((template) => (
                 <button
-                  key={example.title}
+                  key={template.id}
                   type="button"
-                  onClick={() => setPrompt(example.prompt)}
+                  onClick={() => setPrompt(template.prompt)}
                   className="w-full border border-zinc-900 bg-black p-3 text-left hover:border-zinc-700 transition-colors"
                 >
-                  <div className="text-[10px] uppercase tracking-widest text-white">{example.title}</div>
-                  <div className="mt-2 line-clamp-3 text-xs leading-relaxed text-zinc-500">{example.prompt}</div>
+                  <div className="flex items-center gap-2">
+                    <template.icon className="h-3 w-3 text-zinc-500" />
+                    <div className="text-[10px] uppercase tracking-widest text-white">{template.title}</div>
+                  </div>
+                  <div className="mt-2 line-clamp-3 text-xs leading-relaxed text-zinc-500">{template.description}</div>
                 </button>
               ))}
             </div>
@@ -2068,6 +2299,72 @@ function PublishView({
             <p className="mt-2 text-[10px] text-zinc-600">Saves a copy and opens the deploy flow.</p>
           </div>
         </div>
+      </div>
+    </section>
+  )
+}
+
+function TemplatesView({ onSelect }: { onSelect: (template: Template) => void }) {
+  const [category, setCategory] = useState<string>('all')
+
+  const filtered = category === 'all'
+    ? TEMPLATES
+    : TEMPLATES.filter((t) => t.category === category)
+
+  return (
+    <section className="max-w-6xl px-6 py-10">
+      <div className="mb-8">
+        <div className="text-[10px] uppercase tracking-widest text-zinc-600">Playground / Templates</div>
+        <h1 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Template marketplace</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-500">
+          Start with a pre-built template. Pick one, customise the prompt, and let OpenClaude build it.
+        </p>
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        {TEMPLATE_CATEGORIES.map((cat) => (
+          <button
+            key={cat.id}
+            type="button"
+            onClick={() => setCategory(cat.id)}
+            className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
+              category === cat.id
+                ? 'bg-white text-black'
+                : 'border border-zinc-800 text-zinc-500 hover:text-white'
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((template) => (
+          <button
+            key={template.id}
+            type="button"
+            onClick={() => onSelect(template)}
+            className="group border border-zinc-900 bg-black p-5 text-left transition-colors hover:border-zinc-700"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center border border-zinc-800">
+                <template.icon className="h-4 w-4 text-zinc-500 group-hover:text-orange-500" />
+              </div>
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-white">{template.title}</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600">{template.category}</div>
+              </div>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-zinc-500">{template.description}</p>
+            <div className="mt-3 flex flex-wrap gap-1">
+              {template.tags.map((tag) => (
+                <span key={tag} className="border border-zinc-900 px-1.5 py-0.5 text-[9px] uppercase tracking-widest text-zinc-600">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </button>
+        ))}
       </div>
     </section>
   )
