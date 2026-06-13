@@ -23,18 +23,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // Generate referral code if doesn't exist
-  if (!user.referralCode) {
-    const code = generateReferralCode();
+  // Generate + persist a referral code if the user doesn't have one,
+  // and return the SAME code we persisted (not a fresh random one).
+  let referralCode = user.referralCode;
+  if (!referralCode) {
+    referralCode = generateReferralCode();
     await prisma.user.update({
       where: { id: user.id },
-      data: { referralCode: code },
+      data: { referralCode },
     });
   }
 
-  return NextResponse.json({ 
-    referralCode: user.referralCode || generateReferralCode() 
-  });
+  return NextResponse.json({ referralCode });
 }
 
 export async function GET() {
@@ -59,11 +59,21 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  // Ensure the user always has a referral code so the link is never empty.
+  let referralCode = user.referralCode;
+  if (!referralCode) {
+    referralCode = generateReferralCode();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { referralCode },
+    });
+  }
+
   const referralCount = user.referrals?.length || 0;
   const creditEarned = referralCount * 10;
 
   return NextResponse.json({
-    referralCode: user.referralCode,
+    referralCode,
     referralCount,
     creditEarned,
   });

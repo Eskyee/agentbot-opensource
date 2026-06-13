@@ -48,7 +48,15 @@ export const navSections = [
       { label: 'Knowledge Base', href: '/dashboard/knowledge', icon: '📚' },
       { label: 'Webhooks', href: '/dashboard/webhooks', icon: '🔗' },
       { label: 'Approvals', href: '/dashboard/approvals', icon: '✅' },
+    ],
+  },
+  {
+    label: 'Wallets & Trading',
+    items: [
       { label: 'Agentic Wallet', href: '/dashboard/wallet', icon: '🪙' },
+      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
+      { label: 'Bankr', href: '/bankr', icon: '🏦' },
+      { label: 'Robinhood', href: '/dashboard/robinhood', icon: '🏹' },
     ],
   },
   {
@@ -58,8 +66,6 @@ export const navSections = [
       { label: 'Time Tracking', href: '/dashboard/time', icon: '⏱' },
       { label: 'Vault', href: '/dashboard/vault', icon: '🗄' },
       { label: 'Export', href: '/dashboard/export', icon: '📤' },
-      { label: 'Bankr', href: '/bankr', icon: '🏦' },
-      { label: 'Robinhood', href: '/dashboard/robinhood', icon: '🏹' },
     ],
   },
   {

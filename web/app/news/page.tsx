@@ -1,16 +1,18 @@
 import Link from 'next/link';
 
-const tickerHeadlines = [
-  'WWDC 2026: Apple Intelligence + Siri AI overhaul',
-  'Anthropic Claude Fable 5 now public',
-  'Deezer AI music detection tool launched',
-  'DoorDash AI chatbot for ordering',
-  'xAI fired engineer over Grok safety concerns',
-  'Amazon borrows $17.5B for AI spending',
-  'Agentbot AgentKit integration complete',
-  'Lovable hits $500M ARR',
-  'OpenAI files confidentially for IPO',
-  'Google AI subscription price wars begin',
+const NEWS_SOURCE_URL = 'https://news.agentcommunity.org';
+
+const tickerHeadlines: { text: string; url: string }[] = [
+  { text: 'WWDC 2026: Apple Intelligence + Siri AI overhaul', url: NEWS_SOURCE_URL },
+  { text: 'Anthropic Claude Fable 5 now public', url: NEWS_SOURCE_URL },
+  { text: 'Deezer AI music detection tool launched', url: NEWS_SOURCE_URL },
+  { text: 'DoorDash AI chatbot for ordering', url: NEWS_SOURCE_URL },
+  { text: 'xAI fired engineer over Grok safety concerns', url: NEWS_SOURCE_URL },
+  { text: 'Amazon borrows $17.5B for AI spending', url: NEWS_SOURCE_URL },
+  { text: 'Agentbot AgentKit integration complete', url: '/dashboard/wallet' },
+  { text: 'Lovable hits $500M ARR', url: NEWS_SOURCE_URL },
+  { text: 'OpenAI files confidentially for IPO', url: NEWS_SOURCE_URL },
+  { text: 'Google AI subscription price wars begin', url: NEWS_SOURCE_URL },
 ];
 
 const communityUpdates = [
@@ -267,15 +269,20 @@ export default function NewsPage() {
           </div>
           <div className="relative">
             <div className="flex animate-ticker whitespace-nowrap">
-              {[...tickerHeadlines, ...tickerHeadlines].map((headline, i) => (
-                <span
-                  key={i}
-                  className="inline-block px-6 text-xs text-zinc-500 hover:text-white transition-colors cursor-default shrink-0"
-                >
-                  {headline}
-                  <span className="text-zinc-800 ml-6">·</span>
-                </span>
-              ))}
+              {[...tickerHeadlines, ...tickerHeadlines].map((headline, i) => {
+                const external = headline.url.startsWith('http')
+                return (
+                  <a
+                    key={i}
+                    href={headline.url}
+                    {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    className="inline-block px-6 text-xs text-zinc-500 hover:text-white transition-colors cursor-pointer shrink-0"
+                  >
+                    {headline.text}
+                    <span className="text-zinc-800 ml-6">·</span>
+                  </a>
+                )
+              })}
             </div>
           </div>
         </div>

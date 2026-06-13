@@ -22,7 +22,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   'generate-music': 'Generate Music',
   'generate-video': 'Generate Video',
   'music-wizard': 'Music Wizard',
-  'open-agents': 'Open Agents',
   'open-learning': 'Open Learning',
   'expert-setup': 'Expert Setup',
   ai: 'AI',
