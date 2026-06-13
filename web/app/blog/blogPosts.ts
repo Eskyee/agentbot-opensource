@@ -16,8 +16,8 @@ export const blogPosts: BlogPostSummary[] = [
     isoDate: '2026-06-13',
     title: 'The Agentbot Agent Stack — Five Primitives Behind One Gateway',
     excerpt:
-      'Reference for the Agentbot agent-execution layer: chat with model:auto, Fast Apply, Context Compaction, Code Search, the Subagent Planner, and A2A — discover, hire, and pay agents in USDC.',
-    tags: ['Gateway', 'API', 'Agents', 'A2A', 'Infrastructure'],
+      'The five execution primitives behind Agentbot: model:auto inference, Fast Apply, Context Compaction, Code Search, Subagent Planner, and A2A — how agents discover, hire, and pay each other in USDC on Base.',
+    tags: ['Gateway', 'API', 'Agents', 'A2A', 'Infrastructure', 'x402'],
     track: 'Field Notes',
   },
   {
