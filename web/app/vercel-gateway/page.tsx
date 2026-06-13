@@ -300,7 +300,7 @@ console.log(reply.choices[0].message.content)`,
         ))}
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-px bg-zinc-900 px-6 pb-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
+      <section className="mx-auto grid max-w-6xl gap-px bg-zinc-900 px-6 pt-14 pb-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
         {[
           ['One endpoint, many providers', 'Point any OpenAI-compatible client at /v1 and pass the model. Requests route through Vercel AI Gateway with OpenRouter failover — provider secrets stay server-side.'],
           ['Smart routing — model: "auto"', 'Send model:"auto" and the gateway scores the request and routes to the cheapest capable model, escalating on failure. x-gateway-served-model names who answered.'],
@@ -315,8 +315,8 @@ console.log(reply.choices[0].message.content)`,
       </section>
 
       {/* Smart routing deep-dive */}
-      <section className="mx-auto max-w-6xl px-6 pb-10 lg:px-8">
-        <div className="border border-zinc-900 bg-zinc-950 p-5">
+      <section className="mx-auto max-w-6xl px-6 pt-4 pb-14 lg:px-8">
+        <div className="border border-zinc-900 bg-zinc-950 p-6 sm:p-8">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold text-white">Stop picking models. Send <code className="text-orange-500">model: &quot;auto&quot;</code>.</h2>
             <span className="border border-orange-500/40 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-widest text-orange-500">New</span>
