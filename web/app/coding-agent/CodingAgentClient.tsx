@@ -15,9 +15,12 @@ interface Session {
 }
 
 interface ToolCall {
-  type: 'grep' | 'read' | 'write' | 'edit' | 'bash'
+  id: string
+  type: string
   path: string
   status: 'running' | 'done'
+  result?: string
+  args?: Record<string, string | boolean | undefined>
 }
 
 interface Message {
@@ -27,6 +30,12 @@ interface Message {
 }
 
 const TOOL_ICONS: Record<string, typeof Terminal> = {
+  grep_search: Search,
+  read_file: FileCode,
+  write_file: FileCode,
+  edit_file: Edit3,
+  run_command: Terminal,
+  list_files: FileCode,
   grep: Search,
   read: FileCode,
   write: FileCode,
@@ -35,6 +44,12 @@ const TOOL_ICONS: Record<string, typeof Terminal> = {
 }
 
 const TOOL_COLORS: Record<string, string> = {
+  grep_search: 'text-cyan-400',
+  read_file: 'text-blue-400',
+  write_file: 'text-green-400',
+  edit_file: 'text-yellow-400',
+  run_command: 'text-orange-400',
+  list_files: 'text-purple-400',
   grep: 'text-cyan-400',
   read: 'text-blue-400',
   write: 'text-green-400',
@@ -141,7 +156,7 @@ export default function CodingAgentClient() {
     setInput('')
     setLoading(true)
     setError('')
-    setToolCalls([{ type: 'grep', path: 'analysing request…', status: 'running' }])
+    setToolCalls([])
 
     try {
       const res = await fetch('/api/coding-agent/chat', {
@@ -181,6 +196,23 @@ export default function CodingAgentClient() {
                 next[next.length - 1] = { ...last, content: last.content + event.content }
                 return next
               })
+            }
+            if (event.tool_call) {
+              const tc = event.tool_call
+              setToolCalls((prev) => {
+                const existing = prev.find((t) => t.id === tc.id)
+                if (existing) {
+                  return prev.map((t) => t.id === tc.id ? { ...t, status: tc.status, result: tc.result } : t)
+                }
+                const path = tc.args?.path || tc.args?.command || tc.args?.pattern || tc.name
+                return [...prev, { id: tc.id, type: tc.name, path: String(path), status: tc.status, args: tc.args }]
+              })
+            }
+            if (event.tool_result) {
+              const tr = event.tool_result
+              setToolCalls((prev) => prev.map((t) =>
+                t.id === tr.id ? { ...t, status: 'done', result: tr.result } : t
+              ))
             }
             if (event.done) {
               files = event.files || []
@@ -390,16 +422,17 @@ export default function CodingAgentClient() {
             {toolCalls.length > 0 && (
               <div className="border-b border-zinc-900 px-4 py-2">
                 <div className="flex items-center gap-4 overflow-x-auto">
-                  {toolCalls.map((tool, i) => {
-                    const Icon = TOOL_ICONS[tool.type]
+                  {toolCalls.map((tool) => {
+                    const Icon = TOOL_ICONS[tool.type] || Terminal
+                    const color = TOOL_COLORS[tool.type] || 'text-zinc-400'
                     return (
-                      <div key={i} className="flex items-center gap-1.5 shrink-0">
+                      <div key={tool.id} className="flex items-center gap-1.5 shrink-0">
                         {tool.status === 'running' ? (
-                          <Loader2 className={`h-3 w-3 animate-spin ${TOOL_COLORS[tool.type]}`} />
+                          <Loader2 className={`h-3 w-3 animate-spin ${color}`} />
                         ) : (
                           <Check className="h-3 w-3 text-green-500" />
                         )}
-                        <Icon className={`h-3 w-3 ${TOOL_COLORS[tool.type]}`} />
+                        <Icon className={`h-3 w-3 ${color}`} />
                         <span className="text-[10px] text-zinc-600 max-w-[160px] truncate">{tool.path}</span>
                       </div>
                     )
