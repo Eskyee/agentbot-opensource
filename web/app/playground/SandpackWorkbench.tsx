@@ -323,7 +323,13 @@ export default function SandpackWorkbench({
       key={generationKey}
       template="react-ts"
       theme={agentbotTheme}
-      files={initialFiles}
+      files={{
+        ...initialFiles,
+        // Suppress react-error-overlay — it causes red flash on transient errors
+        '/styles.css': {
+          code: `${initialFiles['/styles.css']?.code || ''}\n\n/* Suppress react-error-overlay red flash */\niframe[id*="react-error-overlay"] { display: none !important; }\n#react-error-overlay { display: none !important; }\n`,
+        },
+      }}
       customSetup={{
         dependencies,
       }}
