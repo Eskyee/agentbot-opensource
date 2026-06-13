@@ -34,7 +34,7 @@ export type WorkbenchFile = {
   content: string
 }
 
-const BUNDLED_RE = /^src\/(?:App\.tsx|index\.css|(?:components|hooks|lib)\/[A-Za-z0-9_-]+\.(?:tsx|ts)|[A-Za-z0-9_-]+\.css)$/
+const BUNDLED_RE = /^src\/(?:App\.tsx|index\.css|(?:components|hooks|lib)\/[A-Za-z0-9_-]+\.(?:tsx|ts|css)|[A-Za-z0-9_-]+\.css)$/
 
 function toSandpackPath(path: string): string | null {
   if (!BUNDLED_RE.test(path)) return null
