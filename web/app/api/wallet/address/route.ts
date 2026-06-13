@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { isAddress } from 'viem'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getBaseWalletAddressFromSessionUser } from '@/app/lib/base-wallet'
@@ -19,7 +20,15 @@ export async function GET() {
     })
 
     if (!wallet) {
-      const sessionWalletAddress = getBaseWalletAddressFromSessionUser(session.user)
+      // Linked-once address: the user confirmed ownership via Sign in with Base
+      // (stored on user.vaultId). Makes "link once, use everywhere" work for
+      // DJs who signed in with a real email.
+      const linkedUser = await prisma.user
+        .findUnique({ where: { id: session.user.id }, select: { vaultId: true } })
+        .catch(() => null)
+      const linked = linkedUser?.vaultId && isAddress(linkedUser.vaultId) ? linkedUser.vaultId : null
+
+      const sessionWalletAddress = linked ?? getBaseWalletAddressFromSessionUser(session.user)
 
       if (sessionWalletAddress) {
         return NextResponse.json({
@@ -27,7 +36,7 @@ export async function GET() {
           address: sessionWalletAddress,
           network: 'base',
           type: 'base-auth',
-          source: 'session',
+          source: linked ? 'linked' : 'session',
         })
       }
 

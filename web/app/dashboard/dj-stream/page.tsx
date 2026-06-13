@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Check, Copy } from 'lucide-react'
 import { useAccount, useDisconnect } from 'wagmi'
 import dynamic from 'next/dynamic'
+import { useLinkedBaseWallet } from '@/app/hooks/useLinkedBaseWallet'
 const SignInWithBase = dynamic(() => import('@/app/components/SignInWithBase'), { ssr: false })
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
 import { SectionHeader } from '@/app/components/shared/SectionHeader'
@@ -147,8 +148,12 @@ function EncoderModeButton({
 }
 
 export default function DJStreamPage() {
-  const { address, isConnected } = useAccount()
+  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount()
   const { disconnect } = useDisconnect()
+  // Link-once: a wallet linked in Settings counts as connected everywhere.
+  const { address: linkedAddress } = useLinkedBaseWallet()
+  const address = wagmiAddress ?? (linkedAddress as `0x${string}` | null) ?? undefined
+  const isConnected = wagmiConnected || Boolean(linkedAddress)
   const [basefmBalance, setBasefmBalance] = useState<string | null>(null)
   const [stream, setStream] = useState<any>(null)
   const [streamSessionToken, setStreamSessionToken] = useState<string | null>(null)
@@ -823,6 +828,11 @@ export default function DJStreamPage() {
                 <p className="mt-4 text-zinc-600 text-[10px] uppercase tracking-widest">
                   Base network · Sign in with Base
                 </p>
+                <p className="mt-2 text-[11px] text-zinc-500">
+                  Link your Base wallet once in{' '}
+                  <Link href="/settings?tab=wallet" className="text-orange-500 hover:underline">Settings → Wallet</Link>{' '}
+                  and you won&apos;t have to connect here again.
+                </p>
 
                 {hasCommunityPass && claimedWallet && (
                   <div className="mt-4 border border-orange-500/20 bg-orange-500/10 p-4">
@@ -841,12 +851,21 @@ export default function DJStreamPage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <code className="text-sm text-zinc-400 font-mono">{formatAddress(address!)}</code>
-                  <button
-                    onClick={() => disconnect()}
-                    className="text-zinc-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors"
-                  >
-                    Disconnect
-                  </button>
+                  {wagmiConnected ? (
+                    <button
+                      onClick={() => disconnect()}
+                      className="text-zinc-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors"
+                    >
+                      Disconnect
+                    </button>
+                  ) : (
+                    <Link
+                      href="/settings?tab=wallet"
+                      className="text-zinc-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors"
+                    >
+                      Linked · Manage
+                    </Link>
+                  )}
                 </div>
 
                 {hasCommunityPass && claimedWallet && claimedWallet.toLowerCase() !== address!.toLowerCase() ? (

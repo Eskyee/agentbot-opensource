@@ -14,11 +14,13 @@ import {
   BasefmTab,
   IntegrationsTab,
   ByokTab,
+  WalletTab,
 } from './tabs'
 import { buildAppUrl } from '@/app/lib/app-url'
 
 const TABS = [
   { id: 'profile', label: 'Profile', icon: '👤' },
+  { id: 'wallet', label: 'Wallet', icon: '🪙' },
   { id: 'agents', label: 'Agents', icon: '🤖' },
   { id: 'apikeys', label: 'API Keys', icon: '🔑' },
   { id: 'referrals', label: 'Referrals', icon: '🎁' },
@@ -348,6 +350,8 @@ export default function SettingsPage() {
             {activeTab === 'security' && <SecurityTab twoFactorEnabled={twoFactorEnabled} />}
 
             {activeTab === 'notifications' && <NotificationsTab initialNotifications={notifications} />}
+
+            {activeTab === 'wallet' && <WalletTab />}
 
             {activeTab === 'basefm' && <BasefmTab />}
 
