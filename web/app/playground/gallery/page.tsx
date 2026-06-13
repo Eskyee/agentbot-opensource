@@ -150,6 +150,52 @@ export default async function PlaygroundGallery() {
           </>
         )}
 
+        {/* Built in London — AAA Pass laminate */}
+        <div className="mt-12 relative overflow-hidden border border-orange-500/40 bg-gradient-to-br from-zinc-950 to-black">
+          {/* lanyard notch */}
+          <div className="absolute left-1/2 top-0 h-3 w-16 -translate-x-1/2 rounded-b-full border border-t-0 border-orange-500/40 bg-black" aria-hidden="true" />
+          <div className="grid gap-px sm:grid-cols-[1.4fr_1fr]">
+            {/* left: the pitch */}
+            <div className="p-8 sm:p-10">
+              <div className="flex items-center gap-3 mb-5">
+                <span className="inline-block border border-orange-500/50 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.3em] text-orange-500">Access All Areas</span>
+                <span className="text-[9px] uppercase tracking-[0.25em] text-zinc-600">Pass № 001</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold uppercase tracking-tighter leading-[0.95]">
+                Built in London.<br />
+                <span className="text-orange-500">Every agent gets the AAA pass.</span>
+              </h2>
+              <p className="mt-5 max-w-md text-sm leading-relaxed text-zinc-400">
+                Designed and engineered in London for the people who run the culture — labels,
+                collectives, promoters, producers. Your agent goes backstage by default: all channels,
+                all skills, all hours. No guest list, no plus-one needed.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {['E1 Shoreditch', 'GMT · Always On', 'AAA Clearance'].map((chip) => (
+                  <span key={chip} className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400">{chip}</span>
+                ))}
+              </div>
+            </div>
+            {/* right: the laminate */}
+            <div className="border-t border-orange-500/20 sm:border-t-0 sm:border-l p-8 sm:p-10 flex flex-col justify-between bg-black/40">
+              <div>
+                <div className="text-[9px] uppercase tracking-[0.3em] text-zinc-600 mb-2">Agentbot · Backstage</div>
+                <div className="text-6xl font-bold tracking-tighter text-orange-500 leading-none">AAA</div>
+                <div className="mt-2 text-[10px] uppercase tracking-[0.25em] text-zinc-500">Triple-A · Access All Areas</div>
+              </div>
+              {/* barcode */}
+              <svg viewBox="0 0 220 44" className="mt-6 w-full" role="img" aria-label="Backstage pass barcode">
+                {Array.from({ length: 48 }).map((_, i) => {
+                  const w = (i * 7) % 5 < 2 ? 1.5 : i % 3 === 0 ? 3.5 : 2
+                  const x = i * 4.5 + 2
+                  return <rect key={i} x={x} y="2" width={w} height="30" fill={i % 9 === 0 ? '#f97316' : '#e4e4e7'} />
+                })}
+                <text x="2" y="42" fontFamily="ui-monospace,monospace" fontSize="7" fill="#52525b" letterSpacing="3">AGENTBOT · LDN · E1 · ALL HOURS</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
         {/* CTA */}
         <div className="mt-12 border border-zinc-900 bg-zinc-950 p-8 text-center">
           <h2 className="text-xl font-bold uppercase tracking-tighter">Build your own</h2>
