@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
-import { isAdminEmail } from '@/app/lib/admin'
+import { authorizeBasefmRelayWrite, OPTIONAL_RELAY_KEYS } from '@/app/lib/basefmRelayAuth'
 
 const RELAY_SERVER_URL = process.env.RELAY_SERVER_URL || ''
 const RELAY_SECRET = process.env.RELAY_SECRET || ''
@@ -11,9 +10,9 @@ const RELAY_SECRET = process.env.RELAY_SECRET || ''
  * Body: { destinationId: string, streamKey: string }
  */
 export async function POST(request: NextRequest) {
-  const session = await getAuthSession()
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const authz = await authorizeBasefmRelayWrite(request)
+  if (!authz.ok) {
+    return NextResponse.json({ error: authz.error }, { status: authz.status })
   }
 
   if (!RELAY_SERVER_URL) {
@@ -26,6 +25,11 @@ export async function POST(request: NextRequest) {
 
     if (!destinationId) {
       return NextResponse.json({ error: 'destinationId required' }, { status: 400 })
+    }
+
+    // Stream owners (non-admins) may only set keys for the optional simulcast relays.
+    if (!authz.isAdmin && !OPTIONAL_RELAY_KEYS.includes(destinationId)) {
+      return NextResponse.json({ error: 'Forbidden destination' }, { status: 403 })
     }
 
     const res = await fetch(`${RELAY_SERVER_URL}/relay/destinations/${destinationId}/key`, {

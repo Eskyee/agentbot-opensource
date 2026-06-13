@@ -445,7 +445,10 @@ export default function DJStreamPage() {
     try {
       const res = await fetch('/api/basefm/relays', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(streamSessionToken ? { 'x-basefm-session': streamSessionToken } : {}),
+        },
         body: JSON.stringify({
           key: 'x-live',
           name: 'X (Twitter) Live',
@@ -466,7 +469,10 @@ export default function DJStreamPage() {
         try {
           await fetch('/api/relay/destination-key', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(streamSessionToken ? { 'x-basefm-session': streamSessionToken } : {}),
+            },
             body: JSON.stringify({ destinationId: 'x-live', streamKey: xStreamKey.trim() }),
           })
         } catch {
@@ -490,7 +496,10 @@ export default function DJStreamPage() {
     try {
       const res = await fetch('/api/basefm/relays', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(streamSessionToken ? { 'x-basefm-session': streamSessionToken } : {}),
+        },
         body: JSON.stringify({
           key: 'youtube-main',
           name: 'YouTube',
@@ -511,7 +520,10 @@ export default function DJStreamPage() {
         try {
           await fetch('/api/relay/destination-key', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(streamSessionToken ? { 'x-basefm-session': streamSessionToken } : {}),
+            },
             body: JSON.stringify({ destinationId: 'youtube-main', streamKey: youtubeStreamKey.trim() }),
           })
         } catch {

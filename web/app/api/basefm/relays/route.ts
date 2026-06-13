@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
 import { ensureDefaultBasefmRelayDestinations, listBasefmRelayDestinations } from '@/app/lib/basefmDistribution'
+import { authorizeBasefmRelayWrite, OPTIONAL_RELAY_KEYS } from '@/app/lib/basefmRelayAuth'
 import { prisma } from '@/app/lib/prisma'
-
-async function requireAdmin() {
-  const session = await getAuthSession()
-  return session?.user?.isAdmin === true
-}
 
 export async function GET() {
   try {
@@ -20,8 +15,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await requireAdmin())) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const authz = await authorizeBasefmRelayWrite(request)
+  if (!authz.ok) {
+    return NextResponse.json({ error: authz.error }, { status: authz.status })
   }
 
   try {
@@ -31,11 +27,20 @@ export async function POST(request: NextRequest) {
     const type = typeof body?.type === 'string' ? body.type.trim() : 'custom'
     const viewerUrl = typeof body?.viewerUrl === 'string' ? body.viewerUrl.trim() : null
     const probeUrl = typeof body?.probeUrl === 'string' ? body.probeUrl.trim() : null
-    const required = Boolean(body?.required)
+    // Stream owners (non-admins) may only manage the optional simulcast relays
+    // and can never mark a relay required — that stays operator-only.
+    const required = authz.isAdmin ? Boolean(body?.required) : false
     const enabled = body?.enabled !== false
 
     if (!key || !name) {
       return NextResponse.json({ error: 'key and name are required' }, { status: 400 })
+    }
+
+    if (!authz.isAdmin && !OPTIONAL_RELAY_KEYS.includes(key)) {
+      return NextResponse.json(
+        { error: 'Only the optional X and YouTube simulcast relays can be managed from the stream page.' },
+        { status: 403 }
+      )
     }
 
     let relay
