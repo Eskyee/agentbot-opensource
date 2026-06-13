@@ -140,6 +140,73 @@ export default function OpenClawPage() {
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-10">Architecture</div>
+
+          {/* Signature diagram: many channels → one Gateway → Agent Runtime */}
+          <div className="mb-10 border border-zinc-900 bg-zinc-950/40 p-4 sm:p-6 overflow-x-auto">
+            <svg
+              viewBox="0 0 880 400"
+              className="w-full min-w-[560px]"
+              role="img"
+              aria-label="OpenClaw architecture: 20-plus chat channels converge into a single Gateway process, which connects bidirectionally to the Agent Runtime of model, memory, skills, and tools."
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <text x="85" y="24" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="10" fill="#52525b" letterSpacing="2">20+ CHANNELS</text>
+
+              {/* channel chips + converging lines */}
+              {['Discord', 'Telegram', 'WhatsApp', 'iMessage', 'Signal', 'Slack', '+15 more'].map((ch, i) => {
+                const y = 50 + i * 44
+                const cy = y + 17
+                const accent = ch === '+15 more'
+                return (
+                  <g key={ch}>
+                    <rect x="10" y={y} width="150" height="34" fill="#09090b" stroke={accent ? '#3f3f46' : '#27272a'} strokeWidth="1" />
+                    <text x="85" y={cy + 4} textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="11" fill={accent ? '#52525b' : '#a1a1aa'}>{ch}</text>
+                    <line x1="160" y1={cy} x2="252" y2="200" stroke="#27272a" strokeWidth="1" />
+                  </g>
+                )
+              })}
+
+              {/* convergence node → gateway */}
+              <circle cx="255" cy="200" r="4" fill="#f97316" />
+              <line x1="259" y1="200" x2="305" y2="200" stroke="#f97316" strokeWidth="1.5" />
+              <polygon points="301,196 309,200 301,204" fill="#f97316" />
+              <text x="250" y="225" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b" letterSpacing="1.5">messages in</text>
+
+              {/* Gateway box — the nerve center */}
+              <rect x="312" y="92" width="232" height="216" fill="#09090b" stroke="#f97316" strokeWidth="1.5" />
+              <text x="428" y="120" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="12" fill="#ffffff" letterSpacing="2" fontWeight="bold">GATEWAY</text>
+              <text x="428" y="136" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#f97316" letterSpacing="1.5">one process</text>
+              <line x1="332" y1="150" x2="524" y2="150" stroke="#1f1f23" strokeWidth="1" />
+              {['Routing', 'Sessions', 'Auth', 'Media', 'Tool Exec'].map((label, i) => (
+                <text key={label} x="428" y={176 + i * 26} textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="11" fill="#a1a1aa">{label}</text>
+              ))}
+
+              {/* Gateway ↔ Runtime */}
+              <line x1="544" y1="186" x2="624" y2="186" stroke="#f97316" strokeWidth="1.5" />
+              <polygon points="620,182 628,186 620,190" fill="#f97316" />
+              <line x1="624" y1="214" x2="544" y2="214" stroke="#f97316" strokeWidth="1.5" strokeDasharray="4 3" />
+              <polygon points="548,210 540,214 548,218" fill="#f97316" />
+              <text x="584" y="174" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">context</text>
+              <text x="584" y="230" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">stream</text>
+
+              {/* Agent Runtime box */}
+              <rect x="630" y="118" width="238" height="164" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+              <text x="749" y="146" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="12" fill="#ffffff" letterSpacing="2" fontWeight="bold">AGENT RUNTIME</text>
+              <line x1="650" y1="160" x2="848" y2="160" stroke="#1f1f23" strokeWidth="1" />
+              {[['Model', 'MiMo · Claude · GPT'], ['Memory', 'per-agent, persistent'], ['Skills', 'plugins + tools'], ['Cron', 'heartbeat, 24/7']].map(([label, sub], i) => (
+                <g key={label}>
+                  <text x="650" y={186 + i * 26} fontFamily="ui-monospace,monospace" fontSize="11" fill="#a1a1aa">{label}</text>
+                  <text x="848" y={186 + i * 26} textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="9" fill="#52525b">{sub}</text>
+                </g>
+              ))}
+
+              {/* return path: runtime → back to channels (always on) */}
+              <path d="M749 282 L749 360 L85 360 L85 88" fill="none" stroke="#27272a" strokeWidth="1" strokeDasharray="3 3" />
+              <polygon points="81,96 85,88 89,96" fill="#3f3f46" />
+              <text x="417" y="375" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b" letterSpacing="1.5">replies stream back to every channel — always on</text>
+            </svg>
+          </div>
+
           <div className="grid sm:grid-cols-3 gap-px bg-zinc-900">
             {[
               {
@@ -221,6 +288,55 @@ export default function OpenClawPage() {
               in minutes. Install skills. Set up cron jobs. Your agent works while you sleep.
             </p>
           </div>
+          {/* Two deployment paths, one runtime */}
+          <div className="mt-10 border border-zinc-900 bg-zinc-950/40 p-4 sm:p-6 overflow-x-auto">
+            <svg
+              viewBox="0 0 800 300"
+              className="w-full min-w-[520px]"
+              role="img"
+              aria-label="Two ways to run OpenClaw: self-host it yourself with npm on your own hardware, or deploy on Agentbot Cloud on Railway with MiMo included. Both run the same runtime."
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* source node */}
+              <rect x="320" y="14" width="160" height="40" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+              <text x="400" y="39" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="11" fill="#ffffff" letterSpacing="1.5" fontWeight="bold">YOUR AGENT</text>
+
+              {/* fork lines */}
+              <path d="M360 54 L210 92" fill="none" stroke="#27272a" strokeWidth="1" />
+              <path d="M440 54 L590 92" fill="none" stroke="#f97316" strokeWidth="1" />
+
+              {/* LEFT: self-hosted */}
+              <rect x="40" y="94" width="340" height="150" fill="#000000" stroke="#27272a" strokeWidth="1" />
+              <text x="64" y="122" fontFamily="ui-monospace,monospace" fontSize="11" fill="#a1a1aa" letterSpacing="2" fontWeight="bold">SELF-HOSTED</text>
+              <text x="356" y="122" textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b" letterSpacing="1.5">YOU MANAGE</text>
+              <line x1="64" y1="134" x2="356" y2="134" stroke="#1f1f23" strokeWidth="1" />
+              {[['$', 'npm install -g openclaw'], ['→', 'runs on your hardware'], ['→', 'full control · full privacy']].map(([k, v], i) => (
+                <g key={v}>
+                  <text x="64" y={162 + i * 28} fontFamily="ui-monospace,monospace" fontSize="11" fill="#f97316">{k}</text>
+                  <text x="84" y={162 + i * 28} fontFamily="ui-monospace,monospace" fontSize="11" fill="#71717a">{v}</text>
+                </g>
+              ))}
+
+              {/* RIGHT: agentbot cloud */}
+              <rect x="420" y="94" width="340" height="150" fill="#000000" stroke="#f97316" strokeWidth="1.5" />
+              <text x="444" y="122" fontFamily="ui-monospace,monospace" fontSize="11" fill="#f97316" letterSpacing="2" fontWeight="bold">AGENTBOT CLOUD</text>
+              <text x="736" y="122" textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b" letterSpacing="1.5">WE MANAGE</text>
+              <line x1="444" y1="134" x2="736" y2="134" stroke="#2a1a0a" strokeWidth="1" />
+              {[['◆', 'one-click deploy'], ['◆', 'Railway · 24/7 uptime'], ['◆', 'MiMo V2.5 Pro included']].map(([k, v], i) => (
+                <g key={v}>
+                  <text x="444" y={162 + i * 28} fontFamily="ui-monospace,monospace" fontSize="11" fill="#f97316">{k}</text>
+                  <text x="466" y={162 + i * 28} fontFamily="ui-monospace,monospace" fontSize="11" fill="#a1a1aa">{v}</text>
+                </g>
+              ))}
+
+              {/* converge to one runtime */}
+              <path d="M210 244 L390 272" fill="none" stroke="#27272a" strokeWidth="1" />
+              <path d="M590 244 L410 272" fill="none" stroke="#f97316" strokeWidth="1" />
+              <rect x="250" y="272" width="300" height="22" fill="#09090b" stroke="#1f1f23" strokeWidth="1" />
+              <text x="400" y="287" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" fill="#71717a" letterSpacing="1">same runtime · 20+ channels · tools · memory</text>
+            </svg>
+          </div>
+
           <div className="grid sm:grid-cols-2 gap-px bg-zinc-900 mt-10">
             {[
               { title: 'Self-Hosted', body: 'Run on your own hardware. npm install, onboard, done. Full control, full privacy.' },
