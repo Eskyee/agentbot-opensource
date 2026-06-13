@@ -1519,6 +1519,7 @@ function BuilderView({
                       files={files}
                       mode="preview"
                       showConsole={showSandboxConsole}
+                      isStreaming={isGenerating}
                       onFilesChange={onWorkbenchEdit}
                       onError={setRuntimeError}
                     />
@@ -1562,6 +1563,7 @@ function BuilderView({
                     files={files}
                     mode="code"
                     activeFile={activeFile?.path}
+                    isStreaming={isGenerating}
                     onFilesChange={onWorkbenchEdit}
                     onError={setRuntimeError}
                   />

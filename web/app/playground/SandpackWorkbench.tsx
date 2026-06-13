@@ -232,11 +232,12 @@ export type ErrorInfo = {
 }
 
 /** Surfaces compile/runtime errors for the AI fix loop with file + line context.
- *  Debounced to avoid flashing on transient compile errors during streaming. */
-function ErrorReporter({ onError }: { onError?: (error: ErrorInfo | null) => void }) {
+ *  Suppressed entirely while files are streaming to prevent red flash on
+ *  transient compile errors (missing imports during partial file updates). */
+function ErrorReporter({ onError, isStreaming }: { onError?: (error: ErrorInfo | null) => void; isStreaming: boolean }) {
   const { sandpack } = useSandpack()
   const message = sandpack.error?.message ?? null
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const errorInfo = useMemo<ErrorInfo | null>(() => {
     if (!message) return null
@@ -248,15 +249,25 @@ function ErrorReporter({ onError }: { onError?: (error: ErrorInfo | null) => voi
   }, [message, sandpack.error?.path, sandpack.error?.line])
 
   useEffect(() => {
-    if (timer.current) clearTimeout(timer.current)
-    // Debounce 800ms — transient errors during streaming won't flash the UI
-    timer.current = setTimeout(() => {
-      onError?.(errorInfo)
-    }, 800)
-    return () => {
-      if (timer.current) clearTimeout(timer.current)
+    // Suppress all errors while files are streaming — every partial update
+    // causes transient "missing module" errors that flash the UI.
+    if (isStreaming) {
+      onError?.(null)
+      if (settleTimer.current) clearTimeout(settleTimer.current)
+      return
     }
-  }, [errorInfo, onError])
+
+    // After streaming stops, wait 2s for the sandbox to settle before
+    // reporting any persistent errors.
+    if (settleTimer.current) clearTimeout(settleTimer.current)
+    settleTimer.current = setTimeout(() => {
+      onError?.(errorInfo)
+    }, 2000)
+
+    return () => {
+      if (settleTimer.current) clearTimeout(settleTimer.current)
+    }
+  }, [errorInfo, isStreaming, onError])
 
   return null
 }
@@ -268,6 +279,7 @@ interface SandpackWorkbenchProps {
   mode: 'preview' | 'code'
   activeFile?: string
   showConsole?: boolean
+  isStreaming?: boolean
   onFilesChange?: (files: { path: string; content: string }[]) => void
   onError?: (error: ErrorInfo | null) => void
 }
@@ -278,6 +290,7 @@ export default function SandpackWorkbench({
   mode,
   activeFile,
   showConsole,
+  isStreaming = false,
   onFilesChange,
   onError,
 }: SandpackWorkbenchProps) {
@@ -313,7 +326,7 @@ export default function SandpackWorkbench({
     >
       <FileUpdater files={files} />
       <EditSync onFilesChange={onFilesChange} />
-      <ErrorReporter onError={onError} />
+      <ErrorReporter onError={onError} isStreaming={isStreaming} />
       {mode === 'preview' ? (
         <div className="relative flex h-full min-h-[488px] flex-col">
           <BootOverlay />
@@ -321,6 +334,7 @@ export default function SandpackWorkbench({
             showOpenInCodeSandbox={false}
             showRefreshButton
             showRestartButton={false}
+            showSandpackErrorOverlay={false}
             className="!h-full !min-h-[420px] flex-1"
           />
           {showConsole && (
