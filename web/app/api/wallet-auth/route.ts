@@ -3,7 +3,8 @@ import { prisma } from '@/app/lib/prisma';
 import { createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 import crypto from 'crypto';
-import { attachSessionCookie, getSessionTokenFromCookies } from '@/app/lib/session';
+import { attachSessionCookie } from '@/app/lib/session';
+import { getAuthSession } from '@/app/lib/getAuthSession';
 import { consumeWalletNonce } from '@/app/lib/wallet-nonce';
 
 const viemClient = createPublicClient({ chain: base, transport: http() });
@@ -53,34 +54,27 @@ export async function POST(req: NextRequest) {
     const walletAddress = address.toLowerCase()
     const walletEmail = `${walletAddress}@wallet.agentbot`
 
-    // Check if this wallet is already linked to a user
-    let user = await prisma.user.findFirst({
-      where: { email: walletEmail }
-    });
-
-    // If no user linked to this wallet, check if there's an active session
-    if (!user) {
-      const sessionToken = getSessionTokenFromCookies(req.cookies);
-      if (sessionToken) {
-        const session = await prisma.session.findUnique({
-          where: { sessionToken },
-          include: { user: true },
-        });
-        if (session?.user) {
-          // Link wallet to existing logged-in user
-          user = await prisma.user.update({
-            where: { id: session.userId },
-            data: {
-              vaultId: walletAddress,
-              // Only set wallet email if user doesn't have a real email
-              ...(session.user.email?.includes('@wallet.agentbot') ? { email: walletEmail } : {}),
-            },
-          });
-        }
-      }
+    // CONNECT vs SIGN-IN.
+    // If the caller is already authenticated (e.g. a DJ signed in via Google),
+    // this is a "connect wallet" action: LINK the address to the current account
+    // and keep their identity. Never mint a new session or swap them into a
+    // separate wallet-user — that was the bug that logged users in as someone else.
+    const current = await getAuthSession()
+    if (current?.user?.id) {
+      await prisma.user.update({
+        where: { id: current.user.id },
+        data: { vaultId: walletAddress },
+      })
+      // No new cookie — the existing session stays intact.
+      return NextResponse.json({
+        ok: true,
+        linked: true,
+        user: { id: current.user.id, name: current.user.name },
+      })
     }
 
-    // Only create new user if no existing user found
+    // Anonymous visitor → sign in. Find the existing wallet-user or create one.
+    let user = await prisma.user.findFirst({ where: { email: walletEmail } })
     if (!user) {
       user = await prisma.user.create({
         data: {
@@ -89,12 +83,12 @@ export async function POST(req: NextRequest) {
           emailVerified: new Date(),
           vaultId: walletAddress,
         },
-      });
+      })
     }
 
     // Create simple session token (not JWT — just a lookup key)
     const sessionToken = crypto.randomBytes(32).toString('hex');
-    
+
     // Store session in DB
     await prisma.session.create({
       data: {

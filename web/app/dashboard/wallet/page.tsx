@@ -450,21 +450,12 @@ export default function WalletPage() {
                 Your main wallet rail is Base. Sign in with the wallet you want to use for receive addresses,
                 top-ups, and direct transfers. Tempo payment sessions stay available below as a separate agent-spend rail.
               </p>
-              {status === 'unauthenticated' ? (
-                <div className="mt-6 max-w-sm">
-                  <SignInWithBase callbackUrl="/dashboard/wallet" />
-                </div>
-              ) : (
-                <div className="mt-6">
-                  <button
-                    onClick={() => void connectWallet()}
-                    disabled={walletConnecting}
-                    className="border border-zinc-700 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white transition-colors hover:border-zinc-500 disabled:opacity-50"
-                  >
-                    {walletConnecting ? 'Connecting...' : 'Connect Base Wallet'}
-                  </button>
-                </div>
-              )}
+              {/* Always use the Base Account SDK flow (same as /login — gives the
+                  scannable QR). When already signed in, /api/wallet-auth links the
+                  wallet to the current account instead of swapping identity. */}
+              <div className="mt-6 max-w-sm">
+                <SignInWithBase callbackUrl="/dashboard/wallet" />
+              </div>
             </div>
           )}
 
