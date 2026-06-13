@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'MiMo × Agentbot — Partnership',
-  description: 'Agentbot is the first managed AI agent platform powered by Xiaomi MiMo V2.5. 99% cheaper inference, 1M context, BYOK support.',
+  description: 'Agentbot is the first managed AI agent platform powered by Xiaomi MiMo V2.5. 99% cheaper inference, 1M context, BYOK support. MiMo-V2.5 限免中.',
 }
 
 export default function MimoPartnerPage() {
@@ -19,6 +19,9 @@ export default function MimoPartnerPage() {
             </div>
             <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
               MiMo V2.5
+            </div>
+            <div className="inline-block px-3 py-1 bg-orange-500/10 border border-orange-500/40 text-orange-400 text-[10px] uppercase tracking-widest">
+              MiMo-V2.5 限免中
             </div>
           </div>
 
@@ -82,7 +85,7 @@ export default function MimoPartnerPage() {
               We migrated from OpenRouter to direct MiMo integration in one day. Every agent on the platform now runs on MiMo V2.5 Pro. Our users get faster inference, longer context, and zero surprise bills.
             </p>
             <p>
-              MiMo isn't a budget model — it's a frontier model at frontier-beating prices. Cache hits cost 120x less than misses thanks to HiCache optimization. TTS is free for a limited time. This is the model that makes always-on AI agents economically viable.
+              MiMo isn't a budget model — it's a frontier model at frontier-beating prices. Cache hits cost 120x less than misses thanks to HiCache optimization. TTS is free for a limited time. MiMo-V2.5 限免中 — try it now before the free trial ends. This is the model that makes always-on AI agents economically viable.
             </p>
           </div>
         </div>
@@ -162,7 +165,7 @@ export default function MimoPartnerPage() {
           </h2>
           <p className="text-zinc-400 text-sm max-w-md mx-auto leading-relaxed">
             Every agent on Agentbot runs on MiMo V2.5 Pro. Flat-rate plans. No per-token charges.
-            BYOK supported.
+            BYOK supported. <span className="text-orange-400 font-bold">MiMo-V2.5 限免中</span> — free trial active now.
           </p>
           <Link
             href="/signup"
