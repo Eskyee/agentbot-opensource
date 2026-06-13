@@ -41,6 +41,43 @@ export default function MimoPartnerPage() {
       {/* Integration Depth */}
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8">How It Works</div>
+
+          {/* Direct path: agent → Agentbot gateway → MiMo (no proxy) */}
+          <svg viewBox="0 0 720 210" role="img" aria-label="Your agent talks to the Agentbot gateway which connects directly to Xiaomi MiMo — no proxy — across the full model suite" className="mb-10 w-full h-auto">
+            {/* Agent */}
+            <rect x="10" y="84" width="130" height="48" fill="#09090b" stroke="#27272a" />
+            <text x="75" y="106" textAnchor="middle" fill="#fafafa" fontSize="11" fontFamily="monospace" letterSpacing="1">YOUR AGENT</text>
+            <text x="75" y="122" textAnchor="middle" fill="#71717a" fontSize="9" fontFamily="monospace">OpenClaw</text>
+            <line x1="140" y1="108" x2="186" y2="108" stroke="#3f3f46" strokeDasharray="4 4" />
+            <polygon points="186,104 194,108 186,112" fill="#EF6F2E" />
+            {/* Agentbot gateway */}
+            <rect x="196" y="74" width="150" height="68" fill="none" stroke="#EF6F2E" strokeOpacity="0.5" />
+            <text x="271" y="98" textAnchor="middle" fill="#EF6F2E" fontSize="11" fontFamily="monospace" letterSpacing="1">AGENTBOT</text>
+            <text x="271" y="114" textAnchor="middle" fill="#a1a1aa" fontSize="9" fontFamily="monospace">gateway · BYOK</text>
+            <text x="271" y="128" textAnchor="middle" fill="#71717a" fontSize="8" fontFamily="monospace">direct · no proxy</text>
+            <line x1="346" y1="108" x2="392" y2="108" stroke="#3f3f46" strokeDasharray="4 4" />
+            <polygon points="392,104 400,108 392,112" fill="#EF6F2E" />
+            {/* MiMo */}
+            <rect x="402" y="74" width="150" height="68" fill="#09090b" stroke="#27272a" />
+            <text x="477" y="98" textAnchor="middle" fill="#fafafa" fontSize="11" fontFamily="monospace" letterSpacing="1">XIAOMI MiMo</text>
+            <text x="477" y="114" textAnchor="middle" fill="#71717a" fontSize="8" fontFamily="monospace">xiaomimimo.com</text>
+            <text x="477" y="128" textAnchor="middle" fill="#71717a" fontSize="8" fontFamily="monospace">zero overhead</text>
+            {/* model suite fan-out */}
+            {[
+              { y: 36, label: 'mimo-v2.5-pro' },
+              { y: 84, label: 'mimo-v2.5' },
+              { y: 132, label: 'v2.5-tts' },
+              { y: 168, label: 'v2.5-asr' },
+            ].map((m) => (
+              <g key={m.label}>
+                <line x1="552" y1="108" x2="600" y2={m.y + 14} stroke="#27272a" />
+                <rect x="600" y={m.y} width="110" height="28" fill="#09090b" stroke="#27272a" />
+                <text x="655" y={m.y + 18} textAnchor="middle" fill="#a1a1aa" fontSize="9" fontFamily="monospace">{m.label}</text>
+              </g>
+            ))}
+          </svg>
+
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-10">Integration Depth</div>
           <div className="grid sm:grid-cols-2 gap-px bg-zinc-900">
             {[
