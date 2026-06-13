@@ -40,6 +40,39 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { action, invoice } = body
 
+    // Mutations on an existing invoice must verify ownership (prevents IDOR).
+    // `send` may also create a brand-new invoice (no id) — only checked when id present.
+    const mutatesExisting =
+      ['update', 'delete', 'markPaid'].includes(action) || (action === 'send' && Boolean(invoice?.id))
+    if (mutatesExisting) {
+      if (!invoice?.id) {
+        return NextResponse.json({ error: 'invoice id required' }, { status: 400 })
+      }
+      const existing = await prisma.managedAgentSession.findUnique({
+        where: { id: invoice.id },
+      })
+      if (!existing || existing.userId !== session.user.id || existing.type !== 'invoice') {
+        return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
+      }
+    }
+
+    if (action === 'delete') {
+      await prisma.managedAgentSession.delete({ where: { id: invoice.id } })
+      return NextResponse.json({ ok: true, deleted: invoice.id })
+    }
+
+    if (action === 'markPaid') {
+      const existing = await prisma.managedAgentSession.findUnique({ where: { id: invoice.id } })
+      const prev = (existing?.metadata as Record<string, unknown>) || {}
+      const inv = await prisma.managedAgentSession.update({
+        where: { id: invoice.id },
+        data: {
+          metadata: { ...prev, status: 'paid', paidAt: new Date().toISOString() },
+        },
+      })
+      return NextResponse.json({ ok: true, invoice: { id: inv.id, ...(inv.metadata as Record<string, unknown>) } })
+    }
+
     if (action === 'create') {
       const inv = await prisma.managedAgentSession.create({
         data: {
@@ -71,33 +104,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, invoice: { id: inv.id, ...invoice } })
     }
 
-    if (action === 'send' && invoice.id) {
-      const inv = await prisma.managedAgentSession.update({
-        where: { id: invoice.id },
-        data: {
-          metadata: {
-            ...invoice,
-            status: 'sent',
-            sentAt: new Date().toISOString(),
-          },
-        },
-      })
-
-      // Send email via Resend
-      try {
-        const { Resend } = await import('resend')
-        const resend = new Resend(process.env.RESEND_API_KEY)
-        await resend.emails.send({
-          from: 'Agentbot <onboarding@resend.dev>',
-          to: invoice.clientEmail,
-          subject: `Invoice ${invoice.invoiceNumber} from ${invoice.clientName || 'Agentbot'}`,
-          html: generateInvoiceEmail(invoice),
+    if (action === 'send') {
+      // Send works for an existing draft (has id) or a brand-new invoice (no id).
+      let invoiceId: string = invoice.id
+      if (invoiceId) {
+        await prisma.managedAgentSession.update({
+          where: { id: invoiceId },
+          data: { metadata: { ...invoice, status: 'sent', sentAt: new Date().toISOString() } },
         })
-      } catch (err) {
-        console.error('[Invoice] Email send failed:', err)
+      } else {
+        const created = await prisma.managedAgentSession.create({
+          data: {
+            userId: session.user.id,
+            type: 'invoice',
+            metadata: {
+              ...invoice,
+              status: 'sent',
+              createdBy: session.user.id,
+              createdAt: new Date().toISOString(),
+              sentAt: new Date().toISOString(),
+            },
+          },
+        })
+        invoiceId = created.id
       }
 
-      return NextResponse.json({ ok: true, invoice: { id: inv.id, ...invoice, status: 'sent' } })
+      // Send email via Resend (best-effort — invoice is still marked sent if email fails).
+      if (invoice.clientEmail) {
+        try {
+          const { Resend } = await import('resend')
+          const resend = new Resend(process.env.RESEND_API_KEY)
+          await resend.emails.send({
+            from: 'Agentbot <onboarding@resend.dev>',
+            to: invoice.clientEmail,
+            subject: `Invoice ${invoice.invoiceNumber} from ${invoice.clientName || 'Agentbot'}`,
+            html: generateInvoiceEmail(invoice),
+          })
+        } catch (err) {
+          console.error('[Invoice] Email send failed:', err)
+        }
+      }
+
+      return NextResponse.json({ ok: true, invoice: { id: invoiceId, ...invoice, status: 'sent' } })
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })

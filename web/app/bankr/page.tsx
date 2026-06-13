@@ -52,6 +52,65 @@ export default function BankrPage() {
         </div>
       </section>
 
+      {/* How It Works */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">How It Works</div>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mb-10">
+            You talk. <span className="text-orange-500">Your agent trades.</span>
+          </h2>
+          <div className="border border-zinc-900 bg-zinc-950/40 p-4 sm:p-6 overflow-x-auto">
+            <svg
+              viewBox="0 0 880 320"
+              className="w-full min-w-[560px]"
+              role="img"
+              aria-label="How Bankr works: you send a plain-language instruction to your agent, the agent calls Bankr, Bankr routes the trade to the right chain wallet (Base, Ethereum, Polygon, Solana, or Unichain), and the confirmation streams back to you."
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* You */}
+              <rect x="6" y="128" width="150" height="64" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+              <text x="81" y="150" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b" letterSpacing="2">YOU</text>
+              <text x="81" y="168" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" fill="#a1a1aa">&quot;Buy $50 of ETH</text>
+              <text x="81" y="181" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" fill="#a1a1aa">on Base&quot;</text>
+              <line x1="156" y1="160" x2="192" y2="160" stroke="#3f3f46" strokeWidth="1" />
+              <polygon points="188,156 196,160 188,164" fill="#3f3f46" />
+
+              {/* Agent */}
+              <rect x="198" y="130" width="140" height="60" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+              <text x="268" y="156" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" fill="#a1a1aa" letterSpacing="1">YOUR AGENT</text>
+              <text x="268" y="172" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">OpenClaw runtime</text>
+              <line x1="338" y1="160" x2="374" y2="160" stroke="#f97316" strokeWidth="1" />
+              <polygon points="370,156 378,160 370,164" fill="#f97316" />
+
+              {/* Bankr engine */}
+              <rect x="380" y="120" width="150" height="80" fill="#09090b" stroke="#f97316" strokeWidth="1.5" />
+              <text x="455" y="150" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="12" fill="#ffffff" letterSpacing="2" fontWeight="bold">BANKR</text>
+              <text x="455" y="166" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#f97316">your keys · your funds</text>
+              <text x="455" y="182" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">quote · sign · submit</text>
+
+              {/* fan-out to chains */}
+              {['Base', 'Ethereum', 'Polygon', 'Solana', 'Unichain'].map((chain, i) => {
+                const y = 28 + i * 52
+                const accent = chain === 'Base'
+                return (
+                  <g key={chain}>
+                    <line x1="530" y1="160" x2="694" y2={y + 17} stroke={accent ? '#f97316' : '#27272a'} strokeWidth="1" strokeDasharray={accent ? '0' : '3 2'} />
+                    <rect x="698" y={y} width="150" height="34" fill="#09090b" stroke={accent ? '#f97316' : '#27272a'} strokeWidth="1" />
+                    <text x="712" y={y + 21} fontFamily="ui-monospace,monospace" fontSize="10" fill={accent ? '#f97316' : '#a1a1aa'}>{chain}</text>
+                    <text x="840" y={y + 21} textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">wallet</text>
+                  </g>
+                )
+              })}
+
+              {/* confirmation return path */}
+              <path d="M773 296 L81 296 L81 196" fill="none" stroke="#27272a" strokeWidth="1" strokeDasharray="3 3" />
+              <polygon points="77,204 81,196 85,204" fill="#3f3f46" />
+              <text x="427" y="312" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b" letterSpacing="1.5">tx hash + confirmation streams back to your chat — every trade needs your approval</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
       {/* What Your Agent Can Do */}
       <section className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16 sm:py-24">

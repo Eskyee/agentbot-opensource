@@ -174,6 +174,89 @@ export default function RobinhoodPage() {
           </div>
         )}
 
+        {/* New to this? Plain-English explainer + flow diagram */}
+        <div className="border border-zinc-800 bg-zinc-950 p-6 mb-px">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">New here? Start with this</div>
+          <h3 className="text-lg font-bold tracking-tight mb-3">
+            Let your agent trade on Robinhood — in plain English.
+          </h3>
+          <div className="space-y-2 text-sm text-zinc-400 leading-relaxed max-w-2xl mb-6">
+            <p>
+              <span className="text-green-400 font-bold">MCP</span> (Model Context Protocol) is the standard way an AI agent plugs into an
+              outside tool. Connecting Robinhood&apos;s MCP gives your agent a secure &ldquo;trading plug&rdquo; — it can pull
+              live quotes, check your portfolio, and place orders, all from a normal chat message like
+              <span className="text-zinc-200"> &ldquo;buy 2 shares of AAPL.&rdquo;</span>
+            </p>
+            <p>
+              You stay in control: the agent authenticates <span className="text-zinc-200">as you</span> (you log in once with <code className="text-green-400">/mcp</code>),
+              Agentbot never sees your Robinhood password, and you approve what it does.
+            </p>
+          </div>
+
+          <div className="border border-zinc-900 bg-black p-4 overflow-x-auto">
+            <svg
+              viewBox="0 0 880 250"
+              className="w-full min-w-[560px]"
+              role="img"
+              aria-label="How Robinhood MCP works: you send a plain-language instruction to your agent, the agent connects through the Robinhood Trading MCP endpoint, you authenticate once as yourself, and the agent can then read quotes and place orders on your Robinhood account, returning confirmations to your chat."
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* You */}
+              <rect x="6" y="98" width="148" height="60" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+              <text x="80" y="122" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b" letterSpacing="2">YOU</text>
+              <text x="80" y="140" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" fill="#a1a1aa">&quot;Buy 2 AAPL&quot;</text>
+              <line x1="154" y1="128" x2="190" y2="128" stroke="#3f3f46" strokeWidth="1" />
+              <polygon points="186,124 194,128 186,132" fill="#3f3f46" />
+
+              {/* Agent */}
+              <rect x="196" y="98" width="148" height="60" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+              <text x="270" y="122" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" fill="#a1a1aa" letterSpacing="1">YOUR AGENT</text>
+              <text x="270" y="140" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">OpenClaw runtime</text>
+              <line x1="344" y1="128" x2="380" y2="128" stroke="#22c55e" strokeWidth="1" />
+              <polygon points="376,124 384,128 376,132" fill="#22c55e" />
+
+              {/* MCP endpoint */}
+              <rect x="386" y="88" width="156" height="80" fill="#09090b" stroke="#22c55e" strokeWidth="1.5" />
+              <text x="464" y="116" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="10" fill="#ffffff" letterSpacing="1.5" fontWeight="bold">ROBINHOOD MCP</text>
+              <text x="464" y="132" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#22c55e">agent.robinhood.com</text>
+              <text x="464" y="150" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">authenticate via /mcp</text>
+              <line x1="542" y1="128" x2="578" y2="128" stroke="#22c55e" strokeWidth="1" />
+              <polygon points="574,124 582,128 574,132" fill="#22c55e" />
+
+              {/* Robinhood account */}
+              <rect x="584" y="78" width="290" height="100" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+              <text x="604" y="104" fontFamily="ui-monospace,monospace" fontSize="9" fill="#a1a1aa" letterSpacing="1">YOUR ROBINHOOD ACCOUNT</text>
+              <line x1="604" y1="114" x2="854" y2="114" stroke="#1f1f23" strokeWidth="1" />
+              {[['Quotes', 'live prices'], ['Portfolio', 'positions + buying power'], ['Orders', 'buy / sell — you approve']].map(([label, sub], i) => (
+                <g key={label}>
+                  <text x="604" y={136 + i * 18} fontFamily="ui-monospace,monospace" fontSize="9" fill="#22c55e">◆</text>
+                  <text x="620" y={136 + i * 18} fontFamily="ui-monospace,monospace" fontSize="9" fill="#a1a1aa">{label}</text>
+                  <text x="854" y={136 + i * 18} textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">{sub}</text>
+                </g>
+              ))}
+
+              {/* return path */}
+              <path d="M729 178 L80 178 L80 158" fill="none" stroke="#27272a" strokeWidth="1" strokeDasharray="3 3" />
+              <polygon points="76,166 80,158 84,166" fill="#3f3f46" />
+              <text x="404" y="198" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b" letterSpacing="1.5">fills + confirmations stream back to your chat</text>
+            </svg>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-px bg-zinc-900 mt-4 border border-zinc-900">
+            {[
+              { n: '1', t: 'Connect', d: 'Hit “Connect Robinhood” below — it adds the MCP endpoint to your agent.' },
+              { n: '2', t: 'Authenticate', d: 'In your agent, run /mcp and log in to Robinhood once. Your login, not ours.' },
+              { n: '3', t: 'Trade', d: 'Ask in plain English: “what’s my buying power?”, “buy 2 AAPL”. You approve orders.' },
+            ].map((s) => (
+              <div key={s.n} className="bg-black p-4">
+                <div className="text-[10px] font-bold text-green-500 uppercase tracking-widest mb-2">Step {s.n}</div>
+                <div className="text-xs font-bold uppercase tracking-wider mb-1">{s.t}</div>
+                <p className="text-[11px] text-zinc-500 leading-relaxed">{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Manual Setup Command */}
         {manualCommand && (
           <div className="border border-yellow-800 bg-zinc-950 p-6 mb-px">
