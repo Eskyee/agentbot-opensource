@@ -235,6 +235,37 @@ export default async function Home() {
       {/* ━━━ TOKEN CARD ━━━ */}
       <TokenCard />
 
+      {/* ━━━ MIMO PARTNERSHIP ━━━ */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 py-16">
+          <div className="flex flex-col items-center gap-6 text-center">
+            <div className="flex flex-wrap justify-center gap-2">
+              <div className="inline-block px-3 py-1 border border-orange-500/30 text-orange-500 text-[10px] uppercase tracking-widest">
+                Partnership
+              </div>
+              <div className="inline-block px-3 py-1 border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest">
+                MiMo V2.5
+              </div>
+              <div className="inline-block px-3 py-1 bg-orange-500/10 border border-orange-500/40 text-orange-400 text-[10px] uppercase tracking-widest">
+                MiMo-V2.5 限免中
+              </div>
+            </div>
+            <div className="text-3xl sm:text-4xl font-bold tracking-tighter uppercase">
+              MiMo × <span className="text-orange-500">Agentbot</span>
+            </div>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-700">
+              Powered by MiMo · Built on OpenClaw
+            </span>
+            <Link
+              href="/partner/mimo"
+              className="mt-2 border border-zinc-800 px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+            >
+              Learn more →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ━━━ FOOTER ━━━ */}
       <footer className="border-t border-zinc-900">
         <div className="max-w-4xl mx-auto px-5 sm:px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
