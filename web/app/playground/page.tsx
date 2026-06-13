@@ -684,6 +684,24 @@ export default function PlaygroundPage() {
     }
   }
 
+  function forkToOpenclaw() {
+    if (!activeProject?.generation) return
+    const gen = activeProject.generation
+    const forkedProject: PlaygroundProject = {
+      id: createId('fork'),
+      name: `${activeProject.name}-deploy`.slice(0, 64),
+      status: 'IDLE',
+      template: 'VITE-REACT-TS',
+      lastActive: 'now',
+      generation: gen,
+    }
+    setProjects((current) => [forkedProject, ...current])
+    setActiveProjectId(forkedProject.id)
+    setSelectedFile(gen.files[0]?.path ?? '.gitignore')
+    setView('publish')
+    syncProject(forkedProject, { prompt, provider, model })
+  }
+
   async function refreshPublishedProject() {
     if (!activeProject?.publishedUrl) return
 
@@ -1045,6 +1063,7 @@ export default function PlaygroundPage() {
           onRefresh={refreshPublishedProject}
           onOpen={() => setView('builder')}
           onOpenSandbox={openInSandbox}
+          onForkToOpenclaw={forkToOpenclaw}
           isPublishing={isPublishing}
           isPushingGitlawb={isPushingGitlawb}
           isRefreshing={isRefreshingPublish}
@@ -1898,6 +1917,7 @@ function PublishView({
   onRefresh,
   onOpen,
   onOpenSandbox,
+  onForkToOpenclaw,
   isPublishing,
   isPushingGitlawb,
   isRefreshing,
@@ -1911,6 +1931,7 @@ function PublishView({
   onRefresh: () => Promise<void>
   onOpen: () => void
   onOpenSandbox: () => Promise<void>
+  onForkToOpenclaw: () => void
   isPublishing: boolean
   isPushingGitlawb: boolean
   isRefreshing: boolean
@@ -2028,6 +2049,21 @@ function PublishView({
                 <ExternalLink className="ml-1 inline h-3 w-3" />
               </a>
             )}
+          </div>
+          <div className="mt-4 border-t border-zinc-900 pt-4">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Fork & Deploy</div>
+            <button
+              type="button"
+              onClick={() => {
+                if (!project?.generation) return
+                onForkToOpenclaw()
+              }}
+              disabled={!canPublish}
+              className="w-full border border-orange-500/50 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-400 hover:text-orange-300 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Fork to OpenClaw
+            </button>
+            <p className="mt-2 text-[10px] text-zinc-600">Saves a copy and opens the deploy flow.</p>
           </div>
         </div>
       </div>
