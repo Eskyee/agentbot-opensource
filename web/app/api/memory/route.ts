@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
         ...(fetchAll ? {} : { agentId }),
       },
       orderBy: { updatedAt: 'desc' },
+      take: 2000,
     })
 
     // Build structured memory from stored key-value pairs

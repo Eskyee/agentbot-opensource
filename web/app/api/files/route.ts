@@ -63,6 +63,7 @@ export async function GET(req: NextRequest) {
     const files = await prisma.agentFile.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take: 500,
       select: {
         id: true,
         filename: true,

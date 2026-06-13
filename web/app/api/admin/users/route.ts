@@ -30,6 +30,7 @@ export async function GET() {
       orderBy: {
         email: 'asc',
       },
+      take: 1000,
     });
 
     // Single aggregate query for agent counts (avoids N+1)

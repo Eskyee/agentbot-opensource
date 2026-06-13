@@ -50,57 +50,53 @@ export async function GET() {
     const planLimit = PLAN_LIMITS[plan] || 0
 
     // Sum all MiMo usage for this user only
-    const usage = await prisma.usage_logs.findMany({
+    // Aggregate in the DB (one row per model) instead of scanning every log —
+    // usage_logs is the fastest-growing table, so a full findMany was the main
+    // latency/memory risk on this route.
+    const usage = await prisma.usage_logs.groupBy({
+      by: ['model'],
       where: {
         user_id: session.user.id,
         model: { contains: 'mimo' },
       },
-      select: {
-        model: true,
-        input_tokens: true,
-        output_tokens: true,
-        created_at: true,
-      },
+      _sum: { input_tokens: true, output_tokens: true },
     })
 
     let totalCreditsUsed = 0
     let totalInputTokens = 0
     let totalOutputTokens = 0
 
-    for (const log of usage) {
-      const input = log.input_tokens || 0
-      const output = log.output_tokens || 0
+    for (const row of usage) {
+      const input = row._sum.input_tokens || 0
+      const output = row._sum.output_tokens || 0
       totalInputTokens += input
       totalOutputTokens += output
-      totalCreditsUsed += estimateCredits(log.model || '', input, output)
+      totalCreditsUsed += estimateCredits(row.model || '', input, output)
     }
 
     // Monthly usage (current billing period)
     const now = new Date()
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    const monthlyUsage = await prisma.usage_logs.findMany({
+    const monthlyUsage = await prisma.usage_logs.groupBy({
+      by: ['model'],
       where: {
         user_id: session.user.id,
         model: { contains: 'mimo' },
         created_at: { gte: monthStart },
       },
-      select: {
-        model: true,
-        input_tokens: true,
-        output_tokens: true,
-      },
+      _sum: { input_tokens: true, output_tokens: true },
     })
 
     let monthlyCredits = 0
     let monthlyInput = 0
     let monthlyOutput = 0
 
-    for (const log of monthlyUsage) {
-      const input = log.input_tokens || 0
-      const output = log.output_tokens || 0
+    for (const row of monthlyUsage) {
+      const input = row._sum.input_tokens || 0
+      const output = row._sum.output_tokens || 0
       monthlyInput += input
       monthlyOutput += output
-      monthlyCredits += estimateCredits(log.model || '', input, output)
+      monthlyCredits += estimateCredits(row.model || '', input, output)
     }
 
     // Fetch real credit balance
