@@ -120,6 +120,42 @@ export function BasefmLivePageClient({
 
         <section className="border border-zinc-800 p-6">
           <h2 className="text-xl font-bold uppercase tracking-tighter font-mono mb-6">How To Broadcast</h2>
+
+          {/* Signal path: access → decks → encoder → station → world */}
+          <div className="mb-8 border border-zinc-900 bg-black p-4 overflow-x-auto">
+            <svg viewBox="0 0 900 150" className="w-full min-w-[600px]" role="img" aria-label="Broadcast signal path: unlock access with a token, run your normal decks and mixer, send the master into an encoder (OBS for humans, ffmpeg for agent DJs), which streams via your broadcast key to the baseFM station, where a global audience tunes in." xmlns="http://www.w3.org/2000/svg">
+              {[
+                { x: 6, t: 'ACCESS', s: 'token-gated', accent: false },
+                { x: 186, t: 'DECKS + MIXER', s: 'Pioneer / Rekordbox', accent: false },
+                { x: 366, t: 'ENCODER', s: 'OBS · ffmpeg', accent: false },
+              ].map((n, i) => (
+                <g key={n.t}>
+                  <rect x={n.x} y="46" width="150" height="58" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+                  <text x={n.x + 75} y="70" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" fill="#a1a1aa" letterSpacing="1">{n.t}</text>
+                  <text x={n.x + 75} y="88" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">{n.s}</text>
+                  {i < 3 && <><line x1={n.x + 150} y1="75" x2={n.x + 182} y2="75" stroke="#3f3f46" strokeWidth="1" /><polygon points={`${n.x + 178},71 ${n.x + 186},75 ${n.x + 178},79`} fill="#3f3f46" /></>}
+                </g>
+              ))}
+              {/* encoder -> station (broadcast key) */}
+              <line x1="516" y1="75" x2="552" y2="75" stroke="#22c55e" strokeWidth="1.5" />
+              <polygon points="548,71 556,75 548,79" fill="#22c55e" />
+              <text x="534" y="64" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#22c55e">RTMP key</text>
+              {/* station */}
+              <rect x="558" y="38" width="160" height="74" fill="#09090b" stroke="#22c55e" strokeWidth="1.5" />
+              <text x="638" y="66" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="12" fill="#ffffff" letterSpacing="1.5" fontWeight="bold">baseFM</text>
+              <text x="638" y="82" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#22c55e">Mux · live player</text>
+              <text x="638" y="96" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#52525b">auto pickup</text>
+              <line x1="718" y1="75" x2="750" y2="75" stroke="#3f3f46" strokeWidth="1" />
+              <polygon points="746,71 754,75 746,79" fill="#3f3f46" />
+              {/* global */}
+              <rect x="756" y="46" width="138" height="58" fill="#09090b" stroke="#27272a" strokeWidth="1" />
+              <text x="825" y="70" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" fill="#a1a1aa" letterSpacing="1">GLOBAL</text>
+              <text x="825" y="88" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">24/7 listeners</text>
+              {/* human / agent split note under encoder */}
+              <text x="441" y="128" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="7" fill="#52525b">OBS = humans · ffmpeg = agent DJs</text>
+            </svg>
+          </div>
+
           <div className="space-y-4">
             <Step index="1" title="Get Access" body="Hold the baseFM token on Base, or claim your Agentbot token perks on Solana. Both unlock the station path." />
             <Step index="2" title="Decks + Mixer" body="Keep your normal Pioneer / Rekordbox workflow for track selection, cueing, EQ, loops, and transitions." />
