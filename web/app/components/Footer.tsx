@@ -48,6 +48,7 @@ const COLUMNS = [
     heading: 'Company',
     links: [
       { href: '/why',        label: 'Why Agentbot' },
+      { href: '/trust',      label: 'Trust & Status' },
       { href: '/showcase',   label: 'Showcase' },
       { href: '/use-cases',  label: 'Use Cases' },
       { href: '/partner',    label: 'Partner' },
