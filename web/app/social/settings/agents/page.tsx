@@ -30,9 +30,21 @@ export default function MyAgentsPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    // Parse defensively: a non-OK or empty response (e.g. 401 with no body)
+    // would otherwise throw "Unexpected end of JSON input" as an unhandled rejection.
+    const safeJson = async (url: string): Promise<any> => {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) return {};
+        const text = await r.text();
+        return text ? JSON.parse(text) : {};
+      } catch {
+        return {};
+      }
+    };
     Promise.all([
-      fetch('/api/social/agents/mine').then(r => r.json()),
-      fetch('/api/agents').then(r => r.json()),
+      safeJson('/api/social/agents/mine'),
+      safeJson('/api/agents'),
     ]).then(([social, openclaw]) => {
       setAgents(social.agents ?? []);
       setOpenclawAgents(openclaw.agents ?? []);

@@ -48,6 +48,13 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       'AbortError',
       // Common pattern in console scripts.
       "Can't find variable: ZiteReader",
+      // User declined a wallet prompt (signature/transaction). This is a
+      // normal user action via viem/wagmi, not an application error.
+      'UserRejectedRequestError',
+      /User rejected the request/,
+      /User denied (transaction|message) signature/,
+      // EIP-1193 user-rejection code, in case it surfaces as a generic error.
+      /\b4001\b.*rejected/i,
     ],
   })
 }
