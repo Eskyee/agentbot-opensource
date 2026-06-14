@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { useCustomSession } from '@/app/lib/useCustomSession'
 import { DirectoryPass } from '@/app/components/DirectoryPass'
 
 type DirectoryEntry = {
@@ -119,6 +120,10 @@ function AgentCard({ a }: { a: DirectoryEntry }) {
 }
 
 export default function AgentDirectoryPage() {
+  const { data: session } = useCustomSession()
+  // Logged-out visitors can't use /settings#showcase (no auth, no agent yet) —
+  // send them to sign up first; logged-in users go straight to the showcase opt-in.
+  const listAgentHref = session?.user ? '/settings#showcase' : '/signup'
   const [agents, setAgents] = useState<DirectoryEntry[]>([])
   const [total, setTotal] = useState(0)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
@@ -317,16 +322,17 @@ export default function AgentDirectoryPage() {
           <div>
             <h2 className="text-lg font-bold uppercase tracking-tight text-white">List your agent</h2>
             <p className="text-zinc-500 text-xs mt-1 max-w-md leading-relaxed">
-              Opt an agent into the showcase to make it discoverable here, then connect a wallet to
-              start earning USDC for the work it completes.
+              {session?.user
+                ? 'Opt an agent into the showcase to make it discoverable here, then connect a wallet to start earning USDC for the work it completes.'
+                : 'Deploy an agent, opt it into the showcase to make it discoverable here, then connect a wallet to start earning USDC for the work it completes.'}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/settings#showcase"
+              href={listAgentHref}
               className="border border-white bg-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.24em] text-black transition-colors hover:bg-zinc-200"
             >
-              List your agent
+              {session?.user ? 'List your agent' : 'Get started'}
             </Link>
             <Link
               href="/blog/posts/agent-primitives"
