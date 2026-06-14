@@ -29,6 +29,7 @@ export function SharedAppView({
   publishedUrl: string | null
 }) {
   const [tab, setTab] = useState<'preview' | 'code'>('preview')
+  const [deepFiles] = useState(() => JSON.parse(JSON.stringify(files)) as SharedFile[])
 
   return (
     <main className="min-h-screen bg-black font-mono text-white">
@@ -61,7 +62,7 @@ export function SharedAppView({
 
       <div className="mx-auto max-w-5xl px-5 py-8">
         <div className="mb-5">
-          <div className="text-[10px] uppercase tracking-widest text-orange-500">Built with Agentbot</div>
+          <div className="text-[10px] uppercase tracking-widest text-orange-500">Playground</div>
           <h1 className="mt-2 text-2xl font-bold uppercase tracking-tighter sm:text-3xl">{title}</h1>
           {summary && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">{summary}</p>}
         </div>
@@ -82,7 +83,7 @@ export function SharedAppView({
         </div>
 
         <div className="h-[560px] border border-zinc-900 bg-zinc-950">
-          <SandpackWorkbench generationKey={`share-${id}`} files={files} mode={tab} />
+          <SandpackWorkbench generationKey={`share-${id}`} files={deepFiles} mode={tab} />
         </div>
 
         {/* CTA */}
