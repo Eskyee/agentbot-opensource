@@ -51,6 +51,7 @@ const COLUMNS = [
       { href: '/showcase',   label: 'Showcase' },
       { href: '/use-cases',  label: 'Use Cases' },
       { href: '/partner',    label: 'Partner' },
+      { href: '/advertise',  label: 'Advertise' },
       { href: 'https://talent.app/eskyee', label: 'Careers', external: true },
       { href: '/terms',      label: 'Terms' },
       { href: '/privacy',    label: 'Privacy' },
