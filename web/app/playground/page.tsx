@@ -496,6 +496,8 @@ export default function PlaygroundPage() {
   const [hydrated, setHydrated] = useState(false)
   const [storage, setStorage] = useState<'local' | 'server'>('local')
   const [shareCopied, setShareCopied] = useState(false)
+  const [makingAgent, setMakingAgent] = useState(false)
+  const [agentMade, setAgentMade] = useState(false)
   // Bumped to force the live workbench to remount after a history restore
   const [restoreNonce, setRestoreNonce] = useState(0)
 
@@ -724,6 +726,45 @@ export default function PlaygroundPage() {
       setShareCopied(true)
       setTimeout(() => setShareCopied(false), 1800)
     })
+  }
+
+  // Bridge: turn the active generated app into an always-on, payable A2A agent
+  // listed in the public directory. The server mints an Agent from this project.
+  const [agentError, setAgentError] = useState<string | null>(null)
+  const [agentLink, setAgentLink] = useState<string | null>(null)
+
+  async function makeAgent() {
+    if (!activeProject?.generation || makingAgent) return
+    setMakingAgent(true)
+    setAgentError(null)
+    setAgentLink(null)
+    try {
+      // Ensure the project exists server-side before calling make-agent
+      const synced = await persistServerProject(activeProject)
+      if (!synced) {
+        setAgentError('Sign in and save your project first')
+        return
+      }
+
+      const res = await fetch(`/api/playground/projects/${activeProject.id}/make-agent`, {
+        method: 'POST',
+      })
+      const body = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        const msg = body?.error || (res.status === 409 ? 'Generate the app before creating an agent' : res.status === 404 ? 'Project not found on server' : 'Could not create agent')
+        setAgentError(msg)
+        return
+      }
+
+      setAgentMade(true)
+      setAgentLink(body?.cardUrl || body?.directoryUrl || '/agents')
+      setTimeout(() => { setAgentMade(false); setAgentLink(null) }, 6000)
+    } catch {
+      setAgentError('Network error — try again')
+    } finally {
+      setMakingAgent(false)
+    }
   }
 
   function remixProject(projectId: string) {
@@ -1356,6 +1397,20 @@ export default function PlaygroundPage() {
             >
               {shareCopied ? '✓ Link copied' : 'Share'}
             </button>
+            <button
+              type="button"
+              onClick={makeAgent}
+              disabled={!activeProject?.generation || makingAgent}
+              className="px-2 py-1 text-orange-500 hover:text-orange-400 disabled:cursor-not-allowed disabled:opacity-40"
+              title="Turn this app into an always-on, payable A2A agent in the public directory"
+            >
+              {agentMade && agentLink ? (
+                <a href={agentLink} className="underline">✓ Agent listed</a>
+              ) : agentMade ? '✓ Agent listed' : makingAgent ? 'Creating…' : 'Make agent'}
+            </button>
+            {agentError && (
+              <span className="text-[10px] text-red-400 max-w-[180px] truncate" title={agentError}>{agentError}</span>
+            )}
             <button type="button" onClick={newProject} className="inline-flex items-center gap-1 border border-zinc-800 px-2 py-1 hover:text-white">
               <Plus className="h-3 w-3" />
               New project

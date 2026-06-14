@@ -55,6 +55,7 @@ const COLUMNS = [
       { href: 'https://talent.app/eskyee', label: 'Careers', external: true },
       { href: '/terms',      label: 'Terms' },
       { href: '/privacy',    label: 'Privacy' },
+      { href: '/trust',      label: 'Trust & Status' },
     ],
   },
 ]

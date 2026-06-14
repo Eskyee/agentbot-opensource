@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import {
   authenticateGatewayRequest,
   extractUsage,
@@ -11,7 +11,8 @@ import {
   shouldTryNextGatewayUpstream,
 } from '@/app/lib/opengateway'
 import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
-import { buildAutoLadder, isAutoModel, stripRouteHint } from '@/app/lib/gateway-router'
+import { buildAutoLadder, isAutoModel, scoreDifficulty, stripRouteHint } from '@/app/lib/gateway-router'
+import { applyLearnedOrder, bucketFor, recordRouting } from '@/app/lib/gateway-flywheel'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -110,12 +111,17 @@ export async function POST(req: NextRequest) {
   // The non-standard `route` hint is stripped so upstreams never see it.
   const { body, hint } = stripRouteHint(rawBody)
   const auto = isAutoModel(requestedModel)
-  const modelLadder = auto ? buildAutoLadder(body, hint) : [requestedModel]
+  const difficulty = auto ? scoreDifficulty(body) : 0
+  const bucket = bucketFor(difficulty)
+  let modelLadder = auto ? buildAutoLadder(body, hint) : [requestedModel]
+  // Flywheel: reorder by what's actually been serving this request-shape best.
+  if (auto) modelLadder = await applyLearnedOrder(bucket, modelLadder)
 
   let lastFailure: { status: number; text: string; provider: string } | null = null
 
   // Outer loop: model candidates (auto escalates on failure). Inner: providers.
-  for (const candidateModel of modelLadder) {
+  for (let mi = 0; mi < modelLadder.length; mi++) {
+    const candidateModel = modelLadder[mi]
     for (const upstream of upstreams) {
       const upstreamBody = {
         ...body,
@@ -158,6 +164,17 @@ export async function POST(req: NextRequest) {
             success: response.ok,
             errorMessage: response.ok ? undefined : text.slice(0, 500),
           })
+          if (auto) {
+            after(() =>
+              recordRouting({
+                bucket,
+                model: candidateModel,
+                success: response.ok,
+                escalations: mi,
+                latencyMs: Date.now() - startedAt,
+              }).catch(() => {}),
+            )
+          }
           return new NextResponse(text, { status: response.status, headers })
         }
 
@@ -185,6 +202,18 @@ export async function POST(req: NextRequest) {
           success: response.ok,
           errorMessage: response.ok ? undefined : text.slice(0, 500),
         })
+        if (auto) {
+          after(() =>
+            recordRouting({
+              bucket,
+              model: candidateModel,
+              success: response.ok,
+              escalations: mi,
+              latencyMs: Date.now() - startedAt,
+              outputTokens: usage.outputTokens,
+            }).catch(() => {}),
+          )
+        }
 
         return new NextResponse(text, { status: response.status, headers })
       } catch (error) {
@@ -207,6 +236,17 @@ export async function POST(req: NextRequest) {
     success: false,
     errorMessage: lastFailure ? `${lastFailure.provider}: ${lastFailure.text}` : 'Gateway request failed',
   })
+  if (auto) {
+    after(() =>
+      recordRouting({
+        bucket,
+        model: modelLadder[modelLadder.length - 1],
+        success: false,
+        escalations: Math.max(0, modelLadder.length - 1),
+        latencyMs: Date.now() - startedAt,
+      }).catch(() => {}),
+    )
+  }
   return openAiError(
     lastFailure ? `All configured upstream providers failed. Last failure from ${lastFailure.provider}: ${lastFailure.text}` : 'Gateway request failed.',
     lastFailure?.status === 401 ? 502 : lastFailure?.status ?? 502,

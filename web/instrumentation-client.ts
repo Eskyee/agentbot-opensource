@@ -62,7 +62,7 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     // Those clients mutate the server HTML before React hydrates, which trips a
     // hydration error we can't fix in app code. Real hydration bugs from normal
     // browsers (Chrome/Firefox/desktop Safari) still report.
-    beforeSend(event, hint) {
+    beforeSend(event: Sentry.ErrorEvent, hint: Sentry.EventHint) {
       const original = hint?.originalException as { message?: string } | undefined
       const msg =
         original?.message ||
