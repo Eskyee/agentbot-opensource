@@ -1,6 +1,9 @@
 /**
+ * @jest-environment node
+ *
  * x402 settlement lib. Verifies the fail-closed contract: no facilitator
  * configured → never reports settled; configured → settles via mocked /settle.
+ * Runs in the node env so native fetch/Response are present without undici.
  */
 import { settleViaFacilitator, verifyViaFacilitator, isSettlementConfigured } from '@/app/lib/x402-settle'
 

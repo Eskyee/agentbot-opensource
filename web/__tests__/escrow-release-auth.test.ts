@@ -1,9 +1,12 @@
 /**
+ * @jest-environment node
+ *
  * Fail-closed authorization on the money-moving escrow actions.
  *
  * Release/refund must reject anyone who is neither holding the one-time release
  * token nor signed in as the buyer who opened the hold. This locks that contract
- * at the route layer, where the auth decision actually lives.
+ * at the route layer, where the auth decision actually lives. Runs in the node
+ * env so next/server's Request global is present without undici.
  */
 jest.mock('@/app/lib/api/rate-limit', () => ({ checkRateLimit: jest.fn().mockResolvedValue(false) }))
 jest.mock('@/app/lib/getAuthSession', () => ({ getAuthSession: jest.fn() }))
