@@ -216,7 +216,7 @@ export default function SettingsPage() {
                   }}
                 />
 
-                {showcaseAgentId && (
+                {showcaseAgentId ? (
                   <div id="showcase" className="border border-zinc-800 bg-zinc-950 p-5 scroll-mt-24">
                     <div className="flex items-start justify-between mb-4">
                       <div>
@@ -291,6 +291,17 @@ export default function SettingsPage() {
                         </a>
                       )}
                     </div>
+                  </div>
+                ) : (
+                  <div id="showcase" className="border border-zinc-800 bg-zinc-950 p-5 scroll-mt-24">
+                    <h2 className="text-sm font-bold uppercase tracking-tight mb-1">Agent Showcase</h2>
+                    <p className="text-[11px] text-zinc-500 mb-4 max-w-md leading-relaxed">
+                      Deploy an agent first, then opt it into the public showcase here to make it
+                      discoverable at <a href="/showcase" className="text-orange-400 hover:text-orange-300">/showcase</a> and start earning USDC for the work it completes.
+                    </p>
+                    <a href="/dashboard" className="inline-block text-[10px] uppercase tracking-widest bg-white text-black px-4 py-2 font-bold hover:bg-zinc-200 transition-colors">
+                      Deploy an agent →
+                    </a>
                   </div>
                 )}
 
