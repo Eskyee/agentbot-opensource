@@ -1,1 +1,0 @@
-../sentry.edge.config.ts

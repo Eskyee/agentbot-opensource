@@ -56,6 +56,32 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       // EIP-1193 user-rejection code, in case it surfaces as a generic error.
       /\b4001\b.*rejected/i,
     ],
+
+    // Drop React hydration mismatches that originate from in-app browsers
+    // (Twitter/X, Facebook, Instagram, etc.) and known DOM-injecting webviews.
+    // Those clients mutate the server HTML before React hydrates, which trips a
+    // hydration error we can't fix in app code. Real hydration bugs from normal
+    // browsers (Chrome/Firefox/desktop Safari) still report.
+    beforeSend(event, hint) {
+      const original = hint?.originalException as { message?: string } | undefined
+      const msg =
+        original?.message ||
+        event.exception?.values?.[0]?.value ||
+        (typeof event.message === 'string' ? event.message : '') ||
+        ''
+      const isHydration =
+        /hydrat|did not match|server rendered HTML|Text content does not match|Minified React error #(418|421|422|423|425)/i.test(
+          msg
+        )
+      if (isHydration && typeof navigator !== 'undefined') {
+        const inAppBrowser =
+          /(Twitter|FBAN|FBAV|FB_IAB|Instagram|Line\/|MicroMessenger|BytedanceWebview|musical_ly|Snapchat|LinkedInApp|Pinterest|GSA\/|DuckDuckGo)/i.test(
+            navigator.userAgent || ''
+          )
+        if (inAppBrowser) return null
+      }
+      return event
+    },
   })
 }
 
