@@ -498,6 +498,8 @@ export default function PlaygroundPage() {
   const [shareCopied, setShareCopied] = useState(false)
   const [makingAgent, setMakingAgent] = useState(false)
   const [agentMade, setAgentMade] = useState(false)
+  const [agentError, setAgentError] = useState<string | null>(null)
+  const [agentLink, setAgentLink] = useState<string | null>(null)
   // Bumped to force the live workbench to remount after a history restore
   const [restoreNonce, setRestoreNonce] = useState(0)
 
@@ -730,9 +732,6 @@ export default function PlaygroundPage() {
 
   // Bridge: turn the active generated app into an always-on, payable A2A agent
   // listed in the public directory. The server mints an Agent from this project.
-  const [agentError, setAgentError] = useState<string | null>(null)
-  const [agentLink, setAgentLink] = useState<string | null>(null)
-
   async function makeAgent() {
     if (!activeProject?.generation || makingAgent) return
     setMakingAgent(true)
