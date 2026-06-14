@@ -108,7 +108,7 @@
     "eslint-config-next": "^16.0.0",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
-    "postcss": "^8",
+    "postcss": "^8.5.10",
     "postman-playwright": "^1.1.1",
     "prisma": "5.22.0",
     "tailwindcss": "^3.4",
@@ -130,7 +130,11 @@
     "@workflow/core@4.2.4": {
       "devalue": "5.8.1"
     },
-    "esbuild": "^0.25.0",
-    "bn.js": "^5.2.1"
+    "esbuild": "^0.28.1",
+    "bn.js": "^5.2.1",
+    "qs": "^6.15.2",
+    "postcss": "$postcss",
+    "fast-xml-parser": "^5.7.0",
+    "@hono/node-server": "^1.19.13"
   }
 }
