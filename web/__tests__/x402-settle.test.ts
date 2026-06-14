@@ -20,8 +20,16 @@ function authHeader(): string {
 
 const ORIGINAL_ENV = { ...process.env }
 
+// Node exposes `fetch` via a lazy, non-configurable getter that jest.spyOn
+// can't wrap. Assign a mock directly and restore the original afterward.
+const REAL_FETCH = global.fetch
+function mockFetch(res: Response) {
+  ;(global as unknown as { fetch: unknown }).fetch = jest.fn().mockResolvedValue(res)
+}
+
 afterEach(() => {
   process.env = { ...ORIGINAL_ENV }
+  ;(global as unknown as { fetch: unknown }).fetch = REAL_FETCH
   jest.restoreAllMocks()
 })
 
@@ -56,7 +64,7 @@ describe('settleViaFacilitator — with mocked facilitator', () => {
   })
 
   it('returns settled with the tx hash on success', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue(
+    mockFetch(
       new Response(JSON.stringify({ success: true, transaction: '0xTX', payer: '0xPAYER' }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
@@ -71,7 +79,7 @@ describe('settleViaFacilitator — with mocked facilitator', () => {
   })
 
   it('returns failed when the facilitator reports success:false', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue(
+    mockFetch(
       new Response(JSON.stringify({ success: false, errorReason: 'insufficient balance' }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
@@ -82,7 +90,7 @@ describe('settleViaFacilitator — with mocked facilitator', () => {
   })
 
   it('returns failed on a non-200 facilitator response', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue(new Response('nope', { status: 500 }))
+    mockFetch(new Response('nope', { status: 500 }))
     const r = await settleViaFacilitator(authHeader(), REQ)
     expect(r.status).toBe('failed')
   })
@@ -97,7 +105,7 @@ describe('verifyViaFacilitator', () => {
 
   it('passes through facilitator isValid:true', async () => {
     process.env.X402_FACILITATOR_URL = 'https://fac.test'
-    jest.spyOn(global, 'fetch').mockResolvedValue(
+    mockFetch(
       new Response(JSON.stringify({ isValid: true, payer: '0xPAYER' }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
