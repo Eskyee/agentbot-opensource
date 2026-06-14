@@ -129,5 +129,20 @@ describe('gateway-flywheel (isolated)', () => {
       expect(stats.totalRouted).toBe(0)
       expect(typeof stats.overallSuccessRate).toBe('number')
     })
+
+    it('credits USD saved for sub-premium models but not the premium model', async () => {
+      // mimo-v2.5-pro rate 1.044 vs premium 15 → (15 - 1.044) * 1000 tokens
+      await recordRouting({ bucket: 'low', model: 'xiaomi/mimo-v2.5-pro', success: true, escalations: 0, latencyMs: 10, outputTokens: 1000 })
+      // premium serving itself contributes no savings
+      await recordRouting({ bucket: 'low', model: 'anthropic/claude-sonnet-4.5', success: true, escalations: 0, latencyMs: 10, outputTokens: 1000 })
+      const stats = await getFlywheelStats()
+      expect(stats.estimatedUsdSaved).toBeCloseTo(0.013956, 6)
+    })
+
+    it('does not credit savings on a failed request', async () => {
+      await recordRouting({ bucket: 'low', model: 'xiaomi/mimo-v2.5-pro', success: false, escalations: 0, latencyMs: 10, outputTokens: 1000 })
+      const stats = await getFlywheelStats()
+      expect(stats.estimatedUsdSaved).toBe(0)
+    })
   })
 })
