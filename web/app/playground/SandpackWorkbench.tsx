@@ -65,6 +65,78 @@ function extractDependencies(files: WorkbenchFile[]): Record<string, string> {
   }
 }
 
+// Provided by Sandpack's react-ts template — never add these as deps.
+const SANDPACK_PROVIDED = new Set([
+  'react', 'react-dom', 'react-dom/client', 'react/jsx-runtime', 'react/jsx-dev-runtime',
+])
+
+// Known-good versions for the packages AI most often reaches for, so we don't
+// gamble on `latest` for the common cases. Anything else falls back to latest.
+const COMMON_DEP_VERSIONS: Record<string, string> = {
+  'lucide-react': 'latest',
+  'framer-motion': 'latest',
+  'motion': 'latest',
+  'clsx': 'latest',
+  'classnames': 'latest',
+  'tailwind-merge': 'latest',
+  'class-variance-authority': 'latest',
+  'recharts': 'latest',
+  'date-fns': 'latest',
+  'dayjs': 'latest',
+  'zustand': 'latest',
+  'immer': 'latest',
+  'nanoid': 'latest',
+  'uuid': 'latest',
+  'zod': 'latest',
+  'react-icons': 'latest',
+  '@heroicons/react': 'latest',
+  'react-router-dom': 'latest',
+  'axios': 'latest',
+  'swr': 'latest',
+  '@tanstack/react-query': 'latest',
+  'react-hook-form': 'latest',
+  'chart.js': 'latest',
+  'react-chartjs-2': 'latest',
+  'three': 'latest',
+  '@react-three/fiber': 'latest',
+  '@react-three/drei': 'latest',
+  'lodash': 'latest',
+  'lodash-es': 'latest',
+}
+
+/**
+ * Safety net: AI-generated apps frequently `import` a package without declaring
+ * it in package.json. Sandpack only installs what's in `dependencies`, so those
+ * imports fail to resolve and the preview breaks. Scan the source for bare
+ * (non-relative) imports and ensure every package is present.
+ */
+function inferDependenciesFromImports(files: WorkbenchFile[]): Record<string, string> {
+  const deps: Record<string, string> = {}
+  const importRe = /(?:import\b[^'"]*?\bfrom\s*|import\s*|require\(\s*|import\(\s*)['"]([^'"]+)['"]/g
+  for (const file of files) {
+    if (!/\.(t|j)sx?$/.test(file.path)) continue
+    let m: RegExpExecArray | null
+    while ((m = importRe.exec(file.content)) !== null) {
+      const spec = m[1]
+      // Skip relative/absolute paths, path aliases (@/…, ~/…), and bare CSS.
+      if (
+        !spec ||
+        spec.startsWith('.') ||
+        spec.startsWith('/') ||
+        spec.startsWith('@/') ||
+        spec.startsWith('~') ||
+        spec.endsWith('.css')
+      )
+        continue
+      // Resolve to the package name (handle scoped + subpath imports).
+      const name = spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0]
+      if (!name || SANDPACK_PROVIDED.has(name) || SANDPACK_PROVIDED.has(spec)) continue
+      if (!deps[name]) deps[name] = COMMON_DEP_VERSIONS[name] ?? 'latest'
+    }
+  }
+  return deps
+}
+
 /** Brand theme — black base, zinc scale, orange accent, mono type. */
 const agentbotTheme: SandpackTheme = {
   colors: {
@@ -321,7 +393,13 @@ export default function SandpackWorkbench({
     [generationKey],
   )
 
-  const dependencies = useMemo(() => extractDependencies(files), [generationKey])
+  // Merge declared package.json deps with deps inferred from actual imports.
+  // Declared versions win (an explicit version is intentional); inferred fills
+  // the common gap where the AI imports a package it forgot to declare.
+  const dependencies = useMemo(
+    () => ({ ...inferDependenciesFromImports(files), ...extractDependencies(files) }),
+    [generationKey],
+  )
 
   const active = activeFile ? toSandpackPath(activeFile) : null
 
