@@ -51,19 +51,26 @@ export async function POST(req: NextRequest) {
       return Response.json({ ok: false, error: 'sessionId and files[] are required' }, { status: 400 })
     }
 
-    const base64Files = files.map((f) => {
-      const content = Buffer.from(f.content, 'utf-8').toString('base64')
-      const path = f.path.startsWith('/') ? f.path : `/vercel/sandbox/${f.path}`
-      return { path, content }
-    })
+    const lines: string[] = ['set -e']
+    const dirs = new Set<string>()
 
-    for (const file of base64Files) {
-      const dir = file.path.substring(0, file.path.lastIndexOf('/'))
-      if (dir) {
-        await runCommand(sessionId, 'mkdir', ['-p', dir])
+    for (const file of files) {
+      const path = file.path.startsWith('/') ? file.path : `/vercel/sandbox/${file.path}`
+      const dir = path.substring(0, path.lastIndexOf('/'))
+      if (dir && !dirs.has(dir)) {
+        dirs.add(dir)
+        lines.push(`mkdir -p "${dir}"`)
       }
-      await runCommand(sessionId, 'bash', ['-c', `echo '${file.content}' | base64 -d > '${file.path}'`])
+      const escaped = file.content
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "'\\''")
+        .replace(/\$/g, '\\$')
+        .replace(/`/g, '\\`')
+      lines.push(`cat > "${path}" << 'ENDOFFILE'\n${file.content}\nENDOFFILE`)
     }
+
+    const script = lines.join('\n')
+    await runCommand(sessionId, 'bash', ['-c', script])
 
     const hasPackageJson = files.some((f) => f.path === 'package.json' || f.path.endsWith('/package.json'))
 
