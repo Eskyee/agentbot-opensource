@@ -80,6 +80,7 @@ type PlaygroundProject = {
   deploymentId?: string
   deploymentState?: string
   generation: PlaygroundGeneration | null
+  executionMode?: ExecutionMode
   messages?: ChatMessage[]
   history?: GenerationSnapshot[]
 }
@@ -827,6 +828,9 @@ export default function PlaygroundPage() {
     setSelectedFile(project?.generation?.files[0]?.path ?? '.gitignore')
     setPane('preview')
     setView('builder')
+    if (project?.executionMode) {
+      setExecutionMode(project.executionMode)
+    }
   }
 
   function renameProject(projectId: string) {
@@ -1115,6 +1119,7 @@ export default function PlaygroundPage() {
       name: nextName,
       status: activeProject.status === 'PUBLISHED' ? 'PUBLISHED' : 'IDLE',
       lastActive: 'now',
+      executionMode,
       // Keep the previous version so users can roll back
       history: snapshotForHistory(activeProject, cleanPrompt || activeProject.generation?.title || 'edit'),
     }, { prompt: cleanPrompt, provider: data.provider, model: data.model })
