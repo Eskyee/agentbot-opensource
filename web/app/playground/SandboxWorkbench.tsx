@@ -114,7 +114,9 @@ export default function SandboxWorkbench({
         body: JSON.stringify({ runtime: 'node24', ports: [3000] }),
       })
       const data = await res.json()
+      console.log('[sandbox] create response:', data)
       if (!data.ok) throw new Error(data.error)
+      if (!data.sandbox?.sessionId) throw new Error('No sessionId returned from sandbox creation')
       if (!mountedRef.current) return null
 
       setSandbox({
@@ -128,6 +130,7 @@ export default function SandboxWorkbench({
     } catch (error) {
       if (!mountedRef.current) return null
       const msg = error instanceof Error ? error.message : 'Failed to create sandbox'
+      console.error('[sandbox] create error:', msg)
       setSandbox((s) => ({ ...s, status: 'error', error: msg }))
       onError?.(msg)
       return null

@@ -52,10 +52,16 @@ export async function POST(req: NextRequest) {
 
     const sandbox = await createRes.json()
 
+    console.log('[sandbox.create] raw response:', JSON.stringify(sandbox).slice(0, 500))
+
     const route = sandbox.routes?.find((r: { port: number }) => r.port === 3000)
     const sandboxName = sandbox.sandbox?.name || sandbox.sandbox?.id || sandbox.name || sandbox.id
-    const sessionId = sandbox.session?.sessionId || sandbox.sessionId || sandbox.id
+    const sessionId = sandbox.session?.sessionId || sandbox.sessionId || sandbox.id || sandbox.session_id
     const previewUrl = route?.url || `https://${sandboxName}.vercel.app`
+
+    if (!sessionId) {
+      throw new Error(`No sessionId in response: ${JSON.stringify(Object.keys(sandbox))}`)
+    }
 
     return Response.json({
       ok: true,

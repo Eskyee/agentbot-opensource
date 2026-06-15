@@ -62,21 +62,20 @@ export async function POST(req: NextRequest) {
         dirs.add(dir)
         lines.push(`mkdir -p "${dir}"`)
       }
-      const escaped = file.content
-        .replace(/\\/g, '\\\\')
-        .replace(/'/g, "'\\''")
-        .replace(/\$/g, '\\$')
-        .replace(/`/g, '\\`')
-      lines.push(`cat > "${path}" << 'ENDOFFILE'\n${file.content}\nENDOFFILE`)
+      const b64 = Buffer.from(file.content, 'utf-8').toString('base64')
+      lines.push(`echo "${b64}" | base64 -d > "${path}"`)
     }
 
     const script = lines.join('\n')
-    await runCommand(sessionId, 'bash', ['-c', script])
+    const cmdResult = await runCommand(sessionId, 'bash', ['-c', script])
+    console.log('[sandbox.files] write result:', cmdResult?.command?.exitCode)
 
     const hasPackageJson = files.some((f) => f.path === 'package.json' || f.path.endsWith('/package.json'))
 
     if (runInstall && hasPackageJson) {
-      await runCommand(sessionId, 'npm', ['install', '--loglevel', 'warn'], '/vercel/sandbox')
+      console.log('[sandbox.files] running npm install')
+      const installResult = await runCommand(sessionId, 'npm', ['install', '--loglevel', 'warn'], '/vercel/sandbox')
+      console.log('[sandbox.files] npm install exit:', installResult?.command?.exitCode)
     }
 
     return Response.json({ ok: true, filesWritten: files.length })

@@ -1815,8 +1815,8 @@ function BuilderView({
 
   return (
     <div className="grid min-h-[calc(100vh-9rem)] lg:grid-cols-[440px_1fr]">
-      <aside className="border-b border-zinc-900 lg:border-b-0 lg:border-r max-h-[calc(100vh-9rem)] overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto flex flex-col">
+      <aside className="border-b border-zinc-900 lg:border-b-0 lg:border-r h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
           <div className="border-b border-zinc-900 px-4 py-3 flex items-center justify-end h-12">
             <div className="flex items-center gap-2">
               <select
@@ -2268,7 +2268,7 @@ function BuilderView({
           </div>
         </div>
 
-        <div className="border-t border-zinc-900">
+        <div className="border-t border-zinc-900 flex-shrink-0">
           <div className="px-4 py-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
             <button
               type="button"
