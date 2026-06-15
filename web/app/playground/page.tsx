@@ -1817,12 +1817,7 @@ function BuilderView({
     <div className="grid min-h-[calc(100vh-9rem)] lg:grid-cols-[440px_1fr]">
       <aside className="border-b border-zinc-900 lg:border-b-0 lg:border-r">
         <div className="h-full flex flex-col">
-          <div className="border-b border-zinc-900 px-4 py-3 flex items-center justify-between h-12">
-            <div className="flex items-center text-[10px] uppercase tracking-widest h-4 overflow-hidden">
-              <span className={isGenerating ? 'text-orange-500' : 'text-zinc-600'}>
-                {isGenerating ? `${spinnerVerb}…` : 'Idle'}
-              </span>
-            </div>
+          <div className="border-b border-zinc-900 px-4 py-3 flex items-center justify-end h-12">
             <div className="flex items-center gap-2">
               <select
                 value={model}
