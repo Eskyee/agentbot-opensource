@@ -1813,14 +1813,12 @@ function BuilderView({
       <aside className="border-b border-zinc-900 lg:border-b-0 lg:border-r">
         <div className="h-full flex flex-col">
           <div className="border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest">
-              <span className="text-white">Chat</span>
+            <div className="flex items-center text-[10px] uppercase tracking-widest">
               <span className={isGenerating ? 'text-orange-500' : 'text-zinc-600'}>
                 {isGenerating ? `${spinnerVerb}…` : 'Idle'}
               </span>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] uppercase tracking-widest text-orange-500">OpenClaude</span>
+            <div className="flex items-center gap-2">
               <select
                 value={model}
                 onChange={(event) => setModel(event.target.value)}
