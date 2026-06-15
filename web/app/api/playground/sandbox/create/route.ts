@@ -23,7 +23,6 @@ function getTeamId() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}))
-    const name = body.name as string | undefined
     const runtime = (body.runtime as string) || 'node24'
     const ports = (body.ports as number[]) || [3000]
     const timeout = (body.timeout as number) || 5 * 60 * 1000
@@ -39,7 +38,6 @@ export async function POST(req: NextRequest) {
         runtime,
         ports,
         timeout,
-        persistent: true,
       }),
     })
 
