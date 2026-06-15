@@ -1742,7 +1742,7 @@ function BuilderView({
                   <button
                     type="button"
                     onClick={() => setExecutionMode('sandpack')}
-                    className={`px-2 py-1 text-[10px] uppercase tracking-widest transition-colors ${
+                    className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
                       executionMode === 'sandpack'
                         ? 'bg-white text-black'
                         : 'text-zinc-500 hover:text-white'
@@ -1754,7 +1754,7 @@ function BuilderView({
                   <button
                     type="button"
                     onClick={() => setExecutionMode('sandbox')}
-                    className={`px-2 py-1 text-[10px] uppercase tracking-widest transition-colors ${
+                    className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
                       executionMode === 'sandbox'
                         ? 'bg-white text-black'
                         : 'text-zinc-500 hover:text-white'
@@ -1819,14 +1819,14 @@ function BuilderView({
                 {isGenerating ? `${spinnerVerb}…` : 'Idle'}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className="text-[10px] uppercase tracking-widest text-orange-500">OpenClaude</span>
               <select
                 value={model}
                 onChange={(event) => setModel(event.target.value)}
                 disabled={isGenerating}
                 aria-label="Model"
-                className="border border-zinc-800 bg-black px-1.5 py-1 text-[10px] uppercase tracking-widest text-zinc-400 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
+                className="border border-zinc-800 bg-black px-2 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
               >
                 {MODEL_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -1840,7 +1840,7 @@ function BuilderView({
                   type="button"
                   onClick={() => setExecutionMode('sandpack')}
                   disabled={isGenerating}
-                  className={`px-2 py-1 text-[10px] uppercase tracking-widest transition-colors ${
+                  className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
                     executionMode === 'sandpack'
                       ? 'bg-white text-black'
                       : 'text-zinc-500 hover:text-white'
@@ -1853,7 +1853,7 @@ function BuilderView({
                   type="button"
                   onClick={() => setExecutionMode('sandbox')}
                   disabled={isGenerating}
-                  className={`px-2 py-1 text-[10px] uppercase tracking-widest transition-colors ${
+                  className={`px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
                     executionMode === 'sandbox'
                       ? 'bg-white text-black'
                       : 'text-zinc-500 hover:text-white'
