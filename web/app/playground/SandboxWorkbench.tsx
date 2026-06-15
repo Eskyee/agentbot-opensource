@@ -34,6 +34,49 @@ type SandboxState = {
 
 const WRITE_DEBOUNCE_MS = 800
 
+const STEP_LABELS: Record<string, string[]> = {
+  creating: ['Requesting VM from Vercel', 'Allocating resources', 'Booting Linux'],
+  writing: ['Transferring files to VM'],
+  installing: ['Running npm install', 'Resolving dependencies', 'Linking packages'],
+  starting: ['Starting dev server', 'Compiling app', 'Waiting for first render'],
+}
+
+function SandboxLoading({ status, message, name }: { status: string; message?: string; name?: string | null }) {
+  const [elapsed, setElapsed] = useState(0)
+  const [stepIdx, setStepIdx] = useState(0)
+
+  useEffect(() => {
+    setElapsed(0)
+    setStepIdx(0)
+    const timer = setInterval(() => setElapsed((s) => s + 1), 1000)
+    const stepTimer = setInterval(() => setStepIdx((i) => i + 1), 4000)
+    return () => { clearInterval(timer); clearInterval(stepTimer) }
+  }, [status])
+
+  const steps = STEP_LABELS[status] || []
+  const currentStep = steps[stepIdx % steps.length] || message || 'Working…'
+
+  return (
+    <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
+      <div className="max-w-md text-center">
+        <Spinner size={24} />
+        <div className="mt-4 text-[10px] uppercase tracking-widest text-orange-500">
+          {message || 'Loading…'}
+        </div>
+        <div className="mt-2 text-[10px] uppercase tracking-widest text-zinc-500 min-h-[14px]">
+          {currentStep}
+        </div>
+        <div className="mt-1 text-[10px] tabular-nums text-zinc-600">
+          {elapsed}s
+        </div>
+        {name && (
+          <div className="mt-2 text-[10px] uppercase tracking-widest text-zinc-700">{name}</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function SandboxWorkbench({
   generationKey,
   files,
@@ -271,17 +314,7 @@ export default function SandboxWorkbench({
       starting: 'Starting dev server…',
     }
     return (
-      <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
-        <div className="max-w-md text-center">
-          <Spinner size={24} />
-          <div className="mt-4 text-[10px] uppercase tracking-widest text-orange-500">
-            {statusMessages[sandbox.status] || 'Loading…'}
-          </div>
-          {sandbox.name && (
-            <div className="mt-2 text-[10px] uppercase tracking-widest text-zinc-600">{sandbox.name}</div>
-          )}
-        </div>
-      </div>
+      <SandboxLoading status={sandbox.status} message={statusMessages[sandbox.status]} name={sandbox.name} />
     )
   }
 
