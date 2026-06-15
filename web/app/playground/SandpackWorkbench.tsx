@@ -230,9 +230,12 @@ function FileUpdater({ files, isStreaming }: { files: WorkbenchFile[]; isStreami
       }
     }
 
-    // When streaming finishes, force a preview refresh so the iframe picks up final state
+    // When streaming finishes, bump App.tsx to force a preview re-render
     if (wasStreamingRef.current && !isStreaming) {
-      sandpackRef.current.refresh()
+      const appFile = files.find((f) => f.path === 'src/App.tsx')
+      if (appFile) {
+        sandpackRef.current.updateFile('/App.tsx', appFile.content + '\n')
+      }
     }
     wasStreamingRef.current = isStreaming
   }, [files, isStreaming])

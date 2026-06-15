@@ -25,7 +25,6 @@ function getProjectId() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}))
-    const name = body.name as string | undefined
     const runtime = (body.runtime as string) || 'node24'
     const ports = (body.ports as number[]) || [3000]
     const timeout = (body.timeout as number) || 5 * 60 * 1000
@@ -38,7 +37,6 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        name,
         runtime,
         ports,
         timeout,
@@ -54,16 +52,18 @@ export async function POST(req: NextRequest) {
     const sandbox = await createRes.json()
 
     const route = sandbox.routes?.find((r: { port: number }) => r.port === 3000)
-    const previewUrl = route?.url || `https://${sandbox.sandbox?.name || sandbox.sandbox?.id}.vercel.app`
+    const sandboxName = sandbox.sandbox?.name || sandbox.sandbox?.id || sandbox.name || sandbox.id
+    const sessionId = sandbox.session?.sessionId || sandbox.sessionId || sandbox.id
+    const previewUrl = route?.url || `https://${sandboxName}.vercel.app`
 
     return Response.json({
       ok: true,
       sandbox: {
-        name: sandbox.sandbox?.name || sandbox.sandbox?.id,
-        sessionId: sandbox.session?.sessionId,
+        name: sandboxName,
+        sessionId,
         previewUrl,
-        status: sandbox.session?.status,
-        runtime: sandbox.sandbox?.runtime,
+        status: sandbox.session?.status || sandbox.status,
+        runtime: sandbox.sandbox?.runtime || sandbox.runtime,
       },
     })
   } catch (error) {

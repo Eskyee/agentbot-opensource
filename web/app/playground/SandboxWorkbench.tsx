@@ -25,8 +25,8 @@ export type SandboxWorkbenchProps = {
 }
 
 type SandboxState = {
-  name: string | null
   sessionId: string | null
+  name: string | null
   previewUrl: string | null
   status: 'idle' | 'creating' | 'writing' | 'installing' | 'starting' | 'ready' | 'error'
   error: string | null
@@ -42,6 +42,7 @@ export default function SandboxWorkbench({
   onError,
 }: SandboxWorkbenchProps) {
   const [sandbox, setSandbox] = useState<SandboxState>({
+    sessionId: null,
     name: null,
     previewUrl: null,
     status: 'idle',
@@ -56,41 +57,31 @@ export default function SandboxWorkbench({
 
   useEffect(() => {
     mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-    }
+    return () => { mountedRef.current = false }
   }, [])
 
   const createSandbox = useCallback(async (): Promise<string | null> => {
     if (!mountedRef.current) return null
-
     setSandbox((s) => ({ ...s, status: 'creating', error: null }))
 
     try {
       const res = await fetch('/api/playground/sandbox/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: `playground-${Date.now()}`,
-          runtime: 'node24',
-          ports: [3000],
-        }),
+        body: JSON.stringify({ runtime: 'node24', ports: [3000] }),
       })
-
       const data = await res.json()
-
       if (!data.ok) throw new Error(data.error)
-
       if (!mountedRef.current) return null
 
       setSandbox({
+        sessionId: data.sandbox.sessionId,
         name: data.sandbox.name,
         previewUrl: data.sandbox.previewUrl,
         status: 'writing',
         error: null,
       })
-
-      return data.sandbox.name as string
+      return data.sandbox.sessionId as string
     } catch (error) {
       if (!mountedRef.current) return null
       const msg = error instanceof Error ? error.message : 'Failed to create sandbox'
@@ -100,7 +91,7 @@ export default function SandboxWorkbench({
     }
   }, [onError])
 
-  const writeFiles = useCallback(async (sandboxName: string, filesToWrite: SandboxFile[]) => {
+  const writeFiles = useCallback(async (sessionId: string, filesToWrite: SandboxFile[]) => {
     if (!mountedRef.current || filesToWrite.length === 0) return
 
     try {
@@ -108,7 +99,7 @@ export default function SandboxWorkbench({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sandboxName,
+          sessionId,
           files: filesToWrite.map((f) => ({
             path: f.path.startsWith('/') ? f.path : `/vercel/sandbox/${f.path}`,
             content: f.content,
@@ -116,15 +107,11 @@ export default function SandboxWorkbench({
           runInstall: true,
         }),
       })
-
       const data = await res.json()
-
       if (!data.ok) throw new Error(data.error)
-
       if (!mountedRef.current) return
 
       setSandbox((s) => ({ ...s, status: 'installing' }))
-
       if (data.installError) {
         setTerminalOutput((prev) => [...prev, `[npm install error] ${data.installError}`])
       }
@@ -136,26 +123,18 @@ export default function SandboxWorkbench({
     }
   }, [onError])
 
-  const startDevServer = useCallback(async (sandboxName: string) => {
+  const startDevServer = useCallback(async (sessionId: string) => {
     if (!mountedRef.current) return
-
     setSandbox((s) => ({ ...s, status: 'starting' }))
 
     try {
       const res = await fetch('/api/playground/sandbox/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sandboxName,
-          command: 'npm run dev',
-          cwd: '/vercel/sandbox',
-        }),
+        body: JSON.stringify({ sessionId, command: 'npm run dev', cwd: '/vercel/sandbox' }),
       })
-
       const data = await res.json()
-
       if (!data.ok) throw new Error(data.error)
-
       if (!mountedRef.current) return
 
       setSandbox((s) => ({ ...s, status: 'ready' }))
@@ -169,8 +148,7 @@ export default function SandboxWorkbench({
   }, [onError])
 
   const executeTerminal = useCallback(async (command: string) => {
-    if (!sandbox.name || !command.trim()) return
-
+    if (!sandbox.sessionId || !command.trim()) return
     setTerminalOutput((prev) => [...prev, `$ ${command}`])
     setTerminalInput('')
 
@@ -178,29 +156,17 @@ export default function SandboxWorkbench({
       const res = await fetch('/api/playground/sandbox/terminal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sandboxName: sandbox.name,
-          command: command.trim(),
-          cwd: '/vercel/sandbox',
-        }),
+        body: JSON.stringify({ sessionId: sandbox.sessionId, command: command.trim(), cwd: '/vercel/sandbox' }),
       })
-
       const data = await res.json()
-
-      if (data.stdout) {
-        setTerminalOutput((prev) => [...prev, data.stdout])
-      }
-      if (data.stderr) {
-        setTerminalOutput((prev) => [...prev, `[stderr] ${data.stderr}`])
-      }
-      if (data.exitCode !== 0) {
-        setTerminalOutput((prev) => [...prev, `[exit ${data.exitCode}]`])
-      }
+      if (data.stdout) setTerminalOutput((prev) => [...prev, data.stdout])
+      if (data.stderr) setTerminalOutput((prev) => [...prev, `[stderr] ${data.stderr}`])
+      if (data.exitCode !== 0) setTerminalOutput((prev) => [...prev, `[exit ${data.exitCode}]`])
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Command failed'
       setTerminalOutput((prev) => [...prev, `[error] ${msg}`])
     }
-  }, [sandbox.name])
+  }, [sandbox.sessionId])
 
   const handleTerminalKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -209,20 +175,16 @@ export default function SandboxWorkbench({
     }
   }, [executeTerminal, terminalInput])
 
-  const performWrite = useCallback(async (sandboxName: string, filesToWrite: SandboxFile[]) => {
-    await writeFiles(sandboxName, filesToWrite)
-
+  const performWrite = useCallback(async (sessionId: string, filesToWrite: SandboxFile[]) => {
+    await writeFiles(sessionId, filesToWrite)
     if (!mountedRef.current) return
 
     const currentState = await new Promise<SandboxState>((resolve) => {
-      setSandbox((s) => {
-        resolve(s)
-        return s
-      })
+      setSandbox((s) => { resolve(s); return s })
     })
 
     if (currentState.status === 'installing' || currentState.status === 'writing') {
-      await startDevServer(sandboxName)
+      await startDevServer(sessionId)
     }
   }, [writeFiles, startDevServer])
 
@@ -230,45 +192,32 @@ export default function SandboxWorkbench({
     if (files.length === 0 || isStreaming) return
 
     const filesKey = files.map((f) => `${f.path}:${f.content.length}`).join('|')
-
     if (filesKey === lastWrittenKeyRef.current) return
 
-    if (writeTimerRef.current) {
-      clearTimeout(writeTimerRef.current)
-    }
+    if (writeTimerRef.current) clearTimeout(writeTimerRef.current)
 
     writeTimerRef.current = setTimeout(async () => {
       lastWrittenKeyRef.current = filesKey
 
-      let sandboxName = sandbox.name
-
-      if (!sandboxName) {
-        sandboxName = await createSandbox()
-        if (!sandboxName) return
+      let sessionId = sandbox.sessionId
+      if (!sessionId) {
+        sessionId = await createSandbox()
+        if (!sessionId) return
       }
-
-      await performWrite(sandboxName, files)
+      await performWrite(sessionId, files)
     }, WRITE_DEBOUNCE_MS)
 
-    return () => {
-      if (writeTimerRef.current) {
-        clearTimeout(writeTimerRef.current)
-      }
-    }
-  }, [files, isStreaming, sandbox.name, createSandbox, performWrite])
+    return () => { if (writeTimerRef.current) clearTimeout(writeTimerRef.current) }
+  }, [files, isStreaming, sandbox.sessionId, createSandbox, performWrite])
 
   useEffect(() => {
     if (sandbox.status === 'idle' && files.length > 0 && !isStreaming) {
-      const filesKey = files.map((f) => `${f.path}:${f.content.length}`).join('|')
       lastWrittenKeyRef.current = ''
 
       const init = async () => {
-        const sandboxName = await createSandbox()
-        if (sandboxName) {
-          await performWrite(sandboxName, files)
-        }
+        const sessionId = await createSandbox()
+        if (sessionId) await performWrite(sessionId, files)
       }
-
       init()
     }
   }, [sandbox.status, files, isStreaming, createSandbox, performWrite])
@@ -277,8 +226,8 @@ export default function SandboxWorkbench({
     return (
       <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
         <div className="max-w-md text-center">
-          <div className="text-[10px] uppercase tracking-widest text-orange-500">Vercel Sandbox</div>
-          <h2 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Full-Stack Preview</h2>
+          <div className="text-[10px] uppercase tracking-widest text-orange-500">Full-Stack Mode</div>
+          <h2 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Real Server Preview</h2>
           <p className="mt-3 text-sm leading-relaxed text-zinc-400">
             Generate an app to see it run in a real Linux VM with Next.js, API routes, and database support.
           </p>
@@ -297,12 +246,12 @@ export default function SandboxWorkbench({
     return (
       <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
         <div className="max-w-md text-center">
-          <div className="text-[10px] uppercase tracking-widest text-red-500">Sandbox Error</div>
+          <div className="text-[10px] uppercase tracking-widest text-red-500">VM Error</div>
           <p className="mt-3 text-sm leading-relaxed text-zinc-400">{sandbox.error}</p>
           <button
             type="button"
             onClick={() => {
-              setSandbox({ name: null, previewUrl: null, status: 'idle', error: null })
+              setSandbox({ sessionId: null, name: null, previewUrl: null, status: 'idle', error: null })
               lastWrittenKeyRef.current = ''
             }}
             className="mt-4 border border-zinc-800 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white"
@@ -316,12 +265,11 @@ export default function SandboxWorkbench({
 
   if (sandbox.status !== 'ready') {
     const statusMessages: Record<string, string> = {
-      creating: 'Creating sandbox VM…',
-      writing: 'Writing files to sandbox…',
-      installing: 'Installing dependencies…',
+      creating: 'Spinning up VM…',
+      writing: 'Writing files…',
+      installing: 'Installing packages…',
       starting: 'Starting dev server…',
     }
-
     return (
       <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
         <div className="max-w-md text-center">
@@ -330,9 +278,7 @@ export default function SandboxWorkbench({
             {statusMessages[sandbox.status] || 'Loading…'}
           </div>
           {sandbox.name && (
-            <div className="mt-2 text-[10px] uppercase tracking-widest text-zinc-600">
-              {sandbox.name}
-            </div>
+            <div className="mt-2 text-[10px] uppercase tracking-widest text-zinc-600">{sandbox.name}</div>
           )}
         </div>
       </div>
@@ -344,9 +290,7 @@ export default function SandboxWorkbench({
       <div className="h-full min-h-[488px] bg-black text-white flex flex-col">
         <div className="flex-1 overflow-auto p-4 font-mono text-xs">
           {terminalOutput.map((line, i) => (
-            <div key={i} className={line.startsWith('$') ? 'text-orange-500' : 'text-zinc-300'}>
-              {line}
-            </div>
+            <div key={i} className={line.startsWith('$') ? 'text-orange-500' : 'text-zinc-300'}>{line}</div>
           ))}
         </div>
         <div className="border-t border-zinc-900 p-3">
@@ -373,7 +317,7 @@ export default function SandboxWorkbench({
           ref={iframeRef}
           src={sandbox.previewUrl}
           className="h-full w-full border-0"
-          title="Sandbox Preview"
+          title="Full-Stack Preview"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
         />
       ) : (
