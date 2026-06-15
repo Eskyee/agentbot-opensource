@@ -232,6 +232,9 @@ model PlaygroundProject {
   deploymentId       String?
   deploymentState    String?
   generation   Json?
+  sandboxName  String?
+  sandboxUrl   String?
+  executionMode String?  @default("sandpack")
   archivedAt   DateTime?
   lastActiveAt DateTime  @default(now())
   createdAt    DateTime  @default(now())

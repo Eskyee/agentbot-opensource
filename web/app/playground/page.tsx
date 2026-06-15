@@ -39,6 +39,16 @@ const SandpackWorkbench = dynamic(() => import('./SandpackWorkbench'), {
   ),
 })
 
+// Vercel Sandbox workbench — also heavy, load client-side only.
+const SandboxWorkbench = dynamic(() => import('./SandboxWorkbench'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full min-h-[488px] items-center justify-center bg-black text-[10px] uppercase tracking-widest text-zinc-600">
+      Booting Vercel Sandbox…
+    </div>
+  ),
+})
+
 type PlaygroundFile = {
   path: string
   language: string
@@ -245,8 +255,9 @@ const VIEWPORTS = {
 const PLAYGROUND_PROMISE = 'Build and publish Vite + React apps with OpenClaude, Xiaomi MiMo, and Agentbot gateway routing.'
 
 type Viewport = keyof typeof VIEWPORTS
-type Pane = 'preview' | 'code'
+type Pane = 'preview' | 'code' | 'terminal'
 type View = 'builder' | 'templates' | 'apps' | 'projects' | 'publish' | 'history'
+type ExecutionMode = 'sandpack' | 'sandbox'
 type ConsoleLevel = 'all' | 'error' | 'warn' | 'log'
 type ConsoleEntry = {
   level: Exclude<ConsoleLevel, 'all'>
@@ -502,6 +513,9 @@ export default function PlaygroundPage() {
   const [agentLink, setAgentLink] = useState<string | null>(null)
   // Bumped to force the live workbench to remount after a history restore
   const [restoreNonce, setRestoreNonce] = useState(0)
+  // Execution mode: Sandpack (in-browser) or Vercel Sandbox (full-stack VM)
+  const [executionMode, setExecutionMode] = useState<ExecutionMode>('sandpack')
+  const [sandboxName, setSandboxName] = useState<string | null>(null)
 
   useEffect(() => {
     setSessionId(createSessionId())
@@ -1484,6 +1498,9 @@ export default function PlaygroundPage() {
           messages={activeProject?.messages ?? []}
           setModel={setModel}
           autoApprove={autoApprove}
+          executionMode={executionMode}
+          setExecutionMode={setExecutionMode}
+          sandboxName={sandboxName}
         />
       )}
 
@@ -1610,6 +1627,9 @@ function BuilderView({
   messages,
   setModel,
   autoApprove,
+  executionMode,
+  setExecutionMode,
+  sandboxName,
 }: {
   prompt: string
   setPrompt: (value: string) => void
@@ -1635,6 +1655,9 @@ function BuilderView({
   messages: ChatMessage[]
   setModel: (model: string) => void
   autoApprove: boolean
+  executionMode: ExecutionMode
+  setExecutionMode: (mode: ExecutionMode) => void
+  sandboxName: string | null
 }) {
   const [consoleFilter, setConsoleFilter] = useState<ConsoleLevel>('all')
   const [runtimeError, setRuntimeError] = useState<{ message: string; filePath?: string; line?: number } | null>(null)
@@ -1784,6 +1807,34 @@ function BuilderView({
                   <option value={model}>{model}</option>
                 )}
               </select>
+              <div className="flex items-center border border-zinc-800 bg-black">
+                <button
+                  type="button"
+                  onClick={() => setExecutionMode('sandpack')}
+                  disabled={isGenerating}
+                  className={`px-2 py-1 text-[10px] uppercase tracking-widest transition-colors ${
+                    executionMode === 'sandpack'
+                      ? 'bg-white text-black'
+                      : 'text-zinc-500 hover:text-white'
+                  } disabled:opacity-50`}
+                  title="In-browser React preview (client-side only)"
+                >
+                  Sandpack
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExecutionMode('sandbox')}
+                  disabled={isGenerating}
+                  className={`px-2 py-1 text-[10px] uppercase tracking-widest transition-colors ${
+                    executionMode === 'sandbox'
+                      ? 'bg-white text-black'
+                      : 'text-zinc-500 hover:text-white'
+                  } disabled:opacity-50`}
+                  title="Full-stack Linux VM (Next.js, API routes, database)"
+                >
+                  Sandbox
+                </button>
+              </div>
             </div>
           </div>
 
@@ -2002,15 +2053,25 @@ function BuilderView({
                 )}
                 <div className={`mx-auto h-full min-h-[488px] transition-all ${VIEWPORTS[viewport]}`}>
                   {generation ? (
-                    <SandpackWorkbench
-                      generationKey={workbenchKey}
-                      files={files}
-                      mode="preview"
-                      showConsole={showSandboxConsole}
-                      isStreaming={isGenerating}
-                      onFilesChange={onWorkbenchEdit}
-                      onError={setRuntimeError}
-                    />
+                    executionMode === 'sandbox' ? (
+                      <SandboxWorkbench
+                        generationKey={workbenchKey}
+                        files={files}
+                        mode="preview"
+                        isStreaming={isGenerating}
+                        onError={(error) => setRuntimeError({ message: error })}
+                      />
+                    ) : (
+                      <SandpackWorkbench
+                        generationKey={workbenchKey}
+                        files={files}
+                        mode="preview"
+                        showConsole={showSandboxConsole}
+                        isStreaming={isGenerating}
+                        onFilesChange={onWorkbenchEdit}
+                        onError={setRuntimeError}
+                      />
+                    )
                   ) : (
                     <div className="h-full min-h-[488px] bg-black text-white flex items-center justify-center p-8">
                       <div className="max-w-md text-center">
@@ -2021,14 +2082,30 @@ function BuilderView({
                           preview will update automatically.
                         </p>
                         <div className="mt-5 flex flex-wrap justify-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
-                          <span className="border border-zinc-900 px-2 py-1">Vite + React</span>
-                          <span className="border border-zinc-900 px-2 py-1">MiMo V2.5 Pro</span>
-                          <span className="border border-zinc-900 px-2 py-1">GitLawb push</span>
+                          {executionMode === 'sandbox' ? (
+                            <>
+                              <span className="border border-zinc-900 px-2 py-1">Next.js App Router</span>
+                              <span className="border border-zinc-900 px-2 py-1">API Routes</span>
+                              <span className="border border-zinc-900 px-2 py-1">Database</span>
+                              <span className="border border-zinc-900 px-2 py-1">Terminal</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="border border-zinc-900 px-2 py-1">Vite + React</span>
+                              <span className="border border-zinc-900 px-2 py-1">MiMo V2.5 Pro</span>
+                              <span className="border border-zinc-900 px-2 py-1">GitLawb push</span>
+                            </>
+                          )}
                         </div>
                         <div className="mt-6 border border-zinc-900 bg-zinc-950/80 p-4 text-left">
-                          <div className="text-[10px] uppercase tracking-widest text-zinc-300">Booting sandbox</div>
+                          <div className="text-[10px] uppercase tracking-widest text-zinc-300">
+                            {executionMode === 'sandbox' ? 'Booting Vercel Sandbox' : 'Booting sandbox'}
+                          </div>
                           <p className="mt-2 text-xs leading-relaxed text-zinc-600">
-                            Spinning up a Fly machine for your session - takes a few seconds on first run.
+                            {executionMode === 'sandbox'
+                              ? 'Spinning up a Linux VM with Next.js support - takes a few seconds on first run.'
+                              : 'Spinning up a Fly machine for your session - takes a few seconds on first run.'
+                            }
                           </p>
                         </div>
                       </div>
@@ -2045,7 +2122,21 @@ function BuilderView({
                     <span className="ml-auto text-orange-500">Editable · live reload</span>
                   )}
                 </div>
-                {generation && activeFile && /^src\/(?:App\.tsx|index\.css|(?:components|hooks|lib)\/[A-Za-z0-9_-]+\.(?:tsx|ts)|[A-Za-z0-9_-]+\.css)$/.test(activeFile.path) ? (
+                {executionMode === 'sandbox' ? (
+                  generation ? (
+                    <SandboxWorkbench
+                      generationKey={workbenchKey}
+                      files={files}
+                      mode="terminal"
+                      isStreaming={isGenerating}
+                      onError={(error) => setRuntimeError({ message: error })}
+                    />
+                  ) : (
+                    <pre className="h-[488px] overflow-auto p-4 text-xs leading-relaxed text-zinc-300">
+                      <code>Terminal will appear when sandbox is running.</code>
+                    </pre>
+                  )
+                ) : generation && activeFile && /^src\/(?:App\.tsx|index\.css|(?:components|hooks|lib)\/[A-Za-z0-9_-]+\.(?:tsx|ts)|[A-Za-z0-9_-]+\.css)$/.test(activeFile.path) ? (
                   <SandpackWorkbench
                     generationKey={workbenchKey}
                     files={files}
