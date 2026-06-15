@@ -36,7 +36,6 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        name,
         runtime,
         ports,
         timeout,
@@ -53,12 +52,12 @@ export async function POST(req: NextRequest) {
 
     const previewUrl = sandbox.routes?.find(
       (r: { port: number }) => r.port === 3000
-    )?.url || `https://${sandbox.name}-${sandbox.id}.vercel.app`
+    )?.url || sandbox.url || `https://${sandbox.id}.vercel.app`
 
     return Response.json({
       ok: true,
       sandbox: {
-        name: sandbox.name,
+        name: sandbox.name || sandbox.id,
         previewUrl,
         status: sandbox.status,
         runtime: sandbox.runtime,
