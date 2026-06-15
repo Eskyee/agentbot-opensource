@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/provision/team"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "",
+      "members": []
+    }
+order: 2000

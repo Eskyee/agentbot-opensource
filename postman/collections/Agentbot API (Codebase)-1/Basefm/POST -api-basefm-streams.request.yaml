@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api/basefm/streams
+url: "{{baseUrl}}/api/basefm/streams"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 5000

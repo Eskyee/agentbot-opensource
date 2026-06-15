@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//agentkit/status
+url: "{{baseUrl}}/api//agentkit/status"
+method: GET
+order: 309000

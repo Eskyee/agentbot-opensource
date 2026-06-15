@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//bridge/poll
+url: "{{baseUrl}}/api//bridge/poll"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 108000

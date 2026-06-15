@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/ops/metrics/collect
+url: "{{baseUrl}}/api/ops/metrics/collect"
+method: POST
+order: 1000

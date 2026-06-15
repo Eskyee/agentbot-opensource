@@ -1,0 +1,40 @@
+$kind: http-request
+description: POST login endpoint with sample JSON body.
+url: "{{WEB_URL}}/api/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "user@example.com",
+      "password": "SecurePass123!"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Login request completed", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 201]);
+      });
+
+      let data = {};
+      try { data = pm.response.json(); } catch (e) {}
+
+      const token =
+        data.token ||
+        data.accessToken ||
+        data.access_token ||
+        data.data?.token ||
+        data.data?.accessToken;
+
+      const userId =
+        data.user?.id ||
+        data.userId ||
+        data.data?.user?.id ||
+        data.data?.userId;
+
+      if (token) pm.collectionVariables.set("auth_token", token);
+      if (userId) pm.collectionVariables.set("user_id", userId);
+    language: text/javascript
+order: 1000

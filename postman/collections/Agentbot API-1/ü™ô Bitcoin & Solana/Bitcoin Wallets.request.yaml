@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/bitcoin/wallets"
+method: GET
+order: 4000

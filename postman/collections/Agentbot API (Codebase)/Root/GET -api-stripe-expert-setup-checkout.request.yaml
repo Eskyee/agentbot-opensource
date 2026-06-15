@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//stripe/expert-setup-checkout
+url: "{{baseUrl}}/api//stripe/expert-setup-checkout"
+method: GET
+order: 528000

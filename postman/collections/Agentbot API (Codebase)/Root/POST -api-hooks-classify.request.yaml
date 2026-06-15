@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api//hooks/classify
+url: "{{baseUrl}}/api//hooks/classify"
+method: POST
+order: 312000

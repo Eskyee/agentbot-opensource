@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/playground/projects
+url: "{{baseUrl}}/api/playground/projects"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

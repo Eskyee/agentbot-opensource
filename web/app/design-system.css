@@ -1,0 +1,113 @@
+/* ━━━ AGENTBOT DESIGN SYSTEM ━━━ */
+/* One source of truth. Every visual element defined here. */
+/* If it's not in this file, it doesn't exist. */
+
+/* ━━━ TYPOGRAPHY ━━━ */
+/* 
+  H1: text-4xl sm:text-5xl md:6xl lg:7xl font-bold tracking-tighter uppercase leading-[0.9]
+  H2: text-2xl sm:3xl font-bold tracking-tighter uppercase
+  H3: text-sm font-bold uppercase tracking-wider
+  Label: text-[10px] uppercase tracking-widest
+  Body: text-sm leading-relaxed
+  Small: text-xs
+  Tiny: text-[10px]
+  Price: text-3xl font-bold tracking-tighter
+*/
+
+/* ━━━ COLORS ━━━ */
+/*
+  Background: #000 (black)
+  Surface: #0a0a0a (zinc-950)
+  Card: bg-black
+  Border: border-zinc-800 (primary), border-zinc-900 (section dividers)
+  
+  Text:
+    Primary: text-white
+    Secondary: text-zinc-400
+    Muted: text-zinc-500
+    Dim: text-zinc-600
+    Ghost: text-zinc-700
+  
+  Accent (orange):
+    Primary: text-orange-500
+    Hover: hover:text-orange-400
+    Background: bg-orange-500/10 (active state)
+    Border: border-orange-500/30 (badges)
+    Glow: bg-orange-500/[0.03] (hero glow)
+  
+  Status:
+    Online: text-emerald-500, bg-emerald-500
+    Warning: text-yellow-500, bg-yellow-500
+    Error: text-red-500, bg-red-500
+*/
+
+/* ━━━ BUTTONS ━━━ */
+/*
+  Primary: bg-white text-black px-8 py-4 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 btn-press
+  Secondary: border border-zinc-800 px-8 py-4 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 btn-press
+  Danger: border border-red-500/20 text-red-400 hover:bg-red-500/10
+  Nav CTA: bg-white text-black px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest
+*/
+
+/* ━━━ CARDS ━━━ */
+/*
+  Standard: bg-black p-6 sm:p-8 border border-zinc-800 card-hover
+  Surface: bg-zinc-950 border border-zinc-800 p-4
+  Section divider: border-t border-zinc-900
+*/
+
+/* ━━━ SPACING ━━━ */
+/*
+  Section padding: py-16 sm:py-24
+  Card padding: p-6 sm:p-8
+  Small padding: p-4
+  Gap between sections: gap-px bg-zinc-900 (grid divider pattern)
+  Max width: max-w-4xl mx-auto px-5 sm:px-6
+*/
+
+/* ━━━ ANIMATIONS ━━━ */
+/*
+  Page enter: page-enter
+  Card hover: card-hover (translateY -2px + border glow)
+  Button press: btn-press (scale 0.97)
+  Status breathing: status-breathe (3s pulse)
+  Staggered fade-in: stagger-1 through stagger-6
+  Hero glow: hero-glow (orange radial pulse)
+  Popular glow: popular-glow (orange border pulse)
+*/
+
+/* ━━━ COMPONENT PATTERNS ━━━ */
+
+/* Label pattern — use for all section labels */
+.ds-label {
+  @apply text-[10px] uppercase tracking-widest text-zinc-600;
+}
+
+/* Heading pattern — use for all section headings */
+.ds-heading {
+  @apply text-sm font-bold uppercase tracking-wider text-white;
+}
+
+/* Body text pattern */
+.ds-body {
+  @apply text-sm leading-relaxed text-zinc-500;
+}
+
+/* Link pattern */
+.ds-link {
+  @apply text-orange-500 hover:text-orange-400 transition-colors;
+}
+
+/* Card pattern */
+.ds-card {
+  @apply bg-black p-6 sm:p-8 border border-zinc-800;
+}
+
+/* Status dot pattern */
+.ds-status-online {
+  @apply h-2 w-2 rounded-full bg-emerald-500 status-breathe;
+}
+
+.ds-status-offline {
+  @apply h-2 w-2 rounded-full bg-zinc-700;
+}

@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api//openclaw/devices
+url: "{{baseUrl}}/api//openclaw/devices"
+method: POST
+order: 65000

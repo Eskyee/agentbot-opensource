@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/agents/{{agentId}}"
+method: DELETE
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 or 204", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 204]);
+      });
+      pm.test("If 200, response body has success or message field", function () {
+        if (pm.response.code === 200) {
+          var jsonData;
+          try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+          pm.expect(jsonData).to.satisfy(function (d) {
+            return d.hasOwnProperty("success") || d.hasOwnProperty("message");
+          }, "Expected response to have 'success' or 'message' field");
+        }
+      });
+    language: text/javascript
+order: 5000

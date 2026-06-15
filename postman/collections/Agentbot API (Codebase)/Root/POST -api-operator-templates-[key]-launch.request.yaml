@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//operator/templates/[key]/launch
+url: "{{baseUrl}}/api//operator/templates/[key]/launch"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 484000

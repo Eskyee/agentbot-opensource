@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/agents/showcase"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response is array or has agents field", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        if (Array.isArray(jsonData)) {
+          pm.expect(jsonData).to.be.an("array");
+        } else {
+          pm.expect(jsonData).to.have.property("agents");
+        }
+      });
+    language: text/javascript
+order: 13000

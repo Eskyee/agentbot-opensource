@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/market-intel
+url: "{{baseUrl}}/api/market-intel"
+method: GET
+order: 1000

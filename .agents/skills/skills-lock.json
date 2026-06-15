@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "skills": {
+    "monetize-service": {
+      "source": "coinbase/agentic-wallet-skills",
+      "sourceType": "github",
+      "computedHash": "8fca6f1a527b6e83221f65fd602181b4d30524aee3b09f3eb69d66a99282c467"
+    },
+    "mux-video": {
+      "source": "muxinc/skills",
+      "sourceType": "github",
+      "computedHash": "eaf3453ee47a8e00c657a6e9562389a88c03604761a6ed10a44224b4e7128f8a"
+    },
+    "pay-for-service": {
+      "source": "coinbase/agentic-wallet-skills",
+      "sourceType": "github",
+      "computedHash": "db39a1f40691c70d34a66a16ab6a2752f074dd78ce384c0d6039c9ab6e1f39b5"
+    },
+    "search-for-service": {
+      "source": "coinbase/agentic-wallet-skills",
+      "sourceType": "github",
+      "computedHash": "9d5615ee3759e7a290745cd5fc4045854c48818659eceb60e1f95894bab89f12"
+    },
+    "send-usdc": {
+      "source": "coinbase/agentic-wallet-skills",
+      "sourceType": "github",
+      "computedHash": "ed11d4f9a52b4bf56fead12575d383bd1138e8928ce0c49f010c96163348afdb"
+    },
+    "trade": {
+      "source": "coinbase/agentic-wallet-skills",
+      "sourceType": "github",
+      "computedHash": "bf5ee29c6164b763193752bfdbf900401e47b89620cdb1fbf71b33dfa069d928"
+    },
+    "x402": {
+      "source": "coinbase/agentic-wallet-skills",
+      "sourceType": "github",
+      "computedHash": "022ec3599eb4f15145749d058b7402558fcce4e10c44389f21d3132e5e364304"
+    }
+  }
+}

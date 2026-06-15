@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentbot — How It Works</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; color: #fff; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+  .container { max-width: 1200px; width: 100%; }
+  h1 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; color: #52525b; margin-bottom: 8px; }
+  h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 32px; }
+  h2 span { color: #f97316; }
+  svg { width: 100%; height: auto; display: block; }
+  .legend { margin-top: 24px; display: flex; gap: 24px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: #71717a; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Demo</h1>
+  <h2>How <span>Agentbot</span> Works</h2>
+
+<svg viewBox="0 0 1100 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Connectors (drawn first, behind nodes) -->
+  <!-- User → Auth -->
+  <path d="M170 80 L280 80" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Auth → Dashboard -->
+  <path d="M400 80 L510 80" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Dashboard → Agent Config -->
+  <path d="M630 80 L740 80" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Agent Config → Deploy -->
+  <path d="M860 80 L970 80" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Deploy → Runtime (down) -->
+  <path d="M1030 140 L1030 200" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Runtime → Skills -->
+  <path d="M970 260 L860 260" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Skills → LLM -->
+  <path d="M740 260 L630 260" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- LLM → Memory -->
+  <path d="M510 260 L400 260" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Runtime → Channels (down) -->
+  <path d="M1030 320 L1030 380" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Channels → Telegram -->
+  <path d="M970 440 L860 440" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Channels → Discord -->
+  <path d="M970 440 L860 500" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Channels → Web -->
+  <path d="M970 440 L860 560" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Runtime → Payments -->
+  <path d="M910 320 L910 380" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M910 380 L740 440" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Runtime → Cron -->
+  <path d="M1030 320 L510 380" stroke="#3f3f46" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
+  <path d="M510 380 L510 440" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Memory → DB -->
+  <path d="M340 320 L340 380" stroke="#3f3f46" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#52525b"/>
+    </marker>
+  </defs>
+
+  <!-- Row 1: User Flow -->
+  <!-- User -->
+  <rect x="40" y="50" width="120" height="60" rx="2" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+  <text x="100" y="76" text-anchor="middle" fill="#a1a1aa" font-size="10" font-family="monospace" text-transform="uppercase" letter-spacing="0.1em">USER</text>
+  <text x="100" y="92" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">Sign Up / Login</text>
+
+  <!-- Auth -->
+  <rect x="290" y="50" width="110" height="60" rx="2" fill="#1a1a2e" stroke="#3b82f6" stroke-width="1"/>
+  <text x="345" y="76" text-anchor="middle" fill="#60a5fa" font-size="10" font-family="monospace">AUTH</text>
+  <text x="345" y="92" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">OAuth / Wallet</text>
+
+  <!-- Dashboard -->
+  <rect x="520" y="50" width="110" height="60" rx="2" fill="#1a1a2e" stroke="#3b82f6" stroke-width="1"/>
+  <text x="575" y="76" text-anchor="middle" fill="#60a5fa" font-size="10" font-family="monospace">DASHBOARD</text>
+  <text x="575" y="92" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">Configure</text>
+
+  <!-- Agent Config -->
+  <rect x="750" y="50" width="110" height="60" rx="2" fill="#1a1a2e" stroke="#3b82f6" stroke-width="1"/>
+  <text x="805" y="76" text-anchor="middle" fill="#60a5fa" font-size="10" font-family="monospace">AGENT</text>
+  <text x="805" y="92" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">Name · Model · Soul</text>
+
+  <!-- Deploy -->
+  <rect x="980" y="50" width="100" height="60" rx="2" fill="#1a2e1a" stroke="#22c55e" stroke-width="1"/>
+  <text x="1030" y="76" text-anchor="middle" fill="#4ade80" font-size="10" font-family="monospace">DEPLOY</text>
+  <text x="1030" y="92" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">60 seconds</text>
+
+  <!-- Row 2: Runtime -->
+  <!-- Runtime -->
+  <rect x="960" y="200" width="140" height="60" rx="2" fill="#1a2e1a" stroke="#22c55e" stroke-width="1"/>
+  <text x="1030" y="226" text-anchor="middle" fill="#4ade80" font-size="10" font-family="monospace">RUNTIME</text>
+  <text x="1030" y="242" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">24/7 Autonomous</text>
+
+  <!-- Skills -->
+  <rect x="740" y="230" width="110" height="60" rx="2" fill="#2e1a2e" stroke="#a855f7" stroke-width="1"/>
+  <text x="795" y="256" text-anchor="middle" fill="#c084fc" font-size="10" font-family="monospace">SKILLS</text>
+  <text x="795" y="272" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">40+ Installed</text>
+
+  <!-- LLM -->
+  <rect x="520" y="230" width="110" height="60" rx="2" fill="#2e2e1a" stroke="#eab308" stroke-width="1"/>
+  <text x="575" y="256" text-anchor="middle" fill="#facc15" font-size="10" font-family="monospace">LLM</text>
+  <text x="575" y="272" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">MiMo · Claude · GPT</text>
+
+  <!-- Memory -->
+  <rect x="290" y="230" width="110" height="60" rx="2" fill="#1a1a2e" stroke="#3b82f6" stroke-width="1"/>
+  <text x="345" y="256" text-anchor="middle" fill="#60a5fa" font-size="10" font-family="monospace">MEMORY</text>
+  <text x="345" y="272" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">Session + Long-term</text>
+
+  <!-- Row 3: Channels -->
+  <!-- Channels -->
+  <rect x="960" y="380" width="140" height="60" rx="2" fill="#2e1a1a" stroke="#ef4444" stroke-width="1"/>
+  <text x="1030" y="406" text-anchor="middle" fill="#f87171" font-size="10" font-family="monospace">CHANNELS</text>
+  <text x="1030" y="422" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">Multi-platform</text>
+
+  <!-- Telegram -->
+  <rect x="740" y="410" width="110" height="50" rx="2" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+  <text x="795" y="432" text-anchor="middle" fill="#a1a1aa" font-size="10" font-family="monospace">TELEGRAM</text>
+  <text x="795" y="448" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">Bot API</text>
+
+  <!-- Discord -->
+  <rect x="740" y="470" width="110" height="50" rx="2" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+  <text x="795" y="492" text-anchor="middle" fill="#a1a1aa" font-size="10" font-family="monospace">DISCORD</text>
+  <text x="795" y="508" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">Webhook</text>
+
+  <!-- Web -->
+  <rect x="740" y="530" width="110" height="50" rx="2" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+  <text x="795" y="552" text-anchor="middle" fill="#a1a1aa" font-size="10" font-family="monospace">WEBCHAT</text>
+  <text x="795" y="568" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">Embedded</text>
+
+  <!-- Payments -->
+  <rect x="620" y="410" width="110" height="50" rx="2" fill="#1a2e1a" stroke="#22c55e" stroke-width="1"/>
+  <text x="675" y="432" text-anchor="middle" fill="#4ade80" font-size="10" font-family="monospace">x402</text>
+  <text x="675" y="448" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">USDC Payments</text>
+
+  <!-- Cron -->
+  <rect x="400" y="410" width="110" height="50" rx="2" fill="#1a1a2e" stroke="#3b82f6" stroke-width="1"/>
+  <text x="455" y="432" text-anchor="middle" fill="#60a5fa" font-size="10" font-family="monospace">CRON</text>
+  <text x="455" y="448" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">Scheduled Tasks</text>
+
+  <!-- Database -->
+  <rect x="220" y="380" width="140" height="60" rx="2" fill="#1a1a2e" stroke="#3b82f6" stroke-width="1"/>
+  <text x="290" y="406" text-anchor="middle" fill="#60a5fa" font-size="10" font-family="monospace">DATABASE</text>
+  <text x="290" y="422" text-anchor="middle" fill="#52525b" font-size="9" font-family="monospace">PostgreSQL + Redis</text>
+
+  <!-- Row 4: Infrastructure label -->
+  <rect x="40" y="530" width="1020" height="50" rx="2" fill="#09090b" stroke="#27272a" stroke-width="1"/>
+  <text x="550" y="560" text-anchor="middle" fill="#3f3f46" font-size="10" font-family="monospace" letter-spacing="0.2em">INFRASTRUCTURE — VERCEL (FRONTEND) · RAILWAY (BACKEND) · BASE (ONCHAIN) · NEON (POSTGRES)</text>
+
+</svg>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Core Platform</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Runtime / Deploy</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Skills / Extensions</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>AI / LLM</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Channels / Output</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3f3f46"></div>External</div>
+  </div>
+</div>
+</body>
+</html>

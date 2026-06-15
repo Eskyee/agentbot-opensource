@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/instance/[userId]/reset-memory
+url: "{{baseUrl}}/api/instance/[userId]/reset-memory"
+method: POST
+order: 8000

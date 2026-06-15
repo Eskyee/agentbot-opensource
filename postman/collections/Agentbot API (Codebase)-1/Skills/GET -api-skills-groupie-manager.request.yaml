@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/skills/groupie-manager
+url: "{{baseUrl}}/api/skills/groupie-manager"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 30000

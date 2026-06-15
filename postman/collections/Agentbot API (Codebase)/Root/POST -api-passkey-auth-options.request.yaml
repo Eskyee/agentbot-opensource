@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api//passkey/auth/options
+url: "{{baseUrl}}/api//passkey/auth/options"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 73000

@@ -1,0 +1,77 @@
+{
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "auto",
+    "controlUi": {
+      "allowInsecureAuth": true
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "xiaomi": {
+        "baseUrl": "https://token-plan-ams.xiaomimimo.com/v1",
+        "apiKey": "${MIMO_API_KEY}",
+        "api": "openai-completions",
+        "headers": {
+          "api-key": "${MIMO_API_KEY}"
+        },
+        "models": [
+          {
+            "id": "mimo-v2.5-pro-ultraspeed",
+            "name": "MiMo-V2.5-Pro-UltraSpeed",
+            "api": "openai-completions",
+            "reasoning": true,
+            "input": ["text"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 131072,
+            "maxTokens": 131072
+          },
+          {
+            "id": "mimo-v2.5-pro",
+            "name": "MiMo-V2.5-Pro",
+            "api": "openai-completions",
+            "reasoning": true,
+            "input": ["text"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 1048576,
+            "maxTokens": 32000
+          },
+          {
+            "id": "mimo-v2.5",
+            "name": "MiMo-V2.5",
+            "api": "openai-completions",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 1048576,
+            "maxTokens": 32000
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "xiaomi/mimo-v2.5-pro"
+      },
+      "workspace": "/root/.openclaw/workspace",
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 6,
+        "archiveAfterMinutes": 60
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "name": "Atlas",
+        "model": {
+          "primary": "xiaomi/mimo-v2.5-pro"
+        }
+      }
+    ]
+  }
+}

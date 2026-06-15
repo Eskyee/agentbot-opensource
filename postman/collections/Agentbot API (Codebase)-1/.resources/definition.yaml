@@ -1,0 +1,10 @@
+$kind: collection
+name: Agentbot API (Codebase)
+description: Auto-generated from codebase scan. 590 endpoints.
+variables:
+  baseUrl: https://agentbot.sh
+  backendUrl: https://agentbot-backend-production.up.railway.app
+  gatewayUrl: https://openclaw-production-a09d.up.railway.app
+  sessionToken: ""
+  internalApiKey: ""
+  bridgeSecret: ""

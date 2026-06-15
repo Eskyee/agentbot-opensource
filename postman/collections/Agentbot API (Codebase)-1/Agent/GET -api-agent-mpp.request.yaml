@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/agent/mpp
+url: "{{baseUrl}}/api/agent/mpp"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

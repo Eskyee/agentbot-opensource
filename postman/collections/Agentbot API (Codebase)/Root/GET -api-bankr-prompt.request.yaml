@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//bankr/prompt
+url: "{{baseUrl}}/api//bankr/prompt"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 495000

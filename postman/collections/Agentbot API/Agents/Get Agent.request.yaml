@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/agents/{{agentId}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response body has id field", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData).to.have.property("id");
+      });
+      pm.test("id matches agentId environment variable", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        var agentId = pm.environment.get("agentId");
+        if (agentId) {
+          pm.expect(String(jsonData.id)).to.equal(String(agentId));
+        }
+      });
+    language: text/javascript
+order: 3000

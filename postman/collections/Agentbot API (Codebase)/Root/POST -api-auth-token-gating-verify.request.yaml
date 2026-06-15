@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api//auth/token-gating/verify
+url: "{{baseUrl}}/api//auth/token-gating/verify"
+method: POST
+order: 83000

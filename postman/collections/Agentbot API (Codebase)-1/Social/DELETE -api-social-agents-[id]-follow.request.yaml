@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api/social/agents/[id]/follow
+url: "{{baseUrl}}/api/social/agents/[id]/follow"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 26000

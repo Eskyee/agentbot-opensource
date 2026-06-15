@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/keys"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": ""
+    }
+order: 5000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//auth/nonce
+url: "{{baseUrl}}/api//auth/nonce"
+method: GET
+order: 84000

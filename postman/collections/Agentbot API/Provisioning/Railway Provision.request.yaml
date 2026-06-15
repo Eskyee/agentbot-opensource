@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{backendUrl}}/api/railway/provision"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Internal-Api-Key: "{{internalApiKey}}"
+body:
+  type: text
+  content: |-
+    {
+      "agentId": "",
+      "plan": "solo"
+    }
+order: 7000

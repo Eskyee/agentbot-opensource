@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/skills/booking-settlement
+url: "{{baseUrl}}/api/skills/booking-settlement"
+method: GET
+order: 25000

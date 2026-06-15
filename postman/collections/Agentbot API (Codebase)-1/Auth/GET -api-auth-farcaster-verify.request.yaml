@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/auth/farcaster/verify
+url: "{{baseUrl}}/api/auth/farcaster/verify"
+method: GET
+order: 9000

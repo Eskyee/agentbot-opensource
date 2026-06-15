@@ -1,0 +1,37 @@
+$kind: http-request
+url: "{{baseUrl}}/api/agents"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "",
+      "description": ""
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 or 201", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 201]);
+      });
+      pm.test("Response body has id field", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData).to.have.property("id");
+      });
+      pm.test("Response body has name field", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData).to.have.property("name");
+      });
+      pm.test("Save agentId to environment", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { return; }
+        if (jsonData.id) {
+          pm.environment.set("agentId", jsonData.id);
+        }
+      });
+    language: text/javascript
+order: 2000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//vercel-gateway/usage
+url: "{{baseUrl}}/api//vercel-gateway/usage"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 316000

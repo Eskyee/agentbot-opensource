@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/sandbox
+url: "{{baseUrl}}/api/sandbox"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

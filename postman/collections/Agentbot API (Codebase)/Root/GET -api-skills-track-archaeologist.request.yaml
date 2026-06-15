@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//skills/track-archaeologist
+url: "{{baseUrl}}/api//skills/track-archaeologist"
+method: GET
+order: 390000

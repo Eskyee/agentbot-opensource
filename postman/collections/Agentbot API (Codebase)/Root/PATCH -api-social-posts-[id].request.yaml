@@ -1,0 +1,11 @@
+$kind: http-request
+name: PATCH /api//social/posts/[id]
+url: "{{baseUrl}}/api//social/posts/[id]"
+method: PATCH
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 241000

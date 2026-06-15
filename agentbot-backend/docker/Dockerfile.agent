@@ -1,0 +1,28 @@
+# Agentbot - OpenClaw Agent Container (Official Image)
+FROM ghcr.io/openclaw/openclaw:2026.5.2
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /usr/local/bin/tailscale
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /usr/local/bin/tailscaled
+
+# Performance tuning (from OpenClaw docs)
+ENV NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+ENV OPENCLAW_NO_RESPAWN=1
+ENV TAILSCALE_STATE_DIR=/home/node/.openclaw/tailscale
+
+# Copy custom entrypoint
+COPY entrypoint.sh /entrypoint.sh
+COPY agentbot-tailscale-start.sh /usr/local/bin/agentbot-tailscale-start
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/* \
+  && chmod 755 /entrypoint.sh \
+  && chmod 755 /usr/local/bin/agentbot-tailscale-start \
+  && mkdir -p /var/tmp/openclaw-compile-cache \
+  && mkdir -p /var/run/tailscale \
+  && chown node:node /var/tmp/openclaw-compile-cache /var/run/tailscale
+USER node
+
+# Health check — use Node.js (curl not in official image)
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 --start-period=20s \
+    CMD node -e "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+EXPOSE 18789 18790
+ENTRYPOINT ["/entrypoint.sh"]

@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//skills/verify
+url: "{{baseUrl}}/api//skills/verify"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 389000

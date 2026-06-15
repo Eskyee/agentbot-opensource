@@ -1,0 +1,57 @@
+name: Daily Blog Post
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 9am UTC (9am UK time in winter, 8am UK in summer)
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  generate-blog-post:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check required secret
+        id: config
+        run: |
+          if [ -n "${{ secrets.OPENROUTER_API_KEY }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip if OPENROUTER_API_KEY is missing
+        if: steps.config.outputs.ready != 'true'
+        run: |
+          echo "Skipping daily blog generation: OPENROUTER_API_KEY is not configured." >> $GITHUB_STEP_SUMMARY
+
+      - name: Checkout repository
+        if: steps.config.outputs.ready == 'true'
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      
+      - name: Setup Node.js
+        if: steps.config.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Generate blog post
+        if: steps.config.outputs.ready == 'true'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          node scripts/generate-daily-blog.js
+      
+      - name: Commit and push
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add web/app/blog/posts/
+          git add web/app/blog/page.tsx
+          git diff --staged --quiet || git commit -m "Auto: Daily blog post $(date +%Y-%m-%d)"
+          git push

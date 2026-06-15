@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api//auth/login
+url: "{{baseUrl}}/api//auth/login"
+method: POST
+order: 97000

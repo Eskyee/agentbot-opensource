@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api//wallet/sessions/voucher
+url: "{{baseUrl}}/api//wallet/sessions/voucher"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 342000

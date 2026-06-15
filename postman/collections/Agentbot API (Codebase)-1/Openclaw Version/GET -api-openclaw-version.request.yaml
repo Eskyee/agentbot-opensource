@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/openclaw-version
+url: "{{baseUrl}}/api/openclaw-version"
+method: GET
+order: 1000

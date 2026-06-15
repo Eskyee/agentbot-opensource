@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/social/notifications"
+method: GET
+order: 7000

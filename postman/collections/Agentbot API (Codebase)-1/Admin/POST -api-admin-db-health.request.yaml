@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/admin/db-health
+url: "{{baseUrl}}/api/admin/db-health"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 6000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api//buddies/[buddyId]
+url: "{{baseUrl}}/api//buddies/[buddyId]"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 500000

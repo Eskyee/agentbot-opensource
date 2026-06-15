@@ -1,0 +1,11 @@
+$kind: http-request
+name: PATCH /api//ads/campaigns/[id]
+url: "{{baseUrl}}/api//ads/campaigns/[id]"
+method: PATCH
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 16000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//clawmerchants
+url: "{{baseUrl}}/api//clawmerchants"
+method: GET
+order: 300000

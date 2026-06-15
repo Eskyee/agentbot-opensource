@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//social/dms
+url: "{{baseUrl}}/api//social/dms"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 269000

@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/solana/wallet"
+method: GET
+order: 5000

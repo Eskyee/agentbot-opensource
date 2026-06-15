@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/demo/chat"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "message": "Hello"
+    }
+order: 10000

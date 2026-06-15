@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//social/feed/following
+url: "{{baseUrl}}/api//social/feed/following"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 268000

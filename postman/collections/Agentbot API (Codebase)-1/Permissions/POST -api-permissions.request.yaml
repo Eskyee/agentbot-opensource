@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/permissions
+url: "{{baseUrl}}/api/permissions"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

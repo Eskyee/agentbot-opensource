@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/farcaster/refresh"
+method: POST
+order: 10000

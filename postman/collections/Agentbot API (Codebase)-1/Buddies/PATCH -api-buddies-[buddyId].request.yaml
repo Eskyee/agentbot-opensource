@@ -1,0 +1,7 @@
+$kind: http-request
+name: PATCH /api/buddies/[buddyId]
+url: "{{baseUrl}}/api/buddies/[buddyId]"
+method: PATCH
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 4000

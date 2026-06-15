@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/test-env"
+method: GET
+order: 5000

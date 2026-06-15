@@ -1,0 +1,68 @@
+/**
+ * Dashboard Layout — Shared sidebar + navbar for all dashboard pages
+ */
+
+'use client'
+
+import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import { Breadcrumbs } from '@/app/components/Breadcrumbs'
+import { TrialBanner } from '@/app/components/TrialBanner'
+import { useCustomSession } from '@/app/lib/useCustomSession'
+import { SidebarContext } from './sidebar-context'
+import { DashboardDataProvider } from './DashboardDataProvider'
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { data: session } = useCustomSession()
+  const pathname = usePathname()
+
+  // Skip layout for main dashboard page (it has its own sidebar)
+  if (pathname === '/dashboard') {
+    return (
+      <DashboardDataProvider>{children}</DashboardDataProvider>
+    )
+  }
+
+  return (
+    <DashboardDataProvider>
+    <SidebarContext.Provider value={{ isOpen: sidebarOpen, toggle: () => setSidebarOpen(!sidebarOpen) }}>
+      <div className="flex min-h-screen bg-black font-mono">
+        <DashboardSidebar
+          userName={session?.user?.name || session?.user?.email?.split('@')[0] || 'User'}
+          isAdmin={session?.user?.isAdmin === true}
+          isOpen={sidebarOpen}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
+        />
+
+        <div className="flex-1 flex flex-col min-w-0">
+          <TrialBanner />
+
+          {/* Top bar: mobile menu trigger + breadcrumb trail */}
+          <div className="sticky top-14 z-30 flex items-center gap-3 border-b border-zinc-900 bg-black/80 px-4 py-2.5 backdrop-blur-xl sm:px-6">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-1.5 -ml-1.5 text-zinc-400 hover:text-white transition-colors"
+              aria-label="Open menu"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <Breadcrumbs className="min-w-0" />
+          </div>
+
+          <main className="flex-1 overflow-y-auto">
+            {children}
+          </main>
+        </div>
+      </div>
+    </SidebarContext.Provider>
+    </DashboardDataProvider>
+  )
+}

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//openclaw/character-qa
+url: "{{baseUrl}}/api//openclaw/character-qa"
+method: GET
+order: 57000

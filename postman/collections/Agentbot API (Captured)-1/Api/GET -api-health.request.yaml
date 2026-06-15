@@ -1,0 +1,12 @@
+$kind: http-request
+name: GET /api/health
+url: "{{baseUrl}}/api/health"
+method: GET
+headers:
+  sec-ch-ua-platform: '"macOS"'
+  referer: http://localhost:3000/
+  user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36
+  sec-ch-ua: '"HeadlessChrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"'
+  sec-ch-ua-mobile: ?0
+examples: ./.resources/GET -api-health.resources/examples
+order: 2000

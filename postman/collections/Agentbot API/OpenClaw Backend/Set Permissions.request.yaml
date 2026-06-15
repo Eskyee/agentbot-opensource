@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{backendUrl}}/api/permissions"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "permissions": {}
+    }
+order: 5000

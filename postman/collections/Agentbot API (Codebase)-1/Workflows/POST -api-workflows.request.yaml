@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/workflows
+url: "{{baseUrl}}/api/workflows"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

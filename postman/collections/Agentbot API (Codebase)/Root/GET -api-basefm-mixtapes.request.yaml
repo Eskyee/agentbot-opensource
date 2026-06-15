@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//basefm/mixtapes
+url: "{{baseUrl}}/api//basefm/mixtapes"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 285000

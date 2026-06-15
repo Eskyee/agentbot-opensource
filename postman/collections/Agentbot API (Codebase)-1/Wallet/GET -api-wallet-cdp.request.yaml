@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/wallet/cdp
+url: "{{baseUrl}}/api/wallet/cdp"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

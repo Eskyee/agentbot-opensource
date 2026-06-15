@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/csrf"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response body has csrfToken field", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData).to.have.property("csrfToken");
+        pm.expect(jsonData.csrfToken).to.be.a("string").and.to.have.length.above(0);
+      });
+      pm.test("Save csrfToken to environment", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { return; }
+        if (jsonData.csrfToken) {
+          pm.environment.set("csrfToken", jsonData.csrfToken);
+        }
+      });
+    language: text/javascript
+order: 2000

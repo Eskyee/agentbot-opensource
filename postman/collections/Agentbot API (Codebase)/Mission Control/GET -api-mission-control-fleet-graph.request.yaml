@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/mission-control/fleet/graph
+url: "{{baseUrl}}/api/mission-control/fleet/graph"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

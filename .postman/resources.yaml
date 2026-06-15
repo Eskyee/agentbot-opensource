@@ -1,0 +1,20 @@
+workspace:
+  id: add11aac-6351-4923-854f-2a5ef6c79113
+localResources:
+  collections:
+    - ../agentbot-api.postman_collection.json
+cloudResources:
+  environments:
+    ../postman/environments/Agentbot Environment.environment.yaml: 53112924-ded0e66f-c976-5a82-b128-503a498689df
+    ../postman/environments/Agentbot - Local Development.environment.yaml: 53112924-dad2ef0b-c1e5-4770-be8a-6d8b3e9de16b
+  collections:
+    ../postman/collections/New Collection: 53112924-32c27b6a-d164-42c7-8205-f5c3f83d0207
+    ../postman/collections/Agentbot API (Captured): 53112924-825e43d1-8033-48d5-a59a-1dbce9fe0d44
+    ../agentbot-api.postman_collection.json: 53112924-08124444-630e-4041-bbc4-e142d4d687e2
+    ../postman/collections/Agentbot API: 53112924-a1b75fc9-4b4f-4da4-b7b1-cc6c7981e609
+    ../postman/collections/Agentbot API (Captured)-1: 53112924-26cb7ce1-2093-45ef-b361-85809e8c8dc0
+    ../postman/collections/Agentbot API (Codebase): 53112924-284e4507-a98a-4728-bcfe-679536b78596
+    ../postman/collections/Agentbot API (Codebase)-1: 53112924-d376446f-1ffe-4a7d-8638-3cc486b81819
+    ../postman/collections/Agentbot.sh-API's: 53112924-3ec8cf08-fbdf-4bb4-b3cf-95bb2aa21f55
+    ../postman/collections/Agentbot API-1: 53112924-70c186d0-1bce-4f4a-a435-37b6d3c81348
+    ../postman/collections/agentbot-api.postman_collection.json: 53112924-08124444-630e-4041-bbc4-e142d4d687e2

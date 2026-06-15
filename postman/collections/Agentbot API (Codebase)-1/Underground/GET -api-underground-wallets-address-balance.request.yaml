@@ -1,0 +1,9 @@
+$kind: http-request
+name: GET /api/underground/wallets/:address/balance
+url: "{{baseUrl}}/api/underground/wallets/:address/balance"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+pathVariables:
+  address: ""
+order: 5000

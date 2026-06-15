@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/v1/gateway
+url: "{{baseUrl}}/api/v1/gateway"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

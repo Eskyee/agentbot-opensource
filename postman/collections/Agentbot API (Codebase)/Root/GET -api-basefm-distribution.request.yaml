@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//basefm/distribution
+url: "{{baseUrl}}/api//basefm/distribution"
+method: GET
+order: 284000

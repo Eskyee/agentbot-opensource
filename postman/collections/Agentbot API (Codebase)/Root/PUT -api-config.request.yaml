@@ -1,0 +1,7 @@
+$kind: http-request
+name: PUT /api//config
+url: "{{baseUrl}}/api//config"
+method: PUT
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 79000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//admin/security
+url: "{{baseUrl}}/api//admin/security"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 127000

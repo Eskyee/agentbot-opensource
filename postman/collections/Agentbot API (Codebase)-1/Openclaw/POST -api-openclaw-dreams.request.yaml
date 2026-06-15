@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/openclaw/dreams
+url: "{{baseUrl}}/api/openclaw/dreams"
+method: POST
+order: 8000

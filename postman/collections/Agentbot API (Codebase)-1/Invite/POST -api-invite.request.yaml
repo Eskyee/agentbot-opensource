@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/invite
+url: "{{baseUrl}}/api/invite"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

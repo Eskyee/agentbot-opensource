@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//git-city
+url: "{{baseUrl}}/api//git-city"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 111000

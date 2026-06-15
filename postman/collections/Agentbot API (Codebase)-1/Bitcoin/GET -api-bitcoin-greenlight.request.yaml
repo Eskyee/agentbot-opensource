@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/bitcoin/greenlight
+url: "{{baseUrl}}/api/bitcoin/greenlight"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//openclaw/ensure-compatibility
+url: "{{baseUrl}}/api//openclaw/ensure-compatibility"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 56000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api//wristband/mint
+url: "{{baseUrl}}/api//wristband/mint"
+method: POST
+order: 295000

@@ -1,0 +1,6 @@
+$kind: collection
+description: |-
+  The [AI API](https://desktop.postman.com/?desktopVersion=12.2.3&userId=53112924&teamId=14191374&region=us#) folder is intended to group requests related to AI-powered API operations. Use this folder to organize endpoints for interacting with AI services, such as submitting prompts, generating responses, processing text, or managing AI-related workflows. Keeping these requests together helps make the collection easier to navigate and maintain as AI functionality expands.
+
+  This folder groups requests for AI-powered API operations, including prompt submission, response generation, text processing, and other AI-related workflows. It serves as a central place to organize and maintain AI endpoints as the API expands.
+order: 6000

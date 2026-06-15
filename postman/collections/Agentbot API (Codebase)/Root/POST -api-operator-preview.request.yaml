@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//operator/preview
+url: "{{baseUrl}}/api//operator/preview"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 487000

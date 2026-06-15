@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//social/agents/[id]
+url: "{{baseUrl}}/api//social/agents/[id]"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 257000

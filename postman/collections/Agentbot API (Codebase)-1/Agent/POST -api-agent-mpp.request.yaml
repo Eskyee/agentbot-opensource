@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api/agent/mpp
+url: "{{baseUrl}}/api/agent/mpp"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 4000

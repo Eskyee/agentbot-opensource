@@ -1,0 +1,7 @@
+$kind: http-request
+name: PATCH /api//x/drafts/[draftId]
+url: "{{baseUrl}}/api//x/drafts/[draftId]"
+method: PATCH
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 472000

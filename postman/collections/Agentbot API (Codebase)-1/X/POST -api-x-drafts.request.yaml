@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/x/drafts
+url: "{{baseUrl}}/api/x/drafts"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 5000

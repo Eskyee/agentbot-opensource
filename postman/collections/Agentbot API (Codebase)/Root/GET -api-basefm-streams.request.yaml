@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//basefm/streams
+url: "{{baseUrl}}/api//basefm/streams"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 279000

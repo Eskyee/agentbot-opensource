@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//support/heal-token
+url: "{{baseUrl}}/api//support/heal-token"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 303000

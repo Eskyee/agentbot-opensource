@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api/social/admin/moderation-actions
+url: "{{baseUrl}}/api/social/admin/moderation-actions"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 17000

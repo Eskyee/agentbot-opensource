@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/instance/[userId]/update
+url: "{{baseUrl}}/api/instance/[userId]/update"
+method: POST
+order: 4000

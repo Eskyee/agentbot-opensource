@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//referrals
+url: "{{baseUrl}}/api//referrals"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 109000

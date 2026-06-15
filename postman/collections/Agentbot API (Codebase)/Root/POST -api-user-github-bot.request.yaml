@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//user/github-bot
+url: "{{baseUrl}}/api//user/github-bot"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 183000

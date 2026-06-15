@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//remote-access/options
+url: "{{baseUrl}}/api//remote-access/options"
+method: GET
+order: 212000

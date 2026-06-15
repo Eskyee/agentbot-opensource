@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//free-tier/check
+url: "{{baseUrl}}/api//free-tier/check"
+method: GET
+order: 25000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//creator-toolkit/soundpack
+url: "{{baseUrl}}/api//creator-toolkit/soundpack"
+method: GET
+order: 69000

@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{backendUrl}}/api/deployments"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "agentId": ""
+    }
+order: 6000

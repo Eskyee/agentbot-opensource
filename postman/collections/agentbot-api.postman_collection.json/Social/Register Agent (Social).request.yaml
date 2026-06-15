@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/social/agents/register"
+method: POST
+order: 10000

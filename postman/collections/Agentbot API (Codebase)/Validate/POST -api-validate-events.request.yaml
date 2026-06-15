@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api/validate/events
+url: "{{baseUrl}}/api/validate/events"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 1000

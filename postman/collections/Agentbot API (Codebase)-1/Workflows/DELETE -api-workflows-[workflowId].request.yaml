@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api/workflows/[workflowId]
+url: "{{baseUrl}}/api/workflows/[workflowId]"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 5000

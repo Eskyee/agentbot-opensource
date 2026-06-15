@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/webhooks/stripe"
+method: POST
+order: 1000

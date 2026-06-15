@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{backendUrl}}/api/ai/estimate-cost"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "messages": [{"role": "user", "content": "Hello"}]
+    }
+order: 6000

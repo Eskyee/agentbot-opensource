@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/registration/token
+url: "{{baseUrl}}/api/registration/token"
+method: GET
+order: 1000

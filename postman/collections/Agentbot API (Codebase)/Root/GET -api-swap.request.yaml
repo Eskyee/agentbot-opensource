@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//swap
+url: "{{baseUrl}}/api//swap"
+method: GET
+order: 123000

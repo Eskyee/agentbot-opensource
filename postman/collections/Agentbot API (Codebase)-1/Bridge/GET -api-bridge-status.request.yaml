@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/bridge/status
+url: "{{baseUrl}}/api/bridge/status"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 5000

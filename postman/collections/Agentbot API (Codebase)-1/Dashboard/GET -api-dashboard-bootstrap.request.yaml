@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/dashboard/bootstrap
+url: "{{baseUrl}}/api/dashboard/bootstrap"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

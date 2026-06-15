@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/bridge/setup
+url: "{{baseUrl}}/api/bridge/setup"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

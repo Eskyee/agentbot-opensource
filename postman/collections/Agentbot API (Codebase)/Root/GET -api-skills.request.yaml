@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//skills
+url: "{{baseUrl}}/api//skills"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 376000

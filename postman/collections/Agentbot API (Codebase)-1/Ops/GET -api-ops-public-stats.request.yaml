@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/ops/public-stats
+url: "{{baseUrl}}/api/ops/public-stats"
+method: GET
+order: 4000

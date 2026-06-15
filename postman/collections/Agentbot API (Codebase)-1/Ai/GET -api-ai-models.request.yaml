@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/ai/models
+url: "{{baseUrl}}/api/ai/models"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

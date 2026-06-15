@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//stripe/webhook
+url: "{{baseUrl}}/api//stripe/webhook"
+method: GET
+order: 524000

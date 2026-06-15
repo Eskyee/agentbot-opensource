@@ -1,0 +1,7 @@
+$kind: http-request
+name: PUT /api//devices
+url: "{{baseUrl}}/api//devices"
+method: PUT
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 521000

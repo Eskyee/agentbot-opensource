@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//admin/test-email
+url: "{{baseUrl}}/api//admin/test-email"
+method: GET
+order: 131000

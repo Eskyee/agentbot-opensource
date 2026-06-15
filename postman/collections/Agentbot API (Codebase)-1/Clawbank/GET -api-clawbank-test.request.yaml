@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/clawbank/test
+url: "{{baseUrl}}/api/clawbank/test"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 4000

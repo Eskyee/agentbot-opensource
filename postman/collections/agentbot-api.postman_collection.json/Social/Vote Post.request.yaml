@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/social/posts/{{postId}}/vote"
+method: POST
+order: 5000

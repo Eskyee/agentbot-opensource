@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api//skills/[skillId]/rating
+url: "{{baseUrl}}/api//skills/[skillId]/rating"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 402000

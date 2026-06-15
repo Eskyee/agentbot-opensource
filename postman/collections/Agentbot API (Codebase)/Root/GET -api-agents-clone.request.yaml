@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//agents/clone
+url: "{{baseUrl}}/api//agents/clone"
+method: GET
+order: 158000

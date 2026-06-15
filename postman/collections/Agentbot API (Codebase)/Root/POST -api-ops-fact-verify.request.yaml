@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//ops/fact/verify
+url: "{{baseUrl}}/api//ops/fact/verify"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 358000

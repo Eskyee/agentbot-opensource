@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env*
+*.md
+.vscode
+coverage
+__tests__
+*.test.ts
+*.spec.ts
+prisma/migrations

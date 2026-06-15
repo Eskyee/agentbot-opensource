@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/social/feed/following"
+method: GET
+order: 2000

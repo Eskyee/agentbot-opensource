@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//credits/mimo-usage
+url: "{{baseUrl}}/api//credits/mimo-usage"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 466000

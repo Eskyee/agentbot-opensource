@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/wallet/top-up"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "amount": 10
+    }
+order: 7000

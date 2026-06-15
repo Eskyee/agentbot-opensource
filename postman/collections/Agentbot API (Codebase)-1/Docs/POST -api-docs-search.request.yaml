@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/docs/search
+url: "{{baseUrl}}/api/docs/search"
+method: POST
+order: 2000

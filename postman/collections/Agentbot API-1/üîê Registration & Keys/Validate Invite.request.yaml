@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{backendUrl}}/api/invite/validate"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "code": ""
+    }
+order: 8000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//community/export
+url: "{{baseUrl}}/api//community/export"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 451000

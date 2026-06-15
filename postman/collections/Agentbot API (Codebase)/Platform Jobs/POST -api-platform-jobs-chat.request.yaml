@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api/platform-jobs/chat
+url: "{{baseUrl}}/api/platform-jobs/chat"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 2000

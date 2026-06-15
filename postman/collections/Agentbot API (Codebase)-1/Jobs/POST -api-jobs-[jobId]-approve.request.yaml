@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/jobs/[jobId]/approve
+url: "{{baseUrl}}/api/jobs/[jobId]/approve"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 12000

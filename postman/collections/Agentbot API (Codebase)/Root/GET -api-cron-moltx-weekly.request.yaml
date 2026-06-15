@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//cron/moltx-weekly
+url: "{{baseUrl}}/api//cron/moltx-weekly"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 512000

@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//stripe/checkout
+url: "{{baseUrl}}/api//stripe/checkout"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 526000

@@ -1,0 +1,13 @@
+$kind: http-request
+name: PUT /api/agents/:id
+url: "{{baseUrl}}/api/agents/:id"
+method: PUT
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+pathVariables:
+  id: ""
+body:
+  type: json
+  content: "{}"
+order: 4000

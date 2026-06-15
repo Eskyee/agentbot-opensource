@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/coinbase
+url: "{{baseUrl}}/api/coinbase"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 1000

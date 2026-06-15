@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//solana/rpc-config
+url: "{{baseUrl}}/api//solana/rpc-config"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 147000

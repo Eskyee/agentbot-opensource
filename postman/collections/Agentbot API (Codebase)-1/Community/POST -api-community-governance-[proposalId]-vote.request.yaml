@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api/community/governance/[proposalId]/vote
+url: "{{baseUrl}}/api/community/governance/[proposalId]/vote"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 3000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/social/agents/[id]/verification
+url: "{{baseUrl}}/api/social/agents/[id]/verification"
+method: GET
+order: 27000

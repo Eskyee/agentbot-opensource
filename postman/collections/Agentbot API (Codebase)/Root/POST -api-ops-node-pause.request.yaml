@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//ops/node/pause
+url: "{{baseUrl}}/api//ops/node/pause"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 360000

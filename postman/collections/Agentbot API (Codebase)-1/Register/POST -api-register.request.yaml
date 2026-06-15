@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api/register
+url: "{{baseUrl}}/api/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 1000

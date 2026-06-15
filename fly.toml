@@ -1,0 +1,38 @@
+# fly.toml — Agentbot OpenClaw runtime on Fly.io
+# Deploy: flyctl deploy --config fly.toml
+
+app = 'agentbot-openclaw'
+primary_region = 'lhr'
+
+[build]
+  dockerfile = 'Dockerfile.openclaw'
+
+[env]
+  NODE_ENV = 'production'
+  OPENCLAW_VERSION = '2026.5.28'
+  MIMO_BASE_URL = 'https://token-plan-ams.xiaomimimo.com/v1'
+
+[[services]]
+  internal_port = 18789
+  protocol = 'tcp'
+
+  [[services.ports]]
+    handlers = ['http']
+    port = 80
+
+  [[services.ports]]
+    handlers = ['tls', 'http']
+    port = 443
+
+[checks]
+  [checks.health]
+    type = 'http'
+    port = 18789
+    path = '/api/status'
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '2gb'

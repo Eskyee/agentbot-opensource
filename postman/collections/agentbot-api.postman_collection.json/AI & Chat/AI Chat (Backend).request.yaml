@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{backendUrl}}/api/ai/chat"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "messages": [{"role": "user", "content": "Hello"}],
+      "model": "mimo-v2.5-pro"
+    }
+order: 2000

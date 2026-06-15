@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/v1/credits
+url: "{{baseUrl}}/api/v1/credits"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 2000

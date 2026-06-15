@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/user/byok"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "mimoApiKey": ""
+    }
+order: 7000

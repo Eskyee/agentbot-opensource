@@ -1,0 +1,13 @@
+$kind: http-request
+name: POST /api/agents/:id/restart
+url: "{{baseUrl}}/api/agents/:id/restart"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+pathVariables:
+  id: ""
+body:
+  type: json
+  content: "{}"
+order: 34000

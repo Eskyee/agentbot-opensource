@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api/managed-agents/session
+url: "{{baseUrl}}/api/managed-agents/session"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 6000

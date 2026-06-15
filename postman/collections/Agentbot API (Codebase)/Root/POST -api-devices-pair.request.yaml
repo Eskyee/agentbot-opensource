@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//devices/pair
+url: "{{baseUrl}}/api//devices/pair"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 522000

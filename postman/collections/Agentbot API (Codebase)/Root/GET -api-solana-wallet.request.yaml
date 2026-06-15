@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//solana/wallet
+url: "{{baseUrl}}/api//solana/wallet"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 150000

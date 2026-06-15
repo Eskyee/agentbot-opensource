@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//wristband/verify
+url: "{{baseUrl}}/api//wristband/verify"
+method: GET
+order: 296000

@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/swap"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "from": "ETH",
+      "to": "USDC",
+      "amount": "0.01"
+    }
+order: 12000

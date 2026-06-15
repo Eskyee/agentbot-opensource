@@ -1,0 +1,60 @@
+# Local Docker Compose for testing
+# Usage: docker compose up -d openclaw-gateway
+# Logs: docker compose logs -f openclaw-gateway
+
+services:
+  openclaw-gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: agentbot-gateway-local
+    ports:
+      - "8080:8080"
+    volumes:
+      - gateway-config:/home/node/.openclaw
+      - gateway-workspace:/home/node/.openclaw/workspace
+    environment:
+      - NODE_ENV=development
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: agentbot-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: agentbot-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: agentbot
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  gateway-config:
+    name: agentbot-gateway-local-config
+  gateway-workspace:
+    name: agentbot-gateway-local-workspace
+  prometheus_data:
+  grafana_data:

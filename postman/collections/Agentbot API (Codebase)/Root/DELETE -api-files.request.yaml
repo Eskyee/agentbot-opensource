@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api//files
+url: "{{baseUrl}}/api//files"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 349000

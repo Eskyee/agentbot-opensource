@@ -1,0 +1,609 @@
+$kind: collection
+description: |-
+  [https://docs.agentbot.raveculture.xyz](https://docs.agentbot.raveculture.xyz)
+
+  {  
+  "info": {  
+  "_postman_id": "agentbot-full",  
+  "name": "Agentbot API - Complete",  
+  "description": "Complete Agentbot API collection with all endpoints (web frontend + backend APIs)",  
+  "schema": "[https://schema.getpostman.com/json/collection/v2.1.0/collection.json"](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)  
+  },  
+  "item": \[  
+  {  
+  "name": "Health & Status",  
+  "description": "Service health checks",  
+  "item": \[  
+  {  
+  "name": "Web Health Check",  
+  "request": {  
+  "method": "GET",  
+  "header": \[\],  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/health",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "health"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Backend Health Check",  
+  "request": {  
+  "method": "GET",  
+  "header": \[\],  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/health",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["health"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Authentication",  
+  "description": "User registration and login",  
+  "item": \[  
+  {  
+  "name": "Register",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "email": "[user@example.com](https://mailto:user@example.com)",\\n "password": "SecurePass123!",\\n "username": "myusername"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/register",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "register"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Login",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "email": "[user@example.com](https://mailto:user@example.com)",\\n "password": "SecurePass123!"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/auth/login",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "auth", "login"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Agents (Web Frontend)",  
+  "description": "Agent management via web frontend",  
+  "item": \[  
+  {  
+  "name": "List Agents",  
+  "request": {  
+  "method": "GET",  
+  "header": \[\],  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/agents",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "agents"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Execute Agent",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "agentId": "my-agent-id",\\n "input": "Hello, agent!"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/agents/execute",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "agents", "execute"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Sandbox (Vercel)",  
+  "description": "Execute code in isolated Firecracker sandbox",  
+  "item": \[  
+  {  
+  "name": "Get Sandbox Info",  
+  "request": {  
+  "method": "GET",  
+  "header": \[\],  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/sandbox",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "sandbox"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Run JavaScript Code",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "action": "run",\\n "language": "javascript",\\n "code": "console.log('Hello from sandbox!'); console.log('2 + 2 =', 2 + 2);"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/sandbox",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "sandbox"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Run Python Code",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "action": "run",\\n "language": "python",\\n "code": "print('Hello from Python!'); print('2 + 2 =', 2 + 2)"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/sandbox",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "sandbox"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Run Shell Command",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "action": "shell",\\n "command": "echo 'Hello from shell'; uname -a"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/sandbox",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "sandbox"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Skills",  
+  "description": "Reusable agent capabilities",  
+  "item": \[  
+  {  
+  "name": "List Skills",  
+  "request": {  
+  "method": "GET",  
+  "header": \[\],  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/skills",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "skills"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Create Skill",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "name": "My Custom Skill",\\n "description": "A skill that does something useful",\\n "code": "// JavaScript skill code here"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/skills",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "skills"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Chat",  
+  "description": "Multi-turn conversation with agents",  
+  "item": \[  
+  {  
+  "name": "Send Message",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "message": "What is 2 + 2?",\\n "conversationId": "conv-123"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{WEB_URL}}/api/chat",  
+  "host": \["{{WEB_URL}}"\],  
+  "path": \["api", "chat"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Backend - Models (OpenAI Compatible)",  
+  "description": "AI model listing (OpenAI-compatible interface)",  
+  "item": \[  
+  {  
+  "name": "List All Models",  
+  "request": {  
+  "method": "GET",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}",  
+  "disabled": true  
+  }  
+  \],  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/v1/models",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["v1", "models"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Get Model Details",  
+  "request": {  
+  "method": "GET",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}",  
+  "disabled": true  
+  }  
+  \],  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/v1/models/gpt-4",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["v1", "models", "gpt-4"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Backend - Embeddings",  
+  "description": "Generate embeddings (OpenAI-compatible)",  
+  "item": \[  
+  {  
+  "name": "Create Embeddings",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}"  
+  },  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "input": "Hello, world!",\\n "model": "openai/text-embedding-3-small"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/v1/embeddings",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["v1", "embeddings"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Backend - Permissions",  
+  "description": "Permission system for agent actions",  
+  "item": \[  
+  {  
+  "name": "Get Pending Permissions",  
+  "request": {  
+  "method": "GET",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}"  
+  }  
+  \],  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/api/permissions",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["api", "permissions"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Get Permissions for Agent",  
+  "request": {  
+  "method": "GET",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}"  
+  }  
+  \],  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/api/permissions?agentId=my-agent-id",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["api", "permissions"\],  
+  "query": \[  
+  {  
+  "key": "agentId",  
+  "value": "my-agent-id"  
+  }  
+  \]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Approve Permission",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}"  
+  },  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "requestId": "perm-123",\\n "decision": "approve"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/api/permissions",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["api", "permissions"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Backend - Deployments (OpenClaw)",  
+  "description": "Deploy and manage agent containers",  
+  "item": \[  
+  {  
+  "name": "Deploy Agent Container",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}"  
+  },  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "agentId": "my-agent-123",\\n "config": {\\n "telegramToken": "YOUR_TELEGRAM_BOT_TOKEN",\\n "aiProvider": "openrouter",\\n "ownerIds": \["123456789"\],\\n "plan": "starter"\\n }\\n}"  
+  },  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/api/deployments",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["api", "deployments"\]  
+  }  
+  },  
+  "response": \[\]  
+  },  
+  {  
+  "name": "Activate Subscription Tier",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}"  
+  },  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "customerId": "cust-123",\\n "subscriptionId": "sub-456",\\n "tier": "pro"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/api/subscriptions/deploy",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["api", "subscriptions", "deploy"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Backend - Agent Management",  
+  "description": "Agent CRUD operations",  
+  "item": \[  
+  {  
+  "name": "List Agents",  
+  "request": {  
+  "method": "GET",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}"  
+  }  
+  \],  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/api/agents",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["api", "agents"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Backend - AI Chat",  
+  "description": "AI chat and reasoning endpoints",  
+  "item": \[  
+  {  
+  "name": "Send AI Chat Message",  
+  "request": {  
+  "method": "POST",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}"  
+  },  
+  {  
+  "key": "Content-Type",  
+  "value": "application/json"  
+  }  
+  \],  
+  "body": {  
+  "mode": "raw",  
+  "raw": "{\\n "message": "What is machine learning?",\\n "model": "gpt-4",\\n "conversationId": "conv-123"\\n}"  
+  },  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/api/ai/chat",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["api", "ai", "chat"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  },  
+  {  
+  "name": "Backend - Metrics",  
+  "description": "Performance metrics and statistics",  
+  "item": \[  
+  {  
+  "name": "Get System Metrics",  
+  "request": {  
+  "method": "GET",  
+  "header": \[  
+  {  
+  "key": "Authorization",  
+  "value": "Bearer {{BACKEND_API_KEY}}"  
+  }  
+  \],  
+  "url": {  
+  "raw": "{{BACKEND_URL}}/api/metrics",  
+  "host": \["{{BACKEND_URL}}"\],  
+  "path": \["api", "metrics"\]  
+  }  
+  },  
+  "response": \[\]  
+  }  
+  \]  
+  }  
+  \],  
+  "variable": \[  
+  {  
+  "key": "WEB_URL",  
+  "value": "[http://localhost:3000"](http://localhost:3000),  
+  "type": "string"  
+  },  
+  {  
+  "key": "BACKEND_URL",  
+  "value": "[http://localhost:3001"](http://localhost:3001),  
+  "type": "string"  
+  },  
+  {  
+  "key": "BACKEND_API_KEY",  
+  "value": "",  
+  "type": "string",  
+  "description": "Set from .env INTERNAL_API_KEY (backend authentication)"  
+  },  
+  {  
+  "key": "GATEWAY_URL",  
+  "value": "[http://localhost:8080"](http://localhost:8080),  
+  "type": "string"  
+  }  
+  \]  
+  }
+variables:
+  WEB_URL: ""
+  BACKEND_URL: ""
+  BACKEND_API_KEY: ""
+  GATEWAY_URL: ""
+  auth_token: ""
+  user_id: ""

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//admin/archive-old-products
+url: "{{baseUrl}}/api//admin/archive-old-products"
+method: GET
+order: 133000

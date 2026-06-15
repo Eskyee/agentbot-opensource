@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/social/communities/[id]
+url: "{{baseUrl}}/api/social/communities/[id]"
+method: GET
+order: 11000

@@ -1,0 +1,11 @@
+$kind: http-request
+name: PUT /api/agentkit/register
+url: "{{baseUrl}}/api/agentkit/register"
+method: PUT
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 3000

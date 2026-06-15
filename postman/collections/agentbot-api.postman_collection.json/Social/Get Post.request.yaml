@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/social/posts/{{postId}}"
+method: GET
+order: 4000

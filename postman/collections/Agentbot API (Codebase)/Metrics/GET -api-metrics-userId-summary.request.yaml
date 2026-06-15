@@ -1,0 +1,9 @@
+$kind: http-request
+name: GET /api/metrics/:userId/summary
+url: "{{baseUrl}}/api/metrics/:userId/summary"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+pathVariables:
+  userId: ""
+order: 3000

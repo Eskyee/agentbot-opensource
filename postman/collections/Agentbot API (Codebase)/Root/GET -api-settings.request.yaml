@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//settings
+url: "{{baseUrl}}/api//settings"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 18000

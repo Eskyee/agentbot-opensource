@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/credits/balance"
+method: GET
+order: 10000

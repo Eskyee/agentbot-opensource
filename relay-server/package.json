@@ -1,0 +1,14 @@
+{
+  "name": "basefm-relay-server",
+  "version": "1.0.0",
+  "description": "nginx-rtmp relay server for baseFM multi-destination simulcasting",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

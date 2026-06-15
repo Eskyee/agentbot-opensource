@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//creator-toolkit/gitlawb
+url: "{{baseUrl}}/api//creator-toolkit/gitlawb"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 70000

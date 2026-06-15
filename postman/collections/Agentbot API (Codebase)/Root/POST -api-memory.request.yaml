@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//memory
+url: "{{baseUrl}}/api//memory"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 47000

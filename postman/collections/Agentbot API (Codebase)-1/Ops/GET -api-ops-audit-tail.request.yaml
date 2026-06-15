@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/ops/audit/tail
+url: "{{baseUrl}}/api/ops/audit/tail"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 6000

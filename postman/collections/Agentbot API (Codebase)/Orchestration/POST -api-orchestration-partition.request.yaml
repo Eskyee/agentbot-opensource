@@ -1,0 +1,10 @@
+$kind: http-request
+name: POST /api/orchestration/partition
+url: "{{baseUrl}}/api/orchestration/partition"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 2000

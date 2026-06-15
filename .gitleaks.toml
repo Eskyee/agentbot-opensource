@@ -1,0 +1,10 @@
+# GitLeaks configuration for agentbot-opensource
+# Suppress false positives in example/template files
+
+[allowlist]
+  description = "Allowlist for example/placeholder values"
+  paths = [
+    '''web/\.env\.example''',
+    '''agentbot-backend/\.env\.example''',
+    '''\.env\.example''',
+  ]

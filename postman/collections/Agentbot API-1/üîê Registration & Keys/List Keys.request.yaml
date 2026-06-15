@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/keys"
+method: GET
+order: 4000

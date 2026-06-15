@@ -1,0 +1,8 @@
+# Liquid Wallet Kit (LWK) - Blockstream
+# Uses official Blockstream LWK Docker image
+
+FROM blockstream/lwk:latest
+
+ENV ELECTRUM_URL=https://liquid.blockstream.info
+
+CMD ["lwk_cli", "--help"]

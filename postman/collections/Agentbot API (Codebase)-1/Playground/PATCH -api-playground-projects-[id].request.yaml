@@ -1,0 +1,7 @@
+$kind: http-request
+name: PATCH /api/playground/projects/[id]
+url: "{{baseUrl}}/api/playground/projects/[id]"
+method: PATCH
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

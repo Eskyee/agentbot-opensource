@@ -1,0 +1,65 @@
+import { cookies } from 'next/headers';
+import { prisma } from '@/app/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/lib/auth';
+import { getSessionTokenFromCookies } from '@/app/lib/session';
+import { isAdminEmail } from '@/app/lib/admin';
+
+interface AuthSessionUser {
+  id: string;
+  name: string | null;
+  email: string | null;
+  isAdmin: boolean;
+}
+
+interface AuthSession {
+  user: AuthSessionUser;
+}
+
+/**
+ * Unified auth session helper.
+ * Checks the custom session cookie first (Prisma Session table),
+ * then falls back to NextAuth's JWT-based `getServerSession`.
+ */
+export async function getAuthSession(): Promise<AuthSession | null> {
+  // 1. Check custom session cookie
+  const cookieStore = await cookies();
+  const sessionToken = getSessionTokenFromCookies(cookieStore);
+
+  if (sessionToken) {
+    try {
+      const session = await prisma.session.findUnique({
+        where: { sessionToken },
+        include: { user: true },
+      });
+
+      if (session && session.expires > new Date()) {
+        return {
+          user: {
+            id: session.user.id,
+            name: session.user.name,
+            email: session.user.email,
+            isAdmin: isAdminEmail(session.user.email) || session.user.role === 'admin',
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Custom session lookup error:', error);
+    }
+  }
+
+  // 2. Fall back to NextAuth JWT session
+  const nextAuthSession = await getServerSession(authOptions);
+  if (nextAuthSession?.user) {
+    return {
+      user: {
+        id: nextAuthSession.user.id || '',
+        name: nextAuthSession.user.name || null,
+        email: nextAuthSession.user.email || null,
+        isAdmin: nextAuthSession.user.isAdmin ?? isAdminEmail(nextAuthSession.user.email),
+      },
+    };
+  }
+
+  return null;
+}

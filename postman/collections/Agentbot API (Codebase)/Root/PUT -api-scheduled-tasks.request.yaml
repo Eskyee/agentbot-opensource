@@ -1,0 +1,7 @@
+$kind: http-request
+name: PUT /api//scheduled-tasks
+url: "{{baseUrl}}/api//scheduled-tasks"
+method: PUT
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 37000

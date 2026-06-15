@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/user/bankr-key
+url: "{{baseUrl}}/api/user/bankr-key"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 15000

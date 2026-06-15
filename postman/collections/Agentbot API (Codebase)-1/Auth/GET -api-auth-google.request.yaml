@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/auth/google
+url: "{{baseUrl}}/api/auth/google"
+method: GET
+order: 5000

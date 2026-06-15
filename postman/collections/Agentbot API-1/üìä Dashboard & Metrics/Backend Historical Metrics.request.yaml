@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/metrics/{{userId}}/historical"
+method: GET
+order: 10000

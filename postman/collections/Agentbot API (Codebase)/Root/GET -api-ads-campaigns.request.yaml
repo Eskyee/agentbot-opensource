@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//ads/campaigns
+url: "{{baseUrl}}/api//ads/campaigns"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 14000

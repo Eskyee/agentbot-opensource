@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//agents/provision-vercel
+url: "{{baseUrl}}/api//agents/provision-vercel"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 156000

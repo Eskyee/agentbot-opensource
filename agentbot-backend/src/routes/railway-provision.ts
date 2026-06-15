@@ -1,0 +1,444 @@
+/**
+ * Railway provisioning proxy — forwards provision requests to Railway GraphQL API.
+ *
+ * This route exists because direct calls from Vercel serverless functions to
+ * backboard.railway.app/graphql/v2 return 403. The backend runs on Railway
+ * so its outbound requests to Railway API succeed.
+ *
+ * POST /api/railway/provision
+ *   Body: { agentId, plan, userId }
+ *   Returns: { success, agentId, url, serviceId, status }
+ *
+ * Auth: Bearer INTERNAL_API_KEY (same as all internal routes)
+ */
+
+import { Router, Request, Response } from 'express'
+import { authenticate } from '../middleware/auth'
+import { log } from '../lib/logger'
+import * as crypto from 'crypto'
+
+const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
+type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
+const OPENCLAW_HOME_DIR = '/root/.openclaw'
+const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`
+const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`
+const CONTROL_UI_ALLOWED_ORIGINS = [
+  process.env.CONTROL_UI_ORIGIN || process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh',
+  process.env.CONTROL_UI_COMPAT_ORIGIN,
+].filter(Boolean)
+
+export interface TailscaleProvisionOptions {
+  enabled?: boolean
+  mode?: 'serve' | 'funnel' | 'tailnet'
+  authKey?: string
+  hostname?: string
+  tags?: string[]
+  acceptRoutes?: boolean
+  password?: string
+  resetOnExit?: boolean
+}
+
+type NormalizedTailscaleOptions = Required<Pick<TailscaleProvisionOptions, 'enabled' | 'mode' | 'authKey' | 'acceptRoutes'>> &
+  Pick<TailscaleProvisionOptions, 'hostname' | 'tags' | 'password' | 'resetOnExit'>
+
+function normalizeTailscaleOptions(options?: TailscaleProvisionOptions | null): NormalizedTailscaleOptions | null {
+  if (!options?.enabled) return null
+  const authKey = options.authKey?.trim()
+  if (!authKey) {
+    throw new Error('Tailscale auth key is required when Tailscale is enabled')
+  }
+  const mode = options.mode === 'funnel' || options.mode === 'tailnet' ? options.mode : 'serve'
+  const password = options.password?.trim()
+  if (mode === 'funnel' && !password) {
+    throw new Error('Tailscale Funnel requires a gateway password')
+  }
+
+  return {
+    enabled: true,
+    mode,
+    authKey,
+    hostname: options.hostname?.trim() || undefined,
+    tags: Array.isArray(options.tags)
+      ? options.tags.map((tag) => tag.trim()).filter(Boolean)
+      : undefined,
+    acceptRoutes: options.acceptRoutes !== false,
+    password,
+    resetOnExit: options.resetOnExit === true,
+  }
+}
+
+function buildGatewayTailscaleConfig(gatewayToken: string, options?: TailscaleProvisionOptions | null) {
+  const tailscale = normalizeTailscaleOptions(options)
+  if (!tailscale) {
+    return {
+      bind: 'lan',
+      auth: { mode: 'token', token: gatewayToken },
+    }
+  }
+
+  if (tailscale.mode === 'tailnet') {
+    return {
+      bind: 'tailnet',
+      auth: { mode: 'token', token: gatewayToken },
+    }
+  }
+
+  return {
+    bind: 'loopback',
+    tailscale: {
+      mode: tailscale.mode,
+      resetOnExit: tailscale.resetOnExit,
+    },
+    auth: tailscale.mode === 'funnel'
+      ? { mode: 'password' }
+      : { mode: 'token', token: gatewayToken, allowTailscale: true },
+  }
+}
+
+function getTailscaleEnvVars(agentId: string, options?: TailscaleProvisionOptions | null): Record<string, string> {
+  const tailscale = normalizeTailscaleOptions(options)
+  if (!tailscale) return {}
+
+  return {
+    OPENCLAW_TAILSCALE_MODE: tailscale.mode,
+    TAILSCALE_AUTHKEY: tailscale.authKey || '',
+    TAILSCALE_HOSTNAME: tailscale.hostname || `agentbot-${agentId}`,
+    TAILSCALE_TAGS: tailscale.tags?.join(',') || '',
+    TAILSCALE_ACCEPT_ROUTES: String(tailscale.acceptRoutes !== false),
+    TAILSCALE_STATE_DIR: '/data/tailscale',
+    TAILSCALE_SOCKS5_SERVER: '127.0.0.1:1055',
+    TAILSCALE_OUTBOUND_HTTP_PROXY_LISTEN: '127.0.0.1:1055',
+    AGENTBOT_TAILSCALE_PROXY: 'socks5://127.0.0.1:1055',
+    ...(tailscale.password ? { OPENCLAW_GATEWAY_PASSWORD: tailscale.password } : {}),
+  }
+}
+
+function buildOpenClawConfig(tailscaleOptions?: TailscaleProvisionOptions | null): string {
+  // Each user's agent needs its own unique token
+  const gatewayToken = crypto.randomBytes(32).toString('hex')
+  const gatewayTailscaleConfig = buildGatewayTailscaleConfig(gatewayToken, tailscaleOptions)
+  const config = {
+    env: {
+      OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
+      MIMO_API_KEY: process.env.MIMO_API_KEY || '',
+      MIMO_BASE_URL: process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1',
+    },
+    gateway: {
+      mode: 'local',
+      ...gatewayTailscaleConfig,
+      // Trust Railway's internal network ranges so forwarded-for headers are honoured.
+      trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
+      controlUi: {
+        allowedOrigins: CONTROL_UI_ALLOWED_ORIGINS,
+        // Auto-pair: token auth is sufficient. OpenClaw 2026.4+ requires this
+        // to be true or every browser session is blocked with "device pairing required".
+        dangerouslyDisableDeviceAuth: true,
+        dangerouslyAllowHostHeaderOriginFallback: false,
+      },
+      http: { endpoints: { chatCompletions: { enabled: true } } },
+    },
+    agents: {
+      defaults: {
+        workspace: OPENCLAW_WORKSPACE_DIR,
+        model: { primary: 'xiaomi/mimo-v2.5-pro', fallbacks: ['xiaomi/mimo-v2.5', 'openrouter/anthropic/claude-sonnet-4-5'] },
+        heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
+      },
+    },
+    models: {
+      mode: 'merge',
+      providers: {
+        xiaomi: {
+          baseUrl: process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1',
+          apiKey: process.env.MIMO_API_KEY || '',
+          api: 'openai-completions',
+          headers: { 'api-key': process.env.MIMO_API_KEY || '' },
+          models: [
+            { id: 'mimo-v2.5-pro', name: 'MiMo-V2.5-Pro', api: 'openai-completions', contextWindow: 1048576, reasoning: true, input: ['text'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+            { id: 'mimo-v2.5', name: 'MiMo-V2.5', api: 'openai-completions', contextWindow: 262144, reasoning: true, input: ['text', 'image'], maxTokens: 32000, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+          ],
+        },
+      },
+    },
+    channels: {
+      telegram: { enabled: false, dmPolicy: 'pairing' },
+      discord:  { enabled: false, dmPolicy: 'pairing' },
+      whatsapp: { enabled: false, dmPolicy: 'pairing' },
+    },
+    cron:    { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
+    session: {
+      scope: 'per-sender',
+      reset: { mode: 'daily', atHour: 4 },
+      maintenance: { mode: 'warn', pruneAfter: '30d', maxEntries: 500 },
+    },
+    tools: {
+      profile: 'coding',
+      exec: { backgroundMs: 10000, timeoutSec: 1800 },
+      web:  { search: { enabled: true }, fetch: { enabled: true, maxChars: 50000 } },
+    },
+  }
+  return JSON.stringify(config)
+}
+
+function getAgentEnvVars(agentId: string, plan: string, tailscaleOptions?: TailscaleProvisionOptions | null): Record<string, string> {
+  return {
+    OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
+    OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || 'https://openclaw-production-a09d.up.railway.app',
+    AGENTBOT_USER_ID: agentId,
+    AGENTBOT_PLAN: plan,
+    AGENTBOT_API_URL: process.env.BACKEND_API_URL || '',
+    DATABASE_URL: process.env.DATABASE_URL || '',
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
+    MIMO_API_KEY: process.env.MIMO_API_KEY || '',
+    MIMO_BASE_URL: process.env.MIMO_BASE_URL || 'https://token-plan-ams.xiaomimimo.com/v1',
+    INTERNAL_API_KEY: process.env.INTERNAL_API_KEY || '',
+    WALLET_ENCRYPTION_KEY: process.env.WALLET_ENCRYPTION_KEY || '',
+    NODE_ENV: 'production',
+    // Railway routes public HTTP traffic to the PORT value.
+    // openclaw gateway listens on 18789 — tell Railway to proxy there.
+    PORT: '18789',
+    // Full openclaw config — start command writes this to disk before launching gateway.
+    // This is the only reliable way to set gateway.bind=lan (CLI args / env vars don't work).
+    OPENCLAW_CONFIG_JSON: buildOpenClawConfig(tailscaleOptions),
+    ...getTailscaleEnvVars(agentId, tailscaleOptions),
+  }
+}
+
+async function railwayGql<T = unknown>(
+  query: string,
+  variables: Record<string, unknown> = {}
+): Promise<T> {
+  const key = process.env.RAILWAY_API_KEY
+  if (!key) throw new Error('RAILWAY_API_KEY not configured')
+  const tokenType = ((process.env.RAILWAY_TOKEN_TYPE || 'account').trim().toLowerCase()) as RailwayTokenType
+  const headers: Record<string, string> =
+    tokenType === 'project'
+      ? {
+          'Project-Access-Token': key,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      : {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+
+  const res = await fetch(RAILWAY_API, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ query, variables }),
+    signal: AbortSignal.timeout(30_000),
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Railway API ${res.status}: ${text}`)
+  }
+
+  const json = await res.json() as { data?: T; errors?: { message: string }[] }
+  if (json.errors?.length) {
+    throw new Error(`Railway GQL: ${json.errors.map((e: { message: string }) => e.message).join(', ')}`)
+  }
+  return json.data as T
+}
+
+const PLAN_LIMITS: Record<string, { memoryLimitMb: number; cpuLimit: number }> = {
+  underground: { memoryLimitMb: 2048, cpuLimit: 1 },
+  solo: { memoryLimitMb: 2048, cpuLimit: 1 },
+  collective: { memoryLimitMb: 4096, cpuLimit: 2 },
+  label: { memoryLimitMb: 8192, cpuLimit: 4 },
+  network: { memoryLimitMb: 16384, cpuLimit: 4 },
+}
+
+export async function provisionOnRailway(
+  agentId: string,
+  plan: string = 'solo',
+  tailscaleOptions?: TailscaleProvisionOptions | null,
+) {
+  const projectId = process.env.RAILWAY_PROJECT_ID?.trim()
+  const environmentId = process.env.RAILWAY_ENVIRONMENT_ID?.trim()
+
+  if (!projectId) throw new Error('RAILWAY_PROJECT_ID not configured')
+  if (!environmentId) throw new Error('RAILWAY_ENVIRONMENT_ID not configured')
+
+  const serviceName = `agentbot-agent-${agentId}`
+
+  // 1. Create service — idempotent: if it already exists, look up its ID
+  let serviceId: string
+  // Public official OpenClaw image — ghcr.io/openclaw/openclaw is public, no registry auth required
+  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.5.28'
+
+  try {
+    const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
+      mutation ServiceCreate($input: ServiceCreateInput!) {
+        serviceCreate(input: $input) { id name }
+      }
+    `, {
+      input: { projectId, name: serviceName, source: { image: openclawImage } },
+    })
+    serviceId = created.serviceCreate.id
+    log.info('[RailwayProvision] Created service', { serviceId, serviceName, agentId })
+  } catch (createErr: unknown) {
+    const msg = createErr instanceof Error ? createErr.message : String(createErr)
+    if (!msg.includes('already exists')) throw createErr
+
+    // Service already exists (retry after partial failure) — look up its ID
+    log.warn('[RailwayProvision] Service already exists, looking up ID', { serviceName })
+    const lookup = await railwayGql<{ project: { services: { edges: { node: { id: string; name: string } }[] } } }>(`
+      query ProjectServices($projectId: String!) {
+        project(id: $projectId) { services { edges { node { id name } } } }
+      }
+    `, { projectId })
+    const match = lookup.project.services.edges.find(e => e.node.name === serviceName)
+    if (!match) throw new Error(`Service ${serviceName} reported as existing but not found in project`)
+    serviceId = match.node.id
+    log.info('[RailwayProvision] Resuming with existing service', { serviceId })
+  }
+
+  // 2. Set start command — critical: writes OPENCLAW_CONFIG_JSON to disk before gateway starts.
+  // Without this openclaw binds to loopback (127.0.0.1) and Railway proxy gets 502.
+  // Sent as its own mutation so resource-limit failures don't block it.
+  // Single-quoted sh -c body is safe: no single quotes appear inside it.
+  const startCmd = `sh -c 'if [ -n "$TAILSCALE_AUTHKEY$TS_AUTHKEY" ]; then if command -v agentbot-tailscale-start >/dev/null 2>&1; then agentbot-tailscale-start; else echo "TAILSCALE_AUTHKEY set but this runtime image does not include Tailscale support" >&2; exit 1; fi; fi; mkdir -p "${OPENCLAW_HOME_DIR}" && printf "%s" "$OPENCLAW_CONFIG_JSON" > "${OPENCLAW_CONFIG_PATH}" && (openclaw doctor || true); if [ -n "$OPENCLAW_TAILSCALE_MODE" ] && [ "$OPENCLAW_TAILSCALE_MODE" != "tailnet" ]; then exec openclaw gateway --tailscale "$OPENCLAW_TAILSCALE_MODE"; fi; exec openclaw gateway'`
+  try {
+    await railwayGql(`
+      mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+        serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+      }
+    `, {
+      serviceId, environmentId,
+      input: { startCommand: startCmd },
+    })
+    log.info('[RailwayProvision] Set startCommand', { serviceId })
+  } catch (startCmdErr) {
+    log.warn('[RailwayProvision] startCommand update failed (non-fatal)', { error: String(startCmdErr) })
+  }
+
+  // 2b. Set resource limits — non-fatal (Railway may reject cpuLimit on some plans)
+  const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.solo
+  try {
+    await railwayGql(`
+      mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+        serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+      }
+    `, {
+      serviceId, environmentId,
+      input: {
+        memoryLimitMb: limits.memoryLimitMb,
+        cpuLimit: limits.cpuLimit,
+        healthcheckPath: '/health',
+        healthcheckTimeout: 60,
+        restartPolicyType: 'ON_FAILURE',
+        restartPolicyMaxRetries: 10,
+      },
+    })
+    log.info('[RailwayProvision] Set resource limits', { serviceId })
+  } catch (limitsErr) {
+    log.warn('[RailwayProvision] Resource limits update failed (non-fatal)', { error: String(limitsErr) })
+  }
+
+  // 2b. Add persistent volume for config/conversations
+  try {
+    await railwayGql(`
+      mutation VolumeCreate($input: VolumeCreateInput!) {
+        volumeCreate(input: $input) { id }
+      }
+    `, {
+      input: { projectId, environmentId, serviceId, mountPath: '/data' },
+    })
+    log.info('[RailwayProvision] Volume mounted', { serviceId })
+  } catch (volErr) {
+    log.warn('[RailwayProvision] Volume creation failed (non-fatal)', { error: String(volErr) })
+  }
+
+  // 3. Inject env vars — retry once on failure (Railway occasionally rejects first upsert)
+  const variables = getAgentEnvVars(agentId, plan, tailscaleOptions)
+  let varsSet = false
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await railwayGql(`
+        mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
+          variableCollectionUpsert(input: $input)
+        }
+      `, {
+        input: { projectId, environmentId, serviceId, variables },
+      })
+      varsSet = true
+      break
+    } catch (varsErr) {
+      log.warn('[RailwayProvision] variableCollectionUpsert failed', { attempt, error: String(varsErr) })
+      if (attempt === 2) throw varsErr
+      await new Promise(r => setTimeout(r, 2000))
+    }
+  }
+  log.info('[RailwayProvision] Env vars set', { varsSet, serviceId })
+
+  // 4. Generate public domain
+  let url = `https://${serviceName}.up.railway.app`
+  try {
+    const domainResult = await railwayGql<{ serviceDomainCreate: { domain: string } }>(`
+      mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {
+        serviceDomainCreate(input: $input) { domain }
+      }
+    `, { input: { serviceId, environmentId, targetPort: 18789 } })
+    const domain = domainResult.serviceDomainCreate.domain
+    url = domain.startsWith('http') ? domain : `https://${domain}`
+  } catch (err) {
+    log.warn('[RailwayProvision] Domain generation failed, using default', { error: String(err) })
+  }
+
+  // 5. Trigger deploy — non-fatal: Railway auto-deploys on env var change anyway
+  try {
+    await railwayGql(`
+      mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
+        serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
+      }
+    `, { serviceId, environmentId })
+    log.info('[RailwayProvision] Deploy triggered', { url })
+  } catch (deployErr) {
+    log.warn('[RailwayProvision] Deploy trigger failed (non-fatal)', { error: String(deployErr) })
+  }
+
+  return { agentId, url, serviceId, status: 'deploying' as const }
+}
+
+const router = Router()
+
+router.post('/provision', authenticate, async (req: Request, res: Response) => {
+  const { agentId, plan, tailscale } = req.body
+
+  if (!agentId || typeof agentId !== 'string') {
+    return res.status(400).json({ success: false, error: 'agentId required' })
+  }
+
+  // Safety: only allow agentbot-agent-* names
+  if (!/^[0-9a-f]{16}$/.test(agentId)) {
+    return res.status(400).json({ success: false, error: 'Invalid agentId format' })
+  }
+
+  const planStr = (typeof plan === 'string' ? plan : 'solo').toLowerCase()
+
+  if (!process.env.RAILWAY_API_KEY) {
+    return res.status(503).json({ success: false, error: 'Railway not configured on this backend' })
+  }
+
+  try {
+    const result = await provisionOnRailway(agentId, planStr, tailscale)
+    return res.json({ success: true, ...result })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Railway provision failed'
+    log.error('[RailwayProxy] Provision error', { message })
+    return res.status(502).json({ success: false, error: message })
+  }
+})
+
+export default router

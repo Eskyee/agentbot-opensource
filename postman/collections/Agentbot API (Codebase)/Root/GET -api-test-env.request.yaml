@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//test-env
+url: "{{baseUrl}}/api//test-env"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 293000

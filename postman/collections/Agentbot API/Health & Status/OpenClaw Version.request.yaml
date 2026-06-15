@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{backendUrl}}/api/openclaw/version"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response body has version field", function () {
+        var jsonData;
+        try { jsonData = pm.response.json(); } catch (e) { pm.expect.fail("Response is not valid JSON"); }
+        pm.expect(jsonData).to.have.property("version");
+        pm.expect(jsonData.version).to.be.a("string");
+      });
+    language: text/javascript
+order: 6000

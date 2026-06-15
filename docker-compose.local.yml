@@ -1,0 +1,57 @@
+# Agentbot — Self-Hosted Docker Compose
+# Run your own Agentbot + OpenClaw instance with MiMo integration.
+# No Railway needed. Just Docker.
+
+version: '3.8'
+
+services:
+  # OpenClaw Gateway — your personal AI agent runtime
+  openclaw:
+    image: ghcr.io/openclaw/openclaw:2026.5.28
+    container_name: agentbot-openclaw
+    restart: unless-stopped
+    ports:
+      - "18789:18789"
+    environment:
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - MIMO_API_KEY=${MIMO_API_KEY}
+      - MIMO_BASE_URL=https://token-plan-ams.xiaomimimo.com/v1
+    volumes:
+      - openclaw-data:/root/.openclaw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18789/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Vercel Gateway proxy — routes inference to MiMo
+  # (Optional: use agentbot.sh/v1/chat/completions instead)
+  gateway:
+    image: node:22-slim
+    container_name: agentbot-gateway
+    restart: unless-stopped
+    ports:
+      - "8402:8402"
+    environment:
+      - MIMO_API_KEY=${MIMO_API_KEY}
+      - MIMO_BASE_URL=https://token-plan-ams.xiaomimimo.com/v1
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+    volumes:
+      - ./gateway:/app
+    working_dir: /app
+    command: ["node", "server.js"]
+    depends_on:
+      - openclaw
+
+volumes:
+  openclaw-data:
+
+# Usage:
+# 1. Copy this file to your server
+# 2. Create .env with your keys:
+#    OPENCLAW_GATEWAY_TOKEN=your-token
+#    MIMO_API_KEY=tp-ebz5le...l23ou6
+# 3. Run: docker compose up -d
+# 4. Access: http://localhost:18789 (OpenClaw UI)
+# 5. Inference: http://localhost:8402/v1/chat/completions (Gateway)

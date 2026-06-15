@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /api//agents/[id]/verify
+url: "{{baseUrl}}/api//agents/[id]/verify"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+order: 168000

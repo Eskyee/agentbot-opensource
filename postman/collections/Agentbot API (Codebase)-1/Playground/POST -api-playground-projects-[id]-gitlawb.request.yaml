@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/playground/projects/[id]/gitlawb
+url: "{{baseUrl}}/api/playground/projects/[id]/gitlawb"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 6000

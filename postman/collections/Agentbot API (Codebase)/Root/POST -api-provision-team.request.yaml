@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//provision/team
+url: "{{baseUrl}}/api//provision/team"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 4000

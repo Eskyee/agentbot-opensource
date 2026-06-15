@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/auth/farcaster/verify
+url: "{{baseUrl}}/api/auth/farcaster/verify"
+method: POST
+order: 10000

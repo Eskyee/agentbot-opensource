@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/agents/user/{{userId}}"
+method: GET
+order: 15000

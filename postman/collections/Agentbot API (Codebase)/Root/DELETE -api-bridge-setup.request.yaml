@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api//bridge/setup
+url: "{{baseUrl}}/api//bridge/setup"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 104000

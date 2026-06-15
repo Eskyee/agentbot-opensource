@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//skills/instant-split
+url: "{{baseUrl}}/api//skills/instant-split"
+method: GET
+order: 379000

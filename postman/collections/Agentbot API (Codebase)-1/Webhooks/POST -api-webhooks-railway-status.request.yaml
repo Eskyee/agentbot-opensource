@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/webhooks/railway-status
+url: "{{baseUrl}}/api/webhooks/railway-status"
+method: POST
+order: 6000

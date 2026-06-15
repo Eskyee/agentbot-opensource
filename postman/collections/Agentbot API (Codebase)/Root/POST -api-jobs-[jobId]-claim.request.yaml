@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api//jobs/[jobId]/claim
+url: "{{baseUrl}}/api//jobs/[jobId]/claim"
+method: POST
+order: 431000

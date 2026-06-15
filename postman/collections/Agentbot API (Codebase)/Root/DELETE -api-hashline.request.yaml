@@ -1,0 +1,7 @@
+$kind: http-request
+name: DELETE /api//hashline
+url: "{{baseUrl}}/api//hashline"
+method: DELETE
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 409000

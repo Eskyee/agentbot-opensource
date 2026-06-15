@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//live/[roomId]/signal
+url: "{{baseUrl}}/api//live/[roomId]/signal"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 319000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: POST /api/checkout
+url: "{{baseUrl}}/api/checkout"
+method: POST
+order: 2000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/agents/simulator
+url: "{{baseUrl}}/api/agents/simulator"
+method: GET
+order: 10000

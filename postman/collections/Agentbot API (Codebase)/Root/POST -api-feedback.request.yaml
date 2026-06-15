@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//feedback
+url: "{{baseUrl}}/api//feedback"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 214000

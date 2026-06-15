@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{backendUrl}}/api/permissions"
+method: GET
+order: 4000

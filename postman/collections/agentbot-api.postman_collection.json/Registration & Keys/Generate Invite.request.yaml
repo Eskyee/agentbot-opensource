@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{backendUrl}}/api/invite/generate"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Internal-Api-Key: "{{internalApiKey}}"
+body:
+  type: text
+  content: "{}"
+order: 7000

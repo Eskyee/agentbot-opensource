@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//cron
+url: "{{baseUrl}}/api//cron"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 507000

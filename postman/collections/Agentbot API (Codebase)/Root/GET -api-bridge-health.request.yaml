@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//bridge/health
+url: "{{baseUrl}}/api//bridge/health"
+method: GET
+order: 102000

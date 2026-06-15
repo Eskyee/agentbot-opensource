@@ -1,0 +1,129 @@
+/**
+ * POST /api/init-deep
+ *
+ * Generate hierarchical AGENTS.md files throughout the project.
+ * Body: { path?: string, force?: boolean, dryRun?: boolean }
+ * Response: { results: GenerationResult[] }
+ */
+
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
+import { initDeep, InitDeepOptions } from '@/app/lib/init-deep'
+
+/**
+ * Admin-only — init-deep walks the project tree and writes AGENTS.md files.
+ * Ordinary authenticated users must not be able to trigger filesystem writes
+ * into arbitrary subdirectories.
+ */
+async function requireAdmin() {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    return { ok: false as const, status: 401, error: 'Unauthorized' }
+  }
+  // Authoritative check via env-backed allowlist only — matches the
+  // established pattern in /api/admin/summary, /api/wallet-monitor/status,
+  // etc. The JWT `isAdmin` claim is cached for up to 30 days, so OR-ing
+  // with it would keep removed admins privileged until token expiry.
+  if (!isAdminEmail(session.user.email)) {
+    return { ok: false as const, status: 403, error: 'Forbidden' }
+  }
+  return { ok: true as const, session }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const gate = await requireAdmin()
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status })
+    }
+
+    const body = await req.json().catch(() => ({}))
+
+    const options: InitDeepOptions = {
+      rootPath: body.path || process.cwd(),
+      force: body.force === true,
+      dryRun: body.dryRun === true,
+      maxDepth: body.maxDepth || 5,
+    }
+
+    console.log('[init-deep] Starting generation:', options)
+
+    const results = await initDeep(options)
+
+    const generated = results.filter((r) => r.generated).length
+    const skipped = results.filter((r) => r.skipped).length
+    const errors = results.filter((r) => r.error).length
+
+    return NextResponse.json({
+      success: true,
+      summary: {
+        total: results.length,
+        generated,
+        skipped,
+        errors,
+      },
+      results,
+    })
+  } catch (error) {
+    console.error('[init-deep] Error:', error)
+    return NextResponse.json(
+      {
+        error: 'Failed to generate AGENTS.md files',
+        detail: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * GET /api/init-deep/status
+ *
+ * Check which directories have AGENTS.md files
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const gate = await requireAdmin()
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const targetPath = searchParams.get('path') || process.cwd()
+
+    const fs = await import('fs')
+    const path = await import('path')
+
+    // List priority directories and check for AGENTS.md
+    const priorityDirs = [
+      'web/app/api',
+      'web/app/lib',
+      'web/components',
+      'agentbot-backend/src',
+      'skills',
+    ]
+
+    const status = priorityDirs.map((dir) => {
+      const fullPath = path.join(targetPath, dir)
+      const hasAgentsMd = fs.existsSync(path.join(fullPath, 'AGENTS.md'))
+      return {
+        directory: dir,
+        hasAgentsMd,
+        path: fullPath,
+      }
+    })
+
+    return NextResponse.json({
+      rootPath: targetPath,
+      status,
+      allGenerated: status.every((s) => s.hasAgentsMd),
+    })
+  } catch (error) {
+    console.error('[init-deep] Status check error:', error)
+    return NextResponse.json(
+      { error: 'Failed to check status' },
+      { status: 500 }
+    )
+  }
+}

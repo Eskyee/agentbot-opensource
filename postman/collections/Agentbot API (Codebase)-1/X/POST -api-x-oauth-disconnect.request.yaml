@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api/x/oauth/disconnect
+url: "{{baseUrl}}/api/x/oauth/disconnect"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 3000

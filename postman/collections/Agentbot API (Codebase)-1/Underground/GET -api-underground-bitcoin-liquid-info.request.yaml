@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api/underground/bitcoin/liquid/info
+url: "{{baseUrl}}/api/underground/bitcoin/liquid/info"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 7000

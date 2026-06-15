@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//debug-oauth
+url: "{{baseUrl}}/api//debug-oauth"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 333000

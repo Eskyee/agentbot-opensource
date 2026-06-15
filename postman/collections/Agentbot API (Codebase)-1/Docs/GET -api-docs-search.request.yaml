@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/docs/search
+url: "{{baseUrl}}/api/docs/search"
+method: GET
+order: 1000

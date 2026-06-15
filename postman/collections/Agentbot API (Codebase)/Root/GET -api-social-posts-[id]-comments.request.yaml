@@ -1,0 +1,7 @@
+$kind: http-request
+name: GET /api//social/posts/[id]/comments
+url: "{{baseUrl}}/api//social/posts/[id]/comments"
+method: GET
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 243000

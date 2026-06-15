@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api//skills/festival-finder
+url: "{{baseUrl}}/api//skills/festival-finder"
+method: GET
+order: 394000

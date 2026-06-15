@@ -1,0 +1,5 @@
+$kind: http-request
+name: GET /api/admin/activity
+url: "{{baseUrl}}/api/admin/activity"
+method: GET
+order: 4000

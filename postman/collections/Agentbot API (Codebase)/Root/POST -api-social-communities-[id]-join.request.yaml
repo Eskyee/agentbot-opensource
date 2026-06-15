@@ -1,0 +1,7 @@
+$kind: http-request
+name: POST /api//social/communities/[id]/join
+url: "{{baseUrl}}/api//social/communities/[id]/join"
+method: POST
+headers:
+  Cookie: next-auth.session-token={{sessionToken}}
+order: 248000
