@@ -1750,7 +1750,7 @@ function BuilderView({
                     }`}
                     title="In-browser React preview (client-side only)"
                   >
-                    Sandpack
+                    Browser
                   </button>
                   <button
                     type="button"
@@ -1762,7 +1762,7 @@ function BuilderView({
                     }`}
                     title="Full-stack Linux VM (Next.js, API routes, database)"
                   >
-                    Sandbox
+                    Full-Stack
                   </button>
                 </div>
               </div>
@@ -1846,7 +1846,7 @@ function BuilderView({
                   } disabled:opacity-50`}
                   title="In-browser React preview (client-side only)"
                 >
-                  Sandpack
+                  Browser
                 </button>
                 <button
                   type="button"
@@ -1859,7 +1859,7 @@ function BuilderView({
                   } disabled:opacity-50`}
                   title="Full-stack Linux VM (Next.js, API routes, database)"
                 >
-                  Sandbox
+                  Full-Stack
                 </button>
               </div>
             </div>
@@ -2075,7 +2075,7 @@ function BuilderView({
                 {isGenerating && (
                   <div className="mb-3 flex items-center gap-2 border border-orange-500/30 bg-orange-500/5 px-3 py-2 text-[10px] uppercase tracking-widest text-orange-500">
                     <Spinner size={12} />
-                    {spinnerVerb}… files are streaming into the preview
+                    {spinnerVerb}… {executionMode === 'sandbox' ? 'deploying to VM' : 'streaming to preview'}
                   </div>
                 )}
                 <div className={`mx-auto h-full min-h-[488px] transition-all ${VIEWPORTS[viewport]}`}>
@@ -2119,19 +2119,19 @@ function BuilderView({
                           ) : (
                             <>
                               <span className="border border-zinc-900 px-2 py-1">Vite + React</span>
-                              <span className="border border-zinc-900 px-2 py-1">MiMo V2.5 Pro</span>
-                              <span className="border border-zinc-900 px-2 py-1">GitLawb push</span>
+                              <span className="border border-zinc-900 px-2 py-1">Instant Preview</span>
+                              <span className="border border-zinc-900 px-2 py-1">Client-Side</span>
                             </>
                           )}
                         </div>
                         <div className="mt-6 border border-zinc-900 bg-zinc-950/80 p-4 text-left">
                           <div className="text-[10px] uppercase tracking-widest text-zinc-300">
-                            {executionMode === 'sandbox' ? 'Booting Vercel Sandbox' : 'Booting sandbox'}
+                            {executionMode === 'sandbox' ? 'Booting Full-Stack VM' : 'Booting Preview'}
                           </div>
                           <p className="mt-2 text-xs leading-relaxed text-zinc-600">
                             {executionMode === 'sandbox'
-                              ? 'Spinning up a Linux VM with Next.js support - takes a few seconds on first run.'
-                              : 'Spinning up a Fly machine for your session - takes a few seconds on first run.'
+                              ? 'Spinning up a Linux VM with Next.js support — takes a few seconds on first run.'
+                              : 'In-browser preview starts instantly — no server required.'
                             }
                           </p>
                         </div>
