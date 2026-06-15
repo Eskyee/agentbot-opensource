@@ -30,6 +30,7 @@ async function runCommand(sessionId: string, command: string, args: string[], cw
     method: 'POST',
     headers,
     body: JSON.stringify({ command, args, cwd }),
+    signal: AbortSignal.timeout(180_000),
   })
 
   if (!res.ok) {

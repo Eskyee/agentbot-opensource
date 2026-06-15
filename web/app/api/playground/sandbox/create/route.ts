@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}))
     const runtime = (body.runtime as string) || 'node24'
     const ports = (body.ports as number[]) || [3000]
-    const timeout = (body.timeout as number) || 5 * 60 * 1000
+    const timeout = (body.timeout as number) || 30 * 60 * 1000
 
     const headers = getAuthHeaders()
     const projectId = getProjectId()
@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
         timeout,
         projectId,
       }),
+      signal: AbortSignal.timeout(60_000),
     })
 
     if (!createRes.ok) {

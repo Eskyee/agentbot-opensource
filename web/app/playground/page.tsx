@@ -1815,8 +1815,8 @@ function BuilderView({
 
   return (
     <div className="grid min-h-[calc(100vh-9rem)] lg:grid-cols-[440px_1fr]">
-      <aside className="border-b border-zinc-900 lg:border-b-0 lg:border-r">
-        <div className="h-full flex flex-col">
+      <aside className="border-b border-zinc-900 lg:border-b-0 lg:border-r max-h-[calc(100vh-9rem)] overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto flex flex-col">
           <div className="border-b border-zinc-900 px-4 py-3 flex items-center justify-end h-12">
             <div className="flex items-center gap-2">
               <select
@@ -2304,7 +2304,7 @@ function BuilderView({
             </div>
           </div>
           {!consoleCollapsed ? (
-            <div className="min-h-20 border-t border-zinc-900 bg-black px-4 py-3 font-mono text-xs text-zinc-500">
+            <div className="min-h-[120px] max-h-[200px] overflow-y-auto border-t border-zinc-900 bg-black px-4 py-3 font-mono text-xs text-zinc-500">
               {visibleConsoleEntries.length === 0 ? (
                 <div className="leading-relaxed text-zinc-700">
                   no console output yet — the preview&apos;s logs and errors will show up here.
