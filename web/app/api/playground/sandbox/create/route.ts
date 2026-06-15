@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server'
-import { Sandbox } from '@vercel/sandbox'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -18,6 +17,8 @@ function getSandboxConfig() {
 
 export async function POST(req: NextRequest) {
   try {
+    const { Sandbox } = await import('@vercel/sandbox')
+
     const body = await req.json().catch(() => ({}))
     const name = body.name as string | undefined
     const runtime = (body.runtime as string) || 'node24'

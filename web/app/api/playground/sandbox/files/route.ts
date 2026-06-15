@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server'
-import { Sandbox } from '@vercel/sandbox'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -18,6 +17,8 @@ function getSandboxConfig() {
 
 export async function POST(req: NextRequest) {
   try {
+    const { Sandbox } = await import('@vercel/sandbox')
+
     const body = await req.json()
     const sandboxName = body.sandboxName as string
     const files = body.files as Array<{ path: string; content: string }>

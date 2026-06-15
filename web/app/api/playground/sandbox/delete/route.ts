@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server'
-import { Sandbox } from '@vercel/sandbox'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -18,6 +17,8 @@ function getSandboxConfig() {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const { Sandbox } = await import('@vercel/sandbox')
+
     const { searchParams } = new URL(req.url)
     const sandboxName = searchParams.get('sandboxName')
 
