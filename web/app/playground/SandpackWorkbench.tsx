@@ -207,10 +207,11 @@ function toSandpackFiles(files: WorkbenchFile[]) {
 }
 
 /** Applies external file changes (e.g. streaming generation) into the running sandbox. */
-function FileUpdater({ files }: { files: WorkbenchFile[] }) {
+function FileUpdater({ files, isStreaming }: { files: WorkbenchFile[]; isStreaming: boolean }) {
   const { sandpack } = useSandpack()
   const sandpackRef = useRef(sandpack)
   sandpackRef.current = sandpack
+  const wasStreamingRef = useRef(false)
 
   useEffect(() => {
     for (const file of files) {
@@ -228,7 +229,13 @@ function FileUpdater({ files }: { files: WorkbenchFile[] }) {
         }
       }
     }
-  }, [files])
+
+    // When streaming finishes, force a preview refresh so the iframe picks up final state
+    if (wasStreamingRef.current && !isStreaming) {
+      sandpackRef.current.refresh()
+    }
+    wasStreamingRef.current = isStreaming
+  }, [files, isStreaming])
 
   return null
 }
@@ -427,7 +434,7 @@ export default function SandpackWorkbench({
         bundlerTimeOut: 60_000,
       }}
     >
-      <FileUpdater files={files} />
+      <FileUpdater files={files} isStreaming={isStreaming} />
       <EditSync onFilesChange={onFilesChange} />
       <ErrorReporter onError={onError} isStreaming={isStreaming} />
       {mode === 'preview' ? (

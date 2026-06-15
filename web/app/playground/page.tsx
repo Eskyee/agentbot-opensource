@@ -1110,7 +1110,6 @@ export default function PlaygroundPage() {
 
     setProvider(data.provider)
     setModel(data.model)
-    setRestoreNonce((v) => v + 1)
     updateActiveProject({
       generation: data.generation,
       name: nextName,
