@@ -31,7 +31,9 @@ export const runtime = 'nodejs'
 export const maxDuration = 150
 
 const DEFAULT_MODEL = 'xiaomi/mimo-v2.5-pro'
-const PLAYGROUND_MAX_TOKENS = 9000
+// mimo-v2.5-pro is a reasoning model — thinking tokens share this budget, so a
+// low cap truncates the JSON for complex apps. Headroom for reasoning + a full app.
+const PLAYGROUND_MAX_TOKENS = 16000
 
 function asString(value: unknown, fallback = ''): string {
   return typeof value === 'string' ? value : fallback

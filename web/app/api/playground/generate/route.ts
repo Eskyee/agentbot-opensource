@@ -27,10 +27,13 @@ import {
 import { fastApply } from '@/app/lib/fast-apply'
 
 export const runtime = 'nodejs'
-export const maxDuration = 120
+export const maxDuration = 150
 
 const DEFAULT_MODEL = 'xiaomi/mimo-v2.5-pro'
-const PLAYGROUND_MAX_TOKENS = 9000
+// mimo-v2.5-pro is a reasoning model — its thinking tokens share this budget,
+// so a low cap truncates the JSON for complex apps (unterminated-string 502s).
+// Give enough headroom for reasoning + a full multi-file app.
+const PLAYGROUND_MAX_TOKENS = 16000
 
 function jsonResponse(error: string, status: number, details?: Record<string, unknown>) {
   return NextResponse.json({ error, ...details }, { status })
@@ -124,7 +127,7 @@ async function generateWithVercelGateway(prompt: string, model: string, currentF
         max_tokens: PLAYGROUND_MAX_TOKENS,
         ...(upstream.provider === 'openrouter' ? { reasoning: { max_tokens: 0 } } : {}),
       }),
-      signal: AbortSignal.timeout(110_000),
+      signal: AbortSignal.timeout(140_000),
     })
 
     if (!response.ok) {
