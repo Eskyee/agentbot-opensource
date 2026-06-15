@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         timeout,
         projectId,
       }),
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(120_000),
     })
 
     if (!createRes.ok) {
