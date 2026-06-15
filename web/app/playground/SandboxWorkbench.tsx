@@ -26,6 +26,7 @@ export type SandboxWorkbenchProps = {
 
 type SandboxState = {
   name: string | null
+  sessionId: string | null
   previewUrl: string | null
   status: 'idle' | 'creating' | 'writing' | 'installing' | 'starting' | 'ready' | 'error'
   error: string | null

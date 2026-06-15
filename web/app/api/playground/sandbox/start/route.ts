@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server'
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-const SANDBOX_API = 'https://api.vercel.com/v1/sandboxes'
+const SANDBOX_API = 'https://vercel.com/api/v2/sandboxes'
 
 function getAuthHeaders() {
   const token = process.env.VERCEL_TOKEN
@@ -13,31 +13,37 @@ function getAuthHeaders() {
 
 function getTeamParam() {
   const teamId = process.env.VERCEL_TEAM_ID
-  return teamId ? `?teamId=${teamId}` : ''
+  return teamId ? `&teamId=${teamId}` : ''
+}
+
+function getProjectId() {
+  const projectId = process.env.VERCEL_PROJECT_ID
+  if (!projectId) throw new Error('VERCEL_PROJECT_ID not configured')
+  return projectId
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const sandboxName = body.sandboxName as string
+    const sessionId = body.sessionId as string
     const command = (body.command as string) || 'npm run dev'
     const cwd = (body.cwd as string) || '/vercel/sandbox'
 
-    if (!sandboxName) {
-      return Response.json({ ok: false, error: 'sandboxName is required' }, { status: 400 })
+    if (!sessionId) {
+      return Response.json({ ok: false, error: 'sessionId is required' }, { status: 400 })
     }
 
     const headers = getAuthHeaders()
-    const params = getTeamParam()
+    const params = `?projectId=${getProjectId()}${getTeamParam()}`
 
     const parts = command.split(/\s+/)
     const cmd = parts[0]
     const args = parts.slice(1)
 
-    const runRes = await fetch(`${SANDBOX_API}/${sandboxName}/commands${params}`, {
+    const runRes = await fetch(`${SANDBOX_API}/sessions/${sessionId}/cmd${params}`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ cmd, args, cwd, detached: true }),
+      body: JSON.stringify({ command: cmd, args, cwd }),
     })
 
     if (!runRes.ok) {
@@ -47,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     const data = await runRes.json()
 
-    return Response.json({ ok: true, cmdId: data.cmdId })
+    return Response.json({ ok: true, cmdId: data.command?.cmdId })
   } catch (error) {
     console.error('[sandbox.start] failed', error)
     return Response.json(

@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server'
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-const SANDBOX_API = 'https://api.vercel.com/v1/sandboxes'
+const SANDBOX_API = 'https://vercel.com/api/v2/sandboxes'
 
 function getAuthHeaders() {
   const token = process.env.VERCEL_TOKEN
@@ -13,7 +13,13 @@ function getAuthHeaders() {
 
 function getTeamParam() {
   const teamId = process.env.VERCEL_TEAM_ID
-  return teamId ? `?teamId=${teamId}` : ''
+  return teamId ? `&teamId=${teamId}` : ''
+}
+
+function getProjectId() {
+  const projectId = process.env.VERCEL_PROJECT_ID
+  if (!projectId) throw new Error('VERCEL_PROJECT_ID not configured')
+  return projectId
 }
 
 export async function DELETE(req: NextRequest) {
@@ -26,9 +32,9 @@ export async function DELETE(req: NextRequest) {
     }
 
     const headers = getAuthHeaders()
-    const params = getTeamParam()
+    const params = `?projectId=${getProjectId()}${getTeamParam()}`
 
-    const deleteRes = await fetch(`${SANDBOX_API}/${sandboxName}${params}`, {
+    const deleteRes = await fetch(`${SANDBOX_API}/${encodeURIComponent(sandboxName)}${params}`, {
       method: 'DELETE',
       headers,
     })

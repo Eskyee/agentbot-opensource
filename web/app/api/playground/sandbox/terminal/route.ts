@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server'
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
-const SANDBOX_API = 'https://api.vercel.com/v1/sandboxes'
+const SANDBOX_API = 'https://vercel.com/api/v2/sandboxes'
 
 function getAuthHeaders() {
   const token = process.env.VERCEL_TOKEN
@@ -13,28 +13,34 @@ function getAuthHeaders() {
 
 function getTeamParam() {
   const teamId = process.env.VERCEL_TEAM_ID
-  return teamId ? `?teamId=${teamId}` : ''
+  return teamId ? `&teamId=${teamId}` : ''
+}
+
+function getProjectId() {
+  const projectId = process.env.VERCEL_PROJECT_ID
+  if (!projectId) throw new Error('VERCEL_PROJECT_ID not configured')
+  return projectId
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const sandboxName = body.sandboxName as string
+    const sessionId = body.sessionId as string
     const command = body.command as string
     const args = (body.args as string[]) || []
     const cwd = (body.cwd as string) || '/vercel/sandbox'
 
-    if (!sandboxName || !command) {
-      return Response.json({ ok: false, error: 'sandboxName and command are required' }, { status: 400 })
+    if (!sessionId || !command) {
+      return Response.json({ ok: false, error: 'sessionId and command are required' }, { status: 400 })
     }
 
     const headers = getAuthHeaders()
-    const params = getTeamParam()
+    const params = `?projectId=${getProjectId()}${getTeamParam()}`
 
-    const runRes = await fetch(`${SANDBOX_API}/${sandboxName}/commands${params}`, {
+    const runRes = await fetch(`${SANDBOX_API}/sessions/${sessionId}/cmd${params}`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ cmd: command, args, cwd }),
+      body: JSON.stringify({ command, args, cwd }),
     })
 
     if (!runRes.ok) {
@@ -46,9 +52,9 @@ export async function POST(req: NextRequest) {
 
     return Response.json({
       ok: true,
-      exitCode: data.exitCode,
-      stdout: data.stdout,
-      stderr: data.stderr,
+      exitCode: data.command?.exitCode,
+      stdout: data.command?.stdout,
+      stderr: data.command?.stderr,
     })
   } catch (error) {
     console.error('[sandbox.terminal] failed', error)
