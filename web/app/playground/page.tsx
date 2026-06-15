@@ -1727,16 +1727,44 @@ function BuilderView({
               placeholder="Describe the app you want to build…"
             />
             <div className="flex items-center justify-between gap-2 border-t border-zinc-900 px-3 py-2">
-              <select
-                value={model}
-                onChange={(event) => setModel(event.target.value)}
-                aria-label="Model"
-                className="border border-zinc-800 bg-black px-1.5 py-1 text-[10px] uppercase tracking-widest text-zinc-400 focus:border-zinc-600 focus:outline-none"
-              >
-                {MODEL_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <select
+                  value={model}
+                  onChange={(event) => setModel(event.target.value)}
+                  aria-label="Model"
+                  className="border border-zinc-800 bg-black px-1.5 py-1 text-[10px] uppercase tracking-widest text-zinc-400 focus:border-zinc-600 focus:outline-none"
+                >
+                  {MODEL_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                <div className="flex items-center border border-zinc-800 bg-black">
+                  <button
+                    type="button"
+                    onClick={() => setExecutionMode('sandpack')}
+                    className={`px-2 py-1 text-[10px] uppercase tracking-widest transition-colors ${
+                      executionMode === 'sandpack'
+                        ? 'bg-white text-black'
+                        : 'text-zinc-500 hover:text-white'
+                    }`}
+                    title="In-browser React preview (client-side only)"
+                  >
+                    Sandpack
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExecutionMode('sandbox')}
+                    className={`px-2 py-1 text-[10px] uppercase tracking-widest transition-colors ${
+                      executionMode === 'sandbox'
+                        ? 'bg-white text-black'
+                        : 'text-zinc-500 hover:text-white'
+                    }`}
+                    title="Full-stack Linux VM (Next.js, API routes, database)"
+                  >
+                    Sandbox
+                  </button>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => void submit()}
