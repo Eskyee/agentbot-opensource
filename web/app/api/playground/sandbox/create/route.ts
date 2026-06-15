@@ -3,42 +3,57 @@ import { NextRequest } from 'next/server'
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-function getSandboxConfig() {
-  const teamId = process.env.VERCEL_TEAM_ID
-  const projectId = process.env.VERCEL_PROJECT_ID
+const SANDBOX_API = 'https://api.vercel.com/v1/sandboxes'
+
+function getAuthHeaders() {
   const token = process.env.VERCEL_TOKEN
-
-  if (!teamId || !projectId || !token) {
-    throw new Error('Vercel Sandbox credentials not configured. Set VERCEL_TEAM_ID, VERCEL_PROJECT_ID, and VERCEL_TOKEN.')
+  if (!token) {
+    throw new Error('VERCEL_TOKEN not configured')
   }
+  return {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  }
+}
 
-  return { teamId, projectId, token }
+function getTeamId() {
+  return process.env.VERCEL_TEAM_ID || ''
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { Sandbox } = await import('@vercel/sandbox')
-
     const body = await req.json().catch(() => ({}))
     const name = body.name as string | undefined
     const runtime = (body.runtime as string) || 'node24'
     const ports = (body.ports as number[]) || [3000]
     const timeout = (body.timeout as number) || 5 * 60 * 1000
 
-    const config = getSandboxConfig()
+    const headers = getAuthHeaders()
+    const teamId = getTeamId()
+    const params = teamId ? `?teamId=${teamId}` : ''
 
-    const sandbox = await Sandbox.create({
-      name,
-      teamId: config.teamId,
-      projectId: config.projectId,
-      token: config.token,
-      runtime,
-      ports,
-      timeout,
-      persistent: true,
+    const createRes = await fetch(`${SANDBOX_API}${params}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        name,
+        runtime,
+        ports,
+        timeout,
+        persistent: true,
+      }),
     })
 
-    const previewUrl = sandbox.domain(3000)
+    if (!createRes.ok) {
+      const err = await createRes.text()
+      throw new Error(`Vercel API ${createRes.status}: ${err}`)
+    }
+
+    const sandbox = await createRes.json()
+
+    const previewUrl = sandbox.routes?.find(
+      (r: { port: number }) => r.port === 3000
+    )?.url || `https://${sandbox.name}-${sandbox.id}.vercel.app`
 
     return Response.json({
       ok: true,
