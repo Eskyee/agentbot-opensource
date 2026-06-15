@@ -1,4 +1,6 @@
-# Agentbot
+# Agentbot — Open Source
+
+> **This is the public open source repository.** Code is synced from the private repo. All production secrets stay in the private repo — only application code appears here.
 
 **Deploy AI workers. Build underground systems.**
 
