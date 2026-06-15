@@ -6,12 +6,28 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSy
 import { join, relative, resolve, dirname } from 'path'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+// A coding task can run up to MAX_TOOL_ROUNDS of (LLM call + tool exec); 60s was
+// too tight and cut agents off mid-task. 300 is the platform max on Fluid Compute.
+export const maxDuration = 300
 
 const SANDBOX_BASE = '/tmp/coding-agent'
 const MAX_OUTPUT = 8000
 const COMMAND_TIMEOUT = 30_000
 const MAX_TOOL_ROUNDS = 15
+
+// Minimal env for agent-run shell commands. CRITICAL: never expose the platform
+// process.env (DB URL, API keys, Stripe/CDP secrets) to commands the agent runs —
+// a prompt like "run printenv" would otherwise exfiltrate every secret.
+function safeCommandEnv(sandboxDir: string): NodeJS.ProcessEnv {
+  return {
+    PATH: process.env.PATH || '/usr/local/bin:/usr/bin:/bin',
+    HOME: sandboxDir,
+    LANG: process.env.LANG || 'en_US.UTF-8',
+    TERM: 'dumb',
+    NODE_ENV: 'development',
+    CI: '1',
+  }
+}
 
 const SYSTEM_PROMPT = `You are a coding agent inside Agentbot. You have real tools to read, write, edit, and search files, and run shell commands.
 
@@ -221,7 +237,8 @@ function execTool(name: string, args: Record<string, string | boolean | undefine
           timeout: COMMAND_TIMEOUT,
           encoding: 'utf-8',
           maxBuffer: 1024 * 1024,
-          env: { ...process.env, PATH: process.env.PATH },
+          // Clean env only — never leak platform secrets to agent-run commands.
+          env: safeCommandEnv(sandboxDir),
         })
         return truncate(result || '(no output)')
       }
