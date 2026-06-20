@@ -121,7 +121,7 @@
     "devalue": "5.8.1",
     "fast-uri": "^3.1.2",
     "fast-xml-builder": "^1.2.0",
-    "hono": "^4.12.21",
+    "hono": "^4.12.26",
     "ip-address": "^10.2.0",
     "ws": "^8.20.1",
     "@workflow/core": {
