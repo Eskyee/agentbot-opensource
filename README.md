@@ -4,6 +4,8 @@
 
 **Deploy AI workers. Build underground systems.**
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Eskyee/agentbot-opensource)
+
 <div align="center">
 
 <img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeigkpl3kax3x5wpx4xyyfldhyq6hqcwlihz5ku4cxc4ltufow4osyi" alt="Factory AI" width="900" />
