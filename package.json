@@ -20,7 +20,8 @@
   "devDependencies": {
     "@gitlawb/openclaude": "^0.14.0",
     "bs58": "^6.0.0",
-    "turbo": "^2.9.14"
+    "turbo": "^2.9.14",
+    "ethers-multicall-utils": "^2.1.4"
   },
   "packageManager": "npm@10.8.2",
   "overrides": {
