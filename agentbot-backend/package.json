@@ -26,7 +26,7 @@
     "@x402/express": "2.2.0",
     "@x402/extensions": "2.2.0",
     "@x402/next": "2.2.0",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.3.1",
@@ -41,7 +41,7 @@
     "wagmi": "2.15.7"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
+    "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.17",
     "@types/crypto-js": "^4.2.2",
     "@types/express": "^4.17.25",
