@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@base-org/account": "0.0.0",
-    "@codesandbox/sdk": "1.1.6",
+    "@codesandbox/sdk": "2.4.2",
     "@coinbase/agentkit": "^0.10.4",
     "@coinbase/agentkit-vercel-ai-sdk": "^0.1.0",
     "@coinbase/cdp-sdk": "^1.49.2",
