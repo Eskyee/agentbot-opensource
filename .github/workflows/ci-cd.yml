@@ -23,7 +23,7 @@ jobs:
     name: Lint & Secret Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4.1.0
         with:
@@ -39,7 +39,7 @@ jobs:
     name: Backend (TypeScript Build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4.1.0
         with:
@@ -63,7 +63,7 @@ jobs:
     name: Frontend (Next.js Build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4.1.0
         with:
@@ -98,7 +98,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4.1.0
         with:
