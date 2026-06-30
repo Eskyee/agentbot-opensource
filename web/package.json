@@ -116,7 +116,7 @@
     "eslint": "^9.36.0",
     "eslint-config-next": "^16.0.0",
     "jest": "^25.0.0",
-    "jest-environment-jsdom": "^29.7.0",
+    "jest-environment-jsdom": "^30.4.1",
     "postcss": "^8.5.10",
     "postman-playwright": "^1.1.1",
     "prisma": "5.22.0",
