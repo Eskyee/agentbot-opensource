@@ -115,7 +115,7 @@
     "autoprefixer": "^10",
     "eslint": "^9.36.0",
     "eslint-config-next": "^16.0.0",
-    "jest": "^25.0.0",
+    "jest": "^30.4.2",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.5.10",
     "postman-playwright": "^1.1.1",
