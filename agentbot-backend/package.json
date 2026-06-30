@@ -24,7 +24,7 @@
     "@sentry/node": "^10.51.0",
     "@worldcoin/agentkit": "0.1.6",
     "@x402/express": "2.2.0",
-    "@x402/extensions": "2.2.0",
+    "@x402/extensions": "2.17.0",
     "@x402/next": "2.2.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
