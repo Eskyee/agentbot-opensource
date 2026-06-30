@@ -16,7 +16,7 @@
     "design:fix": "find app -name '*.tsx' -exec sed -i '' 's/bg-gray-/bg-zinc-/g; s/text-gray-/text-zinc-/g; s/border-gray-/border-zinc-/g; s/hover:bg-gray-/hover:bg-zinc-/g; s/bg-purple-/bg-orange-/g; s/text-purple-/text-orange-/g; s/border-purple-/border-orange-/g; s/hover:bg-purple-/hover:bg-orange-/g' {} +"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^4.0.0-beta.110",
+    "@ai-sdk/gateway": "^4.0.6",
     "@ai-sdk/react": "^4.0.0-beta.186",
     "@auth0/nextjs-auth0": "^4.22.0",
     "@base-org/account": "^2.5.6",
