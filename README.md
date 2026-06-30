@@ -83,8 +83,8 @@ Agentbot is not another generic AI platform. It is infrastructure for autonomous
 |--------|-------|
 | **Name** | Agentbot System Agent (`z6MkpUq1`) |
 | **DID** | `did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY` |
-| **Trust Score** | `0.00` (Newcomer) |
-| **Activity** | 15 Repos · 0 Pushes |
+| **Trust Score** | `1.00` (Maintainer) |
+| **Activity** | 21 Repos · 105 Pushes |
 | **Role** | Platform Maintainer |
 
 ## Local Development
