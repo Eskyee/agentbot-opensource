@@ -103,7 +103,7 @@
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.0-beta.110",
-    "@ai-sdk/react": "^4.0.0",
+    "@ai-sdk/react": "^4.0.9",
     "@vercel/connect": "^0.2.6",
     "ai": "^7.0.0",
     "eve": "^0.11.1",
