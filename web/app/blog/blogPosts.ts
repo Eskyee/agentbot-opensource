@@ -1,15 +1,61 @@
 export interface BlogPostSummary {
-  slug: string
-  dateLabel: string
-  isoDate: string
-  title: string
-  excerpt: string
-  tags: string[]
-  track: 'Shipping' | 'Release' | 'Field Notes' | 'Build Log'
-  href?: string
+  slug: string;
+  dateLabel: string;
+  isoDate: string;
+  title: string;
+  excerpt: string;
+  tags: string[];
+  track: 'Shipping' | 'Release' | 'Field Notes' | 'Build Log';
+  href?: string;
 }
 
 export const blogPosts: BlogPostSummary[] = [
+  {
+    slug: 'open-letter-to-mimo',
+    dateLabel: '16 Jun',
+    isoDate: '2026-06-16',
+    title: 'An Open Letter to the MiMo Team',
+    excerpt: 'How MiMo powers Agentbot and what we recommend for the next chapter. Recommendations for function calling, streaming, multi-modal, and agent fine-tuning.',
+    tags: ['MiMo', 'Open Letter', 'AI'],
+    track: 'Field Notes',
+  },
+  {
+    slug: 'react-19-migration',
+    dateLabel: '16 Jun',
+    isoDate: '2026-06-16',
+    title: 'React 19 Migration — How We Did It in One Session',
+    excerpt: 'Migrated Agentbot from React 18 to React 19. Only 6 TypeScript errors to fix. Zero deprecated APIs.',
+    tags: ['React', 'Migration', 'Engineering'],
+    track: 'Build Log',
+  },
+  {
+    slug: 'json-render-generative-ui',
+    dateLabel: '16 Jun',
+    isoDate: '2026-06-16',
+    title: 'JSON Render — Generative UI for Agentbot',
+    excerpt: 'Integrated json-render for AI-generated interfaces. Describe a UI in plain English, get real React components.',
+    tags: ['JSON Render', 'Generative UI', 'AI'],
+    track: 'Release',
+  },
+  {
+    slug: 'automations-mcp-integrations',
+    dateLabel: '16 Jun',
+    isoDate: '2026-06-16',
+    title: 'Automations with MCP Integrations',
+    excerpt: 'Event-driven workflows connecting to Slack, GitHub, Linear, Sentry, Datadog, and more.',
+    tags: ['Automations', 'MCP', 'Integrations'],
+    track: 'Release',
+  },
+  {
+    slug: 'mimo-v25-pro-integration',
+    dateLabel: '16 Jun',
+    isoDate: '2026-06-16',
+    title: 'MiMo-V2.5-Pro Integration — Full OpenClaw Support',
+    excerpt:
+      'Agentbot now fully supports MiMo-V2.5-Pro with OpenClaw framework, document processing (Word, Excel, PPT, PDF), and 3x reasoning efficiency. Legacy models deprecated June 30.',
+    tags: ['MiMo', 'OpenClaw', 'Integration', 'Document Processing'],
+    track: 'Release',
+  },
   {
     slug: 'escrow-explained',
     dateLabel: '13 Jun',
@@ -76,7 +122,7 @@ export const blogPosts: BlogPostSummary[] = [
     isoDate: '2026-06-11',
     title: 'Claude Fable 5 × OpenClaw Agentbot — Frontier Intelligence for Autonomous Agents',
     excerpt:
-      'Claude Fable 5 is Anthropic\'s most capable model for days-long autonomous tasks. Here\'s how Agentbot users can access it via OpenRouter.',
+      "Claude Fable 5 is Anthropic's most capable model for days-long autonomous tasks. Here's how Agentbot users can access it via OpenRouter.",
     tags: ['Claude', 'Fable', 'OpenRouter', 'Models', 'AI'],
     track: 'Release',
   },
@@ -505,8 +551,7 @@ export const blogPosts: BlogPostSummary[] = [
     dateLabel: '31 Mar',
     isoDate: '2026-03-31',
     title: 'Agentbot Launches March 31',
-    excerpt:
-      'Your AI agent. Your hardware. Your rules. Self-hosted, BYOK, and one-command deploy.',
+    excerpt: 'Your AI agent. Your hardware. Your rules. Self-hosted, BYOK, and one-command deploy.',
     tags: ['Launch'],
     track: 'Shipping',
   },
@@ -525,8 +570,7 @@ export const blogPosts: BlogPostSummary[] = [
     dateLabel: '25 Mar',
     isoDate: '2026-03-25',
     title: 'T-6 Days: Agentbot Launches March 31',
-    excerpt:
-      '6 days until Agentbot. The countdown to launch is on.',
+    excerpt: '6 days until Agentbot. The countdown to launch is on.',
     tags: ['Countdown', 'Launch'],
     track: 'Shipping',
   },
@@ -875,8 +919,7 @@ export const blogPosts: BlogPostSummary[] = [
     dateLabel: '26 Feb',
     isoDate: '2026-02-26',
     title: 'Enhancing Agentbot with OpenClaw Updates: February 2026',
-    excerpt:
-      'OpenClaw 2026.2.26 introduces several impactful changes for the Agentbot platform.',
+    excerpt: 'OpenClaw 2026.2.26 introduces several impactful changes for the Agentbot platform.',
     tags: ['OpenClaw', 'Platform Updates'],
     track: 'Field Notes',
   },
@@ -915,8 +958,7 @@ export const blogPosts: BlogPostSummary[] = [
     dateLabel: 'Feb 2026',
     isoDate: '2026-02-15',
     title: 'Introducing Credit-Based Pricing',
-    excerpt:
-      'Pay only for what you use with our new flexible credit system.',
+    excerpt: 'Pay only for what you use with our new flexible credit system.',
     tags: ['Feature', 'Pricing'],
     track: 'Shipping',
   },
@@ -925,8 +967,7 @@ export const blogPosts: BlogPostSummary[] = [
     dateLabel: 'Feb 2026',
     isoDate: '2026-02-15',
     title: 'How to Deploy Your First AI Agent in 60 Seconds',
-    excerpt:
-      'Launch your OpenClaw agent with Telegram integration. No server setup required.',
+    excerpt: 'Launch your OpenClaw agent with Telegram integration. No server setup required.',
     tags: ['Tutorial', 'Getting Started'],
     track: 'Build Log',
   },
@@ -990,4 +1031,4 @@ export const blogPosts: BlogPostSummary[] = [
     tags: ['Announcement'],
     track: 'Field Notes',
   },
-]
+];

@@ -15,8 +15,9 @@
 [![Docs](https://img.shields.io/badge/docs-live-EF6F2E)](https://agentbot.sh/documentation)
 [![Releases](https://img.shields.io/badge/releases-release.bar-EF6F2E)](https://release.bar/eskyee/agentbot-opensource)
 [![Discord](https://img.shields.io/badge/Discord-Join%20chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/vTPG4vdV6D)
+[![GitLawb](https://img.shields.io/badge/GitLawb-z6MkpUq1-EF6F2E)](https://gitlawb.com/z6MkpUq1)
 
-[**Website**](https://agentbot.sh) · [**Documentation**](https://agentbot.sh/documentation) · [**Releases**](https://release.bar/eskyee/agentbot-opensource) · [**Discord**](https://discord.gg/vTPG4vdV6D) · [**Open Source Repo**](https://github.com/Eskyee/agentbot-opensource)
+[**Website**](https://agentbot.sh) · [**Documentation**](https://agentbot.sh/documentation) · [**Releases**](https://release.bar/eskyee/agentbot-opensource) · [**Discord**](https://discord.gg/vTPG4vdV6D) · [**GitLawb**](https://gitlawb.com/z6MkpUq1) · [**Open Source Repo**](https://github.com/Eskyee/agentbot-opensource)
 
 </div>
 
@@ -72,8 +73,8 @@ Agentbot is not another generic AI platform. It is infrastructure for autonomous
 | **Status** | Online |
 | **Network** | alpha |
 | **DID** | `did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY` |
-| **Gitlawb Profile** | [z6MkpUq1](https://gitlawb.com/node/repos/z6MkpUq1/) |
-| **Open Source Mirror** | [agentbot-opensource](https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource) |
+| **Gitlawb Profile** | [z6MkpUq1](https://gitlawb.com/z6MkpUq1) |
+| **Open Source Mirror** | [agentbot-opensource](https://gitlawb.com/z6MkpUq1/agentbot-opensource) |
 | **Protocols** | `git-smart-http`, `mcp`, `libp2p` |
 
 ## Lead Agent Identity

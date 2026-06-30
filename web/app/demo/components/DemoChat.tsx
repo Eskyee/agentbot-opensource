@@ -1,8 +1,24 @@
 'use client'
 
-import { useState, useRef, useEffect, type FormEvent } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '../../../components/ai-elements/conversation'
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from '../../../components/ai-elements/message'
+import {
+  PromptInput,
+  type PromptInputMessage,
+  PromptInputTextarea,
+  PromptInputSubmit,
+} from '../../../components/ai-elements/prompt-input'
 
 const SUGGESTIONS = [
   'What can you do?',
@@ -13,41 +29,24 @@ const SUGGESTIONS = [
   'How much does it cost?',
 ]
 
-function getText(content: { parts: Array<{ type: string; text?: string }> }): string {
-  return content.parts
-    .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-    .map(p => p.text)
-    .join('')
-}
-
 export function DemoChat() {
-  const [input, setInput] = useState('')
   const [playingIdx, setPlayingIdx] = useState<number | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, stop } = useChat({
     transport: new DefaultChatTransport({ api: '/api/demo/chat' }),
   })
 
   const isLoading = status === 'submitted' || status === 'streaming'
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
-  }, [messages])
+    return () => { audioRef.current?.pause() }
+  }, [])
 
-  const sendSuggestion = (text: string) => {
-    if (isLoading) return
-    sendMessage({ text })
-  }
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isLoading) return
-    sendMessage({ text: input })
-    setInput('')
-    inputRef.current?.focus()
+  const handleSubmit = (message: PromptInputMessage) => {
+    if (message.text.trim()) {
+      sendMessage({ text: message.text })
+    }
   }
 
   const speak = async (text: string, idx: number) => {
@@ -77,102 +76,81 @@ export function DemoChat() {
     }
   }
 
+  const getText = (parts: Array<{ type: string; text?: string }>) =>
+    parts.filter(p => p.type === 'text').map(p => p.text || '').join('')
+
   return (
-    <div className="border border-zinc-800 bg-zinc-950/60 flex flex-col h-[600px]">
-      {/* Header */}
-      <div className="border-b border-zinc-800 px-4 py-3 flex items-center gap-3">
+    <div className="border border-border bg-background flex flex-col h-[600px]">
+      <div className="border-b border-border px-4 py-3 flex items-center gap-3">
         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-        <span className="text-[10px] uppercase tracking-widest text-zinc-400">Live Demo — Free Model</span>
-        <span className="ml-auto text-[10px] text-zinc-600">10 messages free</span>
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Live Demo — Free Model</span>
+        <span className="ml-auto text-[10px] text-muted-foreground">10 messages free</span>
       </div>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-4">🤖</div>
-            <p className="text-zinc-400 text-sm mb-6">Try asking me anything. I&apos;m powered by MiMo V2.5 Pro.</p>
-            <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
-              {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => sendSuggestion(s)}
-                  className="text-left text-xs text-zinc-500 border border-zinc-800 px-3 py-2 hover:border-zinc-600 hover:text-white transition-colors"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {messages.map((msg, i) => {
-          const text = getText(msg as any)
-          return (
-            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] px-4 py-3 text-sm leading-relaxed ${
-                msg.role === 'user'
-                  ? 'bg-white text-black'
-                  : 'bg-zinc-900 text-zinc-300 border border-zinc-800'
-              }`}>
-                {msg.role === 'assistant' && (
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Agentbot</div>
-                )}
-                <div className="whitespace-pre-wrap">{text}</div>
-                {msg.role === 'assistant' && !isLoading && text && (
+      <Conversation className="flex-1">
+        <ConversationContent className="p-4">
+          {messages.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">🤖</div>
+              <p className="text-muted-foreground text-sm mb-6">Try asking me anything. I&apos;m powered by MiMo V2.5 Pro.</p>
+              <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
+                {SUGGESTIONS.map((s) => (
                   <button
-                    onClick={() => speak(text, i)}
-                    className="mt-2 inline-flex items-center gap-1 text-zinc-600 hover:text-zinc-300 transition-colors text-xs"
-                    title="Listen"
+                    key={s}
+                    onClick={() => sendMessage({ text: s })}
+                    className="text-left text-xs text-muted-foreground border border-border px-3 py-2 hover:border-muted-foreground/50 hover:text-foreground transition-colors rounded-lg"
                   >
-                    {playingIdx === i ? (
-                      <>
-                        <span className="animate-pulse">■</span> Stop
-                      </>
-                    ) : (
-                      <>
-                        <span>🔊</span> Speak
-                      </>
-                    )}
+                    {s}
                   </button>
-                )}
+                ))}
               </div>
             </div>
-          )
-        })}
+          ) : (
+            messages.map((message) => (
+              <Message from={message.role} key={message.id}>
+                <MessageContent>
+                  {message.parts.map((part, i) => {
+                    switch (part.type) {
+                      case 'text':
+                        return (
+                          <div key={`${message.id}-${i}`}>
+                            <MessageResponse>{part.text}</MessageResponse>
+                            {message.role === 'assistant' && !isLoading && part.text && (
+                              <button
+                                onClick={() => speak(part.text!, messages.indexOf(message))}
+                                className="mt-2 inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-xs"
+                                title="Listen"
+                              >
+                                {playingIdx === messages.indexOf(message) ? (
+                                  <><span className="animate-pulse">■</span> Stop</>
+                                ) : (
+                                  <><span>🔊</span> Speak</>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        )
+                      default:
+                        return null
+                    }
+                  })}
+                </MessageContent>
+              </Message>
+            ))
+          )}
+        </ConversationContent>
+        <ConversationScrollButton />
+      </Conversation>
 
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-zinc-900 border border-zinc-800 px-4 py-3">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="border-t border-border p-4">
+        <PromptInput onSubmit={handleSubmit}>
+          <PromptInputTextarea placeholder="Ask Agentbot anything..." />
+          <PromptInputSubmit
+            status={status === 'streaming' ? 'streaming' : status === 'submitted' ? 'submitted' : 'ready'}
+            onStop={stop}
+          />
+        </PromptInput>
       </div>
-
-      {/* Input */}
-      <form onSubmit={handleSubmit} className="border-t border-zinc-800 p-4 flex gap-2">
-        <input
-          ref={inputRef}
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask Agentbot anything..."
-          disabled={isLoading}
-          className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !input.trim()}
-          className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Send
-        </button>
-      </form>
     </div>
   )
 }

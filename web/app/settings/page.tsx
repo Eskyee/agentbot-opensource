@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useCustomSession } from '@/app/lib/useCustomSession'
-import { useBasename, getWalletAddress } from '@/app/hooks/useBasename'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import { useState, useEffect } from 'react';
+import { useCustomSession } from '@/app/lib/useCustomSession';
+import { useBasename, getWalletAddress } from '@/app/hooks/useBasename';
+import { DashboardSidebar } from '@/app/components/DashboardSidebar';
 import {
   ProfileTab,
   SecurityTab,
@@ -15,9 +15,9 @@ import {
   IntegrationsTab,
   ByokTab,
   WalletTab,
-} from './tabs'
-import { buildAppUrl } from '@/app/lib/app-url'
-import { EscrowPanel } from './EscrowPanel'
+} from './tabs';
+import { buildAppUrl } from '@/app/lib/app-url';
+import { EscrowPanel } from './EscrowPanel';
 
 const TABS = [
   { id: 'profile', label: 'Profile', icon: '👤' },
@@ -30,60 +30,63 @@ const TABS = [
   { id: 'basefm', label: 'baseFM', icon: '📻' },
   { id: 'integrations', label: 'Integrations', icon: '🔌' },
   { id: 'byok', label: 'API Keys', icon: '⚡' },
-]
+];
 
 export default function SettingsPage() {
-  const { data: session } = useCustomSession()
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
-  const walletAddress = getWalletAddress(session?.user?.email)
-  const { basename } = useBasename(walletAddress)
+  const { data: session } = useCustomSession();
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in';
+  const walletAddress = getWalletAddress(session?.user?.email);
+  const { basename } = useBasename(walletAddress);
 
-  const [activeTab, setActiveTab] = useState('profile')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('profile');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Shared state fetched once
-  const [displayName, setDisplayName] = useState('')
-  const [email, setEmail] = useState('')
-  const [agents, setAgents] = useState<any[]>([])
-  const [credits, setCredits] = useState(0)
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+  const [agents, setAgents] = useState<any[]>([]);
+  const [credits, setCredits] = useState(0);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [notifications, setNotifications] = useState({
     email: true,
     usageAlerts: true,
     productUpdates: false,
     marketing: false,
-  })
-  const [referralLink, setReferralLink] = useState('')
-  const [referralCount, setReferralCount] = useState(0)
-  const [referralCredits, setReferralCredits] = useState(0)
-  const [showcaseOptIn, setShowcaseOptIn] = useState(false)
-  const [showcaseDescription, setShowcaseDescription] = useState('')
-  const [showcaseAgentId, setShowcaseAgentId] = useState('')
-  const [showcaseSaving, setShowcaseSaving] = useState(false)
-  const [showcaseSaved, setShowcaseSaved] = useState(false)
-  const [showcaseError, setShowcaseError] = useState('')
+  });
+  const [referralLink, setReferralLink] = useState('');
+  const [referralCount, setReferralCount] = useState(0);
+  const [referralCredits, setReferralCredits] = useState(0);
+  const [showcaseOptIn, setShowcaseOptIn] = useState(false);
+  const [showcaseDescription, setShowcaseDescription] = useState('');
+  const [showcaseAgentId, setShowcaseAgentId] = useState('');
+  const [showcaseSaving, setShowcaseSaving] = useState(false);
+  const [showcaseSaved, setShowcaseSaved] = useState(false);
+  const [showcaseError, setShowcaseError] = useState('');
   const [openclawInfo, setOpenclawInfo] = useState<{
-    managed: boolean
-    instanceId: string | null
-    url: string | null
-  } | null>(null)
-  const effectiveAgents = agents.length > 0
-    ? agents
-    : openclawInfo?.instanceId
-      ? [{
-          id: openclawInfo.instanceId,
-          name: 'Managed OpenClaw Runtime',
-          status: openclawInfo.url ? 'running' : 'provisioning',
-        }]
-      : []
+    managed: boolean;
+    instanceId: string | null;
+    url: string | null;
+  } | null>(null);
+  const effectiveAgents =
+    agents.length > 0
+      ? agents
+      : openclawInfo?.instanceId
+        ? [
+            {
+              id: openclawInfo.instanceId,
+              name: 'Managed OpenClaw Runtime',
+              status: openclawInfo.url ? 'running' : 'provisioning',
+            },
+          ]
+        : [];
 
   useEffect(() => {
-    const requestedTab = new URLSearchParams(window.location.search).get('tab')
+    const requestedTab = new URLSearchParams(window.location.search).get('tab');
     if (requestedTab && TABS.some((tab) => tab.id === requestedTab)) {
-      setActiveTab(requestedTab)
+      setActiveTab(requestedTab);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -93,44 +96,44 @@ export default function SettingsPage() {
           fetch('/api/agents'),
           fetch('/api/referral'),
           fetch('/api/agents/showcase'),
-        ])
+        ]);
 
         if (settingsRes.ok) {
-          const data = await settingsRes.json()
-          setDisplayName(data.name || '')
-          setEmail(data.email || '')
-          setCredits(data.credits || 0)
-          setTwoFactorEnabled(data.twoFactorEnabled || false)
-          setOpenclawInfo(data.openclaw || { managed: true, instanceId: null, url: null })
-          if (data.notifications) setNotifications(data.notifications)
+          const data = await settingsRes.json();
+          setDisplayName(data.name || '');
+          setEmail(data.email || '');
+          setCredits(data.credits || 0);
+          setTwoFactorEnabled(data.twoFactorEnabled || false);
+          setOpenclawInfo(data.openclaw || { managed: true, instanceId: null, url: null });
+          if (data.notifications) setNotifications(data.notifications);
         }
 
         if (agentsRes.ok) {
-          const data = await agentsRes.json()
-          setAgents(data.agents || [])
+          const data = await agentsRes.json();
+          setAgents(data.agents || []);
         }
 
         if (referralRes.ok) {
-          const data = await referralRes.json()
-          setReferralLink(buildAppUrl(`/signup?ref=${data.referralCode || ''}`))
-          setReferralCount(data.referralCount || 0)
-          setReferralCredits(data.creditEarned || 0)
+          const data = await referralRes.json();
+          setReferralLink(buildAppUrl(`/signup?ref=${data.referralCode || ''}`));
+          setReferralCount(data.referralCount || 0);
+          setReferralCredits(data.creditEarned || 0);
         }
 
         if (showcaseRes.ok) {
-          const data = await showcaseRes.json()
-          setShowcaseOptIn(data.showcaseOptIn ?? false)
-          setShowcaseDescription(data.showcaseDescription ?? '')
-          setShowcaseAgentId(data.agentId ?? '')
+          const data = await showcaseRes.json();
+          setShowcaseOptIn(data.showcaseOptIn ?? false);
+          setShowcaseDescription(data.showcaseDescription ?? '');
+          setShowcaseAgentId(data.agentId ?? '');
         }
       } catch (error) {
-        console.error('Failed to fetch settings:', error)
+        console.error('Failed to fetch settings:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchSettings()
-  }, [])
+    };
+    fetchSettings();
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-black">
@@ -152,13 +155,21 @@ export default function SettingsPage() {
               aria-label="Open menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
             <span className="text-sm font-bold uppercase tracking-tighter">⚙ Settings</span>
           </div>
           <div className="flex items-center gap-3">
-            <a href="/dashboard" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors">
+            <a
+              href="/dashboard"
+              className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors"
+            >
               Dashboard
             </a>
           </div>
@@ -168,29 +179,31 @@ export default function SettingsPage() {
           <div className="max-w-4xl mx-auto">
             <div className="mb-6 sm:mb-8">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600">Account</span>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mt-1">Settings</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mt-1">
+                Settings
+              </h1>
             </div>
 
             {/* Tabs */}
             <div className="relative">
-            <div className="flex gap-0 mb-6 sm:mb-8 overflow-x-auto pb-2 border-b border-zinc-800 -mx-4 sm:mx-0 px-4 sm:px-0 scrollbar-none">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 text-[9px] sm:text-[10px] uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${
-                    activeTab === tab.id
-                      ? 'border-white text-white'
-                      : 'border-transparent text-zinc-600 hover:text-zinc-400'
-                  }`}
-                >
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-            {/* Scroll fade indicator — shows on mobile when tabs overflow */}
-            <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-zinc-900 to-transparent pointer-events-none sm:hidden" />
+              <div className="flex gap-0 mb-6 sm:mb-8 overflow-x-auto pb-2 border-b border-zinc-800 -mx-4 sm:mx-0 px-4 sm:px-0 scrollbar-none">
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 text-[9px] sm:text-[10px] uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${
+                      activeTab === tab.id
+                        ? 'border-white text-white'
+                        : 'border-transparent text-zinc-600 hover:text-zinc-400'
+                    }`}
+                  >
+                    <span>{tab.icon}</span>
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+              {/* Scroll fade indicator — shows on mobile when tabs overflow */}
+              <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-zinc-900 to-transparent pointer-events-none sm:hidden" />
             </div>
 
             {/* Tab Content — each tab manages its own state */}
@@ -209,19 +222,29 @@ export default function SettingsPage() {
                 <AgentsTab
                   agents={effectiveAgents}
                   onRename={(id, name) => {
-                    setAgents((prev) => prev.map((a) => (a.id === id ? { ...a, name } : a)))
+                    setAgents((prev) => prev.map((a) => (a.id === id ? { ...a, name } : a)));
                   }}
                   onDelete={(id) => {
-                    setAgents((prev) => prev.filter((a) => a.id !== id))
+                    setAgents((prev) => prev.filter((a) => a.id !== id));
                   }}
                 />
 
                 {showcaseAgentId ? (
-                  <div id="showcase" className="border border-zinc-800 bg-zinc-950 p-5 scroll-mt-24">
+                  <div
+                    id="showcase"
+                    className="border border-zinc-800 bg-zinc-950 p-5 scroll-mt-24"
+                  >
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h2 className="text-sm font-bold uppercase tracking-tight mb-1">Agent Showcase</h2>
-                        <p className="text-[11px] text-zinc-500">List your agent on the public showcase at <a href="/showcase" className="text-orange-400 hover:text-orange-300">/showcase</a></p>
+                        <h2 className="text-sm font-bold uppercase tracking-tight mb-1">
+                          Agent Showcase
+                        </h2>
+                        <p className="text-[11px] text-zinc-500">
+                          List your agent on the public showcase at{' '}
+                          <a href="/showcase" className="text-orange-400 hover:text-orange-300">
+                            /showcase
+                          </a>
+                        </p>
                       </div>
                       <button
                         onClick={() => setShowcaseOptIn(!showcaseOptIn)}
@@ -231,9 +254,11 @@ export default function SettingsPage() {
                         role="switch"
                         aria-checked={showcaseOptIn}
                       >
-                        <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${
-                          showcaseOptIn ? 'translate-x-4' : 'translate-x-0'
-                        }`} />
+                        <span
+                          className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${
+                            showcaseOptIn ? 'translate-x-4' : 'translate-x-0'
+                          }`}
+                        />
                       </button>
                     </div>
                     {showcaseOptIn && (
@@ -249,32 +274,38 @@ export default function SettingsPage() {
                           placeholder="e.g., Factory techno agent. Curates sets, scouts tracks, runs my Telegram channel."
                           className="w-full bg-zinc-900 border border-zinc-700 text-white text-xs px-3 py-2 focus:outline-none focus:border-zinc-500 resize-none font-mono"
                         />
-                        <p className="text-[10px] text-zinc-600 mt-1">{showcaseDescription.length}/280</p>
+                        <p className="text-[10px] text-zinc-600 mt-1">
+                          {showcaseDescription.length}/280
+                        </p>
                       </div>
                     )}
                     <div className="flex items-center gap-3 mt-4">
                       <button
                         onClick={async () => {
-                          if (!showcaseAgentId) return
-                          setShowcaseSaving(true)
-                          setShowcaseError('')
+                          if (!showcaseAgentId) return;
+                          setShowcaseSaving(true);
+                          setShowcaseError('');
                           try {
                             const res = await fetch('/api/agents/showcase', {
                               method: 'PATCH',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ agentId: showcaseAgentId, showcaseOptIn, showcaseDescription }),
-                            })
+                              body: JSON.stringify({
+                                agentId: showcaseAgentId,
+                                showcaseOptIn,
+                                showcaseDescription,
+                              }),
+                            });
                             if (!res.ok) {
-                              const errData = await res.json().catch(() => ({}))
-                              setShowcaseError(errData?.error || `Save failed (${res.status})`)
+                              const errData = await res.json().catch(() => ({}));
+                              setShowcaseError(errData?.error || `Save failed (${res.status})`);
                             } else {
-                              setShowcaseSaved(true)
-                              setTimeout(() => setShowcaseSaved(false), 2000)
+                              setShowcaseSaved(true);
+                              setTimeout(() => setShowcaseSaved(false), 2000);
                             }
                           } catch {
-                            setShowcaseError('Network error — please try again')
+                            setShowcaseError('Network error — please try again');
                           } finally {
-                            setShowcaseSaving(false)
+                            setShowcaseSaving(false);
                           }
                         }}
                         disabled={showcaseSaving}
@@ -286,20 +317,37 @@ export default function SettingsPage() {
                         <span className="text-[10px] text-red-400">{showcaseError}</span>
                       )}
                       {showcaseOptIn && !showcaseError && (
-                        <a href="/showcase" target="_blank" rel="noopener noreferrer" className="text-[10px] text-orange-400 hover:text-orange-300 uppercase tracking-widest">
+                        <a
+                          href="/showcase"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-orange-400 hover:text-orange-300 uppercase tracking-widest"
+                        >
                           View showcase →
                         </a>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <div id="showcase" className="border border-zinc-800 bg-zinc-950 p-5 scroll-mt-24">
-                    <h2 className="text-sm font-bold uppercase tracking-tight mb-1">Agent Showcase</h2>
+                  <div
+                    id="showcase"
+                    className="border border-zinc-800 bg-zinc-950 p-5 scroll-mt-24"
+                  >
+                    <h2 className="text-sm font-bold uppercase tracking-tight mb-1">
+                      Agent Showcase
+                    </h2>
                     <p className="text-[11px] text-zinc-500 mb-4 max-w-md leading-relaxed">
                       Deploy an agent first, then opt it into the public showcase here to make it
-                      discoverable at <a href="/showcase" className="text-orange-400 hover:text-orange-300">/showcase</a> and start earning USDC for the work it completes.
+                      discoverable at{' '}
+                      <a href="/showcase" className="text-orange-400 hover:text-orange-300">
+                        /showcase
+                      </a>{' '}
+                      and start earning USDC for the work it completes.
                     </p>
-                    <a href="/dashboard" className="inline-block text-[10px] uppercase tracking-widest bg-white text-black px-4 py-2 font-bold hover:bg-zinc-200 transition-colors">
+                    <a
+                      href="/dashboard"
+                      className="inline-block text-[10px] uppercase tracking-widest bg-white text-black px-4 py-2 font-bold hover:bg-zinc-200 transition-colors"
+                    >
                       Deploy an agent →
                     </a>
                   </div>
@@ -310,9 +358,12 @@ export default function SettingsPage() {
                 <div className="border border-zinc-800 bg-zinc-950 p-5">
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div>
-                      <h2 className="text-sm font-bold uppercase tracking-tight mb-1">OpenClaw Runtime</h2>
+                      <h2 className="text-sm font-bold uppercase tracking-tight mb-1">
+                        OpenClaw Runtime
+                      </h2>
                       <p className="text-[11px] text-zinc-500">
-                        Managed by Agentbot. Users should open their agent from the dashboard, not configure raw OpenClaw URLs manually.
+                        Managed by Agentbot. Users should open their agent from the dashboard, not
+                        configure raw OpenClaw URLs manually.
                       </p>
                     </div>
                     <span className="text-[10px] uppercase tracking-widest px-2 py-1 border border-emerald-500/30 text-emerald-400">
@@ -322,13 +373,17 @@ export default function SettingsPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Instance ID</div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
+                        Instance ID
+                      </div>
                       <div className="text-xs font-mono text-zinc-400 break-all">
                         {openclawInfo?.instanceId || 'Not provisioned yet'}
                       </div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Access</div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
+                        Access
+                      </div>
                       {openclawInfo?.url ? (
                         <a
                           href={openclawInfo.url}
@@ -344,8 +399,9 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 border-t border-zinc-800 pt-4 text-[11px] text-zinc-500">
-                    If you need a custom OpenClaw runtime later, add it as an advanced override. The default user path should stay managed to reduce broken configs and support load.
+                  <div className="mt-4 border-t border-zinc-900 pt-4 text-[11px] text-zinc-500">
+                    If you need a custom OpenClaw runtime later, add it as an advanced override. The
+                    default user path should stay managed to reduce broken configs and support load.
                   </div>
                 </div>
               </div>
@@ -363,7 +419,9 @@ export default function SettingsPage() {
 
             {activeTab === 'security' && <SecurityTab twoFactorEnabled={twoFactorEnabled} />}
 
-            {activeTab === 'notifications' && <NotificationsTab initialNotifications={notifications} />}
+            {activeTab === 'notifications' && (
+              <NotificationsTab initialNotifications={notifications} />
+            )}
 
             {activeTab === 'wallet' && <WalletTab />}
 
@@ -375,5 +433,5 @@ export default function SettingsPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }

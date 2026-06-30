@@ -10,7 +10,7 @@ Manage the OpenClaw Control UI gateway on Railway.
 
 ## Service Info
 
-- **URL:** https://openclaw-gateway-production-ad37.up.railway.app
+- **URL:** https://YOUR_SERVICE_URL
 - **Project:** OpenClaw-Agentbot (proj_cxA5FUU5aqWoH6Wz6zpyTE9)
 - **Service:** openclaw-gateway (def185af-8af6-412c-9f8f-ed50e531a331)
 - **Region:** us-west1
@@ -51,7 +51,7 @@ Config is written fresh on EVERY container start. No volumes, no env var overrid
 ## Health Check
 
 ```bash
-curl -s https://openclaw-gateway-production-ad37.up.railway.app/health
+curl -s https://YOUR_SERVICE_URL/health
 ```
 
 Expected: `{"ok":true,"status":"live"}`

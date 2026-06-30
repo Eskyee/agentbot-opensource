@@ -2,8 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Wallet, ArrowUpDown, Send, RefreshCw, Loader2, Sparkles, Key, Eye, EyeOff, Trash2, CheckCircle, User, ExternalLink, Edit3, Plus, AlertCircle } from 'lucide-react';
-import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
+import {
+  Wallet,
+  ArrowUpDown,
+  Send,
+  RefreshCw,
+  Loader2,
+  Sparkles,
+  Key,
+  Eye,
+  EyeOff,
+  Trash2,
+  CheckCircle,
+  User,
+  ExternalLink,
+  Edit3,
+  Plus,
+  AlertCircle,
+} from 'lucide-react';
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell';
 
 interface Balance {
   symbol: string;
@@ -43,7 +64,12 @@ export default function TradingPage() {
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
-  const [createFields, setCreateFields] = useState({ projectName: '', tokenAddress: '', description: '', twitter: '' });
+  const [createFields, setCreateFields] = useState({
+    projectName: '',
+    tokenAddress: '',
+    description: '',
+    twitter: '',
+  });
   const [editFields, setEditFields] = useState({ description: '', twitter: '' });
   const [updateFields, setUpdateFields] = useState({ title: '', content: '' });
 
@@ -58,12 +84,12 @@ export default function TradingPage() {
   // Check if key is configured on mount
   useEffect(() => {
     fetch('/api/user/bankr-key')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data) setKeyConfigured(data.configured)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) setKeyConfigured(data.configured);
       })
-      .catch(() => setKeyConfigured(false))
-  }, [])
+      .catch(() => setKeyConfigured(false));
+  }, []);
 
   // Profile queries
   const { data: profile, isLoading: profileLoading } = useQuery<AgentProfile | null>({
@@ -167,53 +193,58 @@ export default function TradingPage() {
   });
 
   const saveKey = async () => {
-    if (!apiKeyInput.trim()) return
-    setKeySaving(true)
-    setKeyError(null)
+    if (!apiKeyInput.trim()) return;
+    setKeySaving(true);
+    setKeyError(null);
     try {
       const res = await fetch('/api/user/bankr-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ apiKey: apiKeyInput.trim() }),
-      })
-      const contentType = res.headers.get('content-type') || ''
+      });
+      const contentType = res.headers.get('content-type') || '';
       const data = contentType.includes('application/json')
         ? await res.json()
-        : { error: await res.text() }
+        : { error: await res.text() };
       if (!res.ok) {
-        setKeyError(data.error || 'Failed to save key')
+        setKeyError(data.error || 'Failed to save key');
       } else {
-        setKeyConfigured(true)
-        setShowKeyInput(false)
-        setApiKeyInput('')
-        refetchBalances()
+        setKeyConfigured(true);
+        setShowKeyInput(false);
+        setApiKeyInput('');
+        refetchBalances();
       }
     } catch {
-      setKeyError('Network error')
+      setKeyError('Network error');
     } finally {
-      setKeySaving(false)
+      setKeySaving(false);
     }
-  }
+  };
 
   const deleteKey = async () => {
     try {
-      await fetch('/api/user/bankr-key', { method: 'DELETE' })
-      setKeyConfigured(false)
-      setShowKeyInput(false)
+      await fetch('/api/user/bankr-key', { method: 'DELETE' });
+      setKeyConfigured(false);
+      setShowKeyInput(false);
     } catch {
       // ignore
     }
-  }
+  };
 
-  const { data: balances, isLoading: balancesLoading, refetch: refetchBalances, error: balancesError } = useQuery<Balance[]>({
+  const {
+    data: balances,
+    isLoading: balancesLoading,
+    refetch: refetchBalances,
+    error: balancesError,
+  } = useQuery<Balance[]>({
     queryKey: ['bankr-balances'],
     queryFn: async () => {
       const res = await fetch('/api/bankr/balances');
       const data = await res.json();
       if (data.needsKey) {
-        setKeyConfigured(false)
-        setShowKeyInput(true)
-        return []
+        setKeyConfigured(false);
+        setShowKeyInput(true);
+        return [];
       }
       if (data.balances) return data.balances;
       return [];
@@ -245,9 +276,18 @@ export default function TradingPage() {
     const poll = async () => {
       const res = await fetch(`/api/bankr/prompt?jobId=${id}`);
       const data: Job = await res.json();
-      if (data.status === 'completed') { setResult(data.response || 'Task completed'); return; }
-      if (data.status === 'failed') { setResult(`Error: ${data.response || 'Task failed'}`); return; }
-      if (data.status === 'cancelled') { setResult('Task cancelled'); return; }
+      if (data.status === 'completed') {
+        setResult(data.response || 'Task completed');
+        return;
+      }
+      if (data.status === 'failed') {
+        setResult(`Error: ${data.response || 'Task failed'}`);
+        return;
+      }
+      if (data.status === 'cancelled') {
+        setResult('Task cancelled');
+        return;
+      }
       setTimeout(poll, 2000);
     };
     poll();
@@ -271,15 +311,21 @@ export default function TradingPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Trading Agent" icon={<Sparkles className="h-5 w-5 text-orange-500" />} />
+      <DashboardHeader
+        title="Trading Agent"
+        icon={<Sparkles className="h-5 w-5 text-orange-500" />}
+      />
       <DashboardContent>
-
         {/* API Key Banner */}
         {needsKey && !showKeyInput && (
           <div className="border border-yellow-800 bg-zinc-950 p-6 mb-px flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-yellow-500 mb-1">Bankr API Key Required</p>
-              <p className="text-[11px] text-zinc-500">Connect your Bankr account to enable trading and portfolio tracking.</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-yellow-500 mb-1">
+                Bankr API Key Required
+              </p>
+              <p className="text-[11px] text-zinc-500">
+                Connect your Bankr account to enable trading and portfolio tracking.
+              </p>
             </div>
             <button
               onClick={() => setShowKeyInput(true)}
@@ -298,21 +344,22 @@ export default function TradingPage() {
               <span className="text-xs font-bold uppercase tracking-widest">Bankr API Key</span>
             </div>
             <p className="text-[11px] text-zinc-500 mb-4">
-              Get your API key from <span className="text-zinc-300 font-mono">bankr.bot</span>. It&apos;s stored encrypted and only used for your account.
+              Get your API key from <span className="text-zinc-300 font-mono">bankr.bot</span>.
+              It&apos;s stored encrypted and only used for your account.
             </p>
             <div className="flex gap-2 mb-3">
               <div className="relative flex-1">
                 <input
                   type={showKey ? 'text' : 'password'}
                   value={apiKeyInput}
-                  onChange={e => setApiKeyInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && saveKey()}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && saveKey()}
                   placeholder="bkr_..."
                   className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs font-mono pr-10"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowKey(v => !v)}
+                  onClick={() => setShowKey((v) => !v)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
                 >
                   {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
@@ -321,13 +368,21 @@ export default function TradingPage() {
               <button
                 onClick={saveKey}
                 disabled={keySaving || !apiKeyInput.trim()}
-                className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
+                className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 transition-colors flex items-center gap-2"
               >
-                {keySaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                {keySaving ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-3.5 w-3.5" />
+                )}
                 Save
               </button>
               <button
-                onClick={() => { setShowKeyInput(false); setApiKeyInput(''); setKeyError(null); }}
+                onClick={() => {
+                  setShowKeyInput(false);
+                  setApiKeyInput('');
+                  setKeyError(null);
+                }}
                 className="border border-zinc-700 hover:border-zinc-500 px-3 py-2 text-[10px] uppercase tracking-widest transition-colors"
               >
                 Cancel
@@ -371,17 +426,19 @@ export default function TradingPage() {
 
         {/* Main content — only show when key is present */}
         {!needsKey && (
-          <div className="grid gap-px bg-zinc-800 lg:grid-cols-3">
+          <div className="grid gap-px bg-zinc-900 lg:grid-cols-3">
             {/* Portfolio + Quick Actions */}
             <div className="lg:col-span-2 space-y-px bg-zinc-800">
               <div className="bg-zinc-950 border border-zinc-800 p-6">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-2">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 flex items-center gap-2">
                       <User className="h-3.5 w-3.5 text-orange-500" />
                       Agent Profile
                     </div>
-                    <h2 className="text-sm font-bold tracking-tight uppercase">Manage Your Agent Profile</h2>
+                    <h2 className="text-sm font-bold tracking-tight uppercase">
+                      Manage Your Agent Profile
+                    </h2>
                   </div>
                 </div>
 
@@ -410,40 +467,56 @@ export default function TradingPage() {
                     {showCreateForm ? (
                       <div className="space-y-3">
                         <div>
-                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Project Name *</label>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 block">
+                            Project Name *
+                          </label>
                           <input
                             type="text"
                             value={createFields.projectName}
-                            onChange={e => setCreateFields(f => ({ ...f, projectName: e.target.value }))}
+                            onChange={(e) =>
+                              setCreateFields((f) => ({ ...f, projectName: e.target.value }))
+                            }
                             placeholder="My Agent"
                             className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Token Address *</label>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 block">
+                            Token Address *
+                          </label>
                           <input
                             type="text"
                             value={createFields.tokenAddress}
-                            onChange={e => setCreateFields(f => ({ ...f, tokenAddress: e.target.value }))}
+                            onChange={(e) =>
+                              setCreateFields((f) => ({ ...f, tokenAddress: e.target.value }))
+                            }
                             placeholder="0x..."
                             className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs font-mono"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Description</label>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 block">
+                            Description
+                          </label>
                           <textarea
                             value={createFields.description}
-                            onChange={e => setCreateFields(f => ({ ...f, description: e.target.value }))}
+                            onChange={(e) =>
+                              setCreateFields((f) => ({ ...f, description: e.target.value }))
+                            }
                             placeholder="Describe your agent..."
                             className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs h-20 resize-none"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Twitter (optional)</label>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 block">
+                            Twitter (optional)
+                          </label>
                           <input
                             type="text"
                             value={createFields.twitter}
-                            onChange={e => setCreateFields(f => ({ ...f, twitter: e.target.value }))}
+                            onChange={(e) =>
+                              setCreateFields((f) => ({ ...f, twitter: e.target.value }))
+                            }
                             placeholder="@handle"
                             className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs"
                           />
@@ -451,25 +524,41 @@ export default function TradingPage() {
                         <div className="flex gap-2 pt-2">
                           <button
                             onClick={() => createProfile.mutate(createFields)}
-                            disabled={createProfile.isPending || !createFields.projectName || !createFields.tokenAddress}
-                            className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
+                            disabled={
+                              createProfile.isPending ||
+                              !createFields.projectName ||
+                              !createFields.tokenAddress
+                            }
+                            className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 transition-colors flex items-center gap-2"
                           >
-                            {createProfile.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                            {createProfile.isPending ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Plus className="h-3.5 w-3.5" />
+                            )}
                             Create Profile
                           </button>
                           <button
-                            onClick={() => { setShowCreateForm(false); setProfileError(null); }}
+                            onClick={() => {
+                              setShowCreateForm(false);
+                              setProfileError(null);
+                            }}
                             className="border border-zinc-700 hover:border-zinc-500 px-4 py-2 text-[10px] uppercase tracking-widest transition-colors"
                           >
                             Cancel
                           </button>
                         </div>
-                        <p className="text-[11px] text-zinc-600">You must have deployed a token through Bankr (Doppler/Clanker) or be a fee beneficiary.</p>
+                        <p className="text-[11px] text-zinc-500">
+                          You must have deployed a token through Bankr (Doppler/Clanker) or be a fee
+                          beneficiary.
+                        </p>
                       </div>
                     ) : (
                       <div className="text-center py-6">
-                        <User className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
-                        <p className="text-xs text-zinc-500 mb-4">No agent profile found. Create one to get listed on Bankr.</p>
+                        <User className="h-8 w-8 text-zinc-500 mx-auto mb-3" />
+                        <p className="text-xs text-zinc-500 mb-4">
+                          No agent profile found. Create one to get listed on Bankr.
+                        </p>
                         <button
                           onClick={() => setShowCreateForm(true)}
                           className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2 mx-auto"
@@ -485,7 +574,9 @@ export default function TradingPage() {
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-sm font-bold tracking-tight uppercase">{profile.projectName || 'Untitled'}</h3>
+                        <h3 className="text-sm font-bold tracking-tight uppercase">
+                          {profile.projectName || 'Untitled'}
+                        </h3>
                         {profile.tokenAddress && (
                           <a
                             href={`https://basescan.org/address/${profile.tokenAddress}`}
@@ -500,7 +591,13 @@ export default function TradingPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {profile.approved !== undefined && (
-                          <span className={`text-[10px] uppercase tracking-widest px-2 py-1 border ${profile.approved ? 'border-green-800 text-green-400' : 'border-yellow-800 text-yellow-400'}`}>
+                          <span
+                            className={`text-[10px] uppercase tracking-widest px-2 py-1 border ${
+                              profile.approved
+                                ? 'border-green-800 text-green-400'
+                                : 'border-yellow-800 text-yellow-400'
+                            }`}
+                          >
                             {profile.approved ? 'Approved' : 'Pending'}
                           </span>
                         )}
@@ -508,7 +605,9 @@ export default function TradingPage() {
                     </div>
 
                     {profile.description && (
-                      <p className="text-[11px] text-zinc-400 leading-relaxed">{profile.description}</p>
+                      <p className="text-[11px] text-zinc-400 leading-relaxed">
+                        {profile.description}
+                      </p>
                     )}
 
                     <div className="flex flex-wrap items-center gap-3">
@@ -537,10 +636,13 @@ export default function TradingPage() {
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-zinc-800">
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-zinc-900">
                       <button
                         onClick={() => {
-                          setEditFields({ description: profile.description || '', twitter: profile.twitter || '' });
+                          setEditFields({
+                            description: profile.description || '',
+                            twitter: profile.twitter || '',
+                          });
                           setShowEditForm(true);
                         }}
                         className="border border-zinc-700 hover:border-zinc-500 px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors flex items-center gap-1.5"
@@ -548,7 +650,7 @@ export default function TradingPage() {
                         <Edit3 className="h-3 w-3" /> Edit
                       </button>
                       <button
-                        onClick={() => setShowUpdateForm(v => !v)}
+                        onClick={() => setShowUpdateForm((v) => !v)}
                         className="border border-zinc-700 hover:border-zinc-500 px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors flex items-center gap-1.5"
                       >
                         <Plus className="h-3 w-3" /> Post Update
@@ -562,7 +664,11 @@ export default function TradingPage() {
                         disabled={deleteProfile.isPending}
                         className="border border-red-800 hover:border-red-600 text-red-400 px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors flex items-center gap-1.5"
                       >
-                        {deleteProfile.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                        {deleteProfile.isPending ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3 w-3" />
+                        )}
                         Delete
                       </button>
                     </div>
@@ -570,21 +676,31 @@ export default function TradingPage() {
                     {/* Edit form */}
                     {showEditForm && (
                       <div className="border border-zinc-800 p-4 space-y-3">
-                        <div className="text-[10px] uppercase tracking-widest text-zinc-600">Edit Profile</div>
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                          Edit Profile
+                        </div>
                         <div>
-                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Description</label>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 block">
+                            Description
+                          </label>
                           <textarea
                             value={editFields.description}
-                            onChange={e => setEditFields(f => ({ ...f, description: e.target.value }))}
+                            onChange={(e) =>
+                              setEditFields((f) => ({ ...f, description: e.target.value }))
+                            }
                             className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs h-20 resize-none"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Twitter</label>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 block">
+                            Twitter
+                          </label>
                           <input
                             type="text"
                             value={editFields.twitter}
-                            onChange={e => setEditFields(f => ({ ...f, twitter: e.target.value }))}
+                            onChange={(e) =>
+                              setEditFields((f) => ({ ...f, twitter: e.target.value }))
+                            }
                             className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs"
                           />
                         </div>
@@ -592,13 +708,20 @@ export default function TradingPage() {
                           <button
                             onClick={() => updateProfile.mutate(editFields)}
                             disabled={updateProfile.isPending}
-                            className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
+                            className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 transition-colors flex items-center gap-2"
                           >
-                            {updateProfile.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                            {updateProfile.isPending ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <CheckCircle className="h-3.5 w-3.5" />
+                            )}
                             Save
                           </button>
                           <button
-                            onClick={() => { setShowEditForm(false); setProfileError(null); }}
+                            onClick={() => {
+                              setShowEditForm(false);
+                              setProfileError(null);
+                            }}
                             className="border border-zinc-700 hover:border-zinc-500 px-4 py-2 text-[10px] uppercase tracking-widest transition-colors"
                           >
                             Cancel
@@ -610,22 +733,32 @@ export default function TradingPage() {
                     {/* Post update form */}
                     {showUpdateForm && (
                       <div className="border border-zinc-800 p-4 space-y-3">
-                        <div className="text-[10px] uppercase tracking-widest text-zinc-600">Post Project Update</div>
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                          Post Project Update
+                        </div>
                         <div>
-                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Title *</label>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 block">
+                            Title *
+                          </label>
                           <input
                             type="text"
                             value={updateFields.title}
-                            onChange={e => setUpdateFields(f => ({ ...f, title: e.target.value }))}
+                            onChange={(e) =>
+                              setUpdateFields((f) => ({ ...f, title: e.target.value }))
+                            }
                             placeholder="v2 Launch"
                             className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Content *</label>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 block">
+                            Content *
+                          </label>
                           <textarea
                             value={updateFields.content}
-                            onChange={e => setUpdateFields(f => ({ ...f, content: e.target.value }))}
+                            onChange={(e) =>
+                              setUpdateFields((f) => ({ ...f, content: e.target.value }))
+                            }
                             placeholder="What did you ship?"
                             className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs h-20 resize-none"
                           />
@@ -633,14 +766,23 @@ export default function TradingPage() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => postUpdate.mutate(updateFields)}
-                            disabled={postUpdate.isPending || !updateFields.title || !updateFields.content}
-                            className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
+                            disabled={
+                              postUpdate.isPending || !updateFields.title || !updateFields.content
+                            }
+                            className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 transition-colors flex items-center gap-2"
                           >
-                            {postUpdate.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                            {postUpdate.isPending ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Plus className="h-3.5 w-3.5" />
+                            )}
                             Publish Update
                           </button>
                           <button
-                            onClick={() => { setShowUpdateForm(false); setProfileError(null); }}
+                            onClick={() => {
+                              setShowUpdateForm(false);
+                              setProfileError(null);
+                            }}
                             className="border border-zinc-700 hover:border-zinc-500 px-4 py-2 text-[10px] uppercase tracking-widest transition-colors"
                           >
                             Cancel
@@ -651,15 +793,21 @@ export default function TradingPage() {
 
                     {/* Recent updates */}
                     {profile.updates && profile.updates.length > 0 && (
-                      <div className="pt-3 border-t border-zinc-800">
-                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Recent Updates</div>
+                      <div className="pt-3 border-t border-zinc-900">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">
+                          Recent Updates
+                        </div>
                         <div className="space-y-px">
                           {profile.updates.map((u, i) => (
                             <div key={u.id || i} className="bg-zinc-950 border border-zinc-800 p-3">
-                              <div className="text-xs font-bold uppercase tracking-tight">{u.title}</div>
+                              <div className="text-xs font-bold uppercase tracking-tight">
+                                {u.title}
+                              </div>
                               <div className="text-[11px] text-zinc-500 mt-1">{u.content}</div>
                               {u.createdAt && (
-                                <div className="text-[10px] text-zinc-700 mt-2">{new Date(u.createdAt).toLocaleDateString()}</div>
+                                <div className="text-[10px] text-zinc-500 mt-2">
+                                  {new Date(u.createdAt).toLocaleDateString()}
+                                </div>
                               )}
                             </div>
                           ))}
@@ -697,20 +845,31 @@ export default function TradingPage() {
                     </div>
                   ) : balances && balances.length > 0 ? (
                     balances.map((balance, i) => (
-                      <div key={i} className="flex items-center justify-between bg-zinc-950 border border-zinc-800 p-4">
+                      <div
+                        key={i}
+                        className="flex items-center justify-between bg-zinc-950 border border-zinc-800 p-4"
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 border border-zinc-700 flex items-center justify-center">
-                            <span className="text-[10px] font-bold">{balance.symbol.slice(0, 2)}</span>
+                            <span className="text-[10px] font-bold">
+                              {balance.symbol.slice(0, 2)}
+                            </span>
                           </div>
                           <div>
                             <div className="text-sm font-bold">{balance.symbol}</div>
-                            <div className="text-[10px] uppercase tracking-widest text-zinc-600">{balance.chain}</div>
+                            <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                              {balance.chain}
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-mono">{Number(balance.balance).toFixed(6)}</div>
+                          <div className="text-sm font-mono">
+                            {Number(balance.balance).toFixed(6)}
+                          </div>
                           {balance.value && (
-                            <div className="text-[10px] text-green-400">${Number(balance.value).toFixed(2)}</div>
+                            <div className="text-[10px] text-green-400">
+                              ${Number(balance.value).toFixed(2)}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -722,9 +881,13 @@ export default function TradingPage() {
                   )}
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-zinc-800 flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Total Value</span>
-                  <span className="text-2xl font-bold tracking-tight">${totalValue.toFixed(2)}</span>
+                <div className="mt-6 pt-4 border-t border-zinc-900 flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">
+                    Total Value
+                  </span>
+                  <span className="text-2xl font-bold tracking-tight">
+                    ${totalValue.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
@@ -735,7 +898,10 @@ export default function TradingPage() {
                   {quickActions.map((action) => (
                     <button
                       key={action.label}
-                      onClick={() => { setPrompt(action.prompt); sendPrompt(action.prompt); }}
+                      onClick={() => {
+                        setPrompt(action.prompt);
+                        sendPrompt(action.prompt);
+                      }}
                       className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4 transition-colors"
                       disabled={isSending}
                     >
@@ -758,7 +924,9 @@ export default function TradingPage() {
                   <textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder={"Ask the trading agent...\n- Buy $50 of ETH on Base\n- Swap 0.1 ETH for USDC\n- What tokens are trending?"}
+                    placeholder={
+                      'Ask the trading agent...\n- Buy $50 of ETH on Base\n- Swap 0.1 ETH for USDC\n- What tokens are trending?'
+                    }
                     className="w-full h-40 bg-black border border-zinc-700 p-4 text-xs focus:border-zinc-500 focus:outline-none resize-none"
                     disabled={isSending}
                   />
@@ -766,12 +934,16 @@ export default function TradingPage() {
                   <button
                     type="submit"
                     disabled={isSending || !prompt.trim()}
-                    className="w-full bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center justify-center gap-2"
+                    className="w-full bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 transition-colors flex items-center justify-center gap-2"
                   >
                     {isSending ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" /> Processing...
+                      </>
                     ) : (
-                      <><ArrowUpDown className="h-4 w-4" /> Send Command</>
+                      <>
+                        <ArrowUpDown className="h-4 w-4" /> Send Command
+                      </>
                     )}
                   </button>
                 </form>
@@ -780,7 +952,9 @@ export default function TradingPage() {
               {result && (
                 <div className="bg-zinc-950 border border-zinc-800 p-6">
                   <h2 className="text-sm font-bold tracking-tight uppercase mb-4">Response</h2>
-                  <div className="text-xs text-zinc-400 whitespace-pre-wrap leading-relaxed">{result}</div>
+                  <div className="text-xs text-zinc-400 whitespace-pre-wrap leading-relaxed">
+                    {result}
+                  </div>
                 </div>
               )}
 
@@ -793,7 +967,6 @@ export default function TradingPage() {
             </div>
           </div>
         )}
-
       </DashboardContent>
     </DashboardShell>
   );

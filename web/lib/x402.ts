@@ -1,4 +1,4 @@
-const payTo = process.env.X402_PAY_TO || '0xd8fd0e1dce89beaab924ac68098ddb17613db56f';
+const payTo = process.env.X402_PAY_TO || '0xYOUR_WALLET_ADDRESS_HERE';
 const facilitatorUrl = process.env.X402_FACILITATOR_URL || 'https://x402.org/facilitator';
 
 export const x402Config = {

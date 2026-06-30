@@ -5,7 +5,7 @@ import { log } from "../lib/logger";
  */
 import { Router, Request, Response } from 'express';
 import { createHash } from 'crypto';
-import { authenticate } from '../middleware/auth';
+import { authenticate, extractUserContext } from '../middleware/auth';
 import { pool } from '../lib/db';
 
 const router = Router();
@@ -69,7 +69,7 @@ router.post('/validate-key', async (req: Request, res: Response) => {
  * POST /api/register-home
  * Registers a Home mode installation
  */
-router.post('/register-home', authenticate, async (req: Request, res: Response) => {
+router.post('/register-home', extractUserContext, async (req: Request, res: Response) => {
   const { userId, mode, gatewayToken } = req.body;
 
   if (!userId) {
@@ -104,7 +104,7 @@ router.post('/register-home', authenticate, async (req: Request, res: Response) 
  * POST /api/register-link
  * Registers a Link mode installation (existing OpenClaw)
  */
-router.post('/register-link', authenticate, async (req: Request, res: Response) => {
+router.post('/register-link', extractUserContext, async (req: Request, res: Response) => {
   const { userId, gatewayToken } = req.body;
 
   if (!userId) {
@@ -163,7 +163,7 @@ router.get('/installations', authenticate, async (req: Request, res: Response) =
  * POST /api/heartbeat
  * User agent pings to report status (upsert last_seen)
  */
-router.post('/heartbeat', authenticate, async (req: Request, res: Response) => {
+router.post('/heartbeat', extractUserContext, async (req: Request, res: Response) => {
   const { userId } = req.body;
 
   if (userId && typeof userId === 'string') {

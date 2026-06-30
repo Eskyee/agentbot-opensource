@@ -82,6 +82,28 @@ Copy `.env.example` to `.env` in both `web/` and `agentbot-backend/`.
 - Server components preferred over client components
 - Prefer real Prisma-backed data over mock/placeholder data in production routes
 
+## Product Design
+
+When shaping, editing, or reviewing user-facing UI, load
+`.agents/skills/product-design/SKILL.md` as the single entry point. It routes to
+the canonical visual source (`web/app/design-system.css`), shadcn/ui, and the
+`web-design-guidelines` / `vercel-composition-patterns` skills.
+
+**Applies to:** pages and components under `web/` (App Router pages,
+`web/components/`, `web/app/components/`), product copy, interaction,
+accessibility, responsive behavior, and reachable states (loading, empty,
+error, permission, provisioning, billing, destructive). Also load it when
+backend behavior changes a user-visible outcome (provisioning, wallet balance,
+quota).
+
+**Skip:** backend-only work in `agentbot-backend/`/`gateway/` with no
+user-visible effect, telemetry, generated files (Prisma client, `out/`), docs,
+marketing, the agent-runtime `skills/` directory, and tests with no shipped UI
+impact.
+
+Report which surfaces and references the skill loaded so findings can be traced
+to their canonical source.
+
 ## Key Integrations
 
 | Service | Purpose |

@@ -1,17 +1,16 @@
-import { NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
-import { DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config'
-
+import { NextResponse } from 'next/server';
+import { getAuthSession } from '@/app/lib/getAuthSession';
+import { DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config';
 
 // Known borg-0 public URL — always included as fallback even if env var is stale
-const BORG_0_URL = 'https://borg-0-production-7139.up.railway.app'
+const BORG_0_URL = 'https://YOUR_SERVICE_URL';
 
 function getSoulCandidates() {
   const candidates = [DEFAULT_SOUL_SERVICE_URL, BORG_0_URL]
     .map((value) => value?.trim())
-    .filter(Boolean) as string[]
+    .filter(Boolean) as string[];
 
-  return [...new Set(candidates)]
+  return [...new Set(candidates)];
 }
 
 async function isUsableSoulHost(baseUrl: string) {
@@ -50,10 +49,10 @@ async function fetchSoulThoughts(url: string) {
 
 export async function GET() {
   // Require authentication
-  const session = await getAuthSession()
+  const session = await getAuthSession();
   if (!session?.user?.email) {
     // Return empty traces for unauthenticated users instead of error
-    return NextResponse.json([])
+    return NextResponse.json([]);
   }
 
   let live: Array<{ designation: string; status: any }> = [];
@@ -81,14 +80,20 @@ export async function GET() {
 
   // Build an AgentTask-shaped object from a raw trace
   function toAgentTask(raw: {
-    id: string; label: string; agent: string;
-    status: string; duration: string; startedAt: string; tokens: number | null;
+    id: string;
+    label: string;
+    agent: string;
+    status: string;
+    duration: string;
+    startedAt: string;
+    tokens: number | null;
   }) {
     const durationMs = parseDurationMs(raw.duration);
     const isFinished = raw.status !== 'running';
-    const completedAt = (isFinished && durationMs !== null)
-      ? new Date(new Date(raw.startedAt).getTime() + durationMs).toISOString()
-      : null;
+    const completedAt =
+      isFinished && durationMs !== null
+        ? new Date(new Date(raw.startedAt).getTime() + durationMs).toISOString()
+        : null;
     return {
       id: raw.id,
       status: raw.status === 'success' ? 'completed' : raw.status,
@@ -109,7 +114,9 @@ export async function GET() {
     if (status.active_plan) {
       rawTraces.push({
         id: `trace-plan-${si}`,
-        label: `plan: ${status.active_plan.current_step_type ?? 'step'} (${status.active_plan.current_step}/${status.active_plan.total_steps})`,
+        label: `plan: ${status.active_plan.current_step_type ?? 'step'} (${
+          status.active_plan.current_step
+        }/${status.active_plan.total_steps})`,
         agent: designation,
         status: 'running',
         duration: '—',
@@ -136,7 +143,7 @@ export async function GET() {
     status.free_energy?.components?.forEach((comp: any, ci: number) => {
       rawTraces.push({
         id: `trace-fe-${si}-${ci}`,
-        label: `${comp.system}: surprise=${comp.surprise}, contribution=${comp.contribution}`,
+        label: `${comp.instructions}: surprise=${comp.surprise}, contribution=${comp.contribution}`,
         agent: designation,
         status: 'success',
         duration: '1ms',
@@ -148,7 +155,9 @@ export async function GET() {
     // Cycle count as a system status trace
     rawTraces.push({
       id: `trace-cycles-${si}`,
-      label: `cycle ${status.total_cycles} complete — mode: ${status.mode}, regime: ${status.free_energy?.regime ?? '—'}`,
+      label: `cycle ${status.total_cycles} complete — mode: ${status.mode}, regime: ${
+        status.free_energy?.regime ?? '—'
+      }`,
       agent: designation,
       status: status.dormant ? 'idle' : 'success',
       duration: '—',

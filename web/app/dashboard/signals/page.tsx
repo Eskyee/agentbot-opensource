@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useCustomSession } from '@/app/lib/useCustomSession';
-import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell';
 import StatusPill from '@/app/components/shared/StatusPill';
 import { RefreshCw } from 'lucide-react';
 
@@ -123,10 +127,10 @@ function formatManagedEventLabel(type: string) {
 }
 
 const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: string }> = {
-  reddit:        { label: 'Reddit',  color: 'text-orange-500' },
-  twitter:       { label: 'X',       color: 'text-orange-500' },
-  'hacker-news': { label: 'HN',     color: 'text-yellow-400' },
-  discord:       { label: 'Discord', color: 'text-orange-500' },
+  reddit: { label: 'Reddit', color: 'text-orange-500' },
+  twitter: { label: 'X', color: 'text-orange-500' },
+  'hacker-news': { label: 'HN', color: 'text-yellow-400' },
+  discord: { label: 'Discord', color: 'text-orange-500' },
 };
 
 export default function SignalsPage() {
@@ -139,15 +143,17 @@ export default function SignalsPage() {
   const [mentionsError, setMentionsError] = useState('');
   const [analytics, setAnalytics] = useState<XAnalyticsResponse | null>(null);
   const [analyticsError, setAnalyticsError] = useState('');
-  const [communityPosts, setCommunityPosts] = useState<Array<{
-    id: string;
-    author: string;
-    authorUsername: string;
-    text: string;
-    createdAt: string;
-    publicMetrics: { likeCount: number; replyCount: number; repostCount: number };
-    url: string;
-  }>>([]);
+  const [communityPosts, setCommunityPosts] = useState<
+    Array<{
+      id: string;
+      author: string;
+      authorUsername: string;
+      text: string;
+      createdAt: string;
+      publicMetrics: { likeCount: number; replyCount: number; repostCount: number };
+      url: string;
+    }>
+  >([]);
   const [communityId, setCommunityId] = useState('2031495203002134740');
   const [communityError, setCommunityError] = useState('');
   const [draftSourceText, setDraftSourceText] = useState('');
@@ -176,7 +182,9 @@ export default function SignalsPage() {
         fetch('/api/x/drafts', { cache: 'no-store' }),
         fetch('/api/x/mentions', { cache: 'no-store' }),
         fetch('/api/x/analytics', { cache: 'no-store' }),
-        fetch(`/api/x/community?communityId=${encodeURIComponent(communityId)}`, { cache: 'no-store' }),
+        fetch(`/api/x/community?communityId=${encodeURIComponent(communityId)}`, {
+          cache: 'no-store',
+        }),
       ]);
 
       // 1. Core Signals
@@ -256,7 +264,9 @@ export default function SignalsPage() {
       const res = await fetch('/api/x/mentions', { cache: 'no-store' });
       const json = await res.json();
       if (!res.ok) {
-        setMentionsError(typeof json?.error === 'string' ? json.error : 'Failed to load X mentions');
+        setMentionsError(
+          typeof json?.error === 'string' ? json.error : 'Failed to load X mentions'
+        );
         return;
       }
       setMentions(Array.isArray(json?.mentions) ? json.mentions : []);
@@ -272,7 +282,9 @@ export default function SignalsPage() {
       const res = await fetch('/api/x/analytics', { cache: 'no-store' });
       const json = await res.json();
       if (!res.ok) {
-        setAnalyticsError(typeof json?.error === 'string' ? json.error : 'Failed to load X analytics');
+        setAnalyticsError(
+          typeof json?.error === 'string' ? json.error : 'Failed to load X analytics'
+        );
         return;
       }
       setAnalytics(json);
@@ -285,10 +297,14 @@ export default function SignalsPage() {
 
   const loadCommunity = useCallback(async () => {
     try {
-      const res = await fetch(`/api/x/community?communityId=${encodeURIComponent(communityId)}`, { cache: 'no-store' });
+      const res = await fetch(`/api/x/community?communityId=${encodeURIComponent(communityId)}`, {
+        cache: 'no-store',
+      });
       const json = await res.json();
       if (!res.ok) {
-        setCommunityError(typeof json?.error === 'string' ? json.error : 'Failed to load community feed');
+        setCommunityError(
+          typeof json?.error === 'string' ? json.error : 'Failed to load community feed'
+        );
         return;
       }
       setCommunityPosts(Array.isArray(json?.posts) ? json.posts : []);
@@ -310,34 +326,37 @@ export default function SignalsPage() {
     }
   }, []);
 
-  const connectToStream = useCallback((runId: string) => {
-    eventSourceRef.current?.close();
+  const connectToStream = useCallback(
+    (runId: string) => {
+      eventSourceRef.current?.close();
 
-    const es = new EventSource(`/api/readable/${runId}`);
-    eventSourceRef.current = es;
-    setManagedTailing(true);
+      const es = new EventSource(`/api/readable/${runId}`);
+      eventSourceRef.current = es;
+      setManagedTailing(true);
 
-    es.onmessage = (msg) => {
-      try {
-        const event = JSON.parse(msg.data) as ManagedAgentEvent;
-        if (seenIdsRef.current.has(event.id)) return;
-        seenIdsRef.current.add(event.id);
-        setManagedEvents((prev) => [...prev, event]);
+      es.onmessage = (msg) => {
+        try {
+          const event = JSON.parse(msg.data) as ManagedAgentEvent;
+          if (seenIdsRef.current.has(event.id)) return;
+          seenIdsRef.current.add(event.id);
+          setManagedEvents((prev) => [...prev, event]);
 
-        if (event.type === 'approval.required' || event.type === 'draft.generated') {
-          void loadDrafts();
+          if (event.type === 'approval.required' || event.type === 'draft.generated') {
+            void loadDrafts();
+          }
+        } catch (error) {
+          console.error('Managed event parse failed:', error);
         }
-      } catch (error) {
-        console.error('Managed event parse failed:', error);
-      }
-    };
+      };
 
-    es.onerror = () => {
-      es.close();
-      eventSourceRef.current = null;
-      setManagedTailing(false);
-    };
-  }, [loadDrafts]);
+      es.onerror = () => {
+        es.close();
+        eventSourceRef.current = null;
+        setManagedTailing(false);
+      };
+    },
+    [loadDrafts]
+  );
 
   useEffect(() => {
     return () => {
@@ -353,7 +372,9 @@ export default function SignalsPage() {
 
   const openManagedSession = async (sessionId: string) => {
     try {
-      const res = await fetch(`/api/managed-agents/transcript?sessionId=${sessionId}`, { cache: 'no-store' });
+      const res = await fetch(`/api/managed-agents/transcript?sessionId=${sessionId}`, {
+        cache: 'no-store',
+      });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load managed transcript');
 
@@ -403,8 +424,8 @@ export default function SignalsPage() {
   };
 
   const filtered = (data?.signals || [])
-    .filter(s => platform === 'all' || s.platform === platform)
-    .filter(s => relevance === 'all' || s.relevance === relevance);
+    .filter((s) => platform === 'all' || s.platform === platform)
+    .filter((s) => relevance === 'all' || s.relevance === relevance);
 
   const generateDraft = async () => {
     if (!draftSourceText.trim()) return;
@@ -415,7 +436,11 @@ export default function SignalsPage() {
         const res = await fetch('/api/managed-agents/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: draftSourceText, tone: draftTone, scheduledFor: draftScheduleFor || null }),
+          body: JSON.stringify({
+            text: draftSourceText,
+            tone: draftTone,
+            scheduledFor: draftScheduleFor || null,
+          }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json?.error || 'Failed to create managed session');
@@ -429,7 +454,12 @@ export default function SignalsPage() {
         const res = await fetch('/api/managed-agents/message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: managedSessionId, text: draftSourceText, tone: draftTone, scheduledFor: draftScheduleFor || null }),
+          body: JSON.stringify({
+            sessionId: managedSessionId,
+            text: draftSourceText,
+            tone: draftTone,
+            scheduledFor: draftScheduleFor || null,
+          }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json?.error || 'Failed to resume managed session');
@@ -456,7 +486,11 @@ export default function SignalsPage() {
     setDraftSourceText(replySeed);
   };
 
-  const updateMentionState = async (mentionId: string, status: 'open' | 'resolved', assignedTo?: string | null) => {
+  const updateMentionState = async (
+    mentionId: string,
+    status: 'open' | 'resolved',
+    assignedTo?: string | null
+  ) => {
     try {
       const res = await fetch('/api/x/mentions', {
         method: 'PATCH',
@@ -523,8 +557,18 @@ export default function SignalsPage() {
       <DashboardHeader
         title="Signals"
         icon={
-          <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.348 14.651a3.75 3.75 0 010-5.303m5.304 0a3.75 3.75 0 010 5.303m-7.425 2.122a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546M5.106 18.894c-3.808-3.808-3.808-9.98 0-13.789m13.788 0c3.808 3.808 3.808 9.981 0 13.79M12 12h.008v.007H12V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+          <svg
+            className="w-5 h-5 text-zinc-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M9.348 14.651a3.75 3.75 0 010-5.303m5.304 0a3.75 3.75 0 010 5.303m-7.425 2.122a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546M5.106 18.894c-3.808-3.808-3.808-9.98 0-13.789m13.788 0c3.808 3.808 3.808 9.981 0 13.79M12 12h.008v.007H12V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+            />
           </svg>
         }
         count={filtered.length}
@@ -544,26 +588,32 @@ export default function SignalsPage() {
         <div className="mb-8 border border-zinc-800 bg-zinc-950 p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">X Workflow</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">X Workflow</div>
               <p className="mt-2 text-sm text-zinc-400">
-                Use this dashboard to monitor X signals, generate drafts, approve them, and publish from a connected X account.
+                Use this dashboard to monitor X signals, generate drafts, approve them, and publish
+                from a connected X account.
               </p>
             </div>
-            <Link href="/learn/developers/x-agentbot" className="text-xs uppercase tracking-widest text-orange-500 hover:text-white">
+            <Link
+              href="/learn/developers/x-agentbot"
+              className="text-xs uppercase tracking-widest text-orange-500 hover:text-white"
+            >
               Read the X guide →
             </Link>
           </div>
         </div>
 
         {lastGenerated && (
-          <p className="text-[10px] text-zinc-600 font-mono mb-4">
+          <p className="text-[10px] text-zinc-500 font-mono mb-4">
             Live from {data?.sources?.join(' + ')} · {lastGenerated}
           </p>
         )}
 
-        <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-3 mb-8">
+        <div className="grid gap-px bg-zinc-900 grid-cols-1 sm:grid-cols-3 mb-8">
           <div className="bg-zinc-950 border border-zinc-800 p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">X App Credentials</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+              X App Credentials
+            </div>
             <StatusPill
               status={xStatus?.app?.appKeyConfigured ? 'active' : 'offline'}
               label={xStatus?.app?.appKeyConfigured ? 'Configured' : 'Missing'}
@@ -571,54 +621,72 @@ export default function SignalsPage() {
             />
           </div>
           <div className="bg-zinc-950 border border-zinc-800 p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">X OAuth</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">X OAuth</div>
             <StatusPill
               status={xStatus?.app?.oauthClientConfigured ? 'active' : 'offline'}
               label={xStatus?.app?.oauthClientConfigured ? 'Ready' : 'Missing'}
               size="sm"
             />
             {xStatus?.app?.callbackUrl ? (
-              <p className="mt-2 text-[10px] text-zinc-600 font-mono break-all">{xStatus.app.callbackUrl}</p>
+              <p className="mt-2 text-[10px] text-zinc-500 font-mono break-all">
+                {xStatus.app.callbackUrl}
+              </p>
             ) : null}
           </div>
           <div className="bg-zinc-950 border border-zinc-800 p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Connected X Account</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+              Connected X Account
+            </div>
             <StatusPill
               status={xStatus?.user?.connected ? 'active' : 'offline'}
               label={xStatus?.user?.connected ? 'Connected' : 'Not Connected'}
               size="sm"
             />
             {xStatus?.user?.account?.username ? (
-              <p className="mt-2 text-[10px] text-zinc-600 font-mono">@{xStatus.user.account.username}</p>
+              <p className="mt-2 text-[10px] text-zinc-500 font-mono">
+                @{xStatus.user.account.username}
+              </p>
             ) : null}
           </div>
         </div>
 
-        <div className="grid gap-px bg-zinc-800 grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-px bg-zinc-900 grid-cols-2 lg:grid-cols-4 mb-8">
           <div className="bg-zinc-950 border border-zinc-800 p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recent Likes</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+              Recent Likes
+            </div>
             <div className="text-xl font-bold text-white">{analytics?.summary.likes ?? '—'}</div>
           </div>
           <div className="bg-zinc-950 border border-zinc-800 p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recent Replies</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+              Recent Replies
+            </div>
             <div className="text-xl font-bold text-white">{analytics?.summary.replies ?? '—'}</div>
           </div>
           <div className="bg-zinc-950 border border-zinc-800 p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recent Reposts</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+              Recent Reposts
+            </div>
             <div className="text-xl font-bold text-white">{analytics?.summary.reposts ?? '—'}</div>
           </div>
           <div className="bg-zinc-950 border border-zinc-800 p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recent Quotes</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+              Recent Quotes
+            </div>
             <div className="text-xl font-bold text-white">{analytics?.summary.quotes ?? '—'}</div>
           </div>
         </div>
 
-        <div className="grid gap-px bg-zinc-800 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] mb-8">
+        <div className="grid gap-px bg-zinc-900 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] mb-8">
           <div className="bg-zinc-950 border border-zinc-800 p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">X Draft Generator</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-4">
+              X Draft Generator
+            </div>
             {managedSessions.length > 0 ? (
               <div className="mb-4 border border-zinc-800 bg-black p-4">
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Managed Sessions</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">
+                  Managed Sessions
+                </div>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {managedSessions.map((session) => (
                     <div
@@ -653,7 +721,7 @@ export default function SignalsPage() {
               value={draftSourceText}
               onChange={(e) => setDraftSourceText(e.target.value)}
               placeholder="Paste a mention, signal, or idea to turn into an X draft..."
-              className="w-full min-h-28 bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono resize-none"
+              className="w-full min-h-28 bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600 font-mono resize-none"
             />
             <div className="mt-3 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
               <select
@@ -675,7 +743,7 @@ export default function SignalsPage() {
               <button
                 onClick={generateDraft}
                 disabled={draftLoading || !draftSourceText.trim()}
-                className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 transition-colors"
               >
                 {draftLoading ? 'Generating' : 'Generate Draft'}
               </button>
@@ -687,7 +755,9 @@ export default function SignalsPage() {
             ) : null}
             <div className="mt-4 border border-zinc-800 bg-black p-4">
               <div className="flex items-center justify-between gap-3">
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600">Managed Session</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                  Managed Session
+                </div>
                 <StatusPill
                   status={managedTailing ? 'active' : managedRunId ? 'idle' : 'offline'}
                   label={managedTailing ? 'Streaming' : managedRunId ? 'Paused' : 'Not Started'}
@@ -695,21 +765,31 @@ export default function SignalsPage() {
                 />
               </div>
               {managedSessionId ? (
-                <p className="mt-3 text-[10px] text-zinc-600 font-mono break-all">Session: {managedSessionId}</p>
+                <p className="mt-3 text-[10px] text-zinc-500 font-mono break-all">
+                  Session: {managedSessionId}
+                </p>
               ) : null}
               {managedRunId ? (
-                <p className="mt-2 text-[10px] text-zinc-600 font-mono break-all">Run: {managedRunId}</p>
+                <p className="mt-2 text-[10px] text-zinc-500 font-mono break-all">
+                  Run: {managedRunId}
+                </p>
               ) : null}
             </div>
             {managedEvents.length > 0 ? (
               <div className="mt-4 border border-zinc-800 bg-black p-4">
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Event Timeline</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">
+                  Event Timeline
+                </div>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {managedEvents.map((event) => (
                     <div key={event.id} className="border border-zinc-800 p-3">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-300">{formatManagedEventLabel(event.type)}</span>
-                        <span className="text-[10px] text-zinc-700 font-mono">{new Date(event.occurredAt).toLocaleTimeString()}</span>
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-300">
+                          {formatManagedEventLabel(event.type)}
+                        </span>
+                        <span className="text-[10px] text-zinc-500 font-mono">
+                          {new Date(event.occurredAt).toLocaleTimeString()}
+                        </span>
                       </div>
                       <div className="mt-2 text-[11px] text-zinc-400 leading-relaxed">
                         {typeof event.payload?.draft === 'string' ? (
@@ -717,11 +797,18 @@ export default function SignalsPage() {
                         ) : typeof event.payload?.text === 'string' ? (
                           <p>{event.payload.text}</p>
                         ) : event.payload?.url ? (
-                          <a href={String(event.payload.url)} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+                          <a
+                            href={String(event.payload.url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-white"
+                          >
                             {String(event.payload.url)}
                           </a>
                         ) : (
-                          <pre className="whitespace-pre-wrap break-words text-[10px] text-zinc-500">{JSON.stringify(event.payload, null, 2)}</pre>
+                          <pre className="whitespace-pre-wrap break-words text-[10px] text-zinc-500">
+                            {JSON.stringify(event.payload, null, 2)}
+                          </pre>
                         )}
                       </div>
                     </div>
@@ -733,8 +820,12 @@ export default function SignalsPage() {
 
           <div className="bg-zinc-950 border border-zinc-800 p-5">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Approval Queue</div>
-              <div className="text-[10px] uppercase tracking-widest text-zinc-700">{drafts.length} drafts</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                Approval Queue
+              </div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                {drafts.length} drafts
+              </div>
             </div>
             <div className="space-y-3 max-h-[420px] overflow-y-auto">
               {drafts.map((draft) => (
@@ -751,11 +842,13 @@ export default function SignalsPage() {
                       label={draft.status}
                       size="sm"
                     />
-                    <span className="text-[10px] text-zinc-700 font-mono">{new Date(draft.createdAt).toLocaleString()}</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      {new Date(draft.createdAt).toLocaleString()}
+                    </span>
                   </div>
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Source</p>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Source</p>
                   <p className="text-xs text-zinc-500 leading-relaxed mb-4">{draft.sourceText}</p>
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Draft</p>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Draft</p>
                   <p className="text-sm text-zinc-300 leading-relaxed">{draft.draftText}</p>
                   {draft.scheduledFor ? (
                     <div className="mt-3 text-[10px] uppercase tracking-widest text-orange-500">
@@ -768,7 +861,9 @@ export default function SignalsPage() {
                         type="datetime-local"
                         defaultValue={draft.scheduledFor ? draft.scheduledFor.slice(0, 16) : ''}
                         onBlur={(e) => {
-                          const value = e.currentTarget.value ? new Date(e.currentTarget.value).toISOString() : null;
+                          const value = e.currentTarget.value
+                            ? new Date(e.currentTarget.value).toISOString()
+                            : null;
                           void scheduleDraft(draft.id, value);
                         }}
                         className="bg-zinc-950 border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-widest text-white focus:outline-none focus:border-zinc-600 font-mono"
@@ -796,7 +891,7 @@ export default function SignalsPage() {
                       <button
                         onClick={() => publishDraft(draft.id)}
                         disabled={publishingDraftId === draft.id}
-                        className="bg-white text-black px-3 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                        className="bg-white text-black px-3 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 transition-colors"
                       >
                         {publishingDraftId === draft.id ? 'Publishing' : 'Publish To X'}
                       </button>
@@ -804,7 +899,15 @@ export default function SignalsPage() {
                   ) : null}
                   {draft.status === 'published' && draft.publishedUrl ? (
                     <div className="mt-4 text-xs text-zinc-500">
-                      Published: <a href={draft.publishedUrl} target="_blank" rel="noopener noreferrer" className="text-zinc-300 underline hover:text-white">{draft.publishedUrl}</a>
+                      Published:{' '}
+                      <a
+                        href={draft.publishedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-zinc-300 underline hover:text-white"
+                      >
+                        {draft.publishedUrl}
+                      </a>
                     </div>
                   ) : null}
                 </div>
@@ -818,11 +921,15 @@ export default function SignalsPage() {
           </div>
         </div>
 
-        <div className="grid gap-px bg-zinc-800 grid-cols-1 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] mb-8">
+        <div className="grid gap-px bg-zinc-900 grid-cols-1 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] mb-8">
           <div className="bg-zinc-950 border border-zinc-800 p-5">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Mentions Queue</div>
-              <div className="text-[10px] uppercase tracking-widest text-zinc-700">{mentions.length} mentions</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                Mentions Queue
+              </div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                {mentions.length} mentions
+              </div>
             </div>
             {mentionsError ? (
               <div className="border border-orange-500/30 p-3 text-red-400 text-xs mb-3">
@@ -834,17 +941,23 @@ export default function SignalsPage() {
                 <div key={mention.id} className="border border-zinc-800 bg-black p-4">
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div>
-                      <div className="text-[10px] uppercase tracking-widest text-orange-500">Mention</div>
-                      <div className="mt-1 text-xs text-zinc-400 font-mono">@{mention.authorUsername}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-orange-500">
+                        Mention
+                      </div>
+                      <div className="mt-1 text-xs text-zinc-400 font-mono">
+                        @{mention.authorUsername}
+                      </div>
                     </div>
-                    <span className="text-[10px] text-zinc-700 font-mono">{new Date(mention.createdAt).toLocaleString()}</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      {new Date(mention.createdAt).toLocaleString()}
+                    </span>
                   </div>
                   <a href={mention.url} target="_blank" rel="noopener noreferrer" className="block">
                     <p className="text-sm text-zinc-300 leading-relaxed hover:text-white transition-colors">
                       {mention.text}
                     </p>
                   </a>
-                  <div className="mt-3 flex items-center gap-4 text-[10px] uppercase tracking-widest text-zinc-600">
+                  <div className="mt-3 flex items-center gap-4 text-[10px] uppercase tracking-widest text-zinc-500">
                     <span>{mention.publicMetrics.likeCount} likes</span>
                     <span>{mention.publicMetrics.replyCount} replies</span>
                     <span>{mention.publicMetrics.repostCount} reposts</span>
@@ -865,21 +978,43 @@ export default function SignalsPage() {
                       Open on X
                     </a>
                     <button
-                      onClick={() => updateMentionState(mention.id, mention.state === 'resolved' ? 'open' : 'resolved', mention.assignedTo || null)}
+                      onClick={() =>
+                        updateMentionState(
+                          mention.id,
+                          mention.state === 'resolved' ? 'open' : 'resolved',
+                          mention.assignedTo || null
+                        )
+                      }
                       className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
                     >
                       {mention.state === 'resolved' ? 'Reopen' : 'Resolve'}
                     </button>
                     <button
-                      onClick={() => updateMentionState(mention.id, mention.state || 'open', mention.assignedTo ? null : 'me')}
+                      onClick={() =>
+                        updateMentionState(
+                          mention.id,
+                          mention.state || 'open',
+                          mention.assignedTo ? null : 'me'
+                        )
+                      }
                       className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
                     >
                       {mention.assignedTo ? 'Unassign' : 'Assign Me'}
                     </button>
                   </div>
                   <div className="mt-3 flex gap-2 text-[10px] uppercase tracking-widest">
-                    <StatusPill status={mention.state === 'resolved' ? 'active' : 'idle'} label={mention.state || 'open'} size="sm" />
-                    {mention.assignedTo ? <StatusPill status="idle" label={`assigned:${mention.assignedTo}`} size="sm" /> : null}
+                    <StatusPill
+                      status={mention.state === 'resolved' ? 'active' : 'idle'}
+                      label={mention.state || 'open'}
+                      size="sm"
+                    />
+                    {mention.assignedTo ? (
+                      <StatusPill
+                        status="idle"
+                        label={`assigned:${mention.assignedTo}`}
+                        size="sm"
+                      />
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -893,7 +1028,9 @@ export default function SignalsPage() {
 
           <div className="bg-zinc-950 border border-zinc-800 p-5">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">How To Use This</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                How To Use This
+              </div>
               <button
                 onClick={() => void loadMentions()}
                 className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
@@ -903,9 +1040,18 @@ export default function SignalsPage() {
             </div>
             <div className="space-y-3 text-xs text-zinc-400 leading-relaxed">
               <p>1. Connect an X account in your current X workflow.</p>
-              <p>2. This queue pulls recent mentions for that account using the stored user access token.</p>
-              <p>3. Click <span className="text-white">Generate Reply Draft</span> to turn a mention into an approval-gated reply seed.</p>
-              <p>4. The draft still goes through the existing approval and publish flow. Nothing auto-posts.</p>
+              <p>
+                2. This queue pulls recent mentions for that account using the stored user access
+                token.
+              </p>
+              <p>
+                3. Click <span className="text-white">Generate Reply Draft</span> to turn a mention
+                into an approval-gated reply seed.
+              </p>
+              <p>
+                4. The draft still goes through the existing approval and publish flow. Nothing
+                auto-posts.
+              </p>
               <p>5. Use the existing draft statuses to approve, reject, and publish safely.</p>
             </div>
           </div>
@@ -913,7 +1059,9 @@ export default function SignalsPage() {
 
         <div className="bg-zinc-950 border border-zinc-800 p-5 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Recent Published Posts</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+              Recent Published Posts
+            </div>
             <button
               onClick={() => void loadAnalytics()}
               className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
@@ -922,15 +1070,19 @@ export default function SignalsPage() {
             </button>
           </div>
           {analyticsError ? (
-            <div className="border border-orange-500/30 p-3 text-red-400 text-xs mb-3">{analyticsError}</div>
+            <div className="border border-orange-500/30 p-3 text-red-400 text-xs mb-3">
+              {analyticsError}
+            </div>
           ) : null}
           <div className="space-y-3">
             {(analytics?.posts || []).map((post) => (
               <div key={post.id} className="border border-zinc-800 bg-black p-4">
                 <a href={post.url} target="_blank" rel="noopener noreferrer" className="block">
-                  <p className="text-sm text-zinc-300 hover:text-white transition-colors">{post.text}</p>
+                  <p className="text-sm text-zinc-300 hover:text-white transition-colors">
+                    {post.text}
+                  </p>
                 </a>
-                <div className="mt-3 flex flex-wrap gap-4 text-[10px] uppercase tracking-widest text-zinc-600">
+                <div className="mt-3 flex flex-wrap gap-4 text-[10px] uppercase tracking-widest text-zinc-500">
                   <span>{new Date(post.createdAt).toLocaleString()}</span>
                   <span>{post.publicMetrics.likeCount} likes</span>
                   <span>{post.publicMetrics.replyCount} replies</span>
@@ -950,7 +1102,9 @@ export default function SignalsPage() {
         <div className="bg-zinc-950 border border-zinc-800 p-5 mb-8">
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Community Feed</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                Community Feed
+              </div>
               <a
                 href={`https://x.com/i/communities/${communityId}`}
                 target="_blank"
@@ -977,7 +1131,9 @@ export default function SignalsPage() {
             </div>
           </div>
           {communityError ? (
-            <div className="border border-orange-500/30 p-3 text-red-400 text-xs mb-3">{communityError}</div>
+            <div className="border border-orange-500/30 p-3 text-red-400 text-xs mb-3">
+              {communityError}
+            </div>
           ) : null}
           <div className="space-y-3">
             {communityPosts.map((post) => (
@@ -987,9 +1143,11 @@ export default function SignalsPage() {
                   <span className="text-xs text-zinc-500">@{post.authorUsername}</span>
                 </div>
                 <a href={post.url} target="_blank" rel="noopener noreferrer" className="block">
-                  <p className="text-sm text-zinc-300 hover:text-white transition-colors">{post.text}</p>
+                  <p className="text-sm text-zinc-300 hover:text-white transition-colors">
+                    {post.text}
+                  </p>
                 </a>
-                <div className="mt-3 flex flex-wrap gap-4 text-[10px] uppercase tracking-widest text-zinc-600">
+                <div className="mt-3 flex flex-wrap gap-4 text-[10px] uppercase tracking-widest text-zinc-500">
                   <span>{new Date(post.createdAt).toLocaleString()}</span>
                   <span>{post.publicMetrics.likeCount} likes</span>
                   <span>{post.publicMetrics.replyCount} replies</span>
@@ -999,7 +1157,8 @@ export default function SignalsPage() {
             ))}
             {!communityPosts.length && !communityError ? (
               <div className="border border-zinc-800 bg-black p-4 text-xs text-zinc-500">
-                No recent community posts. Make sure your X account is a member of the community and the ID is correct.
+                No recent community posts. Make sure your X account is a member of the community and
+                the ID is correct.
               </div>
             ) : null}
           </div>
@@ -1008,8 +1167,10 @@ export default function SignalsPage() {
         {/* Filters */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-px mb-4">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 mr-3 self-center">Platform</span>
-            {(['all', 'twitter', 'hacker-news', 'reddit'] as Platform[]).map(p => (
+            <span className="text-[10px] uppercase tracking-widest text-zinc-500 mr-3 self-center">
+              Platform
+            </span>
+            {(['all', 'twitter', 'hacker-news', 'reddit'] as Platform[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPlatform(p)}
@@ -1024,8 +1185,10 @@ export default function SignalsPage() {
             ))}
           </div>
           <div className="flex flex-wrap gap-px">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 mr-3 self-center">Relevance</span>
-            {(['all', 'high', 'medium', 'low'] as Relevance[]).map(r => (
+            <span className="text-[10px] uppercase tracking-widest text-zinc-500 mr-3 self-center">
+              Relevance
+            </span>
+            {(['all', 'high', 'medium', 'low'] as Relevance[]).map((r) => (
               <button
                 key={r}
                 onClick={() => setRelevance(r)}
@@ -1045,27 +1208,39 @@ export default function SignalsPage() {
         {loading && !data ? (
           <div className="flex flex-col py-20 gap-4 items-center">
             <RefreshCw className="h-6 w-5 text-zinc-500 animate-spin" />
-            <p className="text-zinc-600 text-xs uppercase tracking-widest">Scanning signals…</p>
+            <p className="text-zinc-500 text-xs uppercase tracking-widest">Scanning signals…</p>
           </div>
         ) : (
           <>
             {/* Signals grid */}
             <div className="space-y-px bg-zinc-800">
-              {filtered.map(signal => {
-                const pmeta = PLATFORM_META[signal.platform] || { label: signal.platform, color: 'text-zinc-400' };
+              {filtered.map((signal) => {
+                const pmeta = PLATFORM_META[signal.platform] || {
+                  label: signal.platform,
+                  color: 'text-zinc-400',
+                };
                 return (
                   <div key={signal.id} className="bg-black p-5">
                     {/* Meta row */}
                     <div className="flex items-center gap-3 mb-3">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${pmeta.color}`}>
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-widest ${pmeta.color}`}
+                      >
                         {pmeta.label}
                       </span>
                       <span className="text-xs text-zinc-500 font-mono">{signal.author}</span>
-                      <span className="text-[10px] text-zinc-700 font-mono ml-auto">{signal.date}</span>
+                      <span className="text-[10px] text-zinc-500 font-mono ml-auto">
+                        {signal.date}
+                      </span>
                     </div>
 
                     {/* Content */}
-                    <a href={signal.url} target="_blank" rel="noopener noreferrer" className="block">
+                    <a
+                      href={signal.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
                       <p className="text-sm text-zinc-400 leading-relaxed mb-4 hover:text-zinc-300 transition-colors">
                         {signal.content}
                       </p>
@@ -1073,19 +1248,28 @@ export default function SignalsPage() {
 
                     {/* Footer */}
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-4 text-[10px] text-zinc-600 uppercase tracking-widest">
+                      <div className="flex items-center gap-4 text-[10px] text-zinc-500 uppercase tracking-widest">
                         <span>{signal.upvotes.toLocaleString()} upvotes</span>
                         <span>{signal.comments} replies</span>
                       </div>
                       <div className="flex gap-1 ml-auto flex-wrap">
-                        {signal.tags.map(t => (
-                          <span key={t} className="text-[10px] text-zinc-600 border border-zinc-800 px-1.5 py-0.5 uppercase tracking-widest">
+                        {signal.tags.map((t) => (
+                          <span
+                            key={t}
+                            className="text-[10px] text-zinc-500 border border-zinc-800 px-1.5 py-0.5 uppercase tracking-widest"
+                          >
                             {t}
                           </span>
                         ))}
                       </div>
                       <StatusPill
-                        status={signal.relevance === 'high' ? 'active' : signal.relevance === 'medium' ? 'idle' : 'offline'}
+                        status={
+                          signal.relevance === 'high'
+                            ? 'active'
+                            : signal.relevance === 'medium'
+                              ? 'idle'
+                              : 'offline'
+                        }
                         label={signal.relevance}
                         size="sm"
                       />
@@ -1103,7 +1287,7 @@ export default function SignalsPage() {
 
             {filtered.length === 0 && (
               <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
-                <p className="text-zinc-600 text-xs">No signals match your filters.</p>
+                <p className="text-zinc-500 text-xs">No signals match your filters.</p>
               </div>
             )}
           </>

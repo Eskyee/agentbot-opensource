@@ -1,11 +1,24 @@
-import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell';
 
 function FleetSkeletonIcon() {
   return (
-    <svg className="h-5 w-5 text-zinc-700 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="square" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    <svg
+      className="h-5 w-5 text-zinc-500 animate-pulse"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="square"
+        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+      />
     </svg>
-  )
+  );
 }
 
 export default function FleetLoading() {
@@ -16,7 +29,7 @@ export default function FleetLoading() {
         icon={<FleetSkeletonIcon />}
         action={
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-px bg-zinc-800 border border-zinc-700">
+            <div className="flex items-center gap-px bg-zinc-900 border border-zinc-700">
               <div className="px-3 py-1.5 h-7 w-24 bg-zinc-700 animate-pulse" />
               <div className="px-3 py-1.5 h-7 w-20 bg-zinc-700 animate-pulse" />
             </div>
@@ -38,7 +51,7 @@ export default function FleetLoading() {
             <div className="relative mx-auto mb-4">
               <div className="w-12 h-12 border-2 border-zinc-800 border-t-orange-500 rounded-full animate-spin" />
             </div>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 animate-pulse">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 animate-pulse">
               Loading fleet constellation...
             </p>
           </div>
@@ -67,5 +80,5 @@ export default function FleetLoading() {
         </div>
       </div>
     </DashboardShell>
-  )
+  );
 }

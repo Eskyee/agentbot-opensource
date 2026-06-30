@@ -212,6 +212,7 @@ function FileUpdater({ files, isStreaming }: { files: WorkbenchFile[]; isStreami
   const sandpackRef = useRef(sandpack)
   sandpackRef.current = sandpack
   const wasStreamingRef = useRef(false)
+  const lastFileCountRef = useRef(0)
 
   useEffect(() => {
     for (const file of files) {
@@ -230,14 +231,18 @@ function FileUpdater({ files, isStreaming }: { files: WorkbenchFile[]; isStreami
       }
     }
 
-    // When streaming finishes, bump App.tsx to force a preview re-render
+    // When streaming finishes, force preview re-render
     if (wasStreamingRef.current && !isStreaming) {
       const appFile = files.find((f) => f.path === 'src/App.tsx')
       if (appFile) {
+        // Multiple refresh strategies to ensure preview updates
         sandpackRef.current.updateFile('/App.tsx', appFile.content + '\n')
+        // Force bundler restart by toggling a dummy file
+        sandpackRef.current.updateFile('/.refresh', `// ${Date.now()}`)
       }
     }
     wasStreamingRef.current = isStreaming
+    lastFileCountRef.current = files.length
   }, [files, isStreaming])
 
   return null

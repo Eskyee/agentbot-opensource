@@ -82,7 +82,7 @@ export default function DreamsPage() {
         icon={<Moon className="h-5 w-5 text-orange-400" />}
         count={dreams.length}
         action={
-          <div className="text-[10px] text-zinc-600 font-mono">
+          <div className="text-[10px] text-zinc-500 font-mono">
             AI-powered dreamscapes
           </div>
         }
@@ -91,7 +91,7 @@ export default function DreamsPage() {
       <DashboardContent className="max-w-5xl space-y-8">
         {/* Mood selector */}
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 font-bold">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3 font-bold">
             Select a mood
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -136,9 +136,9 @@ export default function DreamsPage() {
         {/* Generated dreams */}
         {dreams.length === 0 ? (
           <div className="border border-zinc-800 bg-zinc-950 p-12 text-center">
-            <Moon className="h-10 w-10 text-zinc-700 mx-auto mb-4" />
+            <Moon className="h-10 w-10 text-zinc-500 mx-auto mb-4" />
             <p className="text-sm text-zinc-500 font-mono">No dreams yet</p>
-            <p className="text-xs text-zinc-700 font-mono mt-2">
+            <p className="text-xs text-zinc-500 font-mono mt-2">
               Select a mood or hit Random Dream to generate
             </p>
           </div>
@@ -155,7 +155,7 @@ export default function DreamsPage() {
                       <span className="text-[10px] uppercase tracking-widest text-orange-400 font-bold">
                         {dream.mood}
                       </span>
-                      <span className="text-[10px] text-zinc-700 font-mono">
+                      <span className="text-[10px] text-zinc-500 font-mono">
                         {new Date(dream.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>

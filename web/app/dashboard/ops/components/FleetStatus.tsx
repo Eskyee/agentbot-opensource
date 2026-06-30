@@ -69,15 +69,15 @@ function NodeCard({
       </div>
 
       {/* DID */}
-      <div className="text-[10px] font-mono text-zinc-600 mb-2">{truncateDID(node.did)}</div>
+      <div className="text-[10px] font-mono text-zinc-500 mb-2">{truncateDID(node.did)}</div>
 
       {/* Region + Task */}
       <div className="flex items-center gap-3 mb-2.5">
         <span className="text-[10px] font-mono text-zinc-500">
-          <span className="text-zinc-600">rgn</span> {node.region}
+          <span className="text-zinc-500">rgn</span> {node.region}
         </span>
         <span className="text-[10px] font-mono text-zinc-500 truncate">
-          <span className="text-zinc-600">task</span> {node.task}
+          <span className="text-zinc-500">task</span> {node.task}
         </span>
       </div>
 
@@ -85,7 +85,7 @@ function NodeCard({
       <div className="grid grid-cols-2 gap-3 mb-2">
         <div>
           <div className="flex items-center justify-between mb-0.5">
-            <span className="text-[9px] uppercase tracking-wider text-zinc-600">CPU</span>
+            <span className="text-[9px] uppercase tracking-wider text-zinc-500">CPU</span>
             <span className="text-[10px] font-mono text-zinc-400">{node.cpu}%</span>
           </div>
           <div className="h-1 bg-zinc-800 w-full overflow-hidden">
@@ -97,7 +97,7 @@ function NodeCard({
         </div>
         <div>
           <div className="flex items-center justify-between mb-0.5">
-            <span className="text-[9px] uppercase tracking-wider text-zinc-600">MEM</span>
+            <span className="text-[9px] uppercase tracking-wider text-zinc-500">MEM</span>
             <span className="text-[10px] font-mono text-zinc-400">{node.mem}%</span>
           </div>
           <div className="h-1 bg-zinc-800 w-full overflow-hidden">
@@ -111,11 +111,11 @@ function NodeCard({
 
       {/* p50 + model */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono text-zinc-600">
+        <span className="text-[10px] font-mono text-zinc-500">
           p50 <span className="text-zinc-400">{node.p50}ms</span>
         </span>
         {node.model && (
-          <span className="text-[10px] font-mono text-zinc-600">{node.model}</span>
+          <span className="text-[10px] font-mono text-zinc-500">{node.model}</span>
         )}
       </div>
     </button>
@@ -144,7 +144,7 @@ function EmptyFleet() {
 
       {/* Preview of what it'll look like */}
       <div className="mt-4 opacity-40 pointer-events-none">
-        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Preview</div>
+        <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Preview</div>
         <div className="grid grid-cols-2 gap-2">
           {[
             { id: 'agent-01', status: 'running', region: 'fra-1', task: 'exec:swap', cpu: 42, mem: 61, p50: 87 },
@@ -153,9 +153,9 @@ function EmptyFleet() {
             <div key={n.id} className="p-2 border-l-2 border-l-green-500/30 bg-zinc-950 border border-zinc-800">
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-1 h-1 bg-zinc-600" />
-                <span className="text-[10px] font-mono text-zinc-600">{n.id}</span>
+                <span className="text-[10px] font-mono text-zinc-500">{n.id}</span>
               </div>
-              <div className="flex gap-2 text-[9px] font-mono text-zinc-700">
+              <div className="flex gap-2 text-[9px] font-mono text-zinc-500">
                 <span>rgn {n.region}</span>
                 <span>cpu {n.cpu}%</span>
               </div>

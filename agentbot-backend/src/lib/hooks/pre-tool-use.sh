@@ -9,7 +9,7 @@
 #
 # Called by docker agent --hook-pre-tool-use ./pre-tool-use.sh
 # Environment:
-#   AGENTBOT_API_URL  — Backend URL (e.g., https://agentbot-prod-production.up.railway.app)
+#   AGENTBOT_API_URL  — Backend URL (e.g., https://YOUR_SERVICE_URL)
 #   AGENTBOT_USER_ID  — Owner user ID
 #   AGENTBOT_AGENT_ID — This agent's ID
 #   INTERNAL_API_KEY  — Auth token for backend

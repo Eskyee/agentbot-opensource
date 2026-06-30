@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 
 // Activity feed for admin dashboard
 export async function GET() {
+  // Admin-only: this leaks platform-wide agent + execution activity.
+  const session = await getAuthSession()
+  if (!isAdminEmail(session?.user?.email)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
   try {
     const recentAgents = await prisma.agent.findMany({
       take: 10,

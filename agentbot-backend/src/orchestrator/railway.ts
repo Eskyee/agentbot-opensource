@@ -54,7 +54,7 @@ export class RailwayRuntime implements IAgentRuntime {
       plan: 'unknown',
       status: 'provisioning',
       runtimeId: 'railway-service-id',
-      endpoint: `https://${serviceName}.up.railway.app`,
+      endpoint: `https://${serviceName}YOUR_SERVICE_URL`,
       metadata: { serviceName }
     };
   }

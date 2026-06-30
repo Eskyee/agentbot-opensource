@@ -38,7 +38,7 @@ export function SwarmList() {
       </div>
       {loading && <div className="text-xs text-zinc-500">Loading...</div>}
       {!loading && swarms.length === 0 && (
-        <div className="text-xs text-zinc-600">No swarms</div>
+        <div className="text-xs text-zinc-500">No swarms</div>
       )}
       <div className="space-y-1">
         {swarms.map((swarm) => (
@@ -49,8 +49,8 @@ export function SwarmList() {
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono text-zinc-300">{swarm.name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-zinc-600">{swarm.agents.length} agents</span>
-                <span className={`text-[10px] uppercase tracking-widest ${swarm.enabled ? 'text-green-500' : 'text-zinc-600'}`}>
+                <span className="text-[10px] text-zinc-500">{swarm.agents.length} agents</span>
+                <span className={`text-[10px] uppercase tracking-widest ${swarm.enabled ? 'text-green-500' : 'text-zinc-500'}`}>
                   {swarm.enabled ? 'ON' : 'OFF'}
                 </span>
               </div>

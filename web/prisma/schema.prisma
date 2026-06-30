@@ -91,6 +91,11 @@ model User {
   templateLaunches     TemplateLaunch[]
   tutorialProgress     TutorialProgress[]
   playgroundProjects   PlaygroundProject[]
+  routines             Routine[]
+  automations          Automation[]
+  chatPlatforms        ChatPlatformConnection[]
+  userConnections      UserConnection[]
+  mcpServers           McpServer[]
 
   // Stripe webhook hot path: updateMany({ where: { stripeCustomerId } })
   // for invoice.payment_succeeded / payment_failed / subscription.deleted.
@@ -235,6 +240,7 @@ model PlaygroundProject {
   sandboxName  String?
   sandboxUrl   String?
   executionMode String?  @default("sandpack")
+  visibility    String?  @default("private")
   archivedAt   DateTime?
   lastActiveAt DateTime  @default(now())
   createdAt    DateTime  @default(now())
@@ -244,6 +250,136 @@ model PlaygroundProject {
   @@index([userId])
   @@index([userId, status])
   @@index([lastActiveAt])
+}
+
+model Routine {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  description   String?
+  prompt        String    @db.Text
+  model         String    @default("openrouter/auto")
+  status        String    @default("active")
+  repositories  Json      @default("[]")
+  connectors    Json      @default("[]")
+  environment   Json      @default("{}")
+  triggers      Json      @default("[]")
+  lastRunAt     DateTime?
+  runCount      Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs          RoutineRun[]
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model RoutineRun {
+  id          String    @id @default(cuid())
+  routineId   String
+  status      String    @default("running")
+  trigger     String
+  input       String?   @db.Text
+  output      String?   @db.Text
+  error       String?   @db.Text
+  duration    Int?
+  tokensUsed  Int?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  routine     Routine   @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  @@index([routineId])
+  @@index([routineId, startedAt])
+}
+
+model Automation {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  description   String?
+  status        String    @default("active")
+  triggers      Json      @default("[]")
+  conditions    Json      @default("[]")
+  action        Json      @default("{}")
+  mcpServers    Json      @default("[]")
+  acuLimit      Int?
+  invocationLimit Int?
+  invocationWindow String?
+  lastFiredAt   DateTime?
+  fireCount     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs          AutomationRun[]
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model ChatPlatformConnection {
+  id            String    @id @default(cuid())
+  userId        String
+  platform      String
+  credentials   Json      @default("{}")
+  status        String    @default("connected")
+  lastCheckedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId])
+}
+
+model UserConnection {
+  id            String    @id @default(cuid())
+  userId        String
+  provider      String
+  accessToken   String
+  refreshToken  String?
+  expiresAt     DateTime?
+  scope         String?
+  metadata      Json      @default("{}")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+model AutomationRun {
+  id            String    @id @default(cuid())
+  automationId  String
+  status        String    @default("running")
+  triggerType   String
+  triggerPayload Json?
+  output        String?   @db.Text
+  error         String?   @db.Text
+  duration      Int?
+  sessionId     String?
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  automation    Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([automationId])
+  @@index([automationId, startedAt])
+}
+
+model McpServer {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  type          String
+  config        Json      @default("{}")
+  status        String    @default("connected")
+  lastCheckedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Skill {
@@ -1607,12 +1743,33 @@ model KnowledgeDocument {
   chunks    Int      @default(0)
   status    String   @default("processing") // processing, ready, error
   path      String?  @db.Text
+  // Raw file bytes, stored in the DB because the serverless filesystem is
+  // read-only (writing to ./uploads fails on Vercel). Search reads from here.
+  content   Bytes?
   error     String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   agent Agent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([agentId])
+}
+
+// Agent run summaries (DID, tx hashes, step results). Stored in the DB rather
+// than as JSON files under ./data, which is read-only on serverless hosts.
+model AgentRunSummary {
+  id          String    @id @default(cuid())
+  userId      String
+  agentId     String
+  status      String    @default("completed") // running, completed, failed
+  steps       Json      @default("[]")
+  results     Json      @default("{}")
+  error       String?   @db.Text
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
 
   @@index([userId])
   @@index([agentId])

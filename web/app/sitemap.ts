@@ -7,12 +7,21 @@ import { listAutoBlogPosts } from '@/app/lib/auto-blog'
 export const dynamic = 'force-dynamic'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Auto-discover blog posts from directory
+  // Auto-discover blog posts from directory. Guarded: in a serverless/standalone
+  // deployment the source `app/blog/posts` dir may not be present in the function
+  // bundle (it's included via outputFileTracingIncludes in next.config.js). If
+  // the read ever fails, fall back to no file-based blog URLs rather than 500 the
+  // whole sitemap — search engines hit /sitemap.xml constantly.
   const postsDir = path.join(process.cwd(), 'app', 'blog', 'posts')
-  const blogSlugs = fs
-    .readdirSync(postsDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name)
+  let blogSlugs: string[] = []
+  try {
+    blogSlugs = fs
+      .readdirSync(postsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+  } catch (err) {
+    console.error('[sitemap] could not read blog posts dir:', err)
+  }
 
   const blogUrls: MetadataRoute.Sitemap = blogSlugs.map((slug) => ({
     url: `${APP_URL}/blog/posts/${slug}`,

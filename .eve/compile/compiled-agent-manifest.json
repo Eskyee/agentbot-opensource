@@ -1,0 +1,401 @@
+{
+  "agentRoot": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+  "appRoot": "/Users/raveculture/Documents/GitHub/agentbot",
+  "channels": [
+    {
+      "kind": "channel",
+      "name": "slack",
+      "logicalPath": "channels/slack.ts",
+      "method": "POST",
+      "urlPath": "/eve/v1/channels/slack",
+      "sourceId": "channels/slack.ts",
+      "sourceKind": "module",
+      "adapterKind": "slack"
+    },
+    {
+      "kind": "channel",
+      "name": "telegram",
+      "logicalPath": "channels/telegram.ts",
+      "method": "POST",
+      "urlPath": "/eve/v1/channels/telegram",
+      "sourceId": "channels/telegram.ts",
+      "sourceKind": "module",
+      "adapterKind": "telegram"
+    }
+  ],
+  "connections": [
+    {
+      "connectionName": "github",
+      "logicalPath": "connections/github.ts",
+      "sourceId": "connections/github.ts",
+      "sourceKind": "module",
+      "description": "GitHub integration for repository operations, PRs, and issues.",
+      "protocol": "openapi",
+      "url": "https://api.github.com"
+    },
+    {
+      "connectionName": "linear",
+      "logicalPath": "connections/linear.ts",
+      "sourceId": "connections/linear.ts",
+      "sourceKind": "module",
+      "description": "Linear project management integration for issue tracking.",
+      "protocol": "openapi",
+      "url": "https://api.linear.app/graphql"
+    },
+    {
+      "connectionName": "notion",
+      "logicalPath": "connections/notion.ts",
+      "sourceId": "connections/notion.ts",
+      "sourceKind": "module",
+      "description": "Notion: search, read, create, and manage pages, databases, wikis, and blocks.",
+      "protocol": "mcp",
+      "url": "https://mcp.notion.com/mcp",
+      "vercelConnect": {
+        "connector": "mcp.notion.com/agentbot"
+      }
+    },
+    {
+      "connectionName": "slack",
+      "logicalPath": "connections/slack.ts",
+      "sourceId": "connections/slack.ts",
+      "sourceKind": "module",
+      "description": "Slack: search, send messages, channels, canvases, and users.",
+      "protocol": "mcp",
+      "url": "https://mcp.slack.com/mcp",
+      "vercelConnect": {
+        "connector": "slack/slack-agentbot"
+      }
+    }
+  ],
+  "config": {
+    "compaction": {},
+    "model": {
+      "id": "anthropic/claude-sonnet-4",
+      "routing": {
+        "kind": "gateway",
+        "target": "anthropic"
+      },
+      "contextWindowTokens": 1000000
+    },
+    "name": "agentbot",
+    "source": {
+      "sourceKind": "module",
+      "logicalPath": "agent.ts",
+      "sourceId": "agent.ts"
+    }
+  },
+  "diagnosticsSummary": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "disabledFrameworkTools": [],
+  "workflowEnabled": false,
+  "dynamicInstructions": [],
+  "dynamicSkills": [],
+  "dynamicTools": [],
+  "hooks": [],
+  "remoteAgents": [],
+  "sandbox": null,
+  "sandboxWorkspaces": [],
+  "schedules": [
+    {
+      "cron": "0 9 * * 1-5",
+      "hasRun": false,
+      "logicalPath": "schedules/daily-ops-summary.ts",
+      "name": "daily-ops-summary",
+      "sourceId": "schedules/daily-ops-summary.ts",
+      "sourceKind": "module",
+      "markdown": "Produce a short operations summary: list agents and their status via get_agent_status, then pull the metrics summary via query_metrics. Flag anything not active or any errors."
+    }
+  ],
+  "skills": [
+    {
+      "description": "Build durable backend AI agents with the eve framework. Use when creating, editing, or debugging an eve project — agent instructions, skills, tools, connections, channels, sandboxes, subagents, schedules, or evals.",
+      "logicalPath": "skills/eve/SKILL.md",
+      "markdown": "# eve\n\neve is a filesystem-first framework for durable backend AI agents. An agent is\na directory on disk — instructions, skills, tools, connections, channels,\nsubagents, and schedules are all files — and eve compiles and runs it.\n\n## Source of truth\n\nThe complete documentation ships inside the `eve` package. Do not rely on this\nskill for guidance — always read the bundled docs, which match the installed\nversion exactly:\n\n```\nnode_modules/eve/docs/\n```\n\nStart with `node_modules/eve/docs/README.md`. It contains the full\nindex and recommended reading order. Before writing any eve code, read the\nrelevant guide there first.\n\nIf `eve` is not installed yet, install it (`npm install eve`) or scaffold a new\nagent with `npx eve init <agent-name>`, then read the bundled docs.\n",
+      "name": "eve",
+      "rootPath": "/Users/raveculture/Documents/GitHub/agentbot/agent/skills/eve",
+      "scriptsPath": "/Users/raveculture/Documents/GitHub/agentbot/agent/skills/eve/scripts",
+      "skillId": "eve",
+      "skillFilePath": "/Users/raveculture/Documents/GitHub/agentbot/agent/skills/eve/SKILL.md",
+      "sourceId": "skills/eve/SKILL.md",
+      "sourceKind": "skill-package"
+    }
+  ],
+  "tools": [
+    {
+      "description": "Get the status and details of an agent by its ID, or list all agents when no ID is given.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "agentId": {
+            "description": "Agent ID to look up. Omit to list all agents.",
+            "type": "string"
+          }
+        }
+      },
+      "logicalPath": "tools/get_agent_status.ts",
+      "name": "get_agent_status",
+      "sourceId": "tools/get_agent_status.ts",
+      "sourceKind": "module"
+    },
+    {
+      "description": "Get the current weather for a city using Open-Meteo (free, no API key needed).",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "minLength": 1,
+            "description": "City name, e.g. \"London\" or \"New York\""
+          }
+        },
+        "required": [
+          "city"
+        ]
+      },
+      "logicalPath": "tools/get_weather.ts",
+      "name": "get_weather",
+      "sourceId": "tools/get_weather.ts",
+      "sourceKind": "module"
+    },
+    {
+      "description": "List connected services for the current user (GitHub, Linear, Slack, etc.). Shows which integrations are active and their status.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "logicalPath": "tools/list_connections.ts",
+      "name": "list_connections",
+      "sourceId": "tools/list_connections.ts",
+      "sourceKind": "module"
+    },
+    {
+      "description": "Manage scheduled tasks via the agentbot backend. Tasks are one-shot: they fire at runAt (default now) when the scheduler claims them; cron is stored for reference.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "list",
+              "delete"
+            ],
+            "description": "Action to perform"
+          },
+          "id": {
+            "description": "Task id (required for delete)",
+            "type": "string"
+          },
+          "agentId": {
+            "description": "Agent the task belongs to",
+            "type": "string"
+          },
+          "name": {
+            "description": "Task name",
+            "type": "string"
+          },
+          "cron": {
+            "description": "Cron expression, stored for reference (e.g. '0 9 * * 1-5')",
+            "type": "string"
+          },
+          "prompt": {
+            "description": "What the agent should do when triggered",
+            "type": "string"
+          },
+          "agentUrl": {
+            "description": "Agent execute URL the scheduler POSTs to when the task fires",
+            "type": "string"
+          },
+          "runAt": {
+            "description": "ISO 8601 time to run (defaults to now)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "logicalPath": "tools/manage_schedules.ts",
+      "name": "manage_schedules",
+      "sourceId": "tools/manage_schedules.ts",
+      "sourceKind": "module"
+    },
+    {
+      "description": "Query a user's agent metrics from the agentbot backend: a business summary, a live performance snapshot, or a historical time series.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "view": {
+            "default": "summary",
+            "description": "summary = business KPIs, performance = live CPU/memory/error rate, historical = time series",
+            "type": "string",
+            "enum": [
+              "summary",
+              "performance",
+              "historical"
+            ]
+          },
+          "range": {
+            "description": "Time range for the historical view (defaults to 24h)",
+            "type": "string",
+            "enum": [
+              "1h",
+              "24h",
+              "7d",
+              "30d"
+            ]
+          }
+        }
+      },
+      "logicalPath": "tools/query_metrics.ts",
+      "name": "query_metrics",
+      "sourceId": "tools/query_metrics.ts",
+      "sourceKind": "module"
+    }
+  ],
+  "workspaceResourceRoot": {
+    "contentHash": "b03e41e8f0896002157b3472d4a89839a9007c3319c0c13c7db902dbe1872204",
+    "logicalPath": "workspace-resources/__root__",
+    "rootEntries": [
+      "skills/"
+    ]
+  },
+  "instructions": {
+    "name": "instructions",
+    "logicalPath": "instructions.md",
+    "markdown": "# Identity\n\nYou are Agentbot's durable backend agent. You help users manage their AI agents, troubleshoot issues, automate workflows, and handle customer support.\n\nBe concise. Use tools when they are available. When a user asks about their agents, deployments, or infrastructure, use the available tools to fetch real data rather than guessing.\n\n# Capabilities\n\nYou can help with:\n\n## Customer Support\n\n- Answer questions about Agentbot plans, pricing, features\n- Troubleshoot agent deployment issues\n- Guide users through setup and configuration\n- Escalate complex issues to the team\n\n## DevOps & Monitoring\n\n- Check agent deployment status and health\n- Review error logs and performance metrics\n- Create and manage Linear tickets\n- Monitor CI/CD pipelines\n\n## Sales & Onboarding\n\n- Qualify inbound leads from website forms\n- Help users choose the right plan\n- Schedule demos or onboarding calls\n- Track pipeline and follow up with prospects\n\n## Code Review\n\n- Review pull requests for security and performance\n- Suggest improvements and fixes\n- Monitor GitHub webhooks for new PRs\n\n## Content & Marketing\n\n- Draft blog posts and social media content\n- Monitor industry news and trends\n- Generate reports and summaries\n\n## Knowledge Base (Notion)\n\n- Search the connected Notion workspace for docs, runbooks, and specs before answering knowledge questions\n- Read pages and databases to ground answers in real workspace content\n- Create or update pages when asked to capture notes, summaries, or follow-ups\n- The Notion connection requires a one-time sign-in and a per-session approval before first use — surface the sign-in prompt rather than guessing if you lack access\n\n## Data & Analytics\n\n- Query usage data and metrics\n- Generate reports on agent performance\n- Alert on anomalies or issues\n\n# Guidelines\n\n- Always use tools to get real data before answering\n- Be specific with numbers, dates, and details\n- If you don't know something, say so and offer to find out\n- Keep responses under 300 words unless detail is requested\n- Slack, Linear, GitHub, and Notion are real MCP connections: the first use triggers a one-time sign-in and a per-session approval. Surface that prompt rather than guessing when you lack access.\n",
+    "sourceId": "instructions.md",
+    "sourceKind": "markdown"
+  },
+  "kind": "eve-agent-compiled-manifest",
+  "subagentEdges": [
+    {
+      "childNodeId": "subagents/researcher.ts",
+      "parentNodeId": "__root__"
+    },
+    {
+      "childNodeId": "subagents/support.ts",
+      "parentNodeId": "__root__"
+    }
+  ],
+  "subagents": [
+    {
+      "agent": {
+        "agentRoot": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+        "appRoot": "/Users/raveculture/Documents/GitHub/agentbot",
+        "channels": [],
+        "connections": [],
+        "config": {
+          "compaction": {},
+          "description": "Research agent that gathers information from the web and documentation.",
+          "model": {
+            "id": "anthropic/claude-sonnet-4",
+            "routing": {
+              "kind": "gateway",
+              "target": "anthropic"
+            },
+            "contextWindowTokens": 1000000
+          },
+          "name": "researcher",
+          "source": {
+            "sourceKind": "module",
+            "logicalPath": "subagents/researcher.ts",
+            "sourceId": "subagents/researcher.ts"
+          }
+        },
+        "diagnosticsSummary": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "disabledFrameworkTools": [],
+        "workflowEnabled": false,
+        "dynamicInstructions": [],
+        "dynamicSkills": [],
+        "dynamicTools": [],
+        "hooks": [],
+        "remoteAgents": [],
+        "sandbox": null,
+        "sandboxWorkspaces": [],
+        "schedules": [],
+        "skills": [],
+        "tools": [],
+        "workspaceResourceRoot": {
+          "contentHash": "5777dd4d87493e836b5597e87f6b3d07482c551341171ea7836996b231207c7b",
+          "logicalPath": "workspace-resources/subagents/researcher.ts",
+          "rootEntries": []
+        }
+      },
+      "description": "Research agent that gathers information from the web and documentation.",
+      "entryPath": "/Users/raveculture/Documents/GitHub/agentbot/agent/subagents/researcher.ts",
+      "logicalPath": "subagents/researcher.ts",
+      "name": "researcher",
+      "nodeId": "subagents/researcher.ts",
+      "rootPath": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+      "sourceId": "subagents/researcher.ts",
+      "sourceKind": "module"
+    },
+    {
+      "agent": {
+        "agentRoot": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+        "appRoot": "/Users/raveculture/Documents/GitHub/agentbot",
+        "channels": [],
+        "connections": [],
+        "config": {
+          "compaction": {},
+          "description": "Support agent that handles customer inquiries and troubleshoots issues.",
+          "model": {
+            "id": "anthropic/claude-sonnet-4",
+            "routing": {
+              "kind": "gateway",
+              "target": "anthropic"
+            },
+            "contextWindowTokens": 1000000
+          },
+          "name": "support",
+          "source": {
+            "sourceKind": "module",
+            "logicalPath": "subagents/support.ts",
+            "sourceId": "subagents/support.ts"
+          }
+        },
+        "diagnosticsSummary": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "disabledFrameworkTools": [],
+        "workflowEnabled": false,
+        "dynamicInstructions": [],
+        "dynamicSkills": [],
+        "dynamicTools": [],
+        "hooks": [],
+        "remoteAgents": [],
+        "sandbox": null,
+        "sandboxWorkspaces": [],
+        "schedules": [],
+        "skills": [],
+        "tools": [],
+        "workspaceResourceRoot": {
+          "contentHash": "5777dd4d87493e836b5597e87f6b3d07482c551341171ea7836996b231207c7b",
+          "logicalPath": "workspace-resources/subagents/support.ts",
+          "rootEntries": []
+        }
+      },
+      "description": "Support agent that handles customer inquiries and troubleshoots issues.",
+      "entryPath": "/Users/raveculture/Documents/GitHub/agentbot/agent/subagents/support.ts",
+      "logicalPath": "subagents/support.ts",
+      "name": "support",
+      "nodeId": "subagents/support.ts",
+      "rootPath": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+      "sourceId": "subagents/support.ts",
+      "sourceKind": "module"
+    }
+  ],
+  "version": 29
+}

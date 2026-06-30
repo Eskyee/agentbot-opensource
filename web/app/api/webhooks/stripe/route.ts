@@ -293,6 +293,10 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event): Promise<void
         autoProvision: true,
         stripeSubscriptionId,
       }),
+    }, {
+      id: userId,
+      email: customerEmail || '',
+      role: 'user',
     }).catch((err) => console.error('[Webhook] Auto-provision trigger failed:', err))
   }
 }

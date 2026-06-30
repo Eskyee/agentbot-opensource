@@ -3,7 +3,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
 const MIXTAPE_PLANS = ['collective', 'label', 'network']
-const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.sh', 'rbasefm@icloud.com']
+const ADMIN_EMAILS = ['YOUR_ADMIN_EMAIL_1', 'admin@agentbot.sh', 'YOUR_ADMIN_EMAIL_2']
 const MIXTAPE_UPLOAD_COST_ENV = 'BASEFM_MIXTAPE_CREDIT_COST' // optional env for future credit billing
 
 function getMuxAuth() {

@@ -1,22 +1,22 @@
-'use client'
+'use client';
 
-import { useMemo, memo } from 'react'
+import { useMemo, memo } from 'react';
 
 const PLAN_CONFIG: Record<string, { credits: number; reasoning: number; model: string }> = {
-  solo:       { credits: 20000000,  reasoning: 0,   model: 'llama3.3:latest' },
-  collective: { credits: 50000000,  reasoning: 100, model: 'deepseek-r1:32b' },
-  label:      { credits: 100000000, reasoning: 100, model: 'deepseek-r1:32b' },
-  network:    { credits: 100000000, reasoning: 100, model: 'deepseek-r1:32b' },
-}
-const DEFAULT_CONFIG = { credits: 5000000, reasoning: 0, model: 'llama3.3:latest' }
+  solo: { credits: 20000000, reasoning: 0, model: 'llama3.3:latest' },
+  collective: { credits: 50000000, reasoning: 100, model: 'deepseek-r1:32b' },
+  label: { credits: 100000000, reasoning: 100, model: 'deepseek-r1:32b' },
+  network: { credits: 100000000, reasoning: 100, model: 'deepseek-r1:32b' },
+};
+const DEFAULT_CONFIG = { credits: 5000000, reasoning: 0, model: 'llama3.3:latest' };
 
 export default memo(function AIModelCard({ plan }: { plan: string }) {
-  const config = useMemo(() => PLAN_CONFIG[plan] ?? DEFAULT_CONFIG, [plan])
+  const config = useMemo(() => PLAN_CONFIG[plan] ?? DEFAULT_CONFIG, [plan]);
 
-  const usedCredits = 1250000
-  const usedReasoning = 12
-  const creditPercent = (usedCredits / config.credits) * 100
-  const reasoningPercent = config.reasoning > 0 ? (usedReasoning / config.reasoning) * 100 : 0
+  const usedCredits = 1250000;
+  const usedReasoning = 12;
+  const creditPercent = (usedCredits / config.credits) * 100;
+  const reasoningPercent = config.reasoning > 0 ? (usedReasoning / config.reasoning) * 100 : 0;
 
   return (
     <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
@@ -34,7 +34,9 @@ export default memo(function AIModelCard({ plan }: { plan: string }) {
         <div>
           <div className="flex justify-between text-xs text-zinc-500 mb-2">
             <span>Managed Tokens</span>
-            <span>{usedCredits.toLocaleString()} / {config.credits.toLocaleString()}</span>
+            <span>
+              {usedCredits.toLocaleString()} / {config.credits.toLocaleString()}
+            </span>
           </div>
           <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
             <div
@@ -54,12 +56,16 @@ export default memo(function AIModelCard({ plan }: { plan: string }) {
             {config.reasoning === 0 ? (
               <span className="text-yellow-500">Upgrade Required</span>
             ) : (
-              <span>{usedReasoning} / {config.reasoning} tasks</span>
+              <span>
+                {usedReasoning} / {config.reasoning} tasks
+              </span>
             )}
           </div>
           <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
             <div
-              className={`h-full ${config.reasoning === 0 ? 'bg-zinc-700' : 'bg-orange-500'} rounded-full transition-all duration-500`}
+              className={`h-full ${
+                config.reasoning === 0 ? 'bg-zinc-700' : 'bg-orange-500'
+              } rounded-full transition-all duration-500`}
               style={{ width: `${reasoningPercent}%` }}
             />
           </div>
@@ -71,16 +77,14 @@ export default memo(function AIModelCard({ plan }: { plan: string }) {
         </div>
 
         {/* Current Active Model */}
-        <div className="pt-4 border-t border-zinc-800">
+        <div className="pt-4 border-t border-zinc-900">
           <div className="text-xs text-zinc-500 mb-1 uppercase tracking-wider">Active Brain</div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <div className="text-sm font-mono text-white">
-              {config.model}
-            </div>
+            <div className="text-sm font-mono text-white">{config.model}</div>
           </div>
         </div>
       </div>
     </div>
-  )
-})
+  );
+});

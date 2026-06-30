@@ -94,7 +94,7 @@ export function CloneButton({ agent, onSuccess }: CloneButtonProps) {
         <h4 className="text-sm font-mono text-zinc-300">Clone: {agent.name}</h4>
         <button
           onClick={() => setShowForm(false)}
-          className="text-zinc-600 hover:text-zinc-400 text-xs"
+          className="text-zinc-500 hover:text-zinc-400 text-xs"
         >
           Cancel
         </button>
@@ -150,7 +150,7 @@ export function CloneButton({ agent, onSuccess }: CloneButtonProps) {
         )}
       </button>
 
-      <p className="text-[10px] text-zinc-600 font-mono">
+      <p className="text-[10px] text-zinc-500 font-mono">
         Parent: {agent.id.slice(0, 12)}… · Gen {agent.generation} → Gen {agent.generation + 1}
       </p>
     </div>

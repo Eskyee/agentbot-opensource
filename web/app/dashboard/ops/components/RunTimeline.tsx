@@ -57,7 +57,7 @@ export function RunTimeline({ runs, agentId }: RunTimelineProps) {
               className={`px-2 py-0.5 text-[9px] uppercase tracking-widest font-mono transition-colors border ${
                 activeTab === tab
                   ? 'bg-zinc-800 border-zinc-600 text-zinc-200'
-                  : 'border-transparent text-zinc-600 hover:text-zinc-400'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-400'
               }`}
             >
               {tab}
@@ -69,12 +69,12 @@ export function RunTimeline({ runs, agentId }: RunTimelineProps) {
       {/* Empty state */}
       {!agentId ? (
         <div className="py-8 text-center">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Select an agent</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Select an agent</div>
           <div className="text-[11px] text-zinc-500">to view execution traces</div>
         </div>
       ) : runs.length === 0 ? (
         <div className="py-8 text-center">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">No runs yet</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">No runs yet</div>
           <div className="text-[11px] text-zinc-500">Execution traces will appear here</div>
         </div>
       ) : (
@@ -89,7 +89,7 @@ export function RunTimeline({ runs, agentId }: RunTimelineProps) {
                   className={`px-2 py-1 text-[10px] font-mono border transition-colors ${
                     i === selectedRun
                       ? 'bg-zinc-800 border-zinc-600 text-zinc-200'
-                      : 'bg-zinc-900 border-zinc-800 text-zinc-600 hover:text-zinc-400'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-400'
                   }`}
                 >
                   {r.id}
@@ -106,7 +106,7 @@ export function RunTimeline({ runs, agentId }: RunTimelineProps) {
                   key={i}
                   className="flex items-start gap-3 px-2 py-1 bg-zinc-900/50 hover:bg-zinc-900 transition-colors"
                 >
-                  <span className="text-[10px] font-mono text-zinc-600 shrink-0 w-16">{step.ts}</span>
+                  <span className="text-[10px] font-mono text-zinc-500 shrink-0 w-16">{step.ts}</span>
                   <span className="text-[10px] font-mono text-zinc-300 shrink-0 w-28 truncate">{step.name}</span>
                   <span className="text-[10px] font-mono text-zinc-500 flex-1 min-w-0 truncate">{step.detail}</span>
                   <span className={`text-[10px] font-mono shrink-0 w-14 text-right ${getDurationColor(step.durationMs)}`}>
@@ -121,7 +121,7 @@ export function RunTimeline({ runs, agentId }: RunTimelineProps) {
             <div className="space-y-0.5">
               {(run.steps || []).map((step, i) => (
                 <div key={i} className="text-[10px] font-mono text-zinc-400 px-2 py-0.5">
-                  <span className="text-zinc-600">{step.ts}</span>{' '}
+                  <span className="text-zinc-500">{step.ts}</span>{' '}
                   <span className={getDurationColor(step.durationMs)}>{step.name}</span>{' '}
                   <span className="text-zinc-500">{step.detail}</span>
                 </div>

@@ -125,7 +125,7 @@ export default function DebugConsolePage() {
       <DashboardContent className="max-w-6xl space-y-6">
         {/* Command selector */}
         <div className="border border-zinc-800 bg-zinc-950 p-5 space-y-4">
-          <label className="text-[10px] uppercase tracking-widest text-zinc-600 block">
+          <label className="text-[10px] uppercase tracking-widest text-zinc-500 block">
             Command
           </label>
           <div className="relative">
@@ -140,25 +140,25 @@ export default function DebugConsolePage() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
           </div>
         </div>
 
         {/* Output panel */}
         <div className="border border-zinc-800 bg-zinc-950">
           <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800">
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
               <Terminal className="h-3.5 w-3.5" />
               Output
               {lastResult && (
-                <span className="text-zinc-700">
+                <span className="text-zinc-500">
                   — {lastResult.command} — {lastResult.duration}ms — exit {lastResult.exitCode}
                 </span>
               )}
             </div>
             <button
               onClick={clearOutput}
-              className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors"
+              className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
             >
               <Trash2 className="h-3 w-3" />
               Clear
@@ -169,7 +169,7 @@ export default function DebugConsolePage() {
             className="p-5 font-mono text-sm text-green-400 bg-zinc-950 min-h-[280px] max-h-[500px] overflow-y-auto whitespace-pre-wrap leading-relaxed"
           >
             {output || (
-              <span className="text-zinc-700">
+              <span className="text-zinc-500">
                 Select a command and click Execute, or run from history.
               </span>
             )}
@@ -179,7 +179,7 @@ export default function DebugConsolePage() {
         {/* Command history */}
         {history.length > 0 && (
           <div className="border border-zinc-800 bg-zinc-950">
-            <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-800 text-[10px] uppercase tracking-widest text-zinc-600">
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-800 text-[10px] uppercase tracking-widest text-zinc-500">
               <Clock className="h-3.5 w-3.5" />
               Recent Commands
             </div>
@@ -204,7 +204,7 @@ export default function DebugConsolePage() {
                       {entry.command}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 text-[10px] font-mono text-zinc-600 flex-shrink-0">
+                  <div className="flex items-center gap-4 text-[10px] font-mono text-zinc-500 flex-shrink-0">
                     <span>{entry.duration}ms</span>
                     <span>
                       {new Date(entry.timestamp).toLocaleTimeString('en-GB', {

@@ -6,6 +6,17 @@
       "sourceType": "github",
       "computedHash": "d2b5bcc7c09fdb649129ffc7dd7b647ec1b155736974b974292675afd588cb39"
     },
+    "eve": {
+      "source": "vercel/eve",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "359f4a80b73c02f17c6c3f17db770233d38a60fccbb32e1d1703b219f6a65ae1"
+    },
+    "moltx": {
+      "source": "./skills/moltx.md",
+      "sourceType": "local",
+      "version": "0.23.1"
+    },
     "render-debug": {
       "source": "render-oss/skills",
       "sourceType": "github",
@@ -56,10 +67,11 @@
       "sourceType": "github",
       "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
     },
-    "moltx": {
-      "source": "./skills/moltx.md",
-      "sourceType": "local",
-      "version": "0.23.1"
+    "bankr": {
+      "source": "BankrBot/skills",
+      "sourceType": "github",
+      "skillPath": "bankr/SKILL.md",
+      "computedHash": "8f7b5f3619bd306a81d2cd5c3ba65a973cbf9206aa4c91178fad945d8bb7ea58"
     }
   }
 }

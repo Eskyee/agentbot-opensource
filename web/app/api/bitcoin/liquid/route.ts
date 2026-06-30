@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
 
-const LIQUID_RPC_URL = process.env.LIQUID_RPC_URL || 'https://elements-liquid-production.up.railway.app'
+const LIQUID_RPC_URL = process.env.LIQUID_RPC_URL || 'https://YOUR_SERVICE_URL'
 const LIQUID_RPC_USER = process.env.LIQUID_RPC_USER || 'liquidrpc'
 const LIQUID_RPC_PASS = process.env.LIQUID_RPC_PASS || ''
 

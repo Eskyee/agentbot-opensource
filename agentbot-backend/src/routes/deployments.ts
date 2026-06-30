@@ -88,7 +88,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       if (Array.isArray(config.tailscale.tags) && config.tailscale.tags.length > 0) envArgs.push('-e', `TAILSCALE_TAGS=${config.tailscale.tags.map((t) => t.trim()).filter(Boolean).join(',')}`);
     }
 
-    const resources = (await import('../index')).getPlanResources(config.plan || 'free');
+    const resources = (await import('../index.js')).getPlanResources(config.plan || 'free');
 
     await runCommand('docker', [
       'run', '-d', '--name', containerName, '--restart', 'unless-stopped',

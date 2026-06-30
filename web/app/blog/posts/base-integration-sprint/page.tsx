@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
+import Link from 'next/link';
 
 export default function BaseIntegrationSprint() {
   return (
@@ -8,7 +8,10 @@ export default function BaseIntegrationSprint() {
       <div className="max-w-3xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
         {/* Header */}
         <div className="mb-12">
-          <Link href="/blog" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">
+          <Link
+            href="/blog"
+            className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors"
+          >
             ← Back to Blog
           </Link>
           <div className="mt-6">
@@ -55,32 +58,55 @@ export default function BaseIntegrationSprint() {
             <div className="border border-zinc-800 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-green-500 text-sm">✅</span>
-                <h3 className="text-sm font-bold uppercase tracking-wider">Free Daily AI Messages</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider">
+                  Free Daily AI Messages
+                </h3>
               </div>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Connect your Base wallet → get 5 free AI messages per day. No signup. No credit card. Just connect and go. This is the growth engine — the single feature that takes us from 3 users to 300.
+                Connect your Base wallet → get 5 free AI messages per day. No signup. No credit
+                card. Just connect and go. This is the growth engine — the single feature that takes
+                us from 3 users to 300.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">Prisma schema</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">API endpoint</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">Badge component</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">useFreeTier hook</span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  Prisma schema
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  API endpoint
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  Badge component
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  useFreeTier hook
+                </span>
               </div>
             </div>
 
             <div className="border border-zinc-800 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-green-500 text-sm">✅</span>
-                <h3 className="text-sm font-bold uppercase tracking-wider">NFT Wristband Contract</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider">
+                  NFT Wristband Contract
+                </h3>
               </div>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Full ERC-721 Solidity contract with gasless minting via CDP Paymaster, batch minting for airdrops, and 10,000 max supply. OpenZeppelin base, reentrancy guard, events.
+                Full ERC-721 Solidity contract with gasless minting via CDP Paymaster, batch minting
+                for airdrops, and 10,000 max supply. OpenZeppelin base, reentrancy guard, events.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">Solidity 0.8.34</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">OpenZeppelin</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">wagmi hooks</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">Remix deploy guide</span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  Solidity 0.8.34
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  OpenZeppelin
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  wagmi hooks
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  Remix deploy guide
+                </span>
               </div>
             </div>
 
@@ -90,27 +116,44 @@ export default function BaseIntegrationSprint() {
                 <h3 className="text-sm font-bold uppercase tracking-wider">Token Swaps on Base</h3>
               </div>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Swap ETH, USDC, WETH, DEGEN, and AERO directly in the dashboard. Powered by CDP Trade API for sub-500ms execution and multi-DEX routing.
+                Swap ETH, USDC, WETH, DEGEN, and AERO directly in the dashboard. Powered by CDP
+                Trade API for sub-500ms execution and multi-DEX routing.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">CDP Trade API</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">Quote-first pattern</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">Slippage control</span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  CDP Trade API
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  Quote-first pattern
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  Slippage control
+                </span>
               </div>
             </div>
 
             <div className="border border-zinc-800 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-green-500 text-sm">✅</span>
-                <h3 className="text-sm font-bold uppercase tracking-wider">Builder Code Attribution</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider">
+                  Builder Code Attribution
+                </h3>
               </div>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Every onchain transaction includes our builder code <code className="text-orange-500">bc_4k0319ta</code> via ERC-8021. Base can see our transaction volume. Attribution is automatic — no per-tx opt-in needed.
+                Every onchain transaction includes our builder code{' '}
+                <code className="text-orange-500">bc_4k0319ta</code> via ERC-8021. Base can see our
+                transaction volume. Attribution is automatic — no per-tx opt-in needed.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">ERC-8021</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">ox/erc8021</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">dataSuffix</span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  ERC-8021
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  ox/erc8021
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  dataSuffix
+                </span>
               </div>
             </div>
 
@@ -120,12 +163,20 @@ export default function BaseIntegrationSprint() {
                 <h3 className="text-sm font-bold uppercase tracking-wider">Radio Widget</h3>
               </div>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                baseFM radio player embedded in the dashboard. Built in the Playground, deployed as an iframe widget. Collapsible, with LIVE badge and &quot;Built in Playground&quot; footer.
+                baseFM radio player embedded in the dashboard. Built in the Playground, deployed as
+                an iframe widget. Collapsible, with LIVE badge and &quot;Built in Playground&quot;
+                footer.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">iframe embed</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">Dynamic import</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">Sandboxed</span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  iframe embed
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  Dynamic import
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  Sandboxed
+                </span>
               </div>
             </div>
 
@@ -135,12 +186,19 @@ export default function BaseIntegrationSprint() {
                 <h3 className="text-sm font-bold uppercase tracking-wider">Base MCP Integration</h3>
               </div>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Model Context Protocol server connecting AI agents to Base Account smart wallets. Check balances, swap tokens, sign messages — all via natural language.
+                Model Context Protocol server connecting AI agents to Base Account smart wallets.
+                Check balances, swap tokens, sign messages — all via natural language.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">MCP server</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">Non-custodial</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">User sign-off</span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  MCP server
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  Non-custodial
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1 rounded">
+                  User sign-off
+                </span>
               </div>
             </div>
           </div>
@@ -150,7 +208,9 @@ export default function BaseIntegrationSprint() {
         <section className="mb-12">
           <h2 className="text-xl font-bold tracking-tighter uppercase mb-6">Sign in with Base</h2>
           <p className="text-sm text-zinc-400 leading-relaxed">
-            All wallet sign-in flows now use &quot;Sign in with Base&quot; via the <code className="text-orange-500">@base-org/account</code> SDK. Better UX, QR code scanning, works with any Base-compatible wallet.
+            All wallet sign-in flows now use &quot;Sign in with Base&quot; via the{' '}
+            <code className="text-orange-500">@base-org/account</code> SDK. Better UX, QR code
+            scanning, works with any Base-compatible wallet.
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-center">
@@ -198,12 +258,12 @@ export default function BaseIntegrationSprint() {
         </section>
 
         {/* Footer */}
-        <div className="border-t border-zinc-800 pt-8 text-center">
+        <div className="border-t border-zinc-900 pt-8 text-center">
           <p className="text-[10px] uppercase tracking-widest text-zinc-600">
             Built with ❤️ by Agentbot · RaveCulture · June 2026
           </p>
         </div>
       </div>
     </main>
-  )
+  );
 }

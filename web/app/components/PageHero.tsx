@@ -2,6 +2,7 @@ interface PageHeroProps {
   label: string
   title: string
   highlight?: string
+  highlightColor?: string
   description: string
   gradient?: 'blue' | 'purple' | 'green' | 'amber'
 }
@@ -13,7 +14,7 @@ const gradients = {
   amber: 'bg-amber-500/5',
 }
 
-export function PageHero({ label, title, highlight, description, gradient = 'blue' }: PageHeroProps) {
+export function PageHero({ label, title, highlight, highlightColor = 'text-zinc-700', description, gradient = 'blue' }: PageHeroProps) {
   return (
     <section className="relative border-b border-zinc-900 overflow-hidden">
       {/* Background glow */}
@@ -38,7 +39,7 @@ export function PageHero({ label, title, highlight, description, gradient = 'blu
           {highlight && (
             <>
               <br />
-              <span className="text-zinc-700">{highlight}</span>
+              <span className={highlightColor}>{highlight}</span>
             </>
           )}
         </h1>

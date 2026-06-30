@@ -1,10 +1,17 @@
-import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
-import { Wallet } from 'lucide-react'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell';
+import { Wallet } from 'lucide-react';
 
 export default function WalletLoading() {
   return (
     <DashboardShell>
-      <DashboardHeader title="Wallet" icon={<Wallet className="h-5 w-5 text-zinc-700 animate-pulse" />} />
+      <DashboardHeader
+        title="Wallet"
+        icon={<Wallet className="h-5 w-5 text-zinc-500 animate-pulse" />}
+      />
       <DashboardContent>
         <div className="max-w-5xl space-y-6">
           {/* Tabs skeleton */}
@@ -22,7 +29,7 @@ export default function WalletLoading() {
               <div className="h-3 w-24 bg-zinc-900 animate-pulse" />
               <div className="h-9 w-40 bg-zinc-900 animate-pulse" />
               <div className="h-3 w-48 bg-zinc-900 animate-pulse" />
-              <div className="mt-6 grid gap-px bg-zinc-800 sm:grid-cols-2">
+              <div className="mt-6 grid gap-px bg-zinc-900 sm:grid-cols-2">
                 <div className="bg-zinc-950 p-4 space-y-2">
                   <div className="h-3 w-24 bg-zinc-900 animate-pulse" />
                   <div className="h-4 w-32 bg-zinc-900 animate-pulse" />
@@ -74,5 +81,5 @@ export default function WalletLoading() {
         </div>
       </DashboardContent>
     </DashboardShell>
-  )
+  );
 }

@@ -1,8 +1,11 @@
 name: Docker Hub Backup
 
 on:
-  push:
-    branches: [main]
+  # Weekly backup instead of on every push to main — building three images on
+  # each push was the heaviest consumer of Actions minutes. Run on demand via
+  # workflow_dispatch when an immediate backup is needed.
+  schedule:
+    - cron: '0 4 * * 0' # Sundays at 04:00 UTC
   workflow_dispatch:
 
 jobs:

@@ -57,6 +57,15 @@ describe('Fact-Based Identity: SignatureGuard', () => {
   const wallet = Wallet.createRandom();
   const address = wallet.address;
 
+  // A signature only proves key control. The signer must be on the allowlist
+  // to be promoted to an agent identity (read per-request by signatureGuard).
+  beforeAll(() => {
+    process.env.AUTHORIZED_SIGNER_ADDRESSES = address;
+  });
+  afterAll(() => {
+    delete process.env.AUTHORIZED_SIGNER_ADDRESSES;
+  });
+
   const signRequest = async (method: string, path: string, body: any, timestamp: number) => {
     const bodyStr = body && Object.keys(body).length > 0 ? JSON.stringify(body) : '';
     const message = `${method.toUpperCase()}:${path}:${bodyStr}:${timestamp}`;
@@ -94,7 +103,7 @@ describe('Fact-Based Identity: SignatureGuard', () => {
     expect(res.body.code).toBe('SIGNATURE_ERROR');
   });
 
-  it('accepts valid signature and bypasses Bearer requirement', async () => {
+  it('accepts a valid signature from an ALLOWLISTED signer and bypasses Bearer', async () => {
     const path = '/api/openclaw/version';
     const timestamp = Date.now();
     const signature = await signRequest('GET', path, null, timestamp);
@@ -108,6 +117,27 @@ describe('Fact-Based Identity: SignatureGuard', () => {
     // Should NOT be 401/403. Success or 500 (due to docker mock) is fine.
     expect(res.status).not.toBe(401);
     expect(res.status).not.toBe(403);
+  });
+
+  it('does NOT bypass Bearer for a valid signature from a NON-allowlisted signer', async () => {
+    // A self-generated keypair that is not on the allowlist must not be
+    // promoted to an agent identity — this is the unauthenticated-RCE foothold.
+    const stranger = Wallet.createRandom();
+    const path = '/api/openclaw/version';
+    const timestamp = Date.now();
+    const message = `GET:${path}::${timestamp}`;
+    const signature = await stranger.signMessage(message);
+
+    const res = await request(app)
+      .get(path)
+      .set('x-agent-signature', signature)
+      .set('x-agent-address', stranger.address)
+      .set('x-agent-timestamp', timestamp.toString());
+
+    // Non-allowlisted signer is not promoted, and with no Bearer header the
+    // Bearer gate rejects with 401 (Unauthorized — missing header). Either way
+    // it is NOT allowed through (the point of the test).
+    expect(res.status).toBe(401);
   });
 
   it('verifies identity is attached correctly', async () => {

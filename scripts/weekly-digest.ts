@@ -98,12 +98,12 @@ async function main() {
   })
 
   if (users.length === 0) {
-    console.log('No active users found. Sending test to eskyjunglelab@gmail.com')
+    console.log('No active users found. Sending test to YOUR_ADMIN_EMAIL_1')
     const posts = await getLatestPosts(3)
     const html = renderEmail('Esky', posts)
     const result = await resend.emails.send({
       from: 'Agentbot <noreply@agentbot.sh>',
-      to: 'eskyjunglelab@gmail.com',
+      to: 'YOUR_ADMIN_EMAIL_1',
       subject: `Agentbot Weekly — ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`,
       html,
     })

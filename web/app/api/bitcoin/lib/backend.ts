@@ -12,11 +12,13 @@ export async function proxyBitcoinRequest(path: string, init?: RequestInit) {
   const response = await signedFetch(path, {
     ...init,
     headers: {
-      'x-user-id': session.user.id,
-      'x-user-email': session.user.email || '',
       ...(init?.headers || {}),
     },
     signal: AbortSignal.timeout(10000),
+  }, {
+    id: session.user.id,
+    email: session.user.email || '',
+    role: session.user.isAdmin ? 'admin' : 'user',
   })
 
   const text = await response.text()

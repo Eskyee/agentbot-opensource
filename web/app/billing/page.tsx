@@ -12,45 +12,45 @@ const plans = [
   {
     id: 'solo',
     name: 'Solo',
-    specs: '1 Agent · MiMo V2 Pro',
+    specs: '1 agent, always on',
     price: 29,
     period: 'mo',
     features: [
-      { label: 'Telegram channel', included: true },
-      { label: 'Use your own AI key', included: true },
-      { label: 'A2A Bus Access', included: true },
-      { label: 'Basic Analytics', included: true },
+      { label: '1 autonomous agent', included: true },
+      { label: 'Telegram, Discord, WhatsApp', included: true },
+      { label: 'All skills included', included: true },
+      { label: 'Own isolated server', included: true },
+      { label: 'MiMo V2 Pro reasoning', included: true },
       { label: 'Priority support', included: false },
-      { label: 'White-glove staging', included: false },
     ],
   },
   {
     id: 'collective',
     name: 'Collective',
-    specs: '3 Agents · Llama 3.3',
+    specs: '3 agents, workflows',
     price: 69,
     period: 'mo',
     popular: true,
     features: [
-      { label: 'Everything in Solo', included: true },
-      { label: 'Royalty Split Engine', included: true },
+      { label: '3 autonomous agents', included: true },
+      { label: 'Multi-agent workflows', included: true },
+      { label: 'All channels + skills', included: true },
       { label: 'Mission Control Graph', included: true },
-      { label: 'Telegram + WhatsApp', included: true },
+      { label: 'Royalty Split Engine', included: true },
       { label: 'Priority support', included: true },
-      { label: 'White-glove staging', included: false },
     ],
   },
   {
     id: 'label',
     name: 'Label',
-    specs: 'Unlimited · DeepSeek R1',
+    specs: '10 agents, API access',
     price: 149,
     period: 'mo',
     features: [
-      { label: 'Everything in Collective', included: true },
-      { label: 'Priority A2A Routing', included: true },
+      { label: '10 autonomous agents', included: true },
+      { label: 'Full API access', included: true },
+      { label: 'Priority A2A routing', included: true },
       { label: '24/7 Signal Guard', included: true },
-      { label: 'White-glove staging', included: true },
       { label: 'Custom integrations', included: true },
       { label: 'Dedicated account manager', included: true },
     ],
@@ -156,7 +156,7 @@ export default function BillingPage() {
                         {plans.find(p => p.id === currentPlan)?.name || 'Solo'}
                       </h2>
                       <p className="text-zinc-500 text-sm mt-1">
-                        {plans.find(p => p.id === currentPlan)?.specs || '1 Agent · Mistral 7B'}
+                        {plans.find(p => p.id === currentPlan)?.specs || '1 agent, always on'}
                       </p>
                     </div>
                     <div className="text-right">

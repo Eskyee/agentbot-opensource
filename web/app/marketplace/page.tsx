@@ -1,26 +1,28 @@
-import Link from 'next/link'
-import { unstable_cache } from 'next/cache'
-import { MarketplaceClient } from '@/app/components/MarketplaceClient'
-import { formatPublicCount, getPublicPlatformStats } from '@/app/lib/public-platform-stats'
-import { prisma } from '@/app/lib/prisma'
+import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
+import { MarketplaceClient } from '@/app/components/MarketplaceClient';
+import { formatPublicCount, getPublicPlatformStats } from '@/app/lib/public-platform-stats';
+import { prisma } from '@/app/lib/prisma';
 
 export const metadata = {
   title: 'Marketplace — Agentbot',
-  description: 'Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.',
-}
+  description:
+    'Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.',
+};
 
 // Page is dynamic at the request boundary (Prisma is not available at build
 // time), but every Prisma call is wrapped in `unstable_cache` so repeat
 // requests within the cache window are served from memory instead of hitting
 // the database. Net effect: same response semantics as before, but TTFB drops
 // from ~600ms (5 sequential counts + a findMany) to ~50ms on cache hit.
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 const DEFAULT_TEMPLATES = [
   {
     name: 'Scout',
     role: 'Research & Intelligence',
-    description: 'Autonomous research agent. Scrapes the web, monitors competitors, compiles briefings. Deploy in 60 seconds.',
+    description:
+      'Autonomous research agent. Scrapes the web, monitors competitors, compiles briefings. Deploy in 60 seconds.',
     skills: ['Web Scraping', 'Research', 'Briefings', 'Monitoring'],
     tier: 'solo',
     brain: 'mimo-v2.5',
@@ -29,7 +31,8 @@ const DEFAULT_TEMPLATES = [
   {
     name: 'Promoter',
     role: 'Marketing & Social',
-    description: 'Runs your socials. Drafts posts, schedules content, engages followers. Never misses a beat.',
+    description:
+      'Runs your socials. Drafts posts, schedules content, engages followers. Never misses a beat.',
     skills: ['Social Media', 'Content', 'Scheduling', 'Engagement'],
     tier: 'solo',
     brain: 'mimo-v2.5',
@@ -38,7 +41,8 @@ const DEFAULT_TEMPLATES = [
   {
     name: 'Booker',
     role: 'Bookings & Finance',
-    description: 'Handles bookings, sends invoices, tracks payments. Autonomous royalty splits via CDP wallets on Base.',
+    description:
+      'Handles bookings, sends invoices, tracks payments. Autonomous royalty splits via CDP wallets on Base.',
     skills: ['Bookings', 'Invoicing', 'Payments', 'Royalty Splits'],
     tier: 'collective',
     brain: 'mimo-v2.5',
@@ -47,7 +51,8 @@ const DEFAULT_TEMPLATES = [
   {
     name: 'Operator',
     role: 'DevOps & Monitoring',
-    description: 'Watches your infrastructure. Alerts on downtime, monitors metrics, auto-restarts services.',
+    description:
+      'Watches your infrastructure. Alerts on downtime, monitors metrics, auto-restarts services.',
     skills: ['Monitoring', 'Alerts', 'DevOps', 'Auto-heal'],
     tier: 'solo',
     brain: 'mimo-v2.5',
@@ -56,7 +61,8 @@ const DEFAULT_TEMPLATES = [
   {
     name: 'DJ',
     role: 'Live Radio & Streaming',
-    description: 'Autonomous AI DJ. Streams live sets 24/7 on baseFM. Reactive track selection based on community vibes.',
+    description:
+      'Autonomous AI DJ. Streams live sets 24/7 on baseFM. Reactive track selection based on community vibes.',
     skills: ['Live Streaming', 'Music Selection', 'baseFM', 'Mux'],
     tier: 'collective',
     brain: 'mimo-v2.5',
@@ -65,22 +71,23 @@ const DEFAULT_TEMPLATES = [
   {
     name: 'Analyst',
     role: 'Data & Analytics',
-    description: 'Tracks your metrics, analyzes trends, generates reports. Token usage, costs, performance — all in one place.',
+    description:
+      'Tracks your metrics, analyzes trends, generates reports. Token usage, costs, performance — all in one place.',
     skills: ['Analytics', 'Reporting', 'Metrics', 'Dashboards'],
     tier: 'solo',
     brain: 'mimo-v2.5',
     popular: false,
   },
-]
+];
 
 const getTemplates = unstable_cache(
   async () => {
     const agents = await prisma.agent.findMany({
       where: { status: 'template' },
       orderBy: { createdAt: 'asc' },
-    })
+    });
     const dbTemplates = agents.map((a) => {
-      const cfg = (a.config as Record<string, any>) || {}
+      const cfg = (a.config as Record<string, any>) || {};
       return {
         name: a.name,
         role: cfg.role || a.name,
@@ -89,82 +96,123 @@ const getTemplates = unstable_cache(
         popular: true,
         tier: cfg.tier || 'solo',
         brain: cfg.brain || a.model || 'Unknown',
-      }
-    })
-    return dbTemplates.length > 0 ? dbTemplates : DEFAULT_TEMPLATES
+      };
+    });
+    return dbTemplates.length > 0 ? dbTemplates : DEFAULT_TEMPLATES;
   },
   ['marketplace:templates'],
-  { revalidate: 300, tags: ['marketplace-templates'] },
-)
+  { revalidate: 300, tags: ['marketplace-templates'] }
+);
 
 export default async function MarketplacePage() {
-  const [templates, stats] = await Promise.all([
-    getTemplates(),
-    getPublicPlatformStats(0),
-  ])
+  const [templates, stats] = await Promise.all([getTemplates(), getPublicPlatformStats(0)]);
 
   return (
     <main className="min-h-screen bg-black text-white font-mono pt-14">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="mb-12 sm:mb-16 space-y-4 sm:space-y-6">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Verified Fleet</span>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">
+            Verified Fleet
+          </span>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
             Agent <span className="text-zinc-700">Marketplace</span>
           </h1>
           <p className="text-zinc-400 text-sm max-w-xl leading-relaxed">
-            Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.
+            Gordon-Approved production agents. Zero slop. Tuned for high-performance crew
+            operations.
           </p>
         </div>
 
         <section className="mb-10 sm:mb-12 grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
           <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Verified Templates</div>
-            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.templates)}</div>
-            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Ready to deploy</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">
+              Verified Templates
+            </div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">
+              {formatPublicCount(stats.templates)}
+            </div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">
+              Ready to deploy
+            </div>
           </div>
           <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Deployed Agents</div>
-            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.totalAgents)}</div>
-            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Tracked in platform</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">
+              Deployed Agents
+            </div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">
+              {formatPublicCount(stats.totalAgents)}
+            </div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">
+              Tracked in platform
+            </div>
           </div>
           <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600">Live Agents</div>
-            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.liveAgents)}</div>
-            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Active in fleet</div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">
+              {formatPublicCount(stats.liveAgents)}
+            </div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">
+              Active in fleet
+            </div>
           </div>
           <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Showcase Ready</div>
-            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.showcaseAgents)}</div>
-            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Public signal</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">
+              Showcase Ready
+            </div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">
+              {formatPublicCount(stats.showcaseAgents)}
+            </div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">
+              Public signal
+            </div>
           </div>
           <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Skills Installed</div>
-            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.installedSkills)}</div>
-            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Across deployments</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">
+              Skills Installed
+            </div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">
+              {formatPublicCount(stats.installedSkills)}
+            </div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">
+              Across deployments
+            </div>
           </div>
         </section>
 
         <MarketplaceClient templates={templates} />
 
-        <div className="mt-12 sm:mt-16 pt-8 border-t border-zinc-800">
+        <div className="mt-12 sm:mt-16 pt-8 border-t border-zinc-900">
           <div className="max-w-2xl">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Platform Integrity</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+              Platform Integrity
+            </span>
             <h3 className="text-lg font-bold uppercase tracking-tight mb-3">The Purge</h3>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              We have archived all legacy and unoptimized agents. The current fleet is strictly tuned for <strong className="text-zinc-300">OpenClaw Multi-tenancy</strong> and <strong className="text-zinc-300">Base Onchain Economy</strong>. If it doesn&apos;t make you profit, it isn&apos;t here.
+              We have archived all legacy and unoptimized agents. The current fleet is strictly
+              tuned for <strong className="text-zinc-300">OpenClaw Multi-tenancy</strong> and{' '}
+              <strong className="text-zinc-300">Base Onchain Economy</strong>. If it doesn&apos;t
+              make you profit, it isn&apos;t here.
             </p>
           </div>
         </div>
 
-        <div className="mt-24 sm:mt-32 pt-12 border-t border-zinc-800 flex flex-col md:flex-row justify-between gap-8">
-          <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">Agentbot Marketplace</div>
+        <div className="mt-24 sm:mt-32 pt-12 border-t border-zinc-900 flex flex-col md:flex-row justify-between gap-8">
+          <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">
+            Agentbot Marketplace
+          </div>
           <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
-            <Link href="/agents" className="hover:text-white transition-colors">Agent Builder</Link>
-            <Link href="/token" className="hover:text-white transition-colors">Token</Link>
-            <Link href="/partner" className="hover:text-white transition-colors">Partner</Link>
+            <Link href="/agents" className="hover:text-white transition-colors">
+              Agent Builder
+            </Link>
+            <Link href="/token" className="hover:text-white transition-colors">
+              Token
+            </Link>
+            <Link href="/partner" className="hover:text-white transition-colors">
+              Partner
+            </Link>
           </div>
         </div>
       </div>
     </main>
-  )
+  );
 }

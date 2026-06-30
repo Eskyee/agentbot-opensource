@@ -32,7 +32,7 @@ Complete and professional token pages build trust, increase transparency, and im
 ### 1. Basic Information
 
 - [ ] Website URL — `https://basefm.space` (must be live, no dead links)
-- [ ] Official email — `rbasefm@icloud.com` (matches project domain)
+- [ ] Official email — `YOUR_ADMIN_EMAIL_2` (matches project domain)
 - [ ] Token description — neutral, no exaggerated claims
 - [ ] Logo — SVG or PNG 64x64, publicly accessible link (save to `web/public/images/basefm-logo.png`)
 - [ ] Whitepaper (if applicable)

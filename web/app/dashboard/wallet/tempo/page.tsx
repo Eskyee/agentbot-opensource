@@ -5,7 +5,11 @@ import { toast } from 'sonner';
 import { useCustomSession } from '@/app/lib/useCustomSession';
 import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch';
 import { Wallet, ExternalLink, Copy, Check } from 'lucide-react';
-import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell';
 import StatusPill from '@/app/components/shared/StatusPill';
 import WalletTabs from '../WalletTabs';
 
@@ -75,8 +79,12 @@ export default function WalletPage() {
 
     // Parallel fetch — both requests fire simultaneously
     Promise.all([
-      fetch(`/api/wallet?address=${stored}`).then(r => r.json()).catch(() => null),
-      fetch(`/api/wallet/sessions?address=${stored}`).then(r => r.json()).catch(() => null),
+      fetch(`/api/wallet?address=${stored}`)
+        .then((r) => r.json())
+        .catch(() => null),
+      fetch(`/api/wallet/sessions?address=${stored}`)
+        .then((r) => r.json())
+        .catch(() => null),
     ]).then(([walletData, sessionData]) => {
       // Defer non-urgent state updates to not block interactions
       startTransition(() => {
@@ -138,26 +146,29 @@ export default function WalletPage() {
     }
   }, [mppSession]);
 
-  const handleConnect = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addressInput.startsWith('0x') || addressInput.length !== 42) return;
+  const handleConnect = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!addressInput.startsWith('0x') || addressInput.length !== 42) return;
 
-    setConnecting(true);
-    try {
-      const res = await fetch(`/api/wallet?address=${addressInput}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      setConnecting(true);
+      try {
+        const res = await fetch(`/api/wallet?address=${addressInput}`);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
 
-      localStorage.setItem('tempo_wallet_address', addressInput);
-      setWalletAddress(addressInput);
-      setConnected(true);
-      setWallet(data);
-    } catch (err) {
-      console.error('Connect error:', err);
-    } finally {
-      setConnecting(false);
-    }
-  }, [addressInput]);
+        localStorage.setItem('tempo_wallet_address', addressInput);
+        setWalletAddress(addressInput);
+        setConnected(true);
+        setWallet(data);
+      } catch (err) {
+        console.error('Connect error:', err);
+      } finally {
+        setConnecting(false);
+      }
+    },
+    [addressInput]
+  );
 
   const handleDisconnect = useCallback(() => {
     localStorage.removeItem('tempo_wallet_address');
@@ -180,7 +191,9 @@ export default function WalletPage() {
           {!connected ? (
             /* Connect */
             <div className="border border-zinc-800 bg-zinc-950 p-6">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-1">Connect</span>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-1">
+                Connect
+              </span>
               <h2 className="text-sm font-bold tracking-tight uppercase mb-4">Tempo Wallet</h2>
               <p className="text-xs text-zinc-500 mb-6">
                 Connect your Tempo wallet to manage agent payments. Your wallet, your funds.
@@ -191,22 +204,22 @@ export default function WalletPage() {
                   value={addressInput}
                   onChange={(e) => setAddressInput(e.target.value)}
                   placeholder="0x..."
-                  className="w-full bg-black border border-zinc-800 px-4 py-2.5 text-xs text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono mb-4"
+                  className="w-full bg-black border border-zinc-800 px-4 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600 font-mono mb-4"
                 />
                 <button
                   type="submit"
                   disabled={connecting || addressInput.length !== 42}
-                  className="w-full bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                  className="w-full bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 transition-colors"
                 >
                   {connecting ? 'Connecting...' : 'Connect Wallet'}
                 </button>
               </form>
-              <div className="mt-4 pt-4 border-t border-zinc-800">
+              <div className="mt-4 pt-4 border-t border-zinc-900">
                 <a
                   href="https://wallet.tempo.xyz"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400 flex items-center gap-1"
+                  className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-zinc-400 flex items-center gap-1"
                 >
                   Create wallet at wallet.tempo.xyz <ExternalLink className="h-3 w-3" />
                 </a>
@@ -225,7 +238,9 @@ export default function WalletPage() {
                 ) : wallet ? (
                   <>
                     <div className="flex items-center justify-between mb-6">
-                      <span className="text-[10px] uppercase tracking-widest text-zinc-600">Balance</span>
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-500">
+                        Balance
+                      </span>
                       <div className="flex items-center gap-3">
                         <StatusPill
                           status={wallet.testnet ? 'idle' : 'active'}
@@ -234,23 +249,29 @@ export default function WalletPage() {
                         />
                         <button
                           onClick={handleDisconnect}
-                          className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-orange-400 transition-colors"
+                          className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-orange-400 transition-colors"
                         >
                           Disconnect
                         </button>
                       </div>
                     </div>
                     <div className="text-4xl font-bold tracking-tight mb-1">
-                      ${parseFloat(wallet.totalUsd || wallet.primaryToken?.balance || '0').toFixed(2)}
+                      $
+                      {parseFloat(wallet.totalUsd || wallet.primaryToken?.balance || '0').toFixed(
+                        2
+                      )}
                     </div>
                     <div className="text-xs text-zinc-500 font-mono mb-6">
-                      {wallet.primaryToken?.symbol || 'USD'} {wallet.allTokens.length > 1 ? `(+${wallet.allTokens.length - 1} more)` : ''}
+                      {wallet.primaryToken?.symbol || 'USD'}{' '}
+                      {wallet.allTokens.length > 1 ? `(+${wallet.allTokens.length - 1} more)` : ''}
                     </div>
-                    <div className="border-t border-zinc-800 pt-4 space-y-2">
+                    <div className="border-t border-zinc-900 pt-4 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-zinc-500">Address</span>
                         <a
-                          href={`https://explore${wallet.testnet ? '.testnet' : ''}.tempo.xyz/address/${wallet.address}`}
+                          href={`https://explore${
+                            wallet.testnet ? '.testnet' : ''
+                          }.tempo.xyz/address/${wallet.address}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs font-mono text-zinc-300 hover:text-zinc-100 flex items-center gap-1"
@@ -264,12 +285,19 @@ export default function WalletPage() {
                         <span className="text-xs font-mono text-zinc-300">{wallet.chain}</span>
                       </div>
                       {wallet.allTokens.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-zinc-800">
-                          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Tokens</span>
+                        <div className="mt-3 pt-3 border-t border-zinc-900">
+                          <span className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-2">
+                            Tokens
+                          </span>
                           {wallet.allTokens.map((token) => (
-                            <div key={token.address} className="flex items-center justify-between py-1">
+                            <div
+                              key={token.address}
+                              className="flex items-center justify-between py-1"
+                            >
                               <span className="text-xs text-zinc-500">{token.symbol}</span>
-                              <span className="text-xs font-mono text-zinc-300">{parseFloat(token.balance).toFixed(2)}</span>
+                              <span className="text-xs font-mono text-zinc-300">
+                                {parseFloat(token.balance).toFixed(2)}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -282,33 +310,47 @@ export default function WalletPage() {
               {/* Payment Session */}
               <div className="border border-zinc-800 bg-zinc-950 p-6 mb-px">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Payment Session</span>
-                  {mppSession && (
-                    <StatusPill status="active" label="Active" size="sm" />
-                  )}
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">
+                    Payment Session
+                  </span>
+                  {mppSession && <StatusPill status="active" label="Active" size="sm" />}
                 </div>
                 {mppSession ? (
                   <>
-                    <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-3 mb-4">
+                    <div className="grid gap-px bg-zinc-900 grid-cols-1 sm:grid-cols-3 mb-4">
                       <div className="bg-zinc-950 p-3">
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Deposited</span>
-                        <span className="text-lg font-bold tracking-tight">${mppSession.deposit}</span>
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-500 block">
+                          Deposited
+                        </span>
+                        <span className="text-lg font-bold tracking-tight">
+                          ${mppSession.deposit}
+                        </span>
                       </div>
                       <div className="bg-zinc-950 p-3">
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Spent</span>
-                        <span className="text-lg font-bold tracking-tight text-red-400">${mppSession.spent}</span>
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-500 block">
+                          Spent
+                        </span>
+                        <span className="text-lg font-bold tracking-tight text-red-400">
+                          ${mppSession.spent}
+                        </span>
                       </div>
                       <div className="bg-zinc-950 p-3">
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Remaining</span>
-                        <span className="text-lg font-bold tracking-tight text-emerald-400">${mppSession.remaining}</span>
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-500 block">
+                          Remaining
+                        </span>
+                        <span className="text-lg font-bold tracking-tight text-emerald-400">
+                          ${mppSession.remaining}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-xs border-t border-zinc-800 pt-4">
-                      <span className="text-zinc-500">Pending vouchers: {mppSession.vouchers.length}</span>
+                    <div className="flex items-center justify-between text-xs border-t border-zinc-900 pt-4">
+                      <span className="text-zinc-500">
+                        Pending vouchers: {mppSession.vouchers.length}
+                      </span>
                       <button
                         onClick={closeMppSession}
                         disabled={sessionLoading}
-                        className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-orange-400 transition-colors disabled:opacity-50"
+                        className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-orange-400 transition-colors disabled:opacity-50"
                       >
                         {sessionLoading ? 'Closing...' : 'Close Session'}
                       </button>
@@ -317,12 +359,13 @@ export default function WalletPage() {
                 ) : (
                   <>
                     <p className="text-xs text-zinc-500 mb-4">
-                      Open a payment session for off-chain agent billing. Sub-100ms per call, no gas fees.
+                      Open a payment session for off-chain agent billing. Sub-100ms per call, no gas
+                      fees.
                     </p>
                     <button
                       onClick={openSession}
                       disabled={sessionLoading}
-                      className="w-full bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                      className="w-full bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 transition-colors"
                     >
                       {sessionLoading ? 'Opening...' : 'Open Session ($10.00)'}
                     </button>
@@ -331,10 +374,12 @@ export default function WalletPage() {
               </div>
 
               {/* Actions */}
-              <div className="grid gap-px bg-zinc-800 grid-cols-2 mb-px">
+              <div className="grid gap-px bg-zinc-900 grid-cols-2 mb-px">
                 <div className="bg-zinc-950 border border-zinc-800 p-4">
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Top Up via Stripe</span>
-                  <div className="grid grid-cols-2 gap-px bg-zinc-800">
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-3">
+                    Top Up via Stripe
+                  </span>
+                  <div className="grid grid-cols-2 gap-px bg-zinc-900">
                     {[5, 10, 25, 50].map((amt) => (
                       <button
                         key={amt}
@@ -342,7 +387,9 @@ export default function WalletPage() {
                           if (topUpLoading) return;
                           setTopUpLoading(amt);
                           try {
-                            const res = await fetch(`/api/wallet/top-up?amount=${amt * 100}&address=${walletAddress}`);
+                            const res = await fetch(
+                              `/api/wallet/top-up?amount=${amt * 100}&address=${walletAddress}`
+                            );
                             const data = await res.json();
                             if (data.url) {
                               window.location.href = data.url;
@@ -368,7 +415,9 @@ export default function WalletPage() {
                   </div>
                 </div>
                 <div className="bg-zinc-950 border border-zinc-800 p-4">
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Direct Transfer</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-3">
+                    Direct Transfer
+                  </span>
                   <p className="text-xs text-zinc-500 mb-3">
                     Send USDC directly to your Tempo wallet address.
                   </p>
@@ -382,9 +431,13 @@ export default function WalletPage() {
                     className="w-full border border-zinc-700 hover:border-zinc-500 p-2 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
                     {copied ? (
-                      <><Check className="h-3 w-3" /> Copied</>
+                      <>
+                        <Check className="h-3 w-3" /> Copied
+                      </>
                     ) : (
-                      <><Copy className="h-3 w-3" /> Copy Address</>
+                      <>
+                        <Copy className="h-3 w-3" /> Copy Address
+                      </>
                     )}
                   </button>
                 </div>
@@ -392,14 +445,18 @@ export default function WalletPage() {
 
               {/* Recent Activity */}
               <div>
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Recent Activity</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-2">
+                  Recent Activity
+                </span>
                 <div className="border border-zinc-800 bg-zinc-950 p-6">
                   <p className="text-xs text-zinc-500 mb-3">
                     Transaction history is available on Tempo Explorer.
                   </p>
                   {wallet && (
                     <a
-                      href={`https://explore${wallet.testnet ? '.testnet' : ''}.tempo.xyz/address/${wallet.address}`}
+                      href={`https://explore${wallet.testnet ? '.testnet' : ''}.tempo.xyz/address/${
+                        wallet.address
+                      }`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 border border-zinc-700 hover:border-zinc-500 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-white transition-colors"
@@ -410,13 +467,15 @@ export default function WalletPage() {
                 </div>
                 {mppSession && mppSession.vouchers.length > 0 && (
                   <div className="mt-4">
-                    <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Session Activity</span>
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-2">
+                      Session Activity
+                    </span>
                     <div className="border border-zinc-800 divide-y divide-zinc-800">
                       {mppSession.vouchers.map((v: Voucher, i: number) => (
                         <div key={i} className="p-4 flex items-center justify-between bg-zinc-950">
                           <div>
                             <div className="text-xs text-zinc-300">Agent call ({v.plugin})</div>
-                            <div className="text-[10px] text-zinc-600 mt-1">
+                            <div className="text-[10px] text-zinc-500 mt-1">
                               {new Date(v.timestamp).toLocaleString()}
                             </div>
                           </div>

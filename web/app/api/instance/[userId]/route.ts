@@ -62,8 +62,8 @@ export async function GET(
       subscriptionStatus: true,
     },
   })
-  const persistedUrl = ownedUser?.openclawUrl || `https://agentbot-agent-${userId}-production.up.railway.app`
-  const runtimeHost = getRuntimeHost(persistedUrl, `agentbot-agent-${userId}-production.up.railway.app`)
+  const persistedUrl = ownedUser?.openclawUrl || `https://agentbot-agent-${userId}YOUR_SERVICE_URL`
+  const runtimeHost = getRuntimeHost(persistedUrl, `agentbot-agent-${userId}YOUR_SERVICE_URL`)
   const [registration, latestAgent] = ownedUser?.id
     ? await Promise.all([
         prisma.$queryRaw<
@@ -152,7 +152,7 @@ export async function POST(
     })
   }
 
-  const persistedUrl = ownedUser.openclawUrl || `https://agentbot-agent-${userId}-production.up.railway.app`
+  const persistedUrl = ownedUser.openclawUrl || `https://agentbot-agent-${userId}YOUR_SERVICE_URL`
   const runtime = await probeOpenClawRuntime(persistedUrl)
 
   if (runtime.reason?.includes('Application not found')) {

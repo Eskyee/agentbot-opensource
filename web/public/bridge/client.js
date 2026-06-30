@@ -41,23 +41,36 @@ if (!BRIDGE_SECRET) {
 function fetch(url, options = {}) {
   return new Promise((resolve, reject) => {
     const mod = url.startsWith('https') ? https : http;
-    const req = mod.request(url, {
-      method: options.method || 'GET',
-      headers: options.headers || {},
-      timeout: 15000,
-    }, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          resolve({ status: res.statusCode, json: () => JSON.parse(data), text: () => data });
-        } catch {
-          resolve({ status: res.statusCode, json: () => ({ error: 'parse error' }), text: () => data });
-        }
-      });
-    });
+    const req = mod.request(
+      url,
+      {
+        method: options.method || 'GET',
+        headers: options.headers || {},
+        timeout: 15000,
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          try {
+            resolve({ status: res.statusCode, json: () => JSON.parse(data), text: () => data });
+          } catch {
+            resolve({
+              status: res.statusCode,
+              json: () => ({ error: 'parse error' }),
+              text: () => data,
+            });
+          }
+        });
+      }
+    );
     req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('timeout'));
+    });
     if (options.body) req.write(options.body);
     req.end();
   });
@@ -90,18 +103,22 @@ async function respond(requestId, content, done = true) {
 
 function runOpenClaw(messages) {
   // Build the prompt from messages
-  const prompt = messages.map(m => `${m.role}: ${m.content}`).join('\n');
+  const prompt = messages.map((m) => `${m.role}: ${m.content}`).join('\n');
 
   return new Promise((resolve) => {
-    const child = spawn(OPENCLAW_CMD, ['run', '--message', prompt], {
+    const child = spawn(OPENCLAW_CMD, ['agent', '--message', prompt], {
       timeout: 120000,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
     let stdout = '';
     let stderr = '';
-    child.stdout.on('data', (data) => { stdout += data; });
-    child.stderr.on('data', (data) => { stderr += data; });
+    child.stdout.on('data', (data) => {
+      stdout += data;
+    });
+    child.stderr.on('data', (data) => {
+      stderr += data;
+    });
 
     child.on('close', (code) => {
       resolve(stdout.trim() || `Bridge error (exit ${code}): ${stderr.trim()}`);
@@ -127,7 +144,9 @@ async function loop() {
     }
 
     if (data.type === 'chat' && data.requestId) {
-      console.log(`[bridge] Received request ${data.requestId} with ${data.messages.length} messages`);
+      console.log(
+        `[bridge] Received request ${data.requestId} with ${data.messages.length} messages`
+      );
 
       // Run OpenClaw asynchronously
       const response = await runOpenClaw(data.messages);

@@ -29,11 +29,11 @@ The Connect form asked for WebSocket URL and Gateway Token, but even pasting the
 ### The Architecture
 
 Each user gets:
-- Their own Railway service: `agentbot-agent-{userId}-production.up.railway.app`
+- Their own Railway service: `agentbot-agent-{userId}YOUR_SERVICE_URL`
 - Their own unique gateway token stored in `agent_registrations.gateway_token`
 
 The platform has a MAIN gateway (for platform operations):
-- `openclaw-production-a09d.up.railway.app`
+- `YOUR_SERVICE_URL`
 - Token: `4uwv8kylbj99wphk5zl1kyz7g8tvhcdb`
 
 ### What Went Wrong

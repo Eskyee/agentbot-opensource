@@ -1,6 +1,6 @@
 import { CdpClient } from '@coinbase/cdp-sdk';
 import dotenv from 'dotenv';
-import { parseUnits, formatUnits } from 'viem';
+import { parseUnits, formatUnits, isAddress, getAddress } from 'viem';
 import { randomUUID, createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { log } from '../lib/logger';
 import { pool } from '../lib/db';
@@ -166,6 +166,26 @@ export class WalletService {
     amount: number,
     idempotencyKey?: string
   ): Promise<string> {
+    // Validate the destination is a well-formed EVM address before building
+    // ERC-20 calldata — an over/under-length value would produce malformed,
+    // unrecoverable calldata. getAddress also checksum-normalises.
+    if (!isAddress(toAddress)) {
+      throw new Error(`Invalid destination address: ${toAddress}`);
+    }
+    const normalizedTo = getAddress(toAddress);
+
+    // Authorize the source: the funds move from a custodial wallet whose key
+    // the backend holds, so we MUST confirm the caller's userId actually owns
+    // `fromAddress`. Without this, a caller could drain any agent's wallet by
+    // naming someone else's address.
+    const ownership = await pool.query(
+      `SELECT 1 FROM wallets WHERE lower(address) = lower($1) AND user_id = $2 LIMIT 1`,
+      [fromAddress, String(userId)]
+    );
+    if (ownership.rowCount === 0) {
+      throw new Error('Source wallet not found or not owned by user');
+    }
+
     // Validate amount before touching any on-chain resources.
     if (!Number.isFinite(amount) || amount <= 0) {
       throw new Error(`Invalid transfer amount: ${amount}. Must be a positive number.`);
@@ -187,7 +207,7 @@ export class WalletService {
            (user_id, from_address, to_address, amount_usdc, amount_units, status, idempotency_key)
          VALUES ($1, $2, $3, $4, $5, 'pending', $6)
          RETURNING id`,
-        [String(userId), fromAddress, toAddress, roundedAmount, amountUnits.toString(), dedupeKey]
+        [String(userId), fromAddress, normalizedTo, roundedAmount, amountUnits.toString(), dedupeKey]
       );
       outboxId = insertResult.rows[0].id;
     } catch (err: unknown) {
@@ -213,7 +233,7 @@ export class WalletService {
       //   selector "transfer(address,uint256)" + 32-byte to + 32-byte amount.
       const client = getCdpClient();
       const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as Hex;
-      const data = `0xa9059cbb${toAddress.replace('0x', '').toLowerCase().padStart(64, '0')}${amountUnits.toString(16).padStart(64, '0')}` as Hex;
+      const data = `0xa9059cbb${normalizedTo.replace('0x', '').toLowerCase().padStart(64, '0')}${amountUnits.toString(16).padStart(64, '0')}` as Hex;
 
       const { transactionHash } = await client.evm.sendTransaction({
         address: fromAddress as Hex,
@@ -238,7 +258,7 @@ export class WalletService {
       // Step 4: mirror to treasury for the dashboard.
       await pool.query(
         'INSERT INTO treasury_transactions (user_id, type, amount_usdc, tx_hash, description, status) VALUES ($1, $2, $3, $4, $5, $6)',
-        [userId, 'transfer', amount, transactionHash, `Transfer to ${toAddress}`, 'confirmed']
+        [userId, 'transfer', amount, transactionHash, `Transfer to ${normalizedTo}`, 'confirmed']
       );
 
       return transactionHash;

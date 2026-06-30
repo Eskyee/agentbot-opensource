@@ -12,9 +12,17 @@ import { signedFetch } from '@/app/lib/backend-client';
 export async function railwayDeployStep(agentId: string, plan: string) {
   console.info(`[Workflow/Step] Deploying agent ${agentId} on plan ${plan}`);
   
+  // This is a platform-initiated infrastructure step with no interactive user
+  // in scope. /api/railway/provision authenticates the user context but does
+  // not use the identity, so we sign a stable service context so the call
+  // still passes once HMAC enforcement is enabled.
   const res = await signedFetch('/api/railway/provision', {
     method: 'POST',
     body: JSON.stringify({ agentId, plan }),
+  }, {
+    id: 'service:agent-provision',
+    email: '',
+    role: 'service',
   });
   
   if (!res.ok) {

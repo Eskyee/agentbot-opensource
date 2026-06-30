@@ -72,7 +72,7 @@ export default function TimePage() {
     <main className="min-h-screen bg-black text-white font-mono pt-14">
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="mb-8">
-          <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600 mb-2">Time</div>
+          <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-500 mb-2">Time</div>
           <h1 className="text-3xl font-bold uppercase tracking-tight">Time Tracking</h1>
         </div>
 
@@ -105,11 +105,11 @@ export default function TimePage() {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Total Tracked</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500">Total Tracked</div>
             <div className="mt-2 text-2xl font-bold">{formatTime(totalTracked)}</div>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Billable</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500">Billable</div>
             <div className="mt-2 text-2xl font-bold text-green-400">{formatTime(totalBillable)}</div>
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function TimePage() {
         {/* Entries */}
         <div className="space-y-2">
           {entries.length === 0 && (
-            <div className="text-center py-12 text-zinc-600">
+            <div className="text-center py-12 text-zinc-500">
               <Clock className="h-12 w-12 mx-auto mb-4 opacity-30" />
               <p className="text-sm">No time entries yet. Start the timer above.</p>
             </div>

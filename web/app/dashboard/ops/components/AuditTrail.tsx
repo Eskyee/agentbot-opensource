@@ -53,7 +53,7 @@ export function AuditTrail() {
       {loading && <div className="text-xs text-zinc-500">Loading...</div>}
       {error && <div className="text-xs text-red-500">{error}</div>}
       {!loading && !error && entries.length === 0 && (
-        <div className="text-xs text-zinc-600 text-center py-4">No recent operations</div>
+        <div className="text-xs text-zinc-500 text-center py-4">No recent operations</div>
       )}
       <div className="flex-1 overflow-y-auto space-y-1">
         {entries.map((entry) => (
@@ -61,7 +61,7 @@ export function AuditTrail() {
             key={entry.id}
             className="flex items-start gap-2 px-2 py-1 border-l-2 border-l-zinc-700 bg-zinc-900 rounded-none"
           >
-            <span className="text-[10px] text-zinc-600 font-mono shrink-0 w-10">
+            <span className="text-[10px] text-zinc-500 font-mono shrink-0 w-10">
               {formatTime(entry.created_at)}
             </span>
             <div className="min-w-0">
@@ -69,7 +69,7 @@ export function AuditTrail() {
                 {entry.content}
               </div>
               {entry.from_agent && (
-                <span className="text-[10px] text-zinc-600">
+                <span className="text-[10px] text-zinc-500">
                   from: {entry.from_agent}
                 </span>
               )}

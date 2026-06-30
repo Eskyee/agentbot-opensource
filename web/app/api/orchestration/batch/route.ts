@@ -54,6 +54,10 @@ export async function POST(req: NextRequest) {
         tools: body.tools,
         userId: session.user.id,
       }),
+    }, {
+      id: session.user.id,
+      email: session.user.email || '',
+      role: session.user.isAdmin ? 'admin' : 'user',
     })
 
     if (!response.ok) {

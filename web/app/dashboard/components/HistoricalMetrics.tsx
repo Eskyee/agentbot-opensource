@@ -1,87 +1,88 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
 interface HistoricalData {
-  timestamp: string
-  cpu: number
-  memory: number
-  messages: number
-  errors: number
+  timestamp: string;
+  cpu: number;
+  memory: number;
+  messages: number;
+  errors: number;
 }
 
 export function HistoricalMetrics({ userId }: { userId: string }) {
-  const [timeRange, setTimeRange] = useState('24h')
-  const [historicalData, setHistoricalData] = useState<HistoricalData[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [timeRange, setTimeRange] = useState('24h');
+  const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!userId) return
-    
+    if (!userId) return;
+
     const fetchHistoricalMetrics = async () => {
       try {
-        setLoading(true)
-        setError(null)
-        
-        const response = await fetch(`/api/metrics/${userId}/historical?range=${timeRange}`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch historical metrics')
-        }
-        
-        const data = await response.json()
-        setHistoricalData(data.metrics || [])
-      } catch (err) {
-        console.error('Error fetching historical metrics:', err)
-        setError('Failed to load historical metrics')
-        setHistoricalData([])
-      } finally {
-        setLoading(false)
-      }
-    }
+        setLoading(true);
+        setError(null);
 
-    fetchHistoricalMetrics()
-    
+        const response = await fetch(`/api/metrics/${userId}/historical?range=${timeRange}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch historical metrics');
+        }
+
+        const data = await response.json();
+        setHistoricalData(data.metrics || []);
+      } catch (err) {
+        console.error('Error fetching historical metrics:', err);
+        setError('Failed to load historical metrics');
+        setHistoricalData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistoricalMetrics();
+
     // Set up polling for real-time updates
-    const interval = setInterval(fetchHistoricalMetrics, 60000) // Update every minute
-    
-    return () => clearInterval(interval)
-  }, [timeRange, userId])
+    const interval = setInterval(fetchHistoricalMetrics, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [timeRange, userId]);
 
   const getAverage = (metric: keyof HistoricalData) => {
-    if (historicalData.length === 0) return 0
-    const sum = historicalData.reduce((acc, curr) => acc + (curr[metric] as number), 0)
-    return Math.round(sum / historicalData.length)
-  }
+    if (historicalData.length === 0) return 0;
+    const sum = historicalData.reduce((acc, curr) => acc + (curr[metric] as number), 0);
+    return Math.round(sum / historicalData.length);
+  };
 
   const getTrend = (metric: keyof HistoricalData) => {
-    if (historicalData.length < 2) return 'neutral'
-    const recent = historicalData.slice(-5)
-    const recentAvg = recent.reduce((acc, curr) => acc + (curr[metric] as number), 0) / recent.length
-    const earlierSlice = historicalData.slice(0, Math.max(5, historicalData.length / 4))
-    const earlierAvg = earlierSlice.reduce((acc, curr) => acc + (curr[metric] as number), 0) / (earlierSlice.length || 1)
-    
-    if (recentAvg > earlierAvg * 1.1) return 'up'
-    if (recentAvg < earlierAvg * 0.9) return 'down'
-    return 'neutral'
-  }
+    if (historicalData.length < 2) return 'neutral';
+    const recent = historicalData.slice(-5);
+    const recentAvg =
+      recent.reduce((acc, curr) => acc + (curr[metric] as number), 0) / recent.length;
+    const earlierSlice = historicalData.slice(0, Math.max(5, historicalData.length / 4));
+    const earlierAvg =
+      earlierSlice.reduce((acc, curr) => acc + (curr[metric] as number), 0) /
+      (earlierSlice.length || 1);
+
+    if (recentAvg > earlierAvg * 1.1) return 'up';
+    if (recentAvg < earlierAvg * 0.9) return 'down';
+    return 'neutral';
+  };
 
   const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp)
+    const date = new Date(timestamp);
     if (timeRange === '24h') {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
-  }
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
 
   if (!userId) {
     return (
       <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
-        <div className="text-center text-zinc-500">
-          No agent selected
-        </div>
+        <div className="text-center text-zinc-500">No agent selected</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -132,10 +133,14 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-mono text-white">{getAverage('cpu')}%</span>
                 {getTrend('cpu') === 'up' && (
-                  <span className="text-xs text-red-400">↑ {Math.round((getAverage('cpu') / 100) * 100)}%</span>
+                  <span className="text-xs text-red-400">
+                    ↑ {Math.round((getAverage('cpu') / 100) * 100)}%
+                  </span>
                 )}
                 {getTrend('cpu') === 'down' && (
-                  <span className="text-xs text-green-400">↓ {Math.round((100 / getAverage('cpu')) * 100)}%</span>
+                  <span className="text-xs text-green-400">
+                    ↓ {Math.round((100 / getAverage('cpu')) * 100)}%
+                  </span>
                 )}
               </div>
             </div>
@@ -158,10 +163,14 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-mono text-white">{getAverage('memory')}%</span>
                 {getTrend('memory') === 'up' && (
-                  <span className="text-xs text-red-400">↑ {Math.round((getAverage('memory') / 100) * 100)}%</span>
+                  <span className="text-xs text-red-400">
+                    ↑ {Math.round((getAverage('memory') / 100) * 100)}%
+                  </span>
                 )}
                 {getTrend('memory') === 'down' && (
-                  <span className="text-xs text-green-400">↓ {Math.round((100 / getAverage('memory')) * 100)}%</span>
+                  <span className="text-xs text-green-400">
+                    ↓ {Math.round((100 / getAverage('memory')) * 100)}%
+                  </span>
                 )}
               </div>
             </div>
@@ -178,7 +187,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
           </div>
 
           {/* Analytics Summary */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-zinc-900">
             <div>
               <div className="text-xs text-zinc-500 mb-1">Avg CPU</div>
               <div className="text-lg font-bold font-mono">{getAverage('cpu')}%</div>
@@ -197,5 +206,5 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
         </div>
       )}
     </div>
-  )
+  );
 }

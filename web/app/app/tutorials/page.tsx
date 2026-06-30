@@ -1,53 +1,83 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 
 interface TutorialProgress {
-  status: string
-  stepIndex: number
+  status: string;
+  stepIndex: number;
 }
 
 const TUTORIALS = [
-  { key: 'deploy-first-agent', name: 'Deploy Your First Agent', icon: '🚀', desc: 'Get an AI agent running in under 2 minutes.', stepCount: 4 },
-  { key: 'connect-channels', name: 'Connect Your Channels', icon: '📡', desc: 'Link Telegram, Discord, or WhatsApp.', stepCount: 3 },
-  { key: 'explore-skills', name: 'Explore Agent Skills', icon: '✳', desc: 'Discover what your agent can do.', stepCount: 3 },
-  { key: 'set-up-wallet', name: 'Set Up Agent Wallet', icon: '💰', desc: 'Give your agent a crypto wallet on Base.', stepCount: 3 },
-  { key: 'build-workflow', name: 'Build a Workflow', icon: '⊞', desc: 'Create automated workflows.', stepCount: 4 },
-]
+  {
+    key: 'deploy-first-agent',
+    name: 'Deploy Your First Agent',
+    icon: '🚀',
+    desc: 'Get an AI agent running in under 2 minutes.',
+    stepCount: 4,
+  },
+  {
+    key: 'connect-channels',
+    name: 'Connect Your Channels',
+    icon: '📡',
+    desc: 'Link Telegram, Discord, or WhatsApp.',
+    stepCount: 3,
+  },
+  {
+    key: 'explore-skills',
+    name: 'Explore Agent Skills',
+    icon: '✳',
+    desc: 'Discover what your agent can do.',
+    stepCount: 3,
+  },
+  {
+    key: 'set-up-wallet',
+    name: 'Set Up Agent Wallet',
+    icon: '💰',
+    desc: 'Give your agent a crypto wallet on Base.',
+    stepCount: 3,
+  },
+  {
+    key: 'build-workflow',
+    name: 'Build a Workflow',
+    icon: '⊞',
+    desc: 'Create automated workflows.',
+    stepCount: 4,
+  },
+];
 
 export default function TutorialsPage() {
-  const [progress, setProgress] = useState<Record<string, TutorialProgress>>({})
-  const [loading, setLoading] = useState(true)
-  const [expandedKey, setExpandedKey] = useState<string | null>(null)
+  const [progress, setProgress] = useState<Record<string, TutorialProgress>>({});
+  const [loading, setLoading] = useState(true);
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   const fetchProgress = useCallback(async () => {
     try {
       const results = await Promise.all(
         TUTORIALS.map(async (t) => {
-          const res = await fetch(`/api/operator/tutorials/${t.key}`)
-          if (!res.ok) return { key: t.key, progress: { status: 'not_started', stepIndex: 0 } }
-          const data = await res.json()
-          return { key: t.key, progress: data.progress }
+          const res = await fetch(`/api/operator/tutorials/${t.key}`);
+          if (!res.ok) return { key: t.key, progress: { status: 'not_started', stepIndex: 0 } };
+          const data = await res.json();
+          return { key: t.key, progress: data.progress };
         })
-      )
-      const map: Record<string, TutorialProgress> = {}
+      );
+      const map: Record<string, TutorialProgress> = {};
       for (const r of results) {
-        map[r.key] = r.progress
+        map[r.key] = r.progress;
       }
-      setProgress(map)
+      setProgress(map);
     } catch {
       // Silent fail — show empty progress
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchProgress()
-  }, [fetchProgress])
+    fetchProgress();
+  }, [fetchProgress]);
 
-  const completedCount = Object.values(progress).filter(p => p.status === 'completed').length
+  const completedCount = Object.values(progress).filter((p) => p.status === 'completed').length;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -55,12 +85,12 @@ export default function TutorialsPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold">Learn</h1>
-            <p className="text-zinc-400 text-sm mt-1">
-              Step-by-step tutorials to master Agentbot.
-            </p>
+            <p className="text-zinc-400 text-sm mt-1">Step-by-step tutorials to master Agentbot.</p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold">{completedCount}/{TUTORIALS.length}</div>
+            <div className="text-2xl font-bold">
+              {completedCount}/{TUTORIALS.length}
+            </div>
             <div className="text-xs text-zinc-500">completed</div>
           </div>
         </div>
@@ -85,9 +115,9 @@ export default function TutorialsPage() {
         ) : (
           <div className="space-y-3">
             {TUTORIALS.map((t) => {
-              const p = progress[t.key] ?? { status: 'not_started', stepIndex: 0 }
-              const isComplete = p.status === 'completed'
-              const isExpanded = expandedKey === t.key
+              const p = progress[t.key] ?? { status: 'not_started', stepIndex: 0 };
+              const isComplete = p.status === 'completed';
+              const isExpanded = expandedKey === t.key;
 
               return (
                 <div
@@ -111,9 +141,7 @@ export default function TutorialsPage() {
                         </div>
                         <div className="text-sm text-zinc-400 mt-0.5">{t.desc}</div>
                       </div>
-                      <span className="text-zinc-500 text-sm">
-                        {isExpanded ? '−' : '+'}
-                      </span>
+                      <span className="text-zinc-500 text-sm">{isExpanded ? '−' : '+'}</span>
                     </div>
                     {!isComplete && (
                       <div className="mt-3 h-1 bg-zinc-800 rounded-full">
@@ -126,7 +154,7 @@ export default function TutorialsPage() {
                   </button>
 
                   {isExpanded && (
-                    <div className="px-5 pb-5 pt-0 border-t border-zinc-800/50">
+                    <div className="px-5 pb-5 pt-0 border-t border-zinc-900/50">
                       <div className="text-sm text-zinc-400 mt-3">
                         Progress: step {Math.min(p.stepIndex + 1, t.stepCount)} of {t.stepCount}
                       </div>
@@ -147,21 +175,29 @@ export default function TutorialsPage() {
                     </div>
                   )}
                 </div>
-              )
+              );
             })}
           </div>
         )}
 
         {/* Bottom nav */}
-        <div className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-800 px-6 py-3">
+        <div className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-900 px-6 py-3">
           <div className="max-w-3xl mx-auto flex justify-around text-xs text-zinc-500">
-            <Link href="/app/activity" className="hover:text-white transition-colors">Activity</Link>
-            <Link href="/app/templates" className="hover:text-white transition-colors">Templates</Link>
-            <Link href="/app/tutorials" className="text-white font-medium">Learn</Link>
-            <Link href="/app/advanced" className="hover:text-white transition-colors">Advanced</Link>
+            <Link href="/app/activity" className="hover:text-white transition-colors">
+              Activity
+            </Link>
+            <Link href="/app/templates" className="hover:text-white transition-colors">
+              Templates
+            </Link>
+            <Link href="/app/tutorials" className="text-white font-medium">
+              Learn
+            </Link>
+            <Link href="/app/advanced" className="hover:text-white transition-colors">
+              Advanced
+            </Link>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -139,7 +139,7 @@ export default function HeartbeatPage() {
         {/* Loading */}
         {loading && (
           <EmptyState
-            icon={<Activity className="h-8 w-8 text-zinc-600 animate-pulse" />}
+            icon={<Activity className="h-8 w-8 text-zinc-500 animate-pulse" />}
             title="Loading heartbeat data…"
           />
         )}
@@ -147,7 +147,7 @@ export default function HeartbeatPage() {
         {/* No agent deployed */}
         {!loading && !agentId && !error && (
           <EmptyState
-            icon={<Wifi className="h-8 w-8 text-zinc-600" />}
+            icon={<Wifi className="h-8 w-8 text-zinc-500" />}
             title="No agent deployed yet"
             description="Deploy your OpenClaw agent to monitor its heartbeat"
           />
@@ -161,7 +161,7 @@ export default function HeartbeatPage() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest mb-1">Agent Pulse</p>
-                  <p className="text-[10px] text-zinc-600 font-mono">{agentId}</p>
+                  <p className="text-[10px] text-zinc-500 font-mono">{agentId}</p>
                 </div>
                 <StatusPill
                   status={hb.enabled ? 'active' : 'idle'}
@@ -171,20 +171,20 @@ export default function HeartbeatPage() {
 
               <div className="grid grid-cols-2 gap-6 mb-6">
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 flex items-center gap-1">
                     <Clock className="h-3 w-3" /> Last seen
                   </div>
                   <div className="text-sm text-zinc-300">{formatRelative(hb.lastHeartbeat)}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Next in</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Next in</div>
                   <div className="text-sm text-zinc-300">{formatNext(hb.nextHeartbeat, hb.enabled)}</div>
                 </div>
               </div>
 
               {/* Frequency selector */}
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Frequency</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Frequency</div>
                 <div className="flex gap-2 flex-wrap">
                   {FREQS.map((freq) => (
                     <button
@@ -213,7 +213,7 @@ export default function HeartbeatPage() {
               <div className="h-1.5 bg-zinc-800 overflow-hidden">
                 <div className="h-full bg-white" style={{ width: '0%' }} />
               </div>
-              <p className="text-[10px] text-zinc-600 mt-2">
+              <p className="text-[10px] text-zinc-500 mt-2">
                 Separate from your daily credits — heartbeats never eat into your quota.
               </p>
             </div>

@@ -251,7 +251,7 @@ export default function TasksPage() {
         {/* No agents empty state */}
         {agents.length === 0 ? (
           <EmptyState
-            icon={<Clock className="h-8 w-8 text-zinc-600" />}
+            icon={<Clock className="h-8 w-8 text-zinc-500" />}
             title="No agents deployed yet"
             description="Deploy one from the Marketplace to start scheduling tasks"
             action={
@@ -273,7 +273,7 @@ export default function TasksPage() {
 
                 {/* Agent selector */}
                 <div>
-                  <label className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">
+                  <label className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-2">
                     Agent
                   </label>
                   <select
@@ -299,7 +299,7 @@ export default function TasksPage() {
                 />
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-[10px] uppercase tracking-widest text-zinc-600">
+                    <label className="text-[10px] uppercase tracking-widest text-zinc-500">
                       Schedule
                     </label>
                     <button
@@ -358,7 +358,7 @@ export default function TasksPage() {
             {/* Task list */}
             {tasks.length === 0 ? (
               <EmptyState
-                icon={<Clock className="h-8 w-8 text-zinc-600" />}
+                icon={<Clock className="h-8 w-8 text-zinc-500" />}
                 title="No scheduled tasks yet"
                 description="Automate your agent with scheduled tasks"
                 action={
@@ -377,7 +377,7 @@ export default function TasksPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="text-sm font-bold tracking-tight uppercase">{task.name}</h3>
-                        <p className="text-[10px] text-zinc-600 mt-0.5 uppercase tracking-widest">
+                        <p className="text-[10px] text-zinc-500 mt-0.5 uppercase tracking-widest">
                           {getAgentName(task.agentId)}
                         </p>
                         {task.description && (

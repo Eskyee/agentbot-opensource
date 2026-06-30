@@ -1,89 +1,119 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useCallback } from 'react'
-import { User, Save, Radio, Music, Mic, Truck, Disc3, Check } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect, useCallback } from 'react';
+import { User, Save, Radio, Music, Mic, Truck, Disc3, Check } from 'lucide-react';
+import Link from 'next/link';
 import {
   DashboardShell,
   DashboardHeader,
   DashboardContent,
-} from '@/app/components/shared/DashboardShell'
-import { AgentInput } from '@/app/components/shared/AgentInput'
+} from '@/app/components/shared/DashboardShell';
+import { AgentInput } from '@/app/components/shared/AgentInput';
 
 interface Agent {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 const PERSONALITIES = [
-  { id: 'basement', name: 'Basement', tone: 'dark & hypnotic', icon: Radio, description: 'Factory techno energy. Minimal, hypnotic, warehouse vibes.' },
-  { id: 'selector', name: 'Selector', tone: 'DJ & curation', icon: Music, description: 'Track recommendations, setlists, BPM matching. Always reading the room.' },
-  { id: 'ar', name: 'A&R', tone: 'industry & discovery', icon: Mic, description: 'Finding the next hits. Connecting artists, labels, and opportunities.' },
-  { id: 'road', name: 'Road', tone: 'logistics & touring', icon: Truck, description: 'Buses, venues, rider requirements. Making sure the show goes on.' },
-  { id: 'label', name: 'Label', tone: 'operations & roster', icon: Disc3, description: 'Release schedules, royalty splits, catalog management.' },
-]
+  {
+    id: 'basement',
+    name: 'Basement',
+    tone: 'dark & hypnotic',
+    icon: Radio,
+    description: 'Factory techno energy. Minimal, hypnotic, warehouse vibes.',
+  },
+  {
+    id: 'selector',
+    name: 'Selector',
+    tone: 'DJ & curation',
+    icon: Music,
+    description: 'Track recommendations, setlists, BPM matching. Always reading the room.',
+  },
+  {
+    id: 'ar',
+    name: 'A&R',
+    tone: 'industry & discovery',
+    icon: Mic,
+    description: 'Finding the next hits. Connecting artists, labels, and opportunities.',
+  },
+  {
+    id: 'road',
+    name: 'Road',
+    tone: 'logistics & touring',
+    icon: Truck,
+    description: 'Buses, venues, rider requirements. Making sure the show goes on.',
+  },
+  {
+    id: 'label',
+    name: 'Label',
+    tone: 'operations & roster',
+    icon: Disc3,
+    description: 'Release schedules, royalty splits, catalog management.',
+  },
+];
 
 export default function PersonalityPage() {
-  const [agents, setAgents] = useState<Agent[]>([])
-  const [selectedAgentId, setSelectedAgentId] = useState<string>('')
-  const [selected, setSelected] = useState('basement')
-  const [customGreeting, setCustomGreeting] = useState('')
-  const [expertise, setExpertise] = useState('')
-  const [saved, setSaved] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('');
+  const [selected, setSelected] = useState('basement');
+  const [customGreeting, setCustomGreeting] = useState('');
+  const [expertise, setExpertise] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Fetch agents on mount
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const res = await fetch('/api/agents')
-        if (!res.ok) return
-        const data = await res.json()
-        const agentList: Agent[] = data.agents ?? data ?? []
-        setAgents(agentList)
+        const res = await fetch('/api/agents');
+        if (!res.ok) return;
+        const data = await res.json();
+        const agentList: Agent[] = data.agents ?? data ?? [];
+        setAgents(agentList);
         if (agentList.length > 0) {
-          setSelectedAgentId(agentList[0].id)
+          setSelectedAgentId(agentList[0].id);
         }
       } catch {
         // silently fail
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchAgents()
-  }, [])
+    };
+    fetchAgents();
+  }, []);
 
   // Fetch personality when selectedAgentId changes
   const fetchPersonality = useCallback(async (agentId: string) => {
-    if (!agentId) return
+    if (!agentId) return;
     try {
-      const res = await fetch(`/api/memory?agentId=${agentId}`)
-      if (!res.ok) return
-      const data = await res.json()
-      const p = data.memory?.personality
+      const res = await fetch(`/api/memory?agentId=${agentId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const p = data.memory?.personality;
       if (p) {
-        const parsed = typeof p === 'string' ? JSON.parse(p) : p
-        setSelected(parsed.type || 'basement')
-        setCustomGreeting(parsed.greeting || '')
-        setExpertise(parsed.expertise || '')
+        const parsed = typeof p === 'string' ? JSON.parse(p) : p;
+        setSelected(parsed.type || 'basement');
+        setCustomGreeting(parsed.greeting || '');
+        setExpertise(parsed.expertise || '');
       } else {
-        setSelected('basement')
-        setCustomGreeting('')
-        setExpertise('')
+        setSelected('basement');
+        setCustomGreeting('');
+        setExpertise('');
       }
     } catch {
       // silently fail
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (selectedAgentId) {
-      fetchPersonality(selectedAgentId)
+      fetchPersonality(selectedAgentId);
     }
-  }, [selectedAgentId, fetchPersonality])
+  }, [selectedAgentId, fetchPersonality]);
 
   const savePersonality = async () => {
-    if (!selectedAgentId) return
+    if (!selectedAgentId) return;
     try {
       await fetch('/api/memory', {
         method: 'POST',
@@ -93,13 +123,13 @@ export default function PersonalityPage() {
           key: 'personality',
           memory: JSON.stringify({ type: selected, greeting: customGreeting, expertise }),
         }),
-      })
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch {
       // silently fail
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -112,7 +142,7 @@ export default function PersonalityPage() {
           <div className="text-zinc-500 text-sm">Loading agents...</div>
         </DashboardContent>
       </DashboardShell>
-    )
+    );
   }
 
   if (agents.length === 0) {
@@ -134,7 +164,7 @@ export default function PersonalityPage() {
           </div>
         </DashboardContent>
       </DashboardShell>
-    )
+    );
   }
 
   return (
@@ -148,7 +178,7 @@ export default function PersonalityPage() {
         {/* Agent selector (shown when multiple agents) */}
         {agents.length > 1 && (
           <div className="border border-zinc-800 bg-zinc-950 p-5">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-4">
               Select Agent
             </h2>
             <select
@@ -167,12 +197,12 @@ export default function PersonalityPage() {
 
         {/* Personality type selector */}
         <div>
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-4">
             Choose Personality Type
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-px bg-zinc-800">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-px bg-zinc-900">
             {PERSONALITIES.map((p) => {
-              const Icon = p.icon
+              const Icon = p.icon;
               return (
                 <button
                   key={p.id}
@@ -183,19 +213,23 @@ export default function PersonalityPage() {
                       : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'
                   }`}
                 >
-                  <Icon className={`h-5 w-5 mb-2 ${selected === p.id ? 'text-white' : 'text-zinc-500'}`} />
+                  <Icon
+                    className={`h-5 w-5 mb-2 ${selected === p.id ? 'text-white' : 'text-zinc-500'}`}
+                  />
                   <div className="text-sm font-bold uppercase tracking-tight">{p.name}</div>
-                  <div className="text-[10px] text-zinc-600 uppercase tracking-widest mt-1">{p.tone}</div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">
+                    {p.tone}
+                  </div>
                   <div className="text-xs text-zinc-500 mt-2">{p.description}</div>
                 </button>
-              )
+              );
             })}
           </div>
         </div>
 
         {/* Custom greeting */}
         <div className="border border-zinc-800 bg-zinc-950 p-5">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-4">
             Custom Greeting
           </h2>
           <AgentInput
@@ -207,11 +241,12 @@ export default function PersonalityPage() {
 
         {/* Area of expertise */}
         <div className="border border-zinc-800 bg-zinc-950 p-5">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-3">
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-3">
             Expertise
           </h2>
           <p className="text-[11px] text-zinc-500 mb-4">
-            Define your agent&apos;s specific knowledge. This shapes how it talks and what it knows deeply.
+            Define your agent&apos;s specific knowledge. This shapes how it talks and what it knows
+            deeply.
           </p>
           {/* Quick-select presets */}
           <div className="flex flex-wrap gap-2 mb-4">
@@ -269,5 +304,5 @@ export default function PersonalityPage() {
         )}
       </DashboardContent>
     </DashboardShell>
-  )
+  );
 }

@@ -1,263 +1,285 @@
-'use client'
+'use client';
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
-import { Copy, ExternalLink, Send, Wallet } from 'lucide-react'
-import { useAccount, useConnect, useDisconnect, usePublicClient, useSendTransaction, useSwitchChain, useWriteContract } from 'wagmi'
-import { base } from 'wagmi/chains'
-import { erc20Abi, isAddress, parseEther, parseUnits, type Address } from 'viem'
-import { getPaymentStatus, pay } from '@base-org/account'
-import { useCustomSession } from '@/app/lib/useCustomSession'
-import { BASE_USDC_ADDRESS } from '@/app/lib/base-wallet'
-import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch'
-import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
-import StatusPill from '@/app/components/shared/StatusPill'
-import SignInWithBase from '@/app/components/SignInWithBase'
-import WalletTabs from './WalletTabs'
-import { QRCode } from '@/app/components/QRCode'
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { Copy, ExternalLink, Send, Wallet } from 'lucide-react';
+import {
+  useAccount,
+  useConnect,
+  useDisconnect,
+  usePublicClient,
+  useSendTransaction,
+  useSwitchChain,
+  useWriteContract,
+} from 'wagmi';
+import { base } from 'wagmi/chains';
+import { erc20Abi, isAddress, parseEther, parseUnits, type Address } from 'viem';
+import { getPaymentStatus, pay } from '@base-org/account';
+import { useCustomSession } from '@/app/lib/useCustomSession';
+import { BASE_USDC_ADDRESS } from '@/app/lib/base-wallet';
+import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch';
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell';
+import StatusPill from '@/app/components/shared/StatusPill';
+import SignInWithBase from '@/app/components/SignInWithBase';
+import WalletTabs from './WalletTabs';
+import { QRCode } from '@/app/components/QRCode';
 
 type WalletAsset = {
-  address: string
-  name: string
-  symbol: string
-  decimals: number
-  balance: string
-  balanceRaw: string
-  explorerUrl: string
-}
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  balance: string;
+  balanceRaw: string;
+  explorerUrl: string;
+};
 
 type WalletData = {
-  address: string
-  chain: string
-  chainId: number
-  explorerUrl: string
-  nativeBalance: WalletAsset
-  primaryToken: WalletAsset
-  assets: WalletAsset[]
-  allTokens: WalletAsset[]
-}
+  address: string;
+  chain: string;
+  chainId: number;
+  explorerUrl: string;
+  nativeBalance: WalletAsset;
+  primaryToken: WalletAsset;
+  assets: WalletAsset[];
+  allTokens: WalletAsset[];
+};
 
 type WalletAddressResponse = {
-  authenticated: boolean
-  address: string | null
-  network?: string
-  type?: string
-  source?: string
-  message?: string
-}
+  authenticated: boolean;
+  address: string | null;
+  network?: string;
+  type?: string;
+  source?: string;
+  message?: string;
+};
 
 type WalletTransaction = {
-  hash: string
-  asset: 'USDC' | 'ETH'
-  direction: 'sent' | 'received'
-  amount: string
-  amountRaw: string
-  from: string
-  to: string
-  blockNumber: string
-  timestamp: string
-  status: 'confirmed'
-  explorerUrl: string
-  source: 'token-log' | 'recent-native-scan'
-}
+  hash: string;
+  asset: 'USDC' | 'ETH';
+  direction: 'sent' | 'received';
+  amount: string;
+  amountRaw: string;
+  from: string;
+  to: string;
+  blockNumber: string;
+  timestamp: string;
+  status: 'confirmed';
+  explorerUrl: string;
+  source: 'token-log' | 'recent-native-scan';
+};
 
 type TransactionsResponse = {
-  transactions: WalletTransaction[]
-}
+  transactions: WalletTransaction[];
+};
 
 type Session = {
-  id: string
-  userAddress: string
-  deposit: string
-  spent: string
-  remaining: string
-  vouchers: unknown[]
-  status: 'active' | 'settling' | 'closed'
-  createdAt: number
-}
+  id: string;
+  userAddress: string;
+  deposit: string;
+  spent: string;
+  remaining: string;
+  vouchers: unknown[];
+  status: 'active' | 'settling' | 'closed';
+  createdAt: number;
+};
 
 type SendState = {
-  mode: 'sponsored' | 'standard'
-  status: 'pending' | 'completed' | 'failed'
-  asset: 'USDC' | 'ETH'
-  hash: string
-  message: string
-  amount: string
-  recipient: string
-}
+  mode: 'sponsored' | 'standard';
+  status: 'pending' | 'completed' | 'failed';
+  asset: 'USDC' | 'ETH';
+  hash: string;
+  message: string;
+  amount: string;
+  recipient: string;
+};
 
-const TOP_UP_OPTIONS = [5, 10, 25, 50] as const
+const TOP_UP_OPTIONS = [5, 10, 25, 50] as const;
 
 function formatAddress(address: string) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 function formatAmount(value: string, maxDigits = 4) {
-  const parsed = Number(value)
-  if (!Number.isFinite(parsed)) return value
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return value;
   return parsed.toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: maxDigits,
-  })
+  });
 }
 
 export default function WalletPage() {
-  const { status } = useCustomSession()
-  const { address: connectedAddress, isConnected, chainId } = useAccount()
-  const { connectAsync, connectors, isPending: walletConnecting } = useConnect()
-  const { disconnect } = useDisconnect()
-  const { switchChainAsync, isPending: switchingChain } = useSwitchChain()
-  const { sendTransactionAsync, isPending: sendingNative } = useSendTransaction()
-  const { writeContractAsync, isPending: sendingToken } = useWriteContract()
-  const publicClient = usePublicClient({ chainId: base.id })
+  const { status } = useCustomSession();
+  const { address: connectedAddress, isConnected, chainId } = useAccount();
+  const { connectAsync, connectors, isPending: walletConnecting } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { switchChainAsync, isPending: switchingChain } = useSwitchChain();
+  const { sendTransactionAsync, isPending: sendingNative } = useSendTransaction();
+  const { writeContractAsync, isPending: sendingToken } = useWriteContract();
+  const publicClient = usePublicClient({ chainId: base.id });
 
-  const [walletAddress, setWalletAddress] = useState<string | null>(null)
-  const [walletMeta, setWalletMeta] = useState<WalletAddressResponse | null>(null)
-  const [wallet, setWallet] = useState<WalletData | null>(null)
-  const [transactions, setTransactions] = useState<WalletTransaction[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadingTransactions, setLoadingTransactions] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [sendAsset, setSendAsset] = useState<'USDC' | 'ETH'>('USDC')
-  const [sendRecipient, setSendRecipient] = useState('')
-  const [sendAmount, setSendAmount] = useState('')
-  const [sendError, setSendError] = useState<string | null>(null)
-  const [sendState, setSendState] = useState<SendState | null>(null)
-  const [isPending, startTransition] = useTransition()
-  const [mppSession, setMppSession] = useState<Session | null>(null)
-  const [sessionLoading, setSessionLoading] = useState(false)
-  const [topUpLoading, setTopUpLoading] = useState<number | null>(null)
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [walletMeta, setWalletMeta] = useState<WalletAddressResponse | null>(null);
+  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [sendAsset, setSendAsset] = useState<'USDC' | 'ETH'>('USDC');
+  const [sendRecipient, setSendRecipient] = useState('');
+  const [sendAmount, setSendAmount] = useState('');
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sendState, setSendState] = useState<SendState | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [mppSession, setMppSession] = useState<Session | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(false);
+  const [topUpLoading, setTopUpLoading] = useState<number | null>(null);
 
-  const effectiveAddress = walletAddress ?? connectedAddress ?? null
+  const effectiveAddress = walletAddress ?? connectedAddress ?? null;
   const preferredConnector = useMemo(
     () => connectors.find((connector) => connector.id === 'coinbaseWalletSDK') ?? connectors[0],
     [connectors]
-  )
-  const sendPending = sendingNative || sendingToken || switchingChain
+  );
+  const sendPending = sendingNative || sendingToken || switchingChain;
 
-  const loadWalletState = useCallback(async (addressOverride?: string | null) => {
-    const targetAddress = addressOverride ?? effectiveAddress
-    if (!targetAddress) {
-      setWallet(null)
-      setTransactions([])
-      setMppSession(null)
-      return
-    }
-
-    setLoadingTransactions(true)
-
-    const [walletRes, txRes, sessionRes] = await Promise.all([
-      fetch(`/api/wallet?address=${targetAddress}`).then((res) => res.json()).catch(() => null),
-      fetch(`/api/wallet/transactions?address=${targetAddress}`).then((res) => res.json()).catch(() => null),
-      fetch(`/api/wallet/sessions?address=${targetAddress}`).then((res) => res.json()).catch(() => null),
-    ])
-
-    startTransition(() => {
-      if (walletRes && !walletRes.error) setWallet(walletRes)
-      if (txRes && !txRes.error) setTransactions((txRes as TransactionsResponse).transactions || [])
-      if (sessionRes?.sessions?.length > 0) {
-        const active = sessionRes.sessions.find((item: Session) => item.status === 'active')
-        if (active) {
-          setMppSession(active)
-          setSessionId(active.id)
-        } else {
-          setMppSession(null)
-          clearSessionId()
-        }
-      } else {
-        setMppSession(null)
-        clearSessionId()
+  const loadWalletState = useCallback(
+    async (addressOverride?: string | null) => {
+      const targetAddress = addressOverride ?? effectiveAddress;
+      if (!targetAddress) {
+        setWallet(null);
+        setTransactions([]);
+        setMppSession(null);
+        return;
       }
-      setLoadingTransactions(false)
-    })
-  }, [effectiveAddress])
+
+      setLoadingTransactions(true);
+
+      const [walletRes, txRes, sessionRes] = await Promise.all([
+        fetch(`/api/wallet?address=${targetAddress}`)
+          .then((res) => res.json())
+          .catch(() => null),
+        fetch(`/api/wallet/transactions?address=${targetAddress}`)
+          .then((res) => res.json())
+          .catch(() => null),
+        fetch(`/api/wallet/sessions?address=${targetAddress}`)
+          .then((res) => res.json())
+          .catch(() => null),
+      ]);
+
+      startTransition(() => {
+        if (walletRes && !walletRes.error) setWallet(walletRes);
+        if (txRes && !txRes.error)
+          setTransactions((txRes as TransactionsResponse).transactions || []);
+        if (sessionRes?.sessions?.length > 0) {
+          const active = sessionRes.sessions.find((item: Session) => item.status === 'active');
+          if (active) {
+            setMppSession(active);
+            setSessionId(active.id);
+          } else {
+            setMppSession(null);
+            clearSessionId();
+          }
+        } else {
+          setMppSession(null);
+          clearSessionId();
+        }
+        setLoadingTransactions(false);
+      });
+    },
+    [effectiveAddress]
+  );
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     async function init() {
       try {
-        const addressRes = await fetch('/api/wallet/address')
-        const addressData = await addressRes.json()
-        if (cancelled) return
+        const addressRes = await fetch('/api/wallet/address');
+        const addressData = await addressRes.json();
+        if (cancelled) return;
 
-        setWalletMeta(addressData)
+        setWalletMeta(addressData);
         if (addressData.address) {
-          setWalletAddress(addressData.address)
-          await loadWalletState(addressData.address)
+          setWalletAddress(addressData.address);
+          await loadWalletState(addressData.address);
         }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setLoading(false);
       }
     }
 
-    void init()
+    void init();
     return () => {
-      cancelled = true
-    }
-  }, [loadWalletState])
+      cancelled = true;
+    };
+  }, [loadWalletState]);
 
   useEffect(() => {
     if (!walletAddress && connectedAddress) {
-      void loadWalletState(connectedAddress)
+      void loadWalletState(connectedAddress);
     }
-  }, [connectedAddress, loadWalletState, walletAddress])
+  }, [connectedAddress, loadWalletState, walletAddress]);
 
   async function connectWallet() {
     if (!preferredConnector) {
-      setSendError('No Base wallet connector is available.')
-      return
+      setSendError('No Base wallet connector is available.');
+      return;
     }
 
-    setSendError(null)
-    await connectAsync({ connector: preferredConnector, chainId: base.id })
+    setSendError(null);
+    await connectAsync({ connector: preferredConnector, chainId: base.id });
   }
 
   async function ensureConnectedSender() {
     if (!isConnected) {
-      await connectWallet()
+      await connectWallet();
     }
 
-    const sender = connectedAddress ?? walletAddress
+    const sender = connectedAddress ?? walletAddress;
     if (!sender || !isAddress(sender)) {
-      throw new Error('Connect your Base wallet before sending funds.')
+      throw new Error('Connect your Base wallet before sending funds.');
     }
 
     if (walletAddress && sender.toLowerCase() !== walletAddress.toLowerCase()) {
-      throw new Error('Reconnect the same Base wallet you used to sign in before sending funds.')
+      throw new Error('Reconnect the same Base wallet you used to sign in before sending funds.');
     }
 
     if (chainId !== base.id) {
-      await switchChainAsync({ chainId: base.id })
+      await switchChainAsync({ chainId: base.id });
     }
 
-    return sender as Address
+    return sender as Address;
   }
 
   async function handleSend(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setSendError(null)
-    setSendState(null)
+    event.preventDefault();
+    setSendError(null);
+    setSendState(null);
 
     if (!isAddress(sendRecipient)) {
-      setSendError('Enter a valid Base address.')
-      return
+      setSendError('Enter a valid Base address.');
+      return;
     }
 
     if (!sendAmount || Number(sendAmount) <= 0) {
-      setSendError('Enter a valid amount greater than zero.')
-      return
+      setSendError('Enter a valid amount greater than zero.');
+      return;
     }
 
     if (!publicClient) {
-      setSendError('Base public client is unavailable.')
-      return
+      setSendError('Base public client is unavailable.');
+      return;
     }
 
     try {
-      const sender = await ensureConnectedSender()
-      const recipient = sendRecipient as Address
-      let hash: `0x${string}`
-      let mode: 'sponsored' | 'standard' = 'standard'
+      const sender = await ensureConnectedSender();
+      const recipient = sendRecipient as Address;
+      let hash: `0x${string}`;
+      let mode: 'sponsored' | 'standard' = 'standard';
 
       if (sendAsset === 'USDC') {
         try {
@@ -265,10 +287,10 @@ export default function WalletPage() {
             amount: sendAmount,
             to: recipient,
             testnet: false,
-          })
+          });
 
-          hash = sponsored.id as `0x${string}`
-          mode = 'sponsored'
+          hash = sponsored.id as `0x${string}`;
+          mode = 'sponsored';
           setSendState({
             mode,
             status: 'pending',
@@ -277,12 +299,12 @@ export default function WalletPage() {
             message: 'Gas sponsored. Waiting for Base Pay confirmation.',
             amount: sendAmount,
             recipient,
-          })
+          });
 
           try {
-            const startedAt = Date.now()
+            const startedAt = Date.now();
             while (Date.now() - startedAt < 30_000) {
-              const status = await getPaymentStatus({ id: hash, testnet: false })
+              const status = await getPaymentStatus({ id: hash, testnet: false });
               if (status.status === 'completed') {
                 setSendState({
                   mode,
@@ -292,8 +314,8 @@ export default function WalletPage() {
                   message: 'Gas sponsored payment confirmed on Base.',
                   amount: status.amount || sendAmount,
                   recipient: status.recipient || recipient,
-                })
-                break
+                });
+                break;
               }
               if (status.status === 'failed') {
                 setSendState({
@@ -304,20 +326,26 @@ export default function WalletPage() {
                   message: status.reason || 'Sponsored payment failed on Base.',
                   amount: sendAmount,
                   recipient,
-                })
-                return
+                });
+                return;
               }
-              await new Promise((resolve) => setTimeout(resolve, 2_000))
+              await new Promise((resolve) => setTimeout(resolve, 2_000));
             }
           } catch (statusError) {
-            console.warn('[Wallet] Unable to confirm sponsored payment status immediately:', statusError)
+            console.warn(
+              '[Wallet] Unable to confirm sponsored payment status immediately:',
+              statusError
+            );
           }
 
-          setSendAmount('')
-          await loadWalletState(sender)
-          return
+          setSendAmount('');
+          await loadWalletState(sender);
+          return;
         } catch (sponsoredError) {
-          console.warn('[Wallet] Sponsored USDC payment failed, falling back to standard transfer:', sponsoredError)
+          console.warn(
+            '[Wallet] Sponsored USDC payment failed, falling back to standard transfer:',
+            sponsoredError
+          );
           hash = await writeContractAsync({
             account: sender,
             chainId: base.id,
@@ -325,7 +353,7 @@ export default function WalletPage() {
             abi: erc20Abi,
             functionName: 'transfer',
             args: [recipient, parseUnits(sendAmount, 6)],
-          })
+          });
           setSendState({
             mode: 'standard',
             status: 'pending',
@@ -334,7 +362,7 @@ export default function WalletPage() {
             message: 'Gas sponsorship unavailable. Sent with the connected wallet instead.',
             amount: sendAmount,
             recipient,
-          })
+          });
         }
       } else {
         hash = await sendTransactionAsync({
@@ -342,7 +370,7 @@ export default function WalletPage() {
           to: recipient,
           value: parseEther(sendAmount),
           chainId: base.id,
-        })
+        });
         setSendState({
           mode: 'standard',
           status: 'pending',
@@ -351,90 +379,102 @@ export default function WalletPage() {
           message: 'ETH transaction submitted on Base.',
           amount: sendAmount,
           recipient,
-        })
+        });
       }
 
-      await publicClient.waitForTransactionReceipt({ hash })
-      setSendState((current) => current ? {
-        ...current,
-        status: 'completed',
-        hash,
-        message: current.mode === 'sponsored'
-          ? 'Gas sponsored payment confirmed on Base.'
-          : `${current.asset} transfer confirmed on Base.`,
-      } : {
-        mode,
-        status: 'completed',
-        asset: sendAsset,
-        hash,
-        message: `${sendAsset} transfer confirmed on Base.`,
-        amount: sendAmount,
-        recipient,
-      })
-      setSendAmount('')
-      await loadWalletState(sender)
+      await publicClient.waitForTransactionReceipt({ hash });
+      setSendState((current) =>
+        current
+          ? {
+              ...current,
+              status: 'completed',
+              hash,
+              message:
+                current.mode === 'sponsored'
+                  ? 'Gas sponsored payment confirmed on Base.'
+                  : `${current.asset} transfer confirmed on Base.`,
+            }
+          : {
+              mode,
+              status: 'completed',
+              asset: sendAsset,
+              hash,
+              message: `${sendAsset} transfer confirmed on Base.`,
+              amount: sendAmount,
+              recipient,
+            }
+      );
+      setSendAmount('');
+      await loadWalletState(sender);
     } catch (error) {
-      setSendError(error instanceof Error ? error.message : 'Transfer failed')
+      setSendError(error instanceof Error ? error.message : 'Transfer failed');
     }
   }
 
   async function openSession() {
-    if (!effectiveAddress) return
-    setSessionLoading(true)
+    if (!effectiveAddress) return;
+    setSessionLoading(true);
     try {
       const res = await fetch('/api/wallet/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: effectiveAddress, deposit: '10.00' }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (data.session) {
-        setMppSession(data.session)
-        setSessionId(data.session.id)
+        setMppSession(data.session);
+        setSessionId(data.session.id);
       }
     } catch (error) {
-      console.error('Open session error:', error)
+      console.error('Open session error:', error);
     } finally {
-      setSessionLoading(false)
+      setSessionLoading(false);
     }
   }
 
   async function closeMppSession() {
-    if (!mppSession) return
-    setSessionLoading(true)
+    if (!mppSession) return;
+    setSessionLoading(true);
     try {
-      const res = await fetch(`/api/wallet/sessions?sessionId=${mppSession.id}`, { method: 'DELETE' })
-      const data = await res.json()
+      const res = await fetch(`/api/wallet/sessions?sessionId=${mppSession.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
       if (data.success) {
-        setMppSession(null)
-        clearSessionId()
+        setMppSession(null);
+        clearSessionId();
       }
     } catch (error) {
-      console.error('Close session error:', error)
+      console.error('Close session error:', error);
     } finally {
-      setSessionLoading(false)
+      setSessionLoading(false);
     }
   }
 
   async function handleTopUp(amount: number) {
-    if (!effectiveAddress || topUpLoading) return
-    setTopUpLoading(amount)
+    if (!effectiveAddress || topUpLoading) return;
+    setTopUpLoading(amount);
     try {
-      const res = await fetch(`/api/wallet/top-up?amount=${amount * 100}&address=${effectiveAddress}`)
-      const data = await res.json()
+      const res = await fetch(
+        `/api/wallet/top-up?amount=${amount * 100}&address=${effectiveAddress}`
+      );
+      const data = await res.json();
       if (data.url) {
-        window.location.href = data.url
+        window.location.href = data.url;
       } else if (data.error) {
-        setSendError(data.error)
+        setSendError(data.error);
       }
     } catch (error) {
-      setSendError(error instanceof Error ? error.message : 'Top-up failed')
+      setSendError(error instanceof Error ? error.message : 'Top-up failed');
     } finally {
-      setTopUpLoading(null)
+      setTopUpLoading(null);
     }
   }
 
-  const needsWalletReconnect = walletAddress && connectedAddress && walletAddress.toLowerCase() !== connectedAddress.toLowerCase()
+  const needsWalletReconnect =
+    walletAddress &&
+    connectedAddress &&
+    walletAddress.toLowerCase() !== connectedAddress.toLowerCase();
 
   return (
     <DashboardShell>
@@ -444,11 +484,14 @@ export default function WalletPage() {
           <WalletTabs />
           {!loading && !effectiveAddress && (
             <div className="border border-zinc-800 bg-zinc-950 p-6">
-              <p className="text-[10px] uppercase tracking-widest text-zinc-600">Base Wallet</p>
-              <h2 className="mt-2 text-xl font-bold tracking-tight text-white">Sign in with Base to unlock send and receive</h2>
+              <p className="text-[10px] uppercase tracking-widest text-zinc-500">Base Wallet</p>
+              <h2 className="mt-2 text-xl font-bold tracking-tight text-white">
+                Sign in with Base to unlock send and receive
+              </h2>
               <p className="mt-3 max-w-xl text-sm text-zinc-400">
-                Your main wallet rail is Base. Sign in with the wallet you want to use for receive addresses,
-                top-ups, and direct transfers. Tempo payment sessions stay available below as a separate agent-spend rail.
+                Your main wallet rail is Base. Sign in with the wallet you want to use for receive
+                addresses, top-ups, and direct transfers. Tempo payment sessions stay available
+                below as a separate agent-spend rail.
               </p>
               {/* Always use the Base Account SDK flow (same as /login — gives the
                   scannable QR). When already signed in, /api/wallet-auth links the
@@ -465,12 +508,18 @@ export default function WalletPage() {
                 <div className="border border-zinc-800 bg-zinc-950 p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-[10px] uppercase tracking-widest text-zinc-600">Base Mainnet</p>
+                      <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                        Base Mainnet
+                      </p>
                       <h2 className="mt-2 text-3xl font-bold tracking-tight text-white">
-                        {wallet ? `${formatAmount(wallet.primaryToken.balance, 2)} USDC` : 'Loading...'}
+                        {wallet
+                          ? `${formatAmount(wallet.primaryToken.balance, 2)} USDC`
+                          : 'Loading...'}
                       </h2>
                       <p className="mt-2 text-sm text-zinc-400">
-                        {wallet ? `${formatAmount(wallet.nativeBalance.balance)} ETH available for gas` : 'Fetching balances...'}
+                        {wallet
+                          ? `${formatAmount(wallet.nativeBalance.balance)} ETH available for gas`
+                          : 'Fetching balances...'}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -478,7 +527,7 @@ export default function WalletPage() {
                       {isConnected ? (
                         <button
                           onClick={() => disconnect()}
-                          className="text-[10px] uppercase tracking-widest text-zinc-600 transition-colors hover:text-orange-400"
+                          className="text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-orange-400"
                         >
                           Disconnect
                         </button>
@@ -486,7 +535,7 @@ export default function WalletPage() {
                         <button
                           onClick={() => void connectWallet()}
                           disabled={walletConnecting}
-                          className="text-[10px] uppercase tracking-widest text-zinc-600 transition-colors hover:text-white disabled:opacity-50"
+                          className="text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-white disabled:opacity-50"
                         >
                           {walletConnecting ? 'Connecting...' : 'Reconnect'}
                         </button>
@@ -494,16 +543,18 @@ export default function WalletPage() {
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-px bg-zinc-800 sm:grid-cols-2">
+                  <div className="mt-6 grid gap-px bg-zinc-900 sm:grid-cols-2">
                     <div className="bg-zinc-950 p-4">
-                      <p className="text-[10px] uppercase tracking-widest text-zinc-600">Wallet address</p>
+                      <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                        Wallet address
+                      </p>
                       <div className="mt-2 flex items-center gap-2 text-sm text-zinc-200">
                         <span className="font-mono">{formatAddress(effectiveAddress)}</span>
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(effectiveAddress)
-                            setCopied(true)
-                            setTimeout(() => setCopied(false), 2000)
+                            navigator.clipboard.writeText(effectiveAddress);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
                           }}
                           className="text-zinc-500 transition-colors hover:text-white"
                         >
@@ -513,9 +564,13 @@ export default function WalletPage() {
                       {copied && <p className="mt-2 text-xs text-emerald-400">Address copied.</p>}
                     </div>
                     <div className="bg-zinc-950 p-4">
-                      <p className="text-[10px] uppercase tracking-widest text-zinc-600">Explorer</p>
+                      <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                        Explorer
+                      </p>
                       <a
-                        href={wallet?.explorerUrl || `https://basescan.org/address/${effectiveAddress}`}
+                        href={
+                          wallet?.explorerUrl || `https://basescan.org/address/${effectiveAddress}`
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-2 inline-flex items-center gap-1 text-sm text-zinc-200 transition-colors hover:text-white"
@@ -526,22 +581,27 @@ export default function WalletPage() {
                   </div>
 
                   {wallet?.assets?.length ? (
-                    <div className="mt-6 border-t border-zinc-800 pt-4">
-                      <p className="text-[10px] uppercase tracking-widest text-zinc-600">Assets</p>
+                    <div className="mt-6 border-t border-zinc-900 pt-4">
+                      <p className="text-[10px] uppercase tracking-widest text-zinc-500">Assets</p>
                       <div className="mt-3 space-y-3">
                         {wallet.assets.map((asset) => (
-                          <div key={asset.address} className="flex items-center justify-between text-sm">
+                          <div
+                            key={asset.address}
+                            className="flex items-center justify-between text-sm"
+                          >
                             <div>
                               <p className="font-medium text-white">{asset.symbol}</p>
                               <p className="text-xs text-zinc-500">{asset.name}</p>
                             </div>
                             <div className="text-right">
-                              <p className="font-mono text-zinc-200">{formatAmount(asset.balance)}</p>
+                              <p className="font-mono text-zinc-200">
+                                {formatAmount(asset.balance)}
+                              </p>
                               <a
                                 href={asset.explorerUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-300"
+                                className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-zinc-300"
                               >
                                 Explorer
                               </a>
@@ -555,10 +615,11 @@ export default function WalletPage() {
 
                 <div className="space-y-6">
                   <div className="border border-zinc-800 bg-zinc-950 p-6">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Receive</p>
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-500">Receive</p>
                     <h3 className="mt-2 text-lg font-bold text-white">Fund this Base wallet</h3>
                     <p className="mt-3 text-sm text-zinc-400">
-                      Use this address for inbound USDC or ETH on Base. If you want to buy with card, open Coinbase Onramp directly into this address.
+                      Use this address for inbound USDC or ETH on Base. If you want to buy with
+                      card, open Coinbase Onramp directly into this address.
                     </p>
                     <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
                       <QRCode value={effectiveAddress} size={160} />
@@ -569,9 +630,9 @@ export default function WalletPage() {
                         <div className="mt-4 flex flex-wrap gap-3">
                           <button
                             onClick={() => {
-                              navigator.clipboard.writeText(effectiveAddress)
-                              setCopied(true)
-                              setTimeout(() => setCopied(false), 2000)
+                              navigator.clipboard.writeText(effectiveAddress);
+                              setCopied(true);
+                              setTimeout(() => setCopied(false), 2000);
                             }}
                             className="border border-zinc-700 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white transition-colors hover:border-zinc-500"
                           >
@@ -591,24 +652,29 @@ export default function WalletPage() {
                   </div>
 
                   <div className="border border-zinc-800 bg-zinc-950 p-6">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Send</p>
-                    <h3 className="mt-2 text-lg font-bold text-white">Send from your Base wallet</h3>
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-500">Send</p>
+                    <h3 className="mt-2 text-lg font-bold text-white">
+                      Send from your Base wallet
+                    </h3>
                     <p className="mt-3 text-sm text-zinc-400">
-                      Connect the same Base wallet you used to sign in. USDC transfers are sent on Base mainnet, and ETH sends remain available for gas transfers.
+                      Connect the same Base wallet you used to sign in. USDC transfers are sent on
+                      Base mainnet, and ETH sends remain available for gas transfers.
                     </p>
                     <p className="mt-2 text-xs uppercase tracking-widest text-emerald-400">
-                      USDC tries gas sponsored send first. No ETH is needed when sponsorship is available.
+                      USDC tries gas sponsored send first. No ETH is needed when sponsorship is
+                      available.
                     </p>
 
                     {needsWalletReconnect && (
                       <div className="mt-4 border border-amber-800 bg-amber-950/30 p-3 text-sm text-amber-200">
-                        The connected wallet does not match your signed-in Base wallet. Reconnect the same wallet before sending funds.
+                        The connected wallet does not match your signed-in Base wallet. Reconnect
+                        the same wallet before sending funds.
                       </div>
                     )}
 
                     <form onSubmit={handleSend} className="mt-4 space-y-4">
                       <div className="grid gap-4 sm:grid-cols-[0.38fr_1fr]">
-                        <label className="space-y-2 text-xs uppercase tracking-widest text-zinc-600">
+                        <label className="space-y-2 text-xs uppercase tracking-widest text-zinc-500">
                           Asset
                           <select
                             value={sendAsset}
@@ -619,7 +685,7 @@ export default function WalletPage() {
                             <option value="ETH">ETH</option>
                           </select>
                         </label>
-                        <label className="space-y-2 text-xs uppercase tracking-widest text-zinc-600">
+                        <label className="space-y-2 text-xs uppercase tracking-widest text-zinc-500">
                           Recipient
                           <input
                             value={sendRecipient}
@@ -630,7 +696,7 @@ export default function WalletPage() {
                         </label>
                       </div>
 
-                      <label className="space-y-2 text-xs uppercase tracking-widest text-zinc-600">
+                      <label className="space-y-2 text-xs uppercase tracking-widest text-zinc-500">
                         Amount
                         <input
                           value={sendAmount}
@@ -655,7 +721,7 @@ export default function WalletPage() {
                         <button
                           type="submit"
                           disabled={sendPending || walletConnecting}
-                          className="inline-flex items-center gap-2 bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-black transition-colors hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600"
+                          className="inline-flex items-center gap-2 bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-black transition-colors hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500"
                         >
                           <Send className="h-3.5 w-3.5" />
                           {sendPending ? 'Sending...' : `Send ${sendAsset}`}
@@ -667,15 +733,28 @@ export default function WalletPage() {
                         <div className="border border-zinc-800 bg-black p-4">
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <p className="text-[10px] uppercase tracking-widest text-zinc-600">Last send</p>
-                              <p className="mt-2 text-sm font-medium text-white">{sendState.message}</p>
+                              <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                                Last send
+                              </p>
+                              <p className="mt-2 text-sm font-medium text-white">
+                                {sendState.message}
+                              </p>
                               <p className="mt-1 text-xs text-zinc-500">
-                                {sendState.amount} {sendState.asset} to {formatAddress(sendState.recipient)}
+                                {sendState.amount} {sendState.asset} to{' '}
+                                {formatAddress(sendState.recipient)}
                               </p>
                             </div>
                             <StatusPill
-                              status={sendState.status === 'completed' ? 'active' : sendState.status === 'pending' ? 'idle' : 'error'}
-                              label={sendState.mode === 'sponsored' ? 'Gas sponsored' : 'Standard send'}
+                              status={
+                                sendState.status === 'completed'
+                                  ? 'active'
+                                  : sendState.status === 'pending'
+                                    ? 'idle'
+                                    : 'error'
+                              }
+                              label={
+                                sendState.mode === 'sponsored' ? 'Gas sponsored' : 'Standard send'
+                              }
                               size="sm"
                             />
                           </div>
@@ -698,32 +777,42 @@ export default function WalletPage() {
                 <div className="border border-zinc-800 bg-zinc-950 p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] uppercase tracking-widest text-zinc-600">Recent activity</p>
+                      <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                        Recent activity
+                      </p>
                       <h3 className="mt-2 text-lg font-bold text-white">Latest Base transfers</h3>
                     </div>
                     <button
                       onClick={() => void loadWalletState()}
                       disabled={loadingTransactions || isPending}
-                      className="text-[10px] uppercase tracking-widest text-zinc-600 transition-colors hover:text-white disabled:opacity-50"
+                      className="text-[10px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-white disabled:opacity-50"
                     >
                       {loadingTransactions ? 'Refreshing...' : 'Refresh'}
                     </button>
                   </div>
 
                   <p className="mt-3 text-sm text-zinc-400">
-                    This view indexes recent USDC transfers and a bounded recent scan of native ETH transfers for your Base address. For full history, open Basescan.
+                    This view indexes recent USDC transfers and a bounded recent scan of native ETH
+                    transfers for your Base address. For full history, open Basescan.
                   </p>
 
                   <div className="mt-4 divide-y divide-zinc-800 border border-zinc-800">
                     {transactions.length > 0 ? (
                       transactions.map((transaction) => (
-                        <div key={transaction.hash} className="flex flex-col gap-2 bg-zinc-950 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div
+                          key={transaction.hash}
+                          className="flex flex-col gap-2 bg-zinc-950 p-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
                           <div>
                             <p className="text-sm font-medium text-white">
-                              {transaction.direction === 'received' ? 'Received' : 'Sent'} {formatAmount(transaction.amount, 4)} {transaction.asset}
+                              {transaction.direction === 'received' ? 'Received' : 'Sent'}{' '}
+                              {formatAmount(transaction.amount, 4)} {transaction.asset}
                             </p>
                             <p className="mt-1 text-xs text-zinc-500">
-                              {new Date(transaction.timestamp).toLocaleString()} · {transaction.source === 'token-log' ? 'Indexed transfer' : 'Recent native scan'}
+                              {new Date(transaction.timestamp).toLocaleString()} ·{' '}
+                              {transaction.source === 'token-log'
+                                ? 'Indexed transfer'
+                                : 'Recent native scan'}
                             </p>
                           </div>
                           <a
@@ -732,7 +821,8 @@ export default function WalletPage() {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-xs text-zinc-300 transition-colors hover:text-white"
                           >
-                            {formatAddress(transaction.hash)} <ExternalLink className="h-3.5 w-3.5" />
+                            {formatAddress(transaction.hash)}{' '}
+                            <ExternalLink className="h-3.5 w-3.5" />
                           </a>
                         </div>
                       ))
@@ -740,8 +830,9 @@ export default function WalletPage() {
                       <div className="bg-zinc-950 p-6 text-center">
                         <p className="text-2xl mb-3">📭</p>
                         <p className="text-sm text-zinc-400 mb-1">No recent transfers</p>
-                        <p className="text-xs text-zinc-600 mb-4">
-                          No USDC transfers found in the current indexed window. Full history is available on Basescan.
+                        <p className="text-xs text-zinc-500 mb-4">
+                          No USDC transfers found in the current indexed window. Full history is
+                          available on Basescan.
                         </p>
                         <a
                           href={`https://basescan.org/address/${effectiveAddress}`}
@@ -758,26 +849,41 @@ export default function WalletPage() {
 
                 <div className="space-y-6">
                   <div className="border border-zinc-800 bg-zinc-950 p-6">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Agent spend session</p>
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                      Agent spend session
+                    </p>
                     <h3 className="mt-2 text-lg font-bold text-white">Off-chain billing lane</h3>
                     <p className="mt-3 text-sm text-zinc-400">
-                      This remains separate from your Base wallet. Use it only for agent metering and Stripe-funded spend sessions.
+                      This remains separate from your Base wallet. Use it only for agent metering
+                      and Stripe-funded spend sessions.
                     </p>
 
                     {mppSession ? (
                       <div className="mt-4 space-y-4">
-                        <div className="grid gap-px bg-zinc-800 sm:grid-cols-3">
+                        <div className="grid gap-px bg-zinc-900 sm:grid-cols-3">
                           <div className="bg-zinc-950 p-3">
-                            <p className="text-[10px] uppercase tracking-widest text-zinc-600">Deposited</p>
-                            <p className="mt-2 text-lg font-bold text-white">${mppSession.deposit}</p>
+                            <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                              Deposited
+                            </p>
+                            <p className="mt-2 text-lg font-bold text-white">
+                              ${mppSession.deposit}
+                            </p>
                           </div>
                           <div className="bg-zinc-950 p-3">
-                            <p className="text-[10px] uppercase tracking-widest text-zinc-600">Spent</p>
-                            <p className="mt-2 text-lg font-bold text-red-400">${mppSession.spent}</p>
+                            <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                              Spent
+                            </p>
+                            <p className="mt-2 text-lg font-bold text-red-400">
+                              ${mppSession.spent}
+                            </p>
                           </div>
                           <div className="bg-zinc-950 p-3">
-                            <p className="text-[10px] uppercase tracking-widest text-zinc-600">Remaining</p>
-                            <p className="mt-2 text-lg font-bold text-emerald-400">${mppSession.remaining}</p>
+                            <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                              Remaining
+                            </p>
+                            <p className="mt-2 text-lg font-bold text-emerald-400">
+                              ${mppSession.remaining}
+                            </p>
                           </div>
                         </div>
                         <button
@@ -793,11 +899,11 @@ export default function WalletPage() {
                         <button
                           onClick={openSession}
                           disabled={sessionLoading || !effectiveAddress}
-                          className="bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-black transition-colors hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600"
+                          className="bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-black transition-colors hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500"
                         >
                           {sessionLoading ? 'Opening...' : 'Open $10 session'}
                         </button>
-                        <div className="grid grid-cols-2 gap-px bg-zinc-800">
+                        <div className="grid grid-cols-2 gap-px bg-zinc-900">
                           {TOP_UP_OPTIONS.map((amount) => (
                             <button
                               key={amount}
@@ -825,5 +931,5 @@ export default function WalletPage() {
         </div>
       </DashboardContent>
     </DashboardShell>
-  )
+  );
 }

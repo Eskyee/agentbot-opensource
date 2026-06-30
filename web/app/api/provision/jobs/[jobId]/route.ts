@@ -32,6 +32,10 @@ export async function GET(
   const response = await signedFetch(`/api/platform-jobs/${jobId}`, {
     cache: 'no-store',
     signal: AbortSignal.timeout(10_000),
+  }, {
+    id: session.user.id,
+    email: session.user.email || '',
+    role: session.user.isAdmin ? 'admin' : 'user',
   })
 
   const body = await response.json() as JobResponse | { error?: string }

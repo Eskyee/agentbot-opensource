@@ -12,14 +12,14 @@ export async function provisionAgentStep({ userId, email, plan = "free" }: Provi
   try {
     const response = await signedFetch('/provision', {
       method: "POST",
-      headers: {
-        "X-User-Id": userId,
-        "X-User-Email": email,
-      },
       body: JSON.stringify({
         plan,
         telegramToken: process.env.DEFAULT_TELEGRAM_TOKEN,
       }),
+    }, {
+      id: userId,
+      email,
+      role: 'user',
     });
 
     if (!response.ok) {

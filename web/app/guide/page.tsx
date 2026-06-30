@@ -71,7 +71,7 @@ export default function GuidePage() {
             OpenClaw is the AI agent runtime that runs inside your Agentbot container. It is the actual intelligence layer — it runs your chosen AI model, handles conversations, executes skills, manages your wallet, and connects to the services you configure.
           </Q>
           <Q q="Where does my OpenClaw run?">
-            Your OpenClaw instance runs on Railway, managed by Agentbot. You get a dedicated subdomain like <code className="text-zinc-300">agentbot-agent-YOUR_ID-production.up.railway.app</code>. You can reach it directly, or access it through the Agentbot dashboard.
+            Your OpenClaw instance runs on Railway, managed by Agentbot. You get a dedicated subdomain like <code className="text-zinc-300">YOUR_SERVICE_URL</code>. You can reach it directly, or access it through the Agentbot dashboard.
           </Q>
           <Q q="How do I open my agent?">
             Click <strong className="text-zinc-300">Open</strong> in the Instance Controls section of your dashboard. This opens your agent&apos;s control interface where you can send messages, configure skills, and check live status.

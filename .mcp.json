@@ -10,6 +10,13 @@
     "railway": {
       "command": "npx",
       "args": ["-y", "@railway/mcp-server"]
+    },
+    "resend": {
+      "command": "npx",
+      "args": ["-y", "resend-mcp"],
+      "env": {
+        "RESEND_API_KEY": "${RESEND_API_KEY}"
+      }
     }
   }
 }

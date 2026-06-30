@@ -104,7 +104,7 @@ export default function ExportPage() {
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600 mb-2">Finance</div>
+            <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-500 mb-2">Finance</div>
             <h1 className="text-3xl font-bold uppercase tracking-tight">Export</h1>
           </div>
           <button onClick={exportCSV} className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors">
@@ -117,9 +117,9 @@ export default function ExportPage() {
         <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 mb-8">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-zinc-600" />
+              <Calendar className="h-4 w-4 text-zinc-500" />
               <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/50" />
-              <span className="text-zinc-600">to</span>
+              <span className="text-zinc-500">to</span>
               <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/50" />
             </div>
             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-black border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
@@ -135,15 +135,15 @@ export default function ExportPage() {
         {/* Summary */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Invoiced</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500">Invoiced</div>
             <div className="mt-2 text-2xl font-bold">£{totalInvoiced.toFixed(2)}</div>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Paid</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500">Paid</div>
             <div className="mt-2 text-2xl font-bold text-green-400">£{totalPaid.toFixed(2)}</div>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Outstanding</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500">Outstanding</div>
             <div className="mt-2 text-2xl font-bold text-blue-400">£{totalOutstanding.toFixed(2)}</div>
           </div>
         </div>
@@ -151,17 +151,17 @@ export default function ExportPage() {
         {/* Invoices — open & read any of them */}
         <div className="rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden">
           <div className="border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600">Invoices &amp; Bills</span>
-            <span className="text-[10px] uppercase tracking-widest text-zinc-700">{invoicesLoading ? 'Loading' : `${filtered.length} shown`}</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-500">Invoices &amp; Bills</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-500">{invoicesLoading ? 'Loading' : `${filtered.length} shown`}</span>
           </div>
           <table className="w-full">
             <thead>
               <tr className="border-b border-zinc-800">
-                <th className="text-left text-[10px] uppercase tracking-widest text-zinc-600 px-4 py-3">Invoice</th>
-                <th className="text-left text-[10px] uppercase tracking-widest text-zinc-600 px-4 py-3">Client</th>
-                <th className="text-left text-[10px] uppercase tracking-widest text-zinc-600 px-4 py-3">Status</th>
-                <th className="text-right text-[10px] uppercase tracking-widest text-zinc-600 px-4 py-3">Total</th>
-                <th className="text-right text-[10px] uppercase tracking-widest text-zinc-600 px-4 py-3">Open</th>
+                <th className="text-left text-[10px] uppercase tracking-widest text-zinc-500 px-4 py-3">Invoice</th>
+                <th className="text-left text-[10px] uppercase tracking-widest text-zinc-500 px-4 py-3">Client</th>
+                <th className="text-left text-[10px] uppercase tracking-widest text-zinc-500 px-4 py-3">Status</th>
+                <th className="text-right text-[10px] uppercase tracking-widest text-zinc-500 px-4 py-3">Total</th>
+                <th className="text-right text-[10px] uppercase tracking-widest text-zinc-500 px-4 py-3">Open</th>
               </tr>
             </thead>
             <tbody>
@@ -183,12 +183,12 @@ export default function ExportPage() {
             </tbody>
           </table>
           {!invoicesLoading && filtered.length === 0 && (
-            <div className="text-center py-12 text-zinc-600">
+            <div className="text-center py-12 text-zinc-500">
               <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
               <p className="text-sm">No invoices in this range. Create one on the Invoices page.</p>
             </div>
           )}
-          {invoicesLoading && <div className="text-center py-12 text-zinc-600 flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading invoices…</div>}
+          {invoicesLoading && <div className="text-center py-12 text-zinc-500 flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading invoices…</div>}
         </div>
       </div>
     </main>

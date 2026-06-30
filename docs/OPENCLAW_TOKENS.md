@@ -5,7 +5,7 @@
 ### How It Works
 
 Each user gets their OWN agent on Railway with its OWN unique gateway token:
-- Service: `agentbot-agent-{userId}-production.up.railway.app`
+- Service: `agentbot-agent-{userId}YOUR_SERVICE_URL`
 - Token: Generated per-user, stored in `agent_registrations.gateway_token`
 
 ### Token Flow
@@ -50,8 +50,8 @@ If users have token mismatch errors:
 
 ### Gateway URL Structure
 
-- User's agent: `https://agentbot-agent-{userId}-production.up.railway.app`
-- Control UI: `https://agentbot-agent-{userId}-production.up.railway.app/chat`
-- WebSocket: `wss://agentbot-agent-{userId}-production.up.railway.app/chat`
+- User's agent: `https://agentbot-agent-{userId}YOUR_SERVICE_URL`
+- Control UI: `https://agentbot-agent-{userId}YOUR_SERVICE_URL/chat`
+- WebSocket: `wss://agentbot-agent-{userId}YOUR_SERVICE_URL/chat`
 
 The dashboard automatically builds the correct URL using user's `openclawUrl` from database.

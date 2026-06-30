@@ -1,18 +1,18 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect } from 'react'
-import { MessageSquare, Send, Loader2, RefreshCw, Bot, User } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react';
+import { MessageSquare, Send, Loader2, RefreshCw, Bot, User } from 'lucide-react';
 import {
   DashboardShell,
   DashboardHeader,
   DashboardContent,
-} from '@/app/components/shared/DashboardShell'
+} from '@/app/components/shared/DashboardShell';
 
 interface Message {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: string
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
 }
 
 const CHARACTERS = [
@@ -21,35 +21,35 @@ const CHARACTERS = [
   { id: 'road', name: 'Road Manager', emoji: '🚐', desc: 'Tour logistics. Grind mentality.' },
   { id: 'label', name: 'Label Exec', emoji: '💰', desc: 'Business side. Numbers matter.' },
   { id: 'ar', name: 'A&R Scout', emoji: '🎯', desc: 'Talent finder. Pattern recognition.' },
-]
+];
 
 export default function CharacterQAPage() {
-  const [selectedCharacter, setSelectedCharacter] = useState(CHARACTERS[0])
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [sending, setSending] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [selectedCharacter, setSelectedCharacter] = useState(CHARACTERS[0]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const sendMessage = async () => {
-    if (!input.trim() || sending) return
+    if (!input.trim() || sending) return;
 
     const userMsg: Message = {
       id: crypto.randomUUID(),
       role: 'user',
       content: input.trim(),
       timestamp: new Date().toISOString(),
-    }
+    };
 
-    setMessages(prev => [...prev, userMsg])
-    setInput('')
-    setSending(true)
+    setMessages((prev) => [...prev, userMsg]);
+    setInput('');
+    setSending(true);
 
     // Simulated response
-    await new Promise(r => setTimeout(r, 1200))
+    await new Promise((r) => setTimeout(r, 1200));
 
     const responses: Record<string, string[]> = {
       selector: [
@@ -59,39 +59,39 @@ export default function CharacterQAPage() {
       ],
       basement: [
         'Real talk — if you need a plugin to sound raw, you already lost the plot. Start with the sample.',
-        'The autonomous doesn\'t care about your follower count. Can you play a 2-hour set without stopping?',
-        'That sound you\'re chasing? It\'s a Juno-60 through a broken preamp. Good luck finding one.',
+        "The autonomous doesn't care about your follower count. Can you play a 2-hour set without stopping?",
+        "That sound you're chasing? It's a Juno-60 through a broken preamp. Good luck finding one.",
       ],
       road: [
         'Three cities in four days? Doable if you skip soundcheck. Not recommended but doable.',
         'Rider essentials: two towels, cold water, no brown M&Ms. Seriously though, hydration matters.',
-        'The van leaves at 6 AM. If you\'re late, you\'re walking to the next venue.',
+        "The van leaves at 6 AM. If you're late, you're walking to the next venue.",
       ],
       label: [
         'Streaming pays 0.003 per play. You need 333,000 plays to make $1,000. Think about that.',
         'Sync licensing is where the real money is. One TV placement beats 100K Spotify streams.',
-        'Your split sheets aren\'t done? We can\'t distribute until they are. No exceptions.',
+        "Your split sheets aren't done? We can't distribute until they are. No exceptions.",
       ],
       ar: [
         'I look for three things: voice, story, consistency. Most artists have one. Very few have all three.',
         'Your last three releases showed growth. Keep that trajectory and we have something to talk about.',
-        'The best artists I\'ve signed were terrible in the room but incredible on record. Performance can be taught.',
+        "The best artists I've signed were terrible in the room but incredible on record. Performance can be taught.",
       ],
-    }
+    };
 
-    const charResponses = responses[selectedCharacter.id] || responses.selector
+    const charResponses = responses[selectedCharacter.id] || responses.selector;
     const reply: Message = {
       id: crypto.randomUUID(),
       role: 'assistant',
       content: charResponses[Math.floor(Math.random() * charResponses.length)],
       timestamp: new Date().toISOString(),
-    }
+    };
 
-    setMessages(prev => [...prev, reply])
-    setSending(false)
-  }
+    setMessages((prev) => [...prev, reply]);
+    setSending(false);
+  };
 
-  const clearChat = () => setMessages([])
+  const clearChat = () => setMessages([]);
 
   return (
     <DashboardShell>
@@ -114,16 +114,16 @@ export default function CharacterQAPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Character selector */}
           <div className="lg:col-span-1">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 font-bold">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3 font-bold">
               Characters
             </div>
             <div className="space-y-2">
-              {CHARACTERS.map(char => (
+              {CHARACTERS.map((char) => (
                 <button
                   key={char.id}
                   onClick={() => {
-                    setSelectedCharacter(char)
-                    setMessages([])
+                    setSelectedCharacter(char);
+                    setMessages([]);
                   }}
                   className={`w-full text-left p-3 border transition-all ${
                     selectedCharacter.id === char.id
@@ -135,7 +135,7 @@ export default function CharacterQAPage() {
                     <span className="text-lg">{char.emoji}</span>
                     <span className="text-xs font-bold text-white">{char.name}</span>
                   </div>
-                  <p className="text-[10px] text-zinc-600 font-mono">{char.desc}</p>
+                  <p className="text-[10px] text-zinc-500 font-mono">{char.desc}</p>
                 </button>
               ))}
             </div>
@@ -148,7 +148,9 @@ export default function CharacterQAPage() {
               <div className="border-b border-zinc-800 px-4 py-3 flex items-center gap-2">
                 <span className="text-lg">{selectedCharacter.emoji}</span>
                 <span className="text-sm font-bold text-white">{selectedCharacter.name}</span>
-                <span className="text-[10px] text-zinc-600 font-mono ml-auto">{selectedCharacter.desc}</span>
+                <span className="text-[10px] text-zinc-500 font-mono ml-auto">
+                  {selectedCharacter.desc}
+                </span>
               </div>
 
               {/* Messages */}
@@ -157,17 +159,17 @@ export default function CharacterQAPage() {
                   <div className="h-full flex items-center justify-center">
                     <div className="text-center">
                       <Bot className="h-10 w-10 text-zinc-800 mx-auto mb-3" />
-                      <p className="text-sm text-zinc-600 font-mono">
+                      <p className="text-sm text-zinc-500 font-mono">
                         Ask {selectedCharacter.name} anything
                       </p>
-                      <p className="text-xs text-zinc-700 font-mono mt-1">
+                      <p className="text-xs text-zinc-500 font-mono mt-1">
                         Music industry advice, feedback, tough love
                       </p>
                     </div>
                   </div>
                 ) : (
                   <>
-                    {messages.map(msg => (
+                    {messages.map((msg) => (
                       <div
                         key={msg.id}
                         className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}
@@ -199,15 +201,15 @@ export default function CharacterQAPage() {
               </div>
 
               {/* Input */}
-              <div className="border-t border-zinc-800 p-4">
+              <div className="border-t border-zinc-900 p-4">
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                     placeholder={`Ask ${selectedCharacter.name}...`}
-                    className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2.5 text-sm text-white font-mono placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600"
+                    className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2.5 text-sm text-white font-mono placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600"
                     disabled={sending}
                   />
                   <button
@@ -228,5 +230,5 @@ export default function CharacterQAPage() {
         </div>
       </DashboardContent>
     </DashboardShell>
-  )
+  );
 }

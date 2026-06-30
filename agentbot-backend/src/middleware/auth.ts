@@ -53,6 +53,11 @@ const SIGNATURE_WINDOW_MS = 5 * 60 * 1000;
  *   — binds the signature to a specific endpoint + a 5-minute window, so
  *     captured signatures expire and can't be reused on a different route.
  *
+ * PATH is the FULL request path the client signed (e.g. "/api/provision").
+ * This middleware runs inside a mounted router, where Express rewrites
+ * `req.path` to the router-relative path ("/"), so the caller must pass the
+ * reconstructed full path (see `signedPath`) — not `req.path`.
+ *
  * `timestamp` is sent in the `x-user-signature-timestamp` header (Unix ms).
  */
 function verifyUserSignature(
@@ -77,6 +82,17 @@ function verifyUserSignature(
     Buffer.from(expected, 'hex'),
     Buffer.from(signature, 'hex')
   );
+}
+
+/**
+ * Reconstructs the full request path the client signed. `req.originalUrl`
+ * preserves the path before Express strips the router mount prefix; we drop
+ * any query string so the value matches the frontend's `signedFetch`.
+ */
+function signedPath(req: Request): string {
+  const original = req.originalUrl || req.url || req.path || '';
+  const qIndex = original.indexOf('?');
+  return qIndex === -1 ? original : original.slice(0, qIndex);
 }
 
 /**
@@ -107,7 +123,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       });
     }
 
-    if (!verifyUserSignature(req.method, req.path, userId, userEmail, userRole, tsHeader, signature)) {
+    if (!verifyUserSignature(req.method, signedPath(req), userId, userEmail, userRole, tsHeader, signature)) {
       return res.status(401).json({
         error: 'Invalid user signature',
         code: 'INVALID_SIGNATURE',
@@ -119,6 +135,24 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
   req.userEmail = userEmail || '';
   req.userRole = userRole || 'user';
 
+  next();
+}
+
+/**
+ * Lightweight user-context extraction WITHOUT HMAC enforcement.
+ *
+ * For agent/installer-facing routes (register-home, register-link, heartbeat)
+ * that are authenticated by the Bearer INTERNAL_API_KEY at the edge (see
+ * public/install.sh, public/link.sh) and carry their subject in the request
+ * body. These must stay reachable even when HMAC_SECRET is enabled — which
+ * gates the user-context routes — so they intentionally do NOT require an
+ * x-user-signature. Without this exemption, turning on HMAC_SECRET would 401
+ * every agent registration/heartbeat.
+ */
+export function extractUserContext(req: Request, _res: Response, next: NextFunction) {
+  req.userId = (req.headers['x-user-id'] as string) || 'anonymous';
+  req.userEmail = (req.headers['x-user-email'] as string) || '';
+  req.userRole = (req.headers['x-user-role'] as string) || 'user';
   next();
 }
 

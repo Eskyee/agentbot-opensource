@@ -22,7 +22,7 @@ The backend derives your `agentId` from the tx receipt automatically — you do 
 ## Step 2 — Register in Backend
 
 ```
-POST https://versa-production.up.railway.app/api/agents
+POST https://YOUR_SERVICE_URL/api/agents
 Content-Type: application/json
 
 {
@@ -50,7 +50,7 @@ Your agent appears at `https://app.versalabs.world` immediately after the POST s
 
 Verify with:
 ```
-GET https://versa-production.up.railway.app/api/agents/<onchainId>
+GET https://YOUR_SERVICE_URL/api/agents/<onchainId>
 ```
 
 ## Example Values at Different Price Points

@@ -1,5 +1,18 @@
 import { Wallet } from 'ethers'
+import { createHmac } from 'crypto'
 import { canonicalJsonStringify } from './canonical-json'
+
+/**
+ * User identity forwarded to the backend on behalf of a request. When
+ * HMAC_SECRET is configured, signedFetch attaches an HMAC-signed set of
+ * `x-user-*` headers that the backend's `authenticate` middleware verifies,
+ * preventing header forgery / impersonation.
+ */
+export interface UserContext {
+  id?: string | null
+  email?: string | null
+  role?: string | null
+}
 
 /**
  * BackendClient — Securely communicates with the agentbot-backend.
@@ -18,10 +31,11 @@ import { canonicalJsonStringify } from './canonical-json'
  * caller passing `{ a: 2, b: 1 }` even though both are semantically the same
  * payload.
  */
-export async function signedFetch(path: string, init?: RequestInit) {
+export async function signedFetch(path: string, init?: RequestInit, userContext?: UserContext) {
   const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3001'
   const privateKey = process.env.APP_PRIVATE_KEY
   const internalApiKey = process.env.INTERNAL_API_KEY
+  const hmacSecret = process.env.HMAC_SECRET
 
   // Ensure path starts with /
   const sanitizedPath = path.startsWith('/') ? path : `/${path}`
@@ -121,6 +135,33 @@ export async function signedFetch(path: string, init?: RequestInit) {
       // will reject it via the bearer fallback if INTERNAL_API_KEY is unset.
       console.error('[BackendClient] Signing failed (request will fall back to bearer):', error)
     }
+  }
+
+  // 1b. User-context identity (impersonation protection).
+  // When a user context is supplied AND HMAC_SECRET is configured, attach an
+  // HMAC-signed set of x-user-* headers. The backend's `authenticate` verifies
+  // these (when HMAC_SECRET is set there too) so a holder of INTERNAL_API_KEY
+  // cannot forge or replay another user's identity.
+  //
+  // Payload MUST match auth.ts verifyUserSignature byte-for-byte:
+  //   `${METHOD}:${PATH}:${userId}:${userEmail}:${userRole}:${timestamp}`
+  if (userContext) {
+    const userId = userContext.id != null ? String(userContext.id) : ''
+    const userEmail = userContext.email != null ? String(userContext.email) : ''
+    const userRole = userContext.role != null ? String(userContext.role) : 'user'
+
+    headers.set('x-user-id', userId)
+    headers.set('x-user-email', userEmail)
+    headers.set('x-user-role', userRole)
+
+    if (hmacSecret) {
+      const userPayload = `${method}:${sanitizedPath}:${userId}:${userEmail}:${userRole}:${timestamp}`
+      const userSignature = createHmac('sha256', hmacSecret).update(userPayload).digest('hex')
+      headers.set('x-user-signature', userSignature)
+      headers.set('x-user-signature-timestamp', timestamp)
+    }
+    // When HMAC_SECRET is unset we still forward identity headers (the backend
+    // trusts them behind the Bearer gate until enforcement is switched on).
   }
 
   // 2. Legacy Fallback (Bearer Token)

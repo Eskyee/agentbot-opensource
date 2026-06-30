@@ -230,11 +230,11 @@ export function MetricsCard({ userId }: { userId?: string }) {
                 { label: 'Skills', weight: '10%', active: metrics.skills.active > 0 },
               ].map(item => (
                 <div key={item.label} className="bg-zinc-800 rounded-lg p-3 text-center">
-                  <div className={`text-lg font-bold ${item.active ? 'text-green-400' : 'text-zinc-600'}`}>
+                  <div className={`text-lg font-bold ${item.active ? 'text-green-400' : 'text-zinc-500'}`}>
                     {item.active ? '✓' : '✗'}
                   </div>
                   <div className="text-xs text-zinc-400">{item.label}</div>
-                  <div className="text-xs text-zinc-600">{item.weight}</div>
+                  <div className="text-xs text-zinc-500">{item.weight}</div>
                 </div>
               ))}
             </div>

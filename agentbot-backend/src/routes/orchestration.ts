@@ -12,6 +12,13 @@ import { executeTool } from '../lib/orchestration/tool-executor'
 
 const router = Router()
 
+// `bash`/`exec`/`shell` hand an arbitrary string to a shell on the backend
+// host. Driving them from an HTTP request body is remote code execution, so
+// they are rejected unless an operator explicitly opts in for a trusted,
+// single-tenant deployment.
+const SHELL_TOOLS = new Set(['bash', 'exec', 'shell'])
+const SHELL_TOOLS_ENABLED = process.env.ORCHESTRATION_ALLOW_SHELL === 'true'
+
 interface BatchRequest {
   tools: ToolCall[]
   userId: string
@@ -33,6 +40,19 @@ router.post('/batch', async (req: Request, res: Response) => {
 
     if (tools.length > 20) {
       return res.status(400).json({ error: 'Maximum 20 tools per batch' })
+    }
+
+    // Validate tool shape and reject shell tools before executing anything.
+    for (const tool of tools) {
+      if (!tool || typeof tool.toolName !== 'string' || !tool.toolName.trim()) {
+        return res.status(400).json({ error: 'Each tool must have a non-empty string toolName' })
+      }
+      if (!SHELL_TOOLS_ENABLED && SHELL_TOOLS.has(tool.toolName.toLowerCase())) {
+        return res.status(400).json({
+          error: `Tool '${tool.toolName}' is not permitted via the orchestration API`,
+          code: 'TOOL_NOT_PERMITTED',
+        })
+      }
     }
 
     // Get partition stats for dry run info

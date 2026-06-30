@@ -16,11 +16,11 @@ import { DashboardDataProvider } from './dashboard/DashboardDataProvider'
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'Agentbot — Your agent works while you sleep.',
+    default: 'Agentbot — AI agents for artists, labels & collectives.',
     template: '%s | Agentbot',
   },
-  description: 'Deploy an autonomous AI agent that runs 24/7. Connects to Telegram, Discord, and WhatsApp. Does things on your behalf.',
-  keywords: ['AI agent', 'autonomous agent', 'deploy agent', '24/7 AI', 'Telegram bot', 'Discord bot', 'WhatsApp bot'],
+  description: 'Deploy an autonomous agent for artists, labels and collectives. It runs your radio, works your fans, and handles bookings, releases and royalties — 24/7, on its own server.',
+  keywords: ['AI agent for musicians', 'music label automation', 'autonomous artist agent', 'radio automation', 'royalty automation', '24/7 AI agent', 'AI for artists and labels'],
   authors: [{ name: 'Agentbot', url: APP_URL }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
@@ -40,21 +40,21 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: APP_URL,
     siteName: 'Agentbot',
-    title: 'Agentbot | Your agent works while you sleep.',
-    description: 'Deploy an autonomous AI agent that runs 24/7. Connects to Telegram, Discord, and WhatsApp.',
+    title: 'Agentbot | AI agents for artists, labels & collectives.',
+    description: 'An autonomous agent that runs your radio, works your fans, and handles bookings, releases and royalties — 24/7, on its own server.',
     images: [
       {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Agentbot — Your agent works while you sleep.',
+        alt: 'Agentbot — AI agents for artists, labels and collectives.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Agentbot | Your agent works while you sleep.',
-    description: 'Deploy an autonomous AI agent that runs 24/7. Connects to Telegram, Discord, and WhatsApp.',
+    title: 'Agentbot | AI agents for artists, labels & collectives.',
+    description: 'An autonomous agent that runs your radio, works your fans, and handles bookings, releases and royalties — 24/7, on its own server.',
     creator: '@Esky33junglist',
     images: ['/opengraph-image'],
   },
@@ -82,7 +82,7 @@ const jsonLd = {
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   url: APP_URL,
-  description: 'Focused control plane for playground apps, creator agents, Vercel Gateway, and GitLawb-backed autonomous projects.',
+  description: 'Deploy an autonomous agent for artists, labels and collectives. It runs your radio, works your fans, and handles bookings, releases and royalties — 24/7, on its own server.',
   offers: [
     {
       '@type': 'Offer',

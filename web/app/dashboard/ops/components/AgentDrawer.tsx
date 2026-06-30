@@ -118,14 +118,14 @@ export function AgentDrawer({ agentId, onClose }: AgentDrawerProps) {
         {/* Head */}
         <div className="flex items-start justify-between px-5 py-4 border-b border-zinc-800 sticky top-0 bg-[#0a0a0a] z-10">
           <div className="min-w-0">
-            <div className="text-[9.5px] tracking-[0.22em] uppercase text-zinc-600">
+            <div className="text-[9.5px] tracking-[0.22em] uppercase text-zinc-500">
               AGENT · {agentId}
             </div>
             <div className="text-[15px] font-mono font-semibold text-zinc-100 mt-0.5">
               {node?.id ?? agentId}
             </div>
             {node?.did && (
-              <div className="text-[10px] font-mono text-zinc-600 mt-0.5 truncate">
+              <div className="text-[10px] font-mono text-zinc-500 mt-0.5 truncate">
                 {node.did}
               </div>
             )}
@@ -152,7 +152,7 @@ export function AgentDrawer({ agentId, onClose }: AgentDrawerProps) {
 
         {loading && (
           <div className="flex-1 flex items-center justify-center py-16">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-zinc-600 animate-pulse">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-zinc-500 animate-pulse">
               Loading agent data…
             </div>
           </div>
@@ -192,11 +192,11 @@ export function AgentDrawer({ agentId, onClose }: AgentDrawerProps) {
                   key={s.k}
                   className={`p-4 ${i < 3 ? 'border-r border-zinc-800' : ''}`}
                 >
-                  <div className="text-[9px] tracking-[0.18em] uppercase text-zinc-600 mb-1.5">
+                  <div className="text-[9px] tracking-[0.18em] uppercase text-zinc-500 mb-1.5">
                     {s.k}
                   </div>
                   <div className={`text-[15px] font-semibold ${s.cls}`}>{s.v}</div>
-                  <div className="text-[10px] text-zinc-600 mt-0.5">{s.sub}</div>
+                  <div className="text-[10px] text-zinc-500 mt-0.5">{s.sub}</div>
                 </div>
               ))}
             </div>
@@ -207,7 +207,7 @@ export function AgentDrawer({ agentId, onClose }: AgentDrawerProps) {
                 RECENT WORKFLOWS
               </div>
               {runs.length === 0 ? (
-                <div className="px-5 py-5 text-[11px] text-zinc-600">No runs yet</div>
+                <div className="px-5 py-5 text-[11px] text-zinc-500">No runs yet</div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-[11px] font-mono">
@@ -216,7 +216,7 @@ export function AgentDrawer({ agentId, onClose }: AgentDrawerProps) {
                         {['id', 'workflow', 'steps', 'state', 'dur', 'at'].map((h) => (
                           <th
                             key={h}
-                            className="px-5 py-2 text-left text-[9px] tracking-[0.18em] uppercase text-zinc-600 font-normal border-b border-zinc-900"
+                            className="px-5 py-2 text-left text-[9px] tracking-[0.18em] uppercase text-zinc-500 font-normal border-b border-zinc-900"
                           >
                             {h}
                           </th>
@@ -242,7 +242,7 @@ export function AgentDrawer({ agentId, onClose }: AgentDrawerProps) {
                           <td className="px-5 py-2 text-zinc-500 tabular-nums">
                             {fmt(r.durationMs)}
                           </td>
-                          <td className="px-5 py-2 text-zinc-600">
+                          <td className="px-5 py-2 text-zinc-500">
                             {(() => {
                               try {
                                 return new Date(r.startedAt).toLocaleTimeString('en-GB', {
@@ -284,7 +284,7 @@ export function AgentDrawer({ agentId, onClose }: AgentDrawerProps) {
 
             {/* Danger */}
             <div className="px-5 py-5">
-              <div className="text-[9.5px] tracking-[0.18em] uppercase text-zinc-600 mb-3">
+              <div className="text-[9.5px] tracking-[0.18em] uppercase text-zinc-500 mb-3">
                 DANGER
               </div>
               <div className="flex items-center justify-between border border-red-900/40 bg-red-950/10 px-4 py-3">

@@ -17,7 +17,7 @@ export function AgentInput({ label, hint, className, ...props }: AgentInputProps
       )}
       <Input
         className={cn(
-          'bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600',
+          'bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500',
           'focus:border-zinc-600 focus-visible:ring-0 focus-visible:ring-offset-0',
           className
         )}
@@ -46,7 +46,7 @@ export function AgentTextarea({ label, hint, className, ...props }: AgentTextare
       <textarea
         className={cn(
           'w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3',
-          'text-sm text-white placeholder:text-zinc-600',
+          'text-sm text-white placeholder:text-zinc-500',
           'focus:outline-none focus:border-zinc-600',
           'font-mono resize-none',
           className

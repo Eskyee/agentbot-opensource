@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.app/schema.json",
+  "name": "discord-mcp",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "discord-mcp/Dockerfile"
+  },
+  "deploy": {
+    "healthcheckPath": "/mcp",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}

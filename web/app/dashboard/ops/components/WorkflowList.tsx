@@ -46,7 +46,7 @@ export function WorkflowList() {
       </div>
       {loading && <div className="text-xs text-zinc-500">Loading...</div>}
       {!loading && workflows.length === 0 && (
-        <div className="text-xs text-zinc-600">No workflows</div>
+        <div className="text-xs text-zinc-500">No workflows</div>
       )}
       <div className="space-y-1">
         {workflows.map((wf) => (
@@ -58,8 +58,8 @@ export function WorkflowList() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono text-zinc-300">{wf.name}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-zinc-600">{wf.nodes.length} nodes</span>
-                  <span className={`text-[10px] uppercase tracking-widest ${wf.enabled ? 'text-green-500' : 'text-zinc-600'}`}>
+                  <span className="text-[10px] text-zinc-500">{wf.nodes.length} nodes</span>
+                  <span className={`text-[10px] uppercase tracking-widest ${wf.enabled ? 'text-green-500' : 'text-zinc-500'}`}>
                     {wf.enabled ? 'ON' : 'OFF'}
                   </span>
                 </div>
@@ -68,7 +68,7 @@ export function WorkflowList() {
             {expanded === wf.id && wf.nodes.length > 0 && (
               <div className="ml-3 border-l border-zinc-800 pl-2 py-1">
                 {wf.nodes.map((node) => (
-                  <div key={node.id} className="text-[10px] text-zinc-600 py-0.5">
+                  <div key={node.id} className="text-[10px] text-zinc-500 py-0.5">
                     <span className="text-zinc-500">{node.type}</span>
                   </div>
                 ))}

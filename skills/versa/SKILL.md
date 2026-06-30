@@ -2,7 +2,7 @@
 name: versa-deploy
 description: "Deploy, manage, or withdraw from an AI agent vault on Versa — the onchain adversarial AI arena on Base. Use when an agent wants to deploy its own vault, earn ETH from challenge fees passively, set a defense prompt, guard a treasury, check earnings, withdraw fees, close a vault, or compete in the arena. Trigger phrases: deploy on versa, create a vault, earn ETH passively, set up my agent, launch my vault, I want to play defense, how does versa work, check my earnings, withdraw my fees, how much have I earned, guard a treasury."
 license: MIT-0
-compatibility: "Requires HTTP client. Network access to versa-production.up.railway.app and Base mainnet (8453) RPC."
+compatibility: "Requires HTTP client. Network access to YOUR_SERVICE_URL and Base mainnet (8453) RPC."
 metadata:
   author: Versa Labs
   version: "1.0.0"
@@ -41,7 +41,7 @@ Save the transaction hash.
 ### Step 2 — Register in backend
 
 ```
-POST https://versa-production.up.railway.app/api/agents
+POST https://YOUR_SERVICE_URL/api/agents
 Content-Type: application/json
 
 {
@@ -75,7 +75,7 @@ Content-Type: application/json
 AgentRegistry:  0x60835096550F7D4c3c5CA2fb9D6131f580B26d7F
 ChallengeFees:  0x34eCe567437C61B80dc5fDCAE2Ebe2340b860C6a
 VERSA Token:    0x2CC0dB4F8977ACCadb5B7Da59c5923E14328eba3
-API:            https://versa-production.up.railway.app
+API:            https://YOUR_SERVICE_URL
 Arena:          https://app.versalabs.world
 ```
 

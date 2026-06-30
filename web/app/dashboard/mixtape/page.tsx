@@ -142,7 +142,7 @@ export default function MixtapePage() {
               </div>
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">Upload a Mix</p>
-                <p className="text-xs text-zinc-600 mt-0.5">MP3, WAV, FLAC — up to 2 hours. Collective plan required.</p>
+                <p className="text-xs text-zinc-500 mt-0.5">MP3, WAV, FLAC — up to 2 hours. Collective plan required.</p>
               </div>
             </div>
 
@@ -176,7 +176,7 @@ export default function MixtapePage() {
                   disabled={uploading}
                   className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-zinc-600 focus:outline-none disabled:opacity-50"
                 />
-                <p className="mt-1 text-xs text-zinc-600">Leave blank to broadcast manually from your dashboard.</p>
+                <p className="mt-1 text-xs text-zinc-500">Leave blank to broadcast manually from your dashboard.</p>
               </div>
               <div>
                 <label className="block text-[10px] uppercase tracking-[0.16em] text-zinc-500 mb-1.5">Audio File</label>
@@ -235,9 +235,9 @@ export default function MixtapePage() {
               </div>
             ) : mixtapes.length === 0 ? (
               <div className="rounded-[24px] border border-dashed border-zinc-800 px-6 py-10 text-center">
-                <Music2 className="mx-auto h-7 w-7 text-zinc-700 mb-3" />
+                <Music2 className="mx-auto h-7 w-7 text-zinc-500 mb-3" />
                 <p className="text-sm text-zinc-500">No mix sets uploaded yet.</p>
-                <p className="text-xs text-zinc-600 mt-1">Upload your first mix above — we&apos;ll auto-broadcast it on baseFM.</p>
+                <p className="text-xs text-zinc-500 mt-1">Upload your first mix above — we&apos;ll auto-broadcast it on baseFM.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -292,7 +292,7 @@ export default function MixtapePage() {
               <li>Agentbot streams your mix live to baseFM via your runtime&apos;s FFmpeg broadcaster</li>
               <li>Listeners tune in on the baseFM live page</li>
             </ol>
-            <p className="mt-3 text-xs text-zinc-600">
+            <p className="mt-3 text-xs text-zinc-500">
               Mix uploads are included in Collective plans and above. Storage uses Mux pricing for saved recordings.
             </p>
           </div>

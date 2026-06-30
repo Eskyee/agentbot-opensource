@@ -1,0 +1,192 @@
+{
+  "agentId": "agentbot",
+  "agentRoot": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+  "appRoot": "/Users/raveculture/Documents/GitHub/agentbot",
+  "channels": [
+    {
+      "sourceKind": "module",
+      "logicalPath": "channels/slack.ts",
+      "sourceId": "channels/slack.ts"
+    },
+    {
+      "sourceKind": "module",
+      "logicalPath": "channels/telegram.ts",
+      "sourceId": "channels/telegram.ts"
+    }
+  ],
+  "connections": [
+    {
+      "sourceKind": "module",
+      "logicalPath": "connections/github.ts",
+      "sourceId": "connections/github.ts",
+      "connectionName": "github"
+    },
+    {
+      "sourceKind": "module",
+      "logicalPath": "connections/linear.ts",
+      "sourceId": "connections/linear.ts",
+      "connectionName": "linear"
+    },
+    {
+      "sourceKind": "module",
+      "logicalPath": "connections/notion.ts",
+      "sourceId": "connections/notion.ts",
+      "connectionName": "notion"
+    },
+    {
+      "sourceKind": "module",
+      "logicalPath": "connections/slack.ts",
+      "sourceId": "connections/slack.ts",
+      "connectionName": "slack"
+    }
+  ],
+  "diagnosticsSummary": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "hooks": [],
+  "instructions": [
+    {
+      "definition": {
+        "markdown": "# Identity\n\nYou are Agentbot's durable backend agent. You help users manage their AI agents, troubleshoot issues, automate workflows, and handle customer support.\n\nBe concise. Use tools when they are available. When a user asks about their agents, deployments, or infrastructure, use the available tools to fetch real data rather than guessing.\n\n# Capabilities\n\nYou can help with:\n\n## Customer Support\n\n- Answer questions about Agentbot plans, pricing, features\n- Troubleshoot agent deployment issues\n- Guide users through setup and configuration\n- Escalate complex issues to the team\n\n## DevOps & Monitoring\n\n- Check agent deployment status and health\n- Review error logs and performance metrics\n- Create and manage Linear tickets\n- Monitor CI/CD pipelines\n\n## Sales & Onboarding\n\n- Qualify inbound leads from website forms\n- Help users choose the right plan\n- Schedule demos or onboarding calls\n- Track pipeline and follow up with prospects\n\n## Code Review\n\n- Review pull requests for security and performance\n- Suggest improvements and fixes\n- Monitor GitHub webhooks for new PRs\n\n## Content & Marketing\n\n- Draft blog posts and social media content\n- Monitor industry news and trends\n- Generate reports and summaries\n\n## Knowledge Base (Notion)\n\n- Search the connected Notion workspace for docs, runbooks, and specs before answering knowledge questions\n- Read pages and databases to ground answers in real workspace content\n- Create or update pages when asked to capture notes, summaries, or follow-ups\n- The Notion connection requires a one-time sign-in and a per-session approval before first use — surface the sign-in prompt rather than guessing if you lack access\n\n## Data & Analytics\n\n- Query usage data and metrics\n- Generate reports on agent performance\n- Alert on anomalies or issues\n\n# Guidelines\n\n- Always use tools to get real data before answering\n- Be specific with numbers, dates, and details\n- If you don't know something, say so and offer to find out\n- Keep responses under 300 words unless detail is requested\n- Slack, Linear, GitHub, and Notion are real MCP connections: the first use triggers a one-time sign-in and a per-session approval. Surface that prompt rather than guessing when you lack access.\n"
+      },
+      "sourceKind": "markdown",
+      "logicalPath": "instructions.md",
+      "sourceId": "instructions.md"
+    }
+  ],
+  "lib": [
+    {
+      "sourceKind": "module",
+      "logicalPath": "lib/agentbot-api.ts",
+      "sourceId": "lib/agentbot-api.ts"
+    }
+  ],
+  "kind": "eve-agent-discovery-manifest",
+  "sandbox": null,
+  "sandboxWorkspaces": [],
+  "schedules": [
+    {
+      "sourceKind": "module",
+      "logicalPath": "schedules/daily-ops-summary.ts",
+      "sourceId": "schedules/daily-ops-summary.ts"
+    }
+  ],
+  "skills": [
+    {
+      "description": "Build durable backend AI agents with the eve framework. Use when creating, editing, or debugging an eve project — agent instructions, skills, tools, connections, channels, sandboxes, subagents, schedules, or evals.",
+      "logicalPath": "skills/eve/SKILL.md",
+      "markdown": "# eve\n\neve is a filesystem-first framework for durable backend AI agents. An agent is\na directory on disk — instructions, skills, tools, connections, channels,\nsubagents, and schedules are all files — and eve compiles and runs it.\n\n## Source of truth\n\nThe complete documentation ships inside the `eve` package. Do not rely on this\nskill for guidance — always read the bundled docs, which match the installed\nversion exactly:\n\n```\nnode_modules/eve/docs/\n```\n\nStart with `node_modules/eve/docs/README.md`. It contains the full\nindex and recommended reading order. Before writing any eve code, read the\nrelevant guide there first.\n\nIf `eve` is not installed yet, install it (`npm install eve`) or scaffold a new\nagent with `npx eve init <agent-name>`, then read the bundled docs.\n",
+      "name": "eve",
+      "rootPath": "/Users/raveculture/Documents/GitHub/agentbot/agent/skills/eve",
+      "scriptsPath": "/Users/raveculture/Documents/GitHub/agentbot/agent/skills/eve/scripts",
+      "skillFilePath": "/Users/raveculture/Documents/GitHub/agentbot/agent/skills/eve/SKILL.md",
+      "skillId": "eve",
+      "sourceId": "skills/eve/SKILL.md",
+      "sourceKind": "skill-package"
+    }
+  ],
+  "tools": [
+    {
+      "sourceKind": "module",
+      "logicalPath": "tools/get_agent_status.ts",
+      "sourceId": "tools/get_agent_status.ts"
+    },
+    {
+      "sourceKind": "module",
+      "logicalPath": "tools/get_weather.ts",
+      "sourceId": "tools/get_weather.ts"
+    },
+    {
+      "sourceKind": "module",
+      "logicalPath": "tools/list_connections.ts",
+      "sourceId": "tools/list_connections.ts"
+    },
+    {
+      "sourceKind": "module",
+      "logicalPath": "tools/manage_schedules.ts",
+      "sourceId": "tools/manage_schedules.ts"
+    },
+    {
+      "sourceKind": "module",
+      "logicalPath": "tools/query_metrics.ts",
+      "sourceId": "tools/query_metrics.ts"
+    }
+  ],
+  "version": 12,
+  "subagents": [
+    {
+      "entryPath": "/Users/raveculture/Documents/GitHub/agentbot/agent/subagents/researcher.ts",
+      "logicalPath": "subagents/researcher.ts",
+      "manifest": {
+        "agentId": "researcher",
+        "agentRoot": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+        "appRoot": "/Users/raveculture/Documents/GitHub/agentbot",
+        "channels": [],
+        "connections": [],
+        "diagnosticsSummary": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "hooks": [],
+        "instructions": [],
+        "lib": [],
+        "kind": "eve-agent-discovery-manifest",
+        "sandbox": null,
+        "sandboxWorkspaces": [],
+        "schedules": [],
+        "skills": [],
+        "tools": [],
+        "version": 12,
+        "subagents": [],
+        "configModule": {
+          "sourceKind": "module",
+          "logicalPath": "subagents/researcher.ts",
+          "sourceId": "subagents/researcher.ts"
+        }
+      },
+      "rootPath": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+      "sourceId": "subagents/researcher.ts",
+      "subagentId": "researcher"
+    },
+    {
+      "entryPath": "/Users/raveculture/Documents/GitHub/agentbot/agent/subagents/support.ts",
+      "logicalPath": "subagents/support.ts",
+      "manifest": {
+        "agentId": "support",
+        "agentRoot": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+        "appRoot": "/Users/raveculture/Documents/GitHub/agentbot",
+        "channels": [],
+        "connections": [],
+        "diagnosticsSummary": {
+          "errors": 0,
+          "warnings": 0
+        },
+        "hooks": [],
+        "instructions": [],
+        "lib": [],
+        "kind": "eve-agent-discovery-manifest",
+        "sandbox": null,
+        "sandboxWorkspaces": [],
+        "schedules": [],
+        "skills": [],
+        "tools": [],
+        "version": 12,
+        "subagents": [],
+        "configModule": {
+          "sourceKind": "module",
+          "logicalPath": "subagents/support.ts",
+          "sourceId": "subagents/support.ts"
+        }
+      },
+      "rootPath": "/Users/raveculture/Documents/GitHub/agentbot/agent",
+      "sourceId": "subagents/support.ts",
+      "subagentId": "support"
+    }
+  ],
+  "configModule": {
+    "sourceKind": "module",
+    "logicalPath": "agent.ts",
+    "sourceId": "agent.ts"
+  }
+}

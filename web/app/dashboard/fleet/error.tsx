@@ -12,7 +12,7 @@ export default function FleetError({
   return (
     <div className="min-h-screen bg-black text-white font-mono flex items-center justify-center px-6">
       <div className="max-w-md text-center">
-        <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 block">Fleet Error</span>
+        <span className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3 block">Fleet Error</span>
         <h1 className="text-2xl font-bold tracking-tighter uppercase mb-4">Fleet offline</h1>
         <p className="text-zinc-400 text-sm mb-6">
           Couldn&apos;t load the fleet data. The mission control API might be temporarily unavailable.

@@ -1,17 +1,17 @@
-import Link from 'next/link'
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { buildAppUrl } from '@/app/lib/app-url'
-import { getAutoBlogPost, listAutoBlogPosts } from '@/app/lib/auto-blog'
+import Link from 'next/link';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { buildAppUrl } from '@/app/lib/app-url';
+import { getAutoBlogPost, listAutoBlogPosts } from '@/app/lib/auto-blog';
 
-type Params = Promise<{ slug: string }>
+type Params = Promise<{ slug: string }>;
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { slug } = await params
-  const post = await getAutoBlogPost(slug)
-  if (!post) return {}
+  const { slug } = await params;
+  const post = await getAutoBlogPost(slug);
+  if (!post) return {};
 
   return {
     title: `${post.title} - Agentbot`,
@@ -21,19 +21,21 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       description: post.excerpt,
       url: buildAppUrl(`/blog/updates/${slug}`),
     },
-  }
+  };
 }
 
 export default async function AutoBlogPostPage({ params }: { params: Params }) {
-  const { slug } = await params
-  const post = await getAutoBlogPost(slug)
-  if (!post) notFound()
+  const { slug } = await params;
+  const post = await getAutoBlogPost(slug);
+  if (!post) notFound();
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-12">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">{post.isoDate}</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">
+            {post.isoDate}
+          </div>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase mb-6">
             {post.title}
           </h1>
@@ -54,12 +56,12 @@ export default async function AutoBlogPostPage({ params }: { params: Params }) {
           ))}
         </div>
 
-        <div className="mt-12 pt-8 border-t border-zinc-800">
+        <div className="mt-12 pt-8 border-t border-zinc-900">
           <Link href="/blog" className="text-zinc-500 hover:text-white text-sm">
             ← Back to Blog
           </Link>
         </div>
       </article>
     </main>
-  )
+  );
 }

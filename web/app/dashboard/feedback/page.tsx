@@ -77,7 +77,7 @@ export default function FeedbackPage() {
         icon={<MessageSquare className="h-5 w-5 text-yellow-400" />}
         count={feedbacks.length}
         action={
-          <div className="text-[10px] text-zinc-600 font-mono">
+          <div className="text-[10px] text-zinc-500 font-mono">
             Corrective prompt-engineering
           </div>
         }
@@ -86,7 +86,7 @@ export default function FeedbackPage() {
       <DashboardContent className="max-w-5xl space-y-8">
         {/* How it works */}
         <div className="border border-zinc-800 bg-zinc-950 p-5">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">How Feedback Works</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2 font-bold">How Feedback Works</div>
           <p className="text-sm text-zinc-400 leading-relaxed">
             Tell your agent what it did wrong and what it should do instead. 
             The agent stores corrections in memory and improves over time.
@@ -97,7 +97,7 @@ export default function FeedbackPage() {
 
         {/* Submit feedback */}
         <div className="border border-zinc-800 bg-zinc-950 p-5">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 font-bold">Submit Correction</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3 font-bold">Submit Correction</div>
           
           {/* Category */}
           <div className="flex flex-wrap gap-2 mb-4">
@@ -118,23 +118,23 @@ export default function FeedbackPage() {
 
           <div className="space-y-3">
             <div>
-              <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">What the agent did</label>
+              <label className="text-[10px] text-zinc-500 uppercase tracking-widest block mb-1">What the agent did</label>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 rows={2}
                 placeholder="The agent sent a tweet with 5 emojis and 3 hashtags..."
-                className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-sm text-white font-mono placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 resize-none"
+                className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-sm text-white font-mono placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600 resize-none"
               />
             </div>
             <div>
-              <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">What it should do instead</label>
+              <label className="text-[10px] text-zinc-500 uppercase tracking-widest block mb-1">What it should do instead</label>
               <textarea
                 value={correction}
                 onChange={e => setCorrection(e.target.value)}
                 rows={2}
                 placeholder="No emojis. No hashtags in body. Short punchy sentences. One idea per tweet."
-                className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-sm text-white font-mono placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 resize-none"
+                className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-sm text-white font-mono placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600 resize-none"
               />
             </div>
             <button
@@ -150,16 +150,16 @@ export default function FeedbackPage() {
 
         {/* Feedback history */}
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 font-bold">Correction History</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3 font-bold">Correction History</div>
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
             </div>
           ) : feedbacks.length === 0 ? (
             <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
-              <MessageSquare className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
-              <p className="text-sm text-zinc-600 font-mono">No corrections yet</p>
-              <p className="text-[10px] text-zinc-700 font-mono mt-1">Your agent is learning from your feedback</p>
+              <MessageSquare className="h-8 w-8 text-zinc-500 mx-auto mb-3" />
+              <p className="text-sm text-zinc-500 font-mono">No corrections yet</p>
+              <p className="text-[10px] text-zinc-500 font-mono mt-1">Your agent is learning from your feedback</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -168,7 +168,7 @@ export default function FeedbackPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <ThumbsDown className="h-3 w-3 text-red-400" />
                     <span className="text-[10px] text-zinc-500 font-mono">{fb.category}</span>
-                    <span className="text-[10px] text-zinc-700 font-mono">
+                    <span className="text-[10px] text-zinc-500 font-mono">
                       {new Date(fb.timestamp).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>

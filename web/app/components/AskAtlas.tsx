@@ -1,24 +1,31 @@
 'use client'
 
-import { useState, useRef, useEffect, memo, type FormEvent } from 'react'
+import { useState, memo } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-
-function getText(content: { parts: Array<{ type: string; text?: string }> }): string {
-  return content.parts
-    .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-    .map(p => p.text)
-    .join('')
-}
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '../../components/ai-elements/conversation'
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from '../../components/ai-elements/message'
+import {
+  PromptInput,
+  type PromptInputMessage,
+  PromptInputTextarea,
+  PromptInputSubmit,
+} from '../../components/ai-elements/prompt-input'
 
 export default memo(function AskAtlas() {
   const { data: session, status } = useSession()
   const [isOpen, setIsOpen] = useState(false)
-  const [input, setInput] = useState('')
-  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const { messages, sendMessage, status: chatStatus } = useChat({
+  const { messages, sendMessage, status: chatStatus, stop } = useChat({
     transport: new DefaultChatTransport({ api: '/api/support/chat' }),
     messages: [
       {
@@ -29,29 +36,16 @@ export default memo(function AskAtlas() {
     ],
   })
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const handleSubmit = (message: PromptInputMessage) => {
+    if (message.text.trim()) {
+      sendMessage({ text: message.text })
+    }
   }
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  const isLoading = chatStatus === 'submitted' || chatStatus === 'streaming'
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isLoading) return
-    sendMessage({ text: input })
-    setInput('')
-  }
-
-  // Don't render anything while loading session
   if (status === 'loading') return null
 
   return (
     <>
-      {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-4 right-4 w-14 h-14 bg-orange-500 hover:bg-orange-400 rounded-full flex items-center justify-center text-black shadow-lg shadow-orange-500/20 transition-all hover:scale-110 z-50 font-mono"
@@ -66,23 +60,21 @@ export default memo(function AskAtlas() {
         )}
       </button>
 
-      {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 w-96 h-[500px] bg-black border border-zinc-800 rounded-lg shadow-2xl shadow-orange-500/10 flex flex-col z-50 font-mono">
-          {/* Header */}
-          <div className="border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
+        <div className="fixed bottom-20 right-4 w-96 h-[500px] bg-background border border-border rounded-lg shadow-2xl shadow-orange-500/10 flex flex-col z-50 overflow-hidden">
+          <div className="border-b border-border px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-orange-500" />
               <span className="text-xs font-bold uppercase tracking-widest text-orange-500">
                 Ask Atlas
               </span>
-              <span className="text-[10px] text-zinc-600 uppercase tracking-wider">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 Powered by MiMo
               </span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-zinc-600 hover:text-white transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -90,18 +82,17 @@ export default memo(function AskAtlas() {
             </button>
           </div>
 
-          {/* Not signed in — show Google login */}
           {!session ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6 gap-4">
               <div className="text-center">
-                <p className="text-sm text-zinc-400 mb-1">Sign in to chat with Atlas</p>
-                <p className="text-[10px] text-zinc-600 uppercase tracking-wider">
+                <p className="text-sm text-muted-foreground mb-1">Sign in to chat with Atlas</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   AI support powered by MiMo V2.5 Pro
                 </p>
               </div>
               <button
                 onClick={() => signIn('google')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white text-black rounded-lg text-sm font-medium hover:bg-zinc-200 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -114,62 +105,39 @@ export default memo(function AskAtlas() {
             </div>
           ) : (
             <>
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((msg) => {
-                  const role = msg.role as string
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                          role === 'user'
-                            ? 'bg-orange-500 text-black'
-                            : 'bg-zinc-900 text-zinc-300 border border-zinc-800'
-                        }`}
-                      >
-                        <p className="whitespace-pre-wrap leading-relaxed">{getText(msg as any)}</p>
-                      </div>
-                    </div>
-                  )
-                })}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2">
-                      <div className="flex gap-1">
-                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
+              <Conversation className="flex-1">
+                <ConversationContent className="p-4">
+                  {messages.map((message) => (
+                    <Message from={message.role} key={message.id}>
+                      <MessageContent>
+                        {message.parts.map((part, i) => {
+                          switch (part.type) {
+                            case 'text':
+                              return (
+                                <MessageResponse key={`${message.id}-${i}`}>
+                                  {part.text}
+                                </MessageResponse>
+                              )
+                            default:
+                              return null
+                          }
+                        })}
+                      </MessageContent>
+                    </Message>
+                  ))}
+                </ConversationContent>
+                <ConversationScrollButton />
+              </Conversation>
 
-              {/* Input */}
-              <form
-                onSubmit={handleSubmit}
-                className="p-3 border-t border-zinc-800 flex gap-2"
-              >
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask a question..."
-                  className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500 font-mono"
-                  disabled={isLoading}
-                />
-                <button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className="px-4 py-2 bg-orange-500 text-black rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-orange-400 disabled:opacity-30 transition-colors"
-                >
-                  Send
-                </button>
-              </form>
+              <div className="border-t border-border p-3">
+                <PromptInput onSubmit={handleSubmit}>
+                  <PromptInputTextarea placeholder="Ask a question..." />
+                  <PromptInputSubmit
+                    status={chatStatus === 'streaming' ? 'streaming' : chatStatus === 'submitted' ? 'submitted' : 'ready'}
+                    onStop={stop}
+                  />
+                </PromptInput>
+              </div>
             </>
           )}
         </div>

@@ -533,7 +533,7 @@ function DashboardContent() {
             {statusChecks.map((check) => (
               <div key={check.name} className="border border-zinc-800 bg-zinc-950 p-4 flex items-center justify-between rounded-lg">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-600">{check.name}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-500">{check.name}</p>
                   <p className="text-lg font-mono text-white">
                     {check.status === 'ok' ? 'Working' : check.status === 'degraded' ? 'Wired, degraded' : 'Down'}
                   </p>
@@ -560,7 +560,7 @@ function DashboardContent() {
               <dl className="space-y-3">
                 {instance?.botUsername && (
                   <div>
-                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Telegram</dt>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-500">Telegram</dt>
                     <dd className="font-mono">
                       <a 
                         href={`https://t.me/${instance?.botUsername}`}
@@ -574,11 +574,11 @@ function DashboardContent() {
                   </div>
                 )}
                 <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Instance ID</dt>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-500">Instance ID</dt>
                   <dd className="font-mono text-sm text-zinc-400">{instance?.userId}</dd>
                 </div>
                 <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">URL</dt>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-500">URL</dt>
                   <dd className="font-mono text-sm text-zinc-400 break-all">
                     <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
                       {instance?.subdomain}
@@ -586,15 +586,15 @@ function DashboardContent() {
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Plan</dt>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-500">Plan</dt>
                   <dd className="text-zinc-400 capitalize">{instance?.plan || 'free'}</dd>
                 </div>
                 <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Version</dt>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-500">Version</dt>
                   <dd className="font-mono text-zinc-400">{instance?.openclawVersion || 'unknown'}</dd>
                 </div>
                 <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Started</dt>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-500">Started</dt>
                   <dd className="text-zinc-400">{startedAt ? new Date(startedAt).toLocaleString() : 'N/A'}</dd>
                 </div>
               </dl>
@@ -630,13 +630,13 @@ function DashboardContent() {
                 </div>
                 {gatewayStatus?.sessions?.error && !gatewayStatus.sessions.available && (
                   <div>
-                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Sessions Detail</dt>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-500">Sessions Detail</dt>
                     <dd className="text-[11px] text-zinc-500">{gatewayStatus.sessions.error}</dd>
                   </div>
                 )}
                 {gatewayStatus?.cron?.error && !gatewayStatus.cron.available && (
                   <div>
-                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Cron Detail</dt>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-500">Cron Detail</dt>
                     <dd className="text-[11px] text-zinc-500">{gatewayStatus.cron.error}</dd>
                   </div>
                 )}
@@ -677,7 +677,7 @@ function DashboardContent() {
                 </a>
                 <div className="border border-zinc-800 px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Auto Pairing</p>
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-500">Auto Pairing</p>
                     <span
                       className={`h-2 w-2 rounded-full ${
                         autoPairHealth === 'ready'
@@ -755,7 +755,7 @@ function DashboardContent() {
                   </>
                 ) : (
                   <div className="border border-zinc-800 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Lifecycle Controls</p>
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-500">Lifecycle Controls</p>
                     <p className="mt-2 text-[11px] text-zinc-500">
                       Managed restart, update, start, and stop actions are hidden until the Railway control path is fully verified. Runtime links above stay live.
                     </p>
@@ -778,7 +778,7 @@ function DashboardContent() {
                     >
                       <div className="text-left">
                         <div>Repair Agent</div>
-                        <div className="text-[10px] font-normal normal-case tracking-normal text-zinc-600 mt-1">Full reconfigure — fixes broken proxy, tokens, config</div>
+                        <div className="text-[10px] font-normal normal-case tracking-normal text-zinc-500 mt-1">Full reconfigure — fixes broken proxy, tokens, config</div>
                       </div>
                       {actionLoading === 'repair' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>→</span>}
                     </button>
@@ -801,7 +801,7 @@ function DashboardContent() {
                   </>
                 ) : (
                   <div className="border border-zinc-800 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Managed Recovery</p>
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-500">Managed Recovery</p>
                     <p className="mt-2 text-[11px] text-zinc-500">
                       Repair and memory-reset actions stay hidden until their managed Railway flow is verified end to end.
                     </p>
@@ -829,7 +829,7 @@ function DashboardContent() {
                 <a href="https://discord.gg/vTPG4vdV6D" target="_blank" rel="noopener" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                   Discord
                 </a>
-                <a href="mailto:rbasefm@icloud.com" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                <a href="mailto:YOUR_ADMIN_EMAIL_2" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                   Contact
                 </a>
               </div>

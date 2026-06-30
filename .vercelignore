@@ -1,5 +1,4 @@
 docs/
-memory/
 .turbo/
 *.md
 !web/**/*.md

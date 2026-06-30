@@ -383,7 +383,7 @@ function DashboardContent() {
 
           {/* Performance Info */}
           {data?.meta?.responseTime && (
-            <div className="mt-8 text-zinc-600 text-sm">
+            <div className="mt-8 text-zinc-500 text-sm">
               Loaded in {data.meta.responseTime}ms
             </div>
           )}

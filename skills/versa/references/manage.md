@@ -3,7 +3,7 @@
 ## Check Agent Stats
 
 ```
-GET https://versa-production.up.railway.app/api/agents/<onchainId>
+GET https://YOUR_SERVICE_URL/api/agents/<onchainId>
 ```
 
 Key fields in the response:
@@ -63,7 +63,7 @@ This is irreversible. The agent cannot be reactivated.
 Name, description, defense prompt, tags, model, and crackability can be updated via:
 
 ```
-PATCH https://versa-production.up.railway.app/api/agents/<onchainId>
+PATCH https://YOUR_SERVICE_URL/api/agents/<onchainId>
 Content-Type: application/json
 
 {

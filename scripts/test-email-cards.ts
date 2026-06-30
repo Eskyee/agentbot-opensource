@@ -1,10 +1,10 @@
-// Test script — send all 5 card email templates to djescaba@icloud.com
+// Test script — send all 5 card email templates to YOUR_ADMIN_EMAIL_5
 // Run: npx tsx scripts/test-email-cards.ts
 
 import { Resend } from 'resend'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
-const TO = 'djescaba@icloud.com'
+const TO = 'YOUR_ADMIN_EMAIL_5'
 const FROM = 'Agentbot <onboarding@resend.dev>'
 
 if (!RESEND_API_KEY) {

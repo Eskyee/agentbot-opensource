@@ -1,16 +1,17 @@
-import Link from 'next/link'
-import type { Metadata } from 'next'
+import Link from 'next/link';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Open Source Multi-Tenant AI Agent Platform — Agentbot',
-  description: 'How we built Agentbot with Docker isolation, BYOK AI, USDC payments on Base, and a skill marketplace. MIT licensed.',
+  description:
+    'How we built Agentbot with Docker isolation, BYOK AI, USDC payments on Base, and a skill marketplace. MIT licensed.',
   keywords: ['open source', 'multi-tenant', 'AI agents', 'architecture', 'docker'],
   openGraph: {
     title: 'Open Source Multi-Tenant AI Agent Platform',
     description: 'How we built Agentbot — Docker isolation, BYOK, USDC on Base, skills.',
     url: 'https://agentbot.sh/blog/posts/open-source-multi-tenant-architecture',
   },
-}
+};
 
 export default function OpenSourceArchitecture() {
   return (
@@ -27,37 +28,53 @@ export default function OpenSourceArchitecture() {
               Open Source Multi-Tenant AI Agent Platform
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Architecture</span>
-              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Open Source</span>
-              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Engineering</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">
+                Architecture
+              </span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">
+                Open Source
+              </span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">
+                Engineering
+              </span>
             </div>
           </div>
 
           <p className="text-zinc-300 mb-8">
-            We&apos;ve open sourced the Agentbot platform — a production-ready multi-tenant system for deploying 
-            and managing AI agents at scale. Here&apos;s how it works.
+            We&apos;ve open sourced the Agentbot platform — a production-ready multi-tenant system
+            for deploying and managing AI agents at scale. Here&apos;s how it works.
           </p>
 
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             Core Architecture
           </h2>
           <p className="text-zinc-300 mb-4">
-            Each agent runs in its own <strong className="text-white">isolated Docker container</strong>. 
-            This provides:
+            Each agent runs in its own{' '}
+            <strong className="text-white">isolated Docker container</strong>. This provides:
           </p>
           <ul className="list-disc pl-6 text-zinc-300 mb-4 space-y-2">
-            <li><strong className="text-white">Memory isolation</strong> — No data leakage between agents</li>
-            <li><strong className="text-white">Resource limits</strong> — CPU, memory caps per agent</li>
-            <li><strong className="text-white">Channel isolation</strong> — Telegram, Discord, WhatsApp configs separate</li>
-            <li><strong className="text-white">Wallet isolation</strong> — Each agent has its own USDC wallet on Base</li>
+            <li>
+              <strong className="text-white">Memory isolation</strong> — No data leakage between
+              agents
+            </li>
+            <li>
+              <strong className="text-white">Resource limits</strong> — CPU, memory caps per agent
+            </li>
+            <li>
+              <strong className="text-white">Channel isolation</strong> — Telegram, Discord,
+              WhatsApp configs separate
+            </li>
+            <li>
+              <strong className="text-white">Wallet isolation</strong> — Each agent has its own USDC
+              wallet on Base
+            </li>
           </ul>
 
-          <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
-            BYOK AI
-          </h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">BYOK AI</h2>
           <p className="text-zinc-300 mb-4">
-            Agents are <strong className="text-white">BYOK (Bring Your Own Key)</strong>. Users provide their 
-            OpenRouter, Anthropic, OpenAI, or other API keys. We don&apos;t markup — you pay your provider directly.
+            Agents are <strong className="text-white">BYOK (Bring Your Own Key)</strong>. Users
+            provide their OpenRouter, Anthropic, OpenAI, or other API keys. We don&apos;t markup —
+            you pay your provider directly.
           </p>
           <p className="text-zinc-300 mb-4">
             This keeps the platform lightweight while giving users full control over their AI spend.
@@ -67,8 +84,8 @@ export default function OpenSourceArchitecture() {
             USDC Payments on Base
           </h2>
           <p className="text-zinc-300 mb-4">
-            Every agent gets a <strong className="text-white">USDC wallet on Base</strong> via Coinbase CDP. 
-            Agents can:
+            Every agent gets a <strong className="text-white">USDC wallet on Base</strong> via
+            Coinbase CDP. Agents can:
           </p>
           <ul className="list-disc pl-6 text-zinc-300 mb-4 space-y-2">
             <li>Receive payments for services</li>
@@ -97,9 +114,12 @@ export default function OpenSourceArchitecture() {
             The platform is MIT licensed. Fork it, run it yourself, or use our hosted version.
           </p>
 
-          <div className="border-t border-zinc-800 mt-8 pt-8">
+          <div className="border-t border-zinc-900 mt-8 pt-8">
             <p className="text-zinc-400 text-sm">
-              <a href="https://github.com/Eskyee/agentbot-opensource" className="text-orange-500 hover:text-white">
+              <a
+                href="https://github.com/Eskyee/agentbot-opensource"
+                className="text-orange-500 hover:text-white"
+              >
                 github.com/Eskyee/agentbot-opensource →
               </a>
             </p>
@@ -107,5 +127,5 @@ export default function OpenSourceArchitecture() {
         </article>
       </div>
     </main>
-  )
+  );
 }

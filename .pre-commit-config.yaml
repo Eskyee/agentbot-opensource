@@ -11,7 +11,7 @@ repos:
       - id: check-json
 
   - repo: https://github.com/eslint/eslint
-    rev: v8.57.0
+    rev: v9.27.0
     hooks:
       - id: eslint
         files: \.(js|jsx|ts|tsx)$

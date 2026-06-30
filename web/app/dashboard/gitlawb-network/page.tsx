@@ -1,72 +1,85 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { Network, RefreshCw, Users, GitBranch, Server, ExternalLink, Activity, Globe, CheckCircle, Radio, Signal, Link2 } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import {
+  Network,
+  RefreshCw,
+  Users,
+  GitBranch,
+  Server,
+  ExternalLink,
+  Activity,
+  Globe,
+  CheckCircle,
+  Radio,
+  Signal,
+  Link2,
+} from 'lucide-react';
 import {
   DashboardShell,
   DashboardHeader,
   DashboardContent,
-} from '@/app/components/shared/DashboardShell'
+} from '@/app/components/shared/DashboardShell';
 
 interface NetworkNode {
-  id: string
-  name: string
-  did: string
-  peerId: string
-  url: string
-  version: string
-  location: { lat: number; lng: number }
-  status: 'online' | 'offline'
-  repos: number
-  agents: number
-  pushes: number
-  peers: { did: string; url: string; lastSeen: string }[]
-  lastSeen: string
+  id: string;
+  name: string;
+  did: string;
+  peerId: string;
+  url: string;
+  version: string;
+  location: { lat: number; lng: number };
+  status: 'online' | 'offline';
+  repos: number;
+  agents: number;
+  pushes: number;
+  peers: { did: string; url: string; lastSeen: string }[];
+  lastSeen: string;
 }
 
 interface NetworkEvent {
-  id: string
-  time: string
-  type: 'PUSH' | 'GOSSIP' | 'PEER' | 'AGENT'
-  source: string
-  message: string
-  details?: string
+  id: string;
+  time: string;
+  type: 'PUSH' | 'GOSSIP' | 'PEER' | 'AGENT';
+  source: string;
+  message: string;
+  details?: string;
 }
 
 interface NetworkStats {
-  nodesReachable: number
-  totalNodes: number
-  activeLinks: number
-  recentEvents: number
-  repos: number
-  agents: number
-  pushes: number
+  nodesReachable: number;
+  totalNodes: number;
+  activeLinks: number;
+  recentEvents: number;
+  repos: number;
+  agents: number;
+  pushes: number;
 }
 
 interface AgentGitlawbRecord {
-  id: string
-  name: string
-  status: string
-  model: string | null
-  updatedAt: string
+  id: string;
+  name: string;
+  status: string;
+  model: string | null;
+  updatedAt: string;
   gitlawb: null | {
-    status: 'disconnected' | 'identity_ready'
-    did: string
-    publicKeyMultibase: string
-    repo: string
-    webUrl: string
-    cloneUrl: string
-    topic: string
-    enrolledAt: string
-    lastUpdatedAt: string
-  }
+    status: 'disconnected' | 'identity_ready';
+    did: string;
+    publicKeyMultibase: string;
+    repo: string;
+    webUrl: string;
+    cloneUrl: string;
+    topic: string;
+    enrolledAt: string;
+    lastUpdatedAt: string;
+  };
 }
 
 export default function GitlawbNetworkPage() {
-  const agentbotRepoUrl = 'https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource'
-  const [nodes, setNodes] = useState<NetworkNode[]>([])
-  const [events, setEvents] = useState<NetworkEvent[]>([])
+  const agentbotRepoUrl = 'https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource';
+  const [nodes, setNodes] = useState<NetworkNode[]>([]);
+  const [events, setEvents] = useState<NetworkEvent[]>([]);
   const [stats, setStats] = useState<NetworkStats>({
     nodesReachable: 3,
     totalNodes: 3,
@@ -75,20 +88,20 @@ export default function GitlawbNetworkPage() {
     repos: 1734,
     agents: 1462,
     pushes: 527,
-  })
-  const [loading, setLoading] = useState(false)
-  const [agents, setAgents] = useState<AgentGitlawbRecord[]>([])
-  const [agentActionLoading, setAgentActionLoading] = useState<string | null>(null)
-  const [agentError, setAgentError] = useState('')
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
-  const eventsEndRef = useRef<HTMLDivElement>(null)
+  });
+  const [loading, setLoading] = useState(false);
+  const [agents, setAgents] = useState<AgentGitlawbRecord[]>([]);
+  const [agentActionLoading, setAgentActionLoading] = useState<string | null>(null);
+  const [agentError, setAgentError] = useState('');
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const eventsEndRef = useRef<HTMLDivElement>(null);
 
   const fetchNetworkData = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const agentRes = await fetch('/api/gitlawb/agents', { cache: 'no-store' })
-      const agentData = await agentRes.json().catch(() => ({ agents: [] }))
-      setAgents(Array.isArray(agentData.agents) ? agentData.agents : [])
+      const agentRes = await fetch('/api/gitlawb/agents', { cache: 'no-store' });
+      const agentData = await agentRes.json().catch(() => ({ agents: [] }));
+      setAgents(Array.isArray(agentData.agents) ? agentData.agents : []);
 
       setNodes([
         {
@@ -142,92 +155,133 @@ export default function GitlawbNetworkPage() {
           repos: 0,
           agents: 1,
           pushes: 0,
-          peers: [
-            { did: 'z6MkrV8ktCUnTzT5', url: 'node2.gitlawb.com', lastSeen: '1m ago' },
-          ],
+          peers: [{ did: 'z6MkrV8ktCUnTzT5', url: 'node2.gitlawb.com', lastSeen: '1m ago' }],
           lastSeen: '1m ago',
         },
-      ])
+      ]);
 
       setEvents([
-        { id: '1', time: '15:50:02', type: 'PUSH', source: 'gitlawb-node-2', message: 'refs/heads/dev → 12bc33e' },
-        { id: '2', time: '15:49:59', type: 'PEER', source: 'gitlawb-node-2', message: 'node.gitlawb.com reachable' },
-        { id: '3', time: '15:49:55', type: 'GOSSIP', source: 'gitlawb-node-2', message: 'heartbeat · 2 topics active' },
-        { id: '4', time: '15:49:51', type: 'PUSH', source: 'node', message: 'refs/heads/main → e7d892a' },
-        { id: '5', time: '15:50:06', type: 'GOSSIP', source: 'node', message: 'propagated 2 refs to 1 peer' },
-        { id: '6', time: '15:50:20', type: 'AGENT', source: 'node', message: 'did:key:z6Mk…c3f registered' },
-      ])
+        {
+          id: '1',
+          time: '15:50:02',
+          type: 'PUSH',
+          source: 'gitlawb-node-2',
+          message: 'refs/heads/dev → 12bc33e',
+        },
+        {
+          id: '2',
+          time: '15:49:59',
+          type: 'PEER',
+          source: 'gitlawb-node-2',
+          message: 'node.gitlawb.com reachable',
+        },
+        {
+          id: '3',
+          time: '15:49:55',
+          type: 'GOSSIP',
+          source: 'gitlawb-node-2',
+          message: 'heartbeat · 2 topics active',
+        },
+        {
+          id: '4',
+          time: '15:49:51',
+          type: 'PUSH',
+          source: 'node',
+          message: 'refs/heads/main → e7d892a',
+        },
+        {
+          id: '5',
+          time: '15:50:06',
+          type: 'GOSSIP',
+          source: 'node',
+          message: 'propagated 2 refs to 1 peer',
+        },
+        {
+          id: '6',
+          time: '15:50:20',
+          type: 'AGENT',
+          source: 'node',
+          message: 'did:key:z6Mk…c3f registered',
+        },
+      ]);
 
-      setLastUpdate(new Date())
+      setLastUpdate(new Date());
     } catch (error) {
-      console.error('Failed to fetch network data:', error)
-      setAgentError(error instanceof Error ? error.message : 'Failed to load Gitlawb network data')
+      console.error('Failed to fetch network data:', error);
+      setAgentError(error instanceof Error ? error.message : 'Failed to load Gitlawb network data');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchNetworkData()
-    const interval = setInterval(fetchNetworkData, 30000)
-    return () => clearInterval(interval)
-  }, [])
+    fetchNetworkData();
+    const interval = setInterval(fetchNetworkData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-  }
+    navigator.clipboard.writeText(text);
+  };
 
   const connectAgent = async (agentId: string) => {
-    setAgentActionLoading(agentId)
-    setAgentError('')
+    setAgentActionLoading(agentId);
+    setAgentError('');
     try {
       const res = await fetch('/api/gitlawb/agents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentId }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.error || 'Failed to connect agent to Gitlawb')
+        throw new Error(data?.error || 'Failed to connect agent to Gitlawb');
       }
-      await fetchNetworkData()
+      await fetchNetworkData();
     } catch (error) {
-      setAgentError(error instanceof Error ? error.message : 'Failed to connect agent to Gitlawb')
+      setAgentError(error instanceof Error ? error.message : 'Failed to connect agent to Gitlawb');
     } finally {
-      setAgentActionLoading(null)
+      setAgentActionLoading(null);
     }
-  }
+  };
 
   const disconnectAgent = async (agentId: string) => {
-    setAgentActionLoading(agentId)
-    setAgentError('')
+    setAgentActionLoading(agentId);
+    setAgentError('');
     try {
       const res = await fetch('/api/gitlawb/agents', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentId }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.error || 'Failed to disconnect agent from Gitlawb')
+        throw new Error(data?.error || 'Failed to disconnect agent from Gitlawb');
       }
-      await fetchNetworkData()
+      await fetchNetworkData();
     } catch (error) {
-      setAgentError(error instanceof Error ? error.message : 'Failed to disconnect agent from Gitlawb')
+      setAgentError(
+        error instanceof Error ? error.message : 'Failed to disconnect agent from Gitlawb'
+      );
     } finally {
-      setAgentActionLoading(null)
+      setAgentActionLoading(null);
     }
-  }
+  };
 
   const getEventIcon = (type: string) => {
     switch (type) {
-      case 'PUSH': return <GitBranch className="h-3 w-3 text-green-400" />
-      case 'GOSSIP': return <Signal className="h-3 w-3 text-orange-400" />
-      case 'PEER': return <Link2 className="h-3 w-3 text-orange-400" />
-      case 'AGENT': return <Users className="h-3 w-3 text-orange-400" />
-      default: return <Activity className="h-3 w-3 text-zinc-400" />
+      case 'PUSH':
+        return <GitBranch className="h-3 w-3 text-green-400" />;
+      case 'GOSSIP':
+        return <Signal className="h-3 w-3 text-orange-400" />;
+      case 'PEER':
+        return <Link2 className="h-3 w-3 text-orange-400" />;
+      case 'AGENT':
+        return <Users className="h-3 w-3 text-orange-400" />;
+      default:
+        return <Activity className="h-3 w-3 text-zinc-400" />;
     }
-  }
+  };
 
   return (
     <DashboardShell>
@@ -240,10 +294,13 @@ export default function GitlawbNetworkPage() {
         <div className="border border-zinc-800 bg-zinc-950 p-5 mb-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-zinc-600">Agentbot On Gitlawb</p>
+              <p className="text-[10px] uppercase tracking-widest text-zinc-500">
+                Agentbot On Gitlawb
+              </p>
               <p className="mt-2 text-sm text-zinc-400">
-                This screen is an operator surface for the Gitlawb network and includes external links into the live network.
-                The in-app node/event data below is currently a curated snapshot view, not a signed real-time feed.
+                This screen is an operator surface for the Gitlawb network and includes external
+                links into the live network. The in-app node/event data below is currently a curated
+                snapshot view, not a signed real-time feed.
               </p>
             </div>
             <Link
@@ -264,11 +321,14 @@ export default function GitlawbNetworkPage() {
           </div>
           <div className="p-6">
             <div className="border border-zinc-800 bg-black p-5">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Live Repo Card</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+                Live Repo Card
+              </div>
               <div className="text-lg font-bold text-white">agentbot-opensource</div>
               <p className="mt-2 text-sm text-zinc-400 max-w-2xl">
-                This is the Agentbot open-source mirror on the Gitlawb network. Use it as the public repo card for the network
-                and as the direct path into Agentbot&apos;s Gitlawb presence.
+                This is the Agentbot open-source mirror on the Gitlawb network. Use it as the public
+                repo card for the network and as the direct path into Agentbot&apos;s Gitlawb
+                presence.
               </p>
               <a
                 href={agentbotRepoUrl}
@@ -300,7 +360,9 @@ export default function GitlawbNetworkPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-3">
                         <h4 className="text-white font-bold">{agent.name}</h4>
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-600">{agent.status}</span>
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-500">
+                          {agent.status}
+                        </span>
                       </div>
                       <p className="mt-2 text-xs text-zinc-500">
                         {agent.gitlawb?.status === 'identity_ready'
@@ -330,24 +392,43 @@ export default function GitlawbNetworkPage() {
                   </div>
 
                   {agent.gitlawb ? (
-                    <div className="mt-4 grid gap-px bg-zinc-800 lg:grid-cols-2">
+                    <div className="mt-4 grid gap-px bg-zinc-900 lg:grid-cols-2">
                       <div className="bg-black p-4">
-                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">DID</div>
-                        <code className="text-xs text-orange-400 break-all">{agent.gitlawb.did}</code>
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+                          DID
+                        </div>
+                        <code className="text-xs text-orange-400 break-all">
+                          {agent.gitlawb.did}
+                        </code>
                       </div>
                       <div className="bg-black p-4">
-                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Repo</div>
-                        <code className="text-xs text-zinc-300 break-all">{agent.gitlawb.repo}</code>
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+                          Repo
+                        </div>
+                        <code className="text-xs text-zinc-300 break-all">
+                          {agent.gitlawb.repo}
+                        </code>
                       </div>
                       <div className="bg-black p-4">
-                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Web</div>
-                        <a href={agent.gitlawb.webUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-400 hover:text-white break-all">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+                          Web
+                        </div>
+                        <a
+                          href={agent.gitlawb.webUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-orange-400 hover:text-white break-all"
+                        >
                           {agent.gitlawb.webUrl}
                         </a>
                       </div>
                       <div className="bg-black p-4">
-                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Clone</div>
-                        <code className="text-xs text-green-400 break-all whitespace-pre-wrap">{agent.gitlawb.cloneUrl}</code>
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+                          Clone
+                        </div>
+                        <code className="text-xs text-green-400 break-all whitespace-pre-wrap">
+                          {agent.gitlawb.cloneUrl}
+                        </code>
                       </div>
                     </div>
                   ) : null}
@@ -356,7 +437,7 @@ export default function GitlawbNetworkPage() {
             )}
           </div>
           {agentError ? (
-            <div className="border-t border-zinc-800 p-4 text-sm text-red-400">{agentError}</div>
+            <div className="border-t border-zinc-900 p-4 text-sm text-red-400">{agentError}</div>
           ) : null}
         </div>
 
@@ -387,7 +468,9 @@ export default function GitlawbNetworkPage() {
             </div>
             <div className="text-center p-4 border border-zinc-800">
               <div className="text-2xl font-bold text-orange-400">{stats.recentEvents}</div>
-              <div className="text-xs text-zinc-500 uppercase tracking-wider">Recent Ref Events</div>
+              <div className="text-xs text-zinc-500 uppercase tracking-wider">
+                Recent Ref Events
+              </div>
             </div>
             <div className="text-center p-4 border border-zinc-800">
               <div className="text-2xl font-bold text-orange-400">4</div>
@@ -402,12 +485,18 @@ export default function GitlawbNetworkPage() {
               <div className="text-xs text-zinc-500 uppercase tracking-wider">Nodes Live</div>
             </div>
             <div className="border border-zinc-800 p-4 text-center">
-              <div className="text-3xl font-bold text-green-400">{stats.repos.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-green-400">
+                {stats.repos.toLocaleString()}
+              </div>
               <div className="text-xs text-zinc-500 uppercase tracking-wider">Repos Mirrored</div>
             </div>
             <div className="border border-zinc-800 p-4 text-center">
-              <div className="text-3xl font-bold text-orange-400">{stats.agents.toLocaleString()}</div>
-              <div className="text-xs text-zinc-500 uppercase tracking-wider">Agents Registered</div>
+              <div className="text-3xl font-bold text-orange-400">
+                {stats.agents.toLocaleString()}
+              </div>
+              <div className="text-xs text-zinc-500 uppercase tracking-wider">
+                Agents Registered
+              </div>
             </div>
           </div>
         </div>
@@ -428,7 +517,9 @@ export default function GitlawbNetworkPage() {
                     <div className="w-16 h-16 rounded-full border-2 border-green-500 bg-green-900/20 flex items-center justify-center mb-2">
                       <Server className="h-6 w-6 text-green-400" />
                     </div>
-                    <div className="text-sm text-white font-bold">{node.name.replace('.gitlawb.com', '')}</div>
+                    <div className="text-sm text-white font-bold">
+                      {node.name.replace('.gitlawb.com', '')}
+                    </div>
                     <div className="text-xs text-zinc-500">{node.version}</div>
                     <div className="text-xs text-green-400">● Online</div>
                   </div>
@@ -456,14 +547,14 @@ export default function GitlawbNetworkPage() {
           <div className="bg-black p-4 font-mono text-xs max-h-64 overflow-y-auto">
             {events.map((event) => (
               <div key={event.id} className="flex items-start gap-4 py-1 hover:bg-zinc-900/50">
-                <span className="text-zinc-600">{event.time}</span>
+                <span className="text-zinc-500">{event.time}</span>
                 {getEventIcon(event.type)}
                 <span className="text-zinc-400">{event.source}</span>
                 <span className="text-white">{event.message}</span>
               </div>
             ))}
             <div className="flex items-center gap-2 py-1">
-              <span className="text-zinc-600">--:--:--</span>
+              <span className="text-zinc-500">--:--:--</span>
               <div className="h-3 w-16 bg-green-500/50"></div>
             </div>
           </div>
@@ -477,25 +568,33 @@ export default function GitlawbNetworkPage() {
               NODE REGISTRY — Identity, transport, topics, and peer reachability per node
             </h3>
           </div>
-          
+
           <div className="divide-y divide-zinc-800">
             {nodes.map((node) => (
               <div key={node.id} className="p-6">
                 {/* Node Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${node.status === 'online' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        node.status === 'online' ? 'bg-green-400' : 'bg-red-400'
+                      }`}
+                    ></div>
                     <div>
                       <h4 className="text-white font-bold text-lg">{node.name}</h4>
-                      <span className="text-zinc-500 text-xs">{node.version} • {node.location.lat}°, {node.location.lng}°</span>
+                      <span className="text-zinc-500 text-xs">
+                        {node.version} • {node.location.lat}°, {node.location.lng}°
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 text-xs font-bold uppercase ${
-                      node.status === 'online' 
-                        ? 'bg-green-900 text-green-400' 
-                        : 'bg-red-900 text-red-400'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-bold uppercase ${
+                        node.status === 'online'
+                          ? 'bg-green-900 text-green-400'
+                          : 'bg-red-900 text-red-400'
+                      }`}
+                    >
                       {node.status}
                     </span>
                     <a
@@ -512,11 +611,15 @@ export default function GitlawbNetworkPage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                   <div className="text-center p-3 border border-zinc-800">
-                    <div className="text-xl font-bold text-green-400">{node.repos.toLocaleString()}</div>
+                    <div className="text-xl font-bold text-green-400">
+                      {node.repos.toLocaleString()}
+                    </div>
                     <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Repos</div>
                   </div>
                   <div className="text-center p-3 border border-zinc-800">
-                    <div className="text-xl font-bold text-orange-400">{node.agents.toLocaleString()}</div>
+                    <div className="text-xl font-bold text-orange-400">
+                      {node.agents.toLocaleString()}
+                    </div>
                     <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Agents</div>
                   </div>
                   <div className="text-center p-3 border border-zinc-800">
@@ -532,39 +635,44 @@ export default function GitlawbNetworkPage() {
                 {/* DID & Peer ID */}
                 <div className="space-y-3 text-xs font-mono mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-zinc-600 w-12">DID</span>
+                    <span className="text-zinc-500 w-12">DID</span>
                     <code className="text-orange-400 flex-1">{node.did}</code>
-                    <button 
+                    <button
                       onClick={() => copyToClipboard(node.did)}
-                      className="text-zinc-600 hover:text-white p-1"
+                      className="text-zinc-500 hover:text-white p-1"
                     >
                       📋
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-zinc-600 w-12">PEER ID</span>
+                    <span className="text-zinc-500 w-12">PEER ID</span>
                     <code className="text-orange-400 flex-1">{node.peerId}</code>
-                    <button 
+                    <button
                       onClick={() => copyToClipboard(node.peerId)}
-                      className="text-zinc-600 hover:text-white p-1"
+                      className="text-zinc-500 hover:text-white p-1"
                     >
                       📋
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-zinc-600 w-12">GOSSIPSUB</span>
+                    <span className="text-zinc-500 w-12">GOSSIPSUB</span>
                     <code className="text-green-400">gitlawb/ref-updates/v1</code>
                   </div>
                 </div>
 
                 {/* Known Peers */}
-                <div className="border-t border-zinc-800 pt-4">
-                  <div className="text-xs text-zinc-500 mb-2">KNOWN PEERS ({node.peers.length})</div>
+                <div className="border-t border-zinc-900 pt-4">
+                  <div className="text-xs text-zinc-500 mb-2">
+                    KNOWN PEERS ({node.peers.length})
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {node.peers.map((peer, idx) => (
-                      <div key={idx} className="flex items-center gap-2 px-2 py-1 bg-zinc-900 text-xs">
+                      <div
+                        key={idx}
+                        className="flex items-center gap-2 px-2 py-1 bg-zinc-900 text-xs"
+                      >
                         <span className="text-orange-400">{peer.did.substring(0, 12)}...</span>
-                        <span className="text-zinc-600">{peer.url}</span>
+                        <span className="text-zinc-500">{peer.url}</span>
                         <span className="text-zinc-500">{peer.lastSeen}</span>
                       </div>
                     ))}
@@ -608,9 +716,7 @@ export default function GitlawbNetworkPage() {
                 <span className="text-white font-bold">{node.name}</span>
                 <span className="text-green-400 text-xs">REACHABLE</span>
               </div>
-              <div className="text-xs text-zinc-500">
-                {node.peers.length} peers
-              </div>
+              <div className="text-xs text-zinc-500">{node.peers.length} peers</div>
             </div>
           ))}
         </div>
@@ -660,5 +766,5 @@ export default function GitlawbNetworkPage() {
         </div>
       </DashboardContent>
     </DashboardShell>
-  )
+  );
 }

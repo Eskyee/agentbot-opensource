@@ -13,7 +13,7 @@ import webpush from 'web-push'
 const prisma = new PrismaClient()
 
 async function main() {
-  const email = process.argv[2] || 'eskyjunglelab@gmail.com'
+  const email = process.argv[2] || 'YOUR_ADMIN_EMAIL_1'
 
   const user = await prisma.user.findFirst({
     where: { email },

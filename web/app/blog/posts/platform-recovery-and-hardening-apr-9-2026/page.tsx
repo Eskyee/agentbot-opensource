@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
-import { buildAppUrl } from '@/app/lib/app-url'
+import type { Metadata } from 'next';
+import { buildAppUrl } from '@/app/lib/app-url';
 
 export const metadata: Metadata = {
   title: 'Platform Recovery, Mainnet Bitcoin, and Production Guardrails - Agentbot',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
       'A build log on repairing production, cutting Bitcoin over to mainnet, and tightening the operational guardrails around Agentbot.',
     url: buildAppUrl('/blog/posts/platform-recovery-and-hardening-apr-9-2026'),
   },
-}
+};
 
 export default function BlogPost() {
   return (
@@ -32,16 +32,18 @@ export default function BlogPost() {
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <p className="text-xl text-zinc-300 mb-8">
-            The last stretch has been less about shiny features and more about making the platform dependable.
-            We had real infrastructure damage, stale Railway state, broken backend wiring, and public surfaces
-            that were showing the wrong thing. This post is the short version of what we fixed.
+            The last stretch has been less about shiny features and more about making the platform
+            dependable. We had real infrastructure damage, stale Railway state, broken backend
+            wiring, and public surfaces that were showing the wrong thing. This post is the short
+            version of what we fixed.
           </p>
 
           <h2 className="text-2xl font-bold mt-12 mb-4">Railway Recovery</h2>
           <p className="text-zinc-400 mb-4">
-            The Agentbot production stack had drifted badly after Railway damage and stale configuration paths.
-            We relinked the project to the correct Railway environment, restored the backend control plane,
-            and got the OpenClaw runtime path back into a working state.
+            The Agentbot production stack had drifted badly after Railway damage and stale
+            configuration paths. We relinked the project to the correct Railway environment,
+            restored the backend control plane, and got the OpenClaw runtime path back into a
+            working state.
           </p>
           <ul className="list-disc list-inside text-zinc-400 mb-6 space-y-2">
             <li>Reattached production to the correct Railway project</li>
@@ -52,8 +54,8 @@ export default function BlogPost() {
 
           <h2 className="text-2xl font-bold mt-12 mb-4">Base Wallet First</h2>
           <p className="text-zinc-400 mb-4">
-            We made Base the clear default wallet rail. Sign-in, send/receive, and wallet UX are now aligned
-            around the actual Base account path instead of mixing product concepts together.
+            We made Base the clear default wallet rail. Sign-in, send/receive, and wallet UX are now
+            aligned around the actual Base account path instead of mixing product concepts together.
           </p>
           <ul className="list-disc list-inside text-zinc-400 mb-6 space-y-2">
             <li>Base-first wallet page and receive flow</li>
@@ -64,9 +66,9 @@ export default function BlogPost() {
 
           <h2 className="text-2xl font-bold mt-12 mb-4">Bitcoin Advanced Rail on Mainnet</h2>
           <p className="text-zinc-400 mb-4">
-            Bitcoin is still the advanced rail, not the default onboarding path, but it now runs on mainnet.
-            We rebuilt the NBXplorer path on Railway, cut the backend over to mainnet, and removed the old testnet
-            path from deployment.
+            Bitcoin is still the advanced rail, not the default onboarding path, but it now runs on
+            mainnet. We rebuilt the NBXplorer path on Railway, cut the backend over to mainnet, and
+            removed the old testnet path from deployment.
           </p>
           <ul className="list-disc list-inside text-zinc-400 mb-6 space-y-2">
             <li>Mainnet `bitcoind` + `bitcoin-backend-mainnet` live on Railway</li>
@@ -77,7 +79,8 @@ export default function BlogPost() {
 
           <h2 className="text-2xl font-bold mt-12 mb-4">Queueing and Control-Plane Hardening</h2>
           <p className="text-zinc-400 mb-4">
-            We also spent time making the platform less fragile under load and less dependent on lucky client behavior.
+            We also spent time making the platform less fragile under load and less dependent on
+            lucky client behavior.
           </p>
           <ul className="list-disc list-inside text-zinc-400 mb-6 space-y-2">
             <li>Provisioning moved onto durable backend jobs</li>
@@ -88,8 +91,9 @@ export default function BlogPost() {
 
           <h2 className="text-2xl font-bold mt-12 mb-4">Production Protection</h2>
           <p className="text-zinc-400 mb-4">
-            One of the most important changes was operational, not visual. We started treating the production
-            Railway project as something that needs explicit protection from accidental damage, including from AI-assisted ops work.
+            One of the most important changes was operational, not visual. We started treating the
+            production Railway project as something that needs explicit protection from accidental
+            damage, including from AI-assisted ops work.
           </p>
           <ul className="list-disc list-inside text-zinc-400 mb-6 space-y-2">
             <li>Added a staging environment for safer changes</li>
@@ -100,37 +104,48 @@ export default function BlogPost() {
 
           <h2 className="text-2xl font-bold mt-12 mb-4">Why This Matters</h2>
           <p className="text-zinc-400 mb-6">
-            We want Agentbot to feel like something you can actually rely on, not just something that demos well.
-            That means repairing the boring parts, tightening drift, and cleaning up production assumptions when they go stale.
-            This is the kind of work that keeps the rest of the roadmap possible.
+            We want Agentbot to feel like something you can actually rely on, not just something
+            that demos well. That means repairing the boring parts, tightening drift, and cleaning
+            up production assumptions when they go stale. This is the kind of work that keeps the
+            rest of the roadmap possible.
           </p>
 
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-12">
             <h3 className="font-bold mb-2">Current direction</h3>
             <p className="text-zinc-400 text-sm mb-4">
-              Base stays the primary user path. Bitcoin stays the advanced rail. OpenClaw remains the managed runtime.
-              The focus now is reliability, operator clarity, and continuing to clean up the public/open-source release path.
+              Base stays the primary user path. Bitcoin stays the advanced rail. OpenClaw remains
+              the managed runtime. The focus now is reliability, operator clarity, and continuing to
+              clean up the public/open-source release path.
             </p>
             <div className="flex gap-3 flex-wrap">
-              <a href="/showcase" className="bg-white text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-zinc-200 transition-colors">
+              <a
+                href="/showcase"
+                className="bg-white text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-zinc-200 transition-colors"
+              >
                 View showcase
               </a>
-              <a href="/dashboard/wallet" className="border border-zinc-700 text-zinc-300 px-4 py-2 rounded-lg text-sm font-bold hover:bg-zinc-800 transition-colors">
+              <a
+                href="/dashboard/wallet"
+                className="border border-zinc-700 text-zinc-300 px-4 py-2 rounded-lg text-sm font-bold hover:bg-zinc-800 transition-colors"
+              >
                 Wallet
               </a>
-              <a href="/dashboard/bitcoin" className="border border-zinc-700 text-zinc-300 px-4 py-2 rounded-lg text-sm font-bold hover:bg-zinc-800 transition-colors">
+              <a
+                href="/dashboard/bitcoin"
+                className="border border-zinc-700 text-zinc-300 px-4 py-2 rounded-lg text-sm font-bold hover:bg-zinc-800 transition-colors"
+              >
                 Bitcoin
               </a>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-zinc-800">
+        <div className="mt-12 pt-8 border-t border-zinc-900">
           <a href="/blog" className="text-zinc-500 hover:text-white text-sm">
             ← Back to Blog
           </a>
         </div>
       </article>
     </main>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from 'next/link';
 
 const xFlow = [
   {
@@ -17,13 +17,16 @@ const xFlow = [
     title: 'Treat X Live as a relay',
     body: 'For live video, the realistic path is to create the broadcast in X Media Studio Producer and use Agentbot as the upstream station or relay source.',
   },
-]
+];
 
 const officialLinks = [
   { label: 'X Tutorials', href: 'https://docs.x.com/tutorials' },
   { label: 'X Livestreams', href: 'https://docs.x.com/livestreams' },
-  { label: 'Media Studio Producer', href: 'https://help.x.com/en/using-x/how-to-use-live-producer' },
-]
+  {
+    label: 'Media Studio Producer',
+    href: 'https://help.x.com/en/using-x/how-to-use-live-producer',
+  },
+];
 
 const currentCapabilities = [
   'X account status in dashboard',
@@ -32,22 +35,28 @@ const currentCapabilities = [
   'Approval queue',
   'Publish to X',
   'Managed X session timeline',
-]
+];
 
 export default function XWithAgentbotGuidePage() {
   return (
     <main className="min-h-screen bg-black px-6 py-16 font-mono text-white lg:px-8">
       <div className="mx-auto max-w-5xl">
-        <Link href="/learn/developers" className="inline-block text-xs uppercase tracking-widest text-zinc-400 transition-colors hover:text-white">
+        <Link
+          href="/learn/developers"
+          className="inline-block text-xs uppercase tracking-widest text-zinc-400 transition-colors hover:text-white"
+        >
           ← Back to Developers
         </Link>
 
         <section className="mt-8 border border-zinc-800 bg-zinc-950 p-8">
-          <p className="mb-4 text-[10px] uppercase tracking-[0.2em] text-zinc-600">X With Agentbot</p>
+          <p className="mb-4 text-[10px] uppercase tracking-[0.2em] text-zinc-600">
+            X With Agentbot
+          </p>
           <h1 className="text-4xl font-bold uppercase tracking-tighter">Use X with Your Agent</h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-400">
-            Agentbot already supports X signal monitoring, draft generation, approval, and publishing.
-            This page shows the real setup path for users and where X Live fits without pretending there is a public magic livestream API.
+            Agentbot already supports X signal monitoring, draft generation, approval, and
+            publishing. This page shows the real setup path for users and where X Live fits without
+            pretending there is a public magic livestream API.
           </p>
         </section>
 
@@ -63,7 +72,9 @@ export default function XWithAgentbotGuidePage() {
                     {index + 1}
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-white">{step.title}</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+                      {step.title}
+                    </h3>
                     <p className="mt-2 text-sm leading-7 text-zinc-400">{step.body}</p>
                   </div>
                 </div>
@@ -72,20 +83,27 @@ export default function XWithAgentbotGuidePage() {
           </div>
         </section>
 
-        <section className="mt-8 grid gap-px bg-zinc-800 md:grid-cols-2">
+        <section className="mt-8 grid gap-px bg-zinc-900 md:grid-cols-2">
           <div className="bg-black p-6">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">What Works Today</p>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">
+              What Works Today
+            </p>
             <ul className="mt-4 space-y-2 text-sm text-zinc-300">
               {currentCapabilities.map((item) => (
                 <li key={item}>• {item}</li>
               ))}
             </ul>
-            <Link href="/dashboard/signals" className="mt-4 inline-block text-sm text-orange-500 hover:text-white">
+            <Link
+              href="/dashboard/signals"
+              className="mt-4 inline-block text-sm text-orange-500 hover:text-white"
+            >
               Open Signals Dashboard →
             </Link>
           </div>
           <div className="bg-black p-6">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Official X References</p>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">
+              Official X References
+            </p>
             <div className="mt-4 space-y-3">
               {officialLinks.map((doc) => (
                 <a
@@ -105,11 +123,12 @@ export default function XWithAgentbotGuidePage() {
         <section className="mt-8 border border-zinc-800 bg-zinc-950 p-6">
           <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">X Live</p>
           <p className="mt-4 text-sm leading-7 text-zinc-400">
-            The safe production path is to create the live source and broadcast in X Media Studio Producer,
-            then configure Agentbot as the upstream station or downstream relay input. That is supportable and matches the official X guidance.
+            The safe production path is to create the live source and broadcast in X Media Studio
+            Producer, then configure Agentbot as the upstream station or downstream relay input.
+            That is supportable and matches the official X guidance.
           </p>
         </section>
       </div>
     </main>
-  )
+  );
 }

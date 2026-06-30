@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getBankrApiKey } from '@/app/api/user/bankr-key/route'
 
-
 const BANKR_API_URL = process.env.BANKR_API_URL || 'https://api.bankr.bot';
 
 export async function GET(req: NextRequest) {
@@ -11,7 +10,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // User's own key takes precedence; fall back to platform key
   const apiKey = (await getBankrApiKey(session.user.id)) || process.env.BANKR_API_KEY || null;
 
   if (!apiKey) {
@@ -19,10 +17,22 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const chains = searchParams.get('chains') || 'base,polygon,mainnet,solana,unichain';
+  const upstream = new URLSearchParams();
+
+  const chains = searchParams.get('chains');
+  if (chains) upstream.set('chains', chains);
+
+  const include = searchParams.get('include');
+  if (include) upstream.set('include', include);
+
+  const showLowValue = searchParams.get('showLowValueTokens');
+  if (showLowValue) upstream.set('showLowValueTokens', showLowValue);
+
+  const qs = upstream.toString();
+  const url = `${BANKR_API_URL}/wallet/portfolio${qs ? `?${qs}` : ''}`;
 
   try {
-    const res = await fetch(`${BANKR_API_URL}/agent/balances?chains=${chains}`, {
+    const res = await fetch(url, {
       headers: { 'X-API-Key': apiKey },
     });
 

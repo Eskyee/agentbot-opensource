@@ -32,6 +32,41 @@ export const WRISTBAND_ABI = [
     ],
     outputs: [{ name: '', type: 'uint256[]' }],
   },
+  // Gasless allowlist management (owner only)
+  {
+    name: 'setGaslessAllowed',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'account', type: 'address' },
+      { name: 'allowed', type: 'bool' },
+    ],
+    outputs: [],
+  },
+  {
+    name: 'setGaslessAllowedBatch',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'accounts', type: 'address[]' },
+      { name: 'allowed', type: 'bool' },
+    ],
+    outputs: [],
+  },
+  {
+    name: 'gaslessAllowed',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: '', type: 'address' }],
+    outputs: [{ name: '', type: 'bool' }],
+  },
+  {
+    name: 'gaslessClaimed',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: '', type: 'address' }],
+    outputs: [{ name: '', type: 'bool' }],
+  },
   // View functions
   {
     name: 'totalMinted',

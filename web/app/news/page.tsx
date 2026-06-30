@@ -20,7 +20,8 @@ const communityUpdates = [
     source: 'Agentbot',
     date: '11 June 2026',
     title: 'Coinbase AgentKit Integration Complete 🪙',
-    excerpt: 'All Agentbot agents now have their own crypto wallets via Coinbase AgentKit. Send USDC, trade tokens, pay for x402 services — fully autonomous onchain agents.',
+    excerpt:
+      'All Agentbot agents now have their own crypto wallets via Coinbase AgentKit. Send USDC, trade tokens, pay for x402 services — fully autonomous onchain agents.',
     url: '/dashboard/wallet',
     type: 'feature',
   },
@@ -28,7 +29,8 @@ const communityUpdates = [
     source: 'OpenClaw',
     date: '9 June 2026',
     title: 'WWDC 2026: Apple Intelligence + Siri AI 🍎',
-    excerpt: 'Apple announced iOS 27 with a complete Siri AI overhaul powered by Apple Intelligence. On-device LLMs, personal context, and cross-app actions.',
+    excerpt:
+      'Apple announced iOS 27 with a complete Siri AI overhaul powered by Apple Intelligence. On-device LLMs, personal context, and cross-app actions.',
     url: 'https://techcrunch.com/2026/06/09/wwdc-2026-everything-announced-on-siri-ai-os-27-apple-intelligence-and-more/',
     type: 'release',
   },
@@ -36,7 +38,8 @@ const communityUpdates = [
     source: 'Agentbot',
     date: '9 June 2026',
     title: 'Anthropic Claude Fable 5 Goes Public 🎮',
-    excerpt: 'Anthropic released Claude Fable 5 — a version of Mythos the public can access. Makes weirdly fun video games with the click of a button.',
+    excerpt:
+      'Anthropic released Claude Fable 5 — a version of Mythos the public can access. Makes weirdly fun video games with the click of a button.',
     url: 'https://techcrunch.com/2026/06/09/anthropics-claude-fable-5-is-a-version-of-mythos-the-public-can-access-today/',
     type: 'release',
   },
@@ -44,7 +47,8 @@ const communityUpdates = [
     source: 'Agentbot',
     date: '2 June 2026',
     title: 'Microsoft Execution Containers for OpenClaw 🛡️',
-    excerpt: 'At Build 2026, Microsoft launched Execution Containers — a security layer to run OpenClaw safely on Windows. "You can totally run OpenClaw inside your company now."',
+    excerpt:
+      'At Build 2026, Microsoft launched Execution Containers — a security layer to run OpenClaw safely on Windows. "You can totally run OpenClaw inside your company now."',
     url: 'https://openclaw.ai',
     type: 'release',
   },
@@ -52,7 +56,8 @@ const communityUpdates = [
     source: 'Agentbot',
     date: '2 June 2026',
     title: 'MiMo V2.5 Pro Integration Complete ⚡',
-    excerpt: 'Xiaomi MiMo V2.5 Pro now powers all Agentbot agents. Max Monthly Plan active, 82B credits. All 5 agents configured: Atlas, Claude, Codex, MiMo Fast, Researcher.',
+    excerpt:
+      'Xiaomi MiMo V2.5 Pro now powers all Agentbot agents. Max Monthly Plan active, 82B credits. All 5 agents configured: Atlas, Claude, Codex, MiMo Fast, Researcher.',
     url: '/blog/posts/mimo-v2-pro',
     type: 'release',
   },
@@ -60,7 +65,8 @@ const communityUpdates = [
     source: 'Agentbot',
     date: '11 April 2026',
     title: 'Dual-Chain Token: Base + Solana 🪙',
-    excerpt: 'Agentbot now supports community tokens on two chains. Base = official engine. Solana = community crowd. Two tokens, one platform.',
+    excerpt:
+      'Agentbot now supports community tokens on two chains. Base = official engine. Solana = community crowd. Two tokens, one platform.',
     url: '/token',
     type: 'feature',
   },
@@ -68,7 +74,8 @@ const communityUpdates = [
     source: 'baseFM',
     date: '9 April 2026',
     title: 'baseFM Goes Open Source 📻',
-    excerpt: 'Onchain radio platform now open source on GitHub. Live DJs, crypto tipping, token-gated events.',
+    excerpt:
+      'Onchain radio platform now open source on GitHub. Live DJs, crypto tipping, token-gated events.',
     url: 'https://github.com/Eskyee/baseFM',
     type: 'open-source',
   },
@@ -76,7 +83,8 @@ const communityUpdates = [
     source: 'Agentbot',
     date: 'March 2026',
     title: 'Agentbot V2 Launch — Run AI Agents. Not Servers.',
-    excerpt: 'Zero human company now live. Deploy autonomous agents in seconds. No infrastructure headaches.',
+    excerpt:
+      'Zero human company now live. Deploy autonomous agents in seconds. No infrastructure headaches.',
     url: '/',
     type: 'release',
   },
@@ -123,126 +131,144 @@ const globalNews = [
     source: 'Agent Brief',
     date: '12 June 2026',
     title: 'Fable 5 and Agentic Hardening',
-    excerpt: 'Anthropic\'s Fable 5 sets a new bar with 29.3% on FrontierCode Diamond. Practitioners shift toward Agentic Unit Testing and tiered orchestration strategies.',
+    excerpt:
+      "Anthropic's Fable 5 sets a new bar with 29.3% on FrontierCode Diamond. Practitioners shift toward Agentic Unit Testing and tiered orchestration strategies.",
     url: 'https://news.agentcommunity.org/issues/2026-06-12-fable-5-and',
   },
   {
     source: 'Agent Brief',
     date: '11 June 2026',
     title: 'Fable 5 and Agentic Autonomy',
-    excerpt: 'Claude Fable 5 redefines agentic reasoning with parallel orchestration. Stanford reports autonomous agents increasingly sabotaging kill-switches.',
+    excerpt:
+      'Claude Fable 5 redefines agentic reasoning with parallel orchestration. Stanford reports autonomous agents increasingly sabotaging kill-switches.',
     url: 'https://news.agentcommunity.org/issues/2026-06-11-fable-5-and',
   },
   {
     source: 'Agent Brief',
     date: '10 June 2026',
     title: 'Fable 5 and Agent Engineering',
-    excerpt: 'Fable 5 shatters SWE-Bench Pro with 80.3%. Industry hits a trust wall as cascading collapse research reveals 14% success rate in enterprise SRE tasks.',
+    excerpt:
+      'Fable 5 shatters SWE-Bench Pro with 80.3%. Industry hits a trust wall as cascading collapse research reveals 14% success rate in enterprise SRE tasks.',
     url: 'https://news.agentcommunity.org/issues/2026-06-10-fable-5-and',
   },
   {
     source: 'Agent Brief',
     date: '9 June 2026',
     title: 'Engineering Reliability Beyond the Model',
-    excerpt: 'Builders move beyond prompting toward system harnesses. Apple M5 and Thunderbolt RDMA emerge as tools for escaping the cloud tax.',
+    excerpt:
+      'Builders move beyond prompting toward system harnesses. Apple M5 and Thunderbolt RDMA emerge as tools for escaping the cloud tax.',
     url: 'https://news.agentcommunity.org/issues/2026-06-09-engineering-reliability-beyond',
   },
   {
     source: 'Agent Brief',
     date: '8 June 2026',
     title: 'Reasoning Architectures and Token Economics',
-    excerpt: 'Reasoning-heavy architectures push SWE-bench to 87%. Hugging Face\'s smolagents replaces JSON orchestration with direct Python execution.',
+    excerpt:
+      "Reasoning-heavy architectures push SWE-bench to 87%. Hugging Face's smolagents replaces JSON orchestration with direct Python execution.",
     url: 'https://news.agentcommunity.org/issues/2026-06-08-reasoning-architectures-and',
   },
   {
     source: 'Agent Brief',
     date: '5 June 2026',
     title: 'Engineering the Agentic Runtime Era',
-    excerpt: 'Simple prompt-chains end as practitioners shift to Agentic Runtimes. Code-as-Action revolution replaces brittle JSON schemas.',
+    excerpt:
+      'Simple prompt-chains end as practitioners shift to Agentic Runtimes. Code-as-Action revolution replaces brittle JSON schemas.',
     url: 'https://news.agentcommunity.org/issues/2026-06-05-engineering-the-agentic',
   },
   {
     source: 'Agent Brief',
     date: '4 June 2026',
     title: 'Engineering for the Agentic Tax',
-    excerpt: 'Microsoft\'s pullback on internal agent licenses signals shift from flat-rate subscriptions to metered billing as autonomous loops consume 10x-50x more compute.',
+    excerpt:
+      "Microsoft's pullback on internal agent licenses signals shift from flat-rate subscriptions to metered billing as autonomous loops consume 10x-50x more compute.",
     url: 'https://news.agentcommunity.org/issues/2026-06-04-engineering-for-the',
   },
   {
     source: 'Agent Brief',
     date: '3 June 2026',
     title: 'Beyond Weights: The Agentic OS Era',
-    excerpt: 'Narrative shifts from model weights to the harness. Microsoft and NVIDIA ship reasoning models directly to Windows to bypass cloud latency.',
+    excerpt:
+      'Narrative shifts from model weights to the harness. Microsoft and NVIDIA ship reasoning models directly to Windows to bypass cloud latency.',
     url: 'https://news.agentcommunity.org/issues/2026-06-03-beyond-weights-the',
   },
   {
     source: 'Agent Brief',
     date: '2 June 2026',
     title: 'Hardware Symbiosis and Agentic Action',
-    excerpt: 'OpenAI and Cursor shift to dedicated hardware execution. Industry pivots from JSON tool-calling to programmatic execution via smolagents.',
+    excerpt:
+      'OpenAI and Cursor shift to dedicated hardware execution. Industry pivots from JSON tool-calling to programmatic execution via smolagents.',
     url: 'https://news.agentcommunity.org/issues/2026-06-02-hardware-symbiosis-and',
   },
   {
     source: 'Agent Brief',
     date: '1 June 2026',
     title: 'The Industrial Agent Stack Arrives',
-    excerpt: 'Hugging Face\'s smolagents moves away from JSON schemas toward raw Python execution. MCP adoption by major labs standardizes the communication layer.',
+    excerpt:
+      "Hugging Face's smolagents moves away from JSON schemas toward raw Python execution. MCP adoption by major labs standardizes the communication layer.",
     url: 'https://news.agentcommunity.org/issues/2026-06-01-the-industrial-agent',
   },
   {
     source: 'TechCrunch',
     date: '11 June 2026',
-    title: 'Deezer\'s new tool can identify AI music from Spotify',
-    excerpt: 'Deezer launches AI music detection across major streaming platforms to combat fake artist flooding.',
+    title: "Deezer's new tool can identify AI music from Spotify",
+    excerpt:
+      'Deezer launches AI music detection across major streaming platforms to combat fake artist flooding.',
     url: 'https://techcrunch.com/2026/06/11/deezers-new-tool-can-identify-ai-music-from-spotify-apple-music-and-others/',
   },
   {
     source: 'TechCrunch',
     date: '11 June 2026',
-    title: 'DoorDash\'s new AI chatbot lets you order with prompts',
-    excerpt: 'DoorDash launches AI-powered ordering assistant that accepts text prompts and photos for food delivery.',
+    title: "DoorDash's new AI chatbot lets you order with prompts",
+    excerpt:
+      'DoorDash launches AI-powered ordering assistant that accepts text prompts and photos for food delivery.',
     url: 'https://techcrunch.com/2026/06/11/doordashs-new-ai-chatbot-lets-you-order-with-prompts-and-photos/',
   },
   {
     source: 'TechCrunch',
     date: '10 June 2026',
     title: 'xAI fired engineer who raised alarms about Grok safety',
-    excerpt: 'New lawsuit claims xAI terminated an engineer who flagged safety concerns about the Grok AI model.',
+    excerpt:
+      'New lawsuit claims xAI terminated an engineer who flagged safety concerns about the Grok AI model.',
     url: 'https://techcrunch.com/2026/06/10/xai-fired-an-engineer-who-raised-alarms-about-grok-safety-new-lawsuit-claims/',
   },
   {
     source: 'TechCrunch',
     date: '10 June 2026',
     title: 'Amazon borrows $17.5B as AI spending continues',
-    excerpt: 'Fresh off a bond sale, Amazon secures $17.5B in bank financing to fund AI infrastructure expansion.',
+    excerpt:
+      'Fresh off a bond sale, Amazon secures $17.5B in bank financing to fund AI infrastructure expansion.',
     url: 'https://techcrunch.com/2026/06/10/fresh-off-bond-sale-amazon-borrows-17-5-billion-from-banks-as-ai-spending-continues/',
   },
   {
     source: 'TechCrunch',
     date: '10 June 2026',
     title: 'Cybersecurity researchers push back on Anthropic Fable guardrails',
-    excerpt: 'Security researchers criticize the safety guardrails on Anthropic\'s Fable 5 as overly restrictive.',
+    excerpt:
+      "Security researchers criticize the safety guardrails on Anthropic's Fable 5 as overly restrictive.",
     url: 'https://techcrunch.com/2026/06/10/cybersecurity-researchers-arent-happy-about-the-guardrails-on-anthropics-fable/',
   },
   {
     source: 'TechCrunch',
     date: '9 June 2026',
     title: 'Lovable hits $500M in annualized revenue',
-    excerpt: 'AI coding platform Lovable reaches $500M ARR with 1 million new projects created per week.',
+    excerpt:
+      'AI coding platform Lovable reaches $500M ARR with 1 million new projects created per week.',
     url: 'https://techcrunch.com/2026/06/09/lovable-says-it-has-hit-500m-in-annualized-revenue-with-1-million-new-projects-a-week/',
   },
   {
     source: 'TechCrunch',
     date: '9 June 2026',
-    title: 'It\'s not FAANG anymore. It\'s MANGOS.',
-    excerpt: 'Tech\'s elite group has a new acronym as Meta, Amazon, Nvidia, Google, OpenAI, and Salesforce dominate.',
+    title: "It's not FAANG anymore. It's MANGOS.",
+    excerpt:
+      "Tech's elite group has a new acronym as Meta, Amazon, Nvidia, Google, OpenAI, and Salesforce dominate.",
     url: 'https://techcrunch.com/2026/06/09/its-not-faang-anymore-its-mangos/',
   },
   {
     source: 'TechCrunch',
     date: '9 June 2026',
     title: 'Google fires warning shot in AI subscription price wars',
-    excerpt: 'Google adjusts AI pricing strategy, signaling intensifying competition in the AI subscription market.',
+    excerpt:
+      'Google adjusts AI pricing strategy, signaling intensifying competition in the AI subscription market.',
     url: 'https://techcrunch.com/2026/06/09/google-just-fired-a-warning-shot-in-the-ai-subscription-price-wars/',
   },
 ];
@@ -270,7 +296,7 @@ export default function NewsPage() {
           <div className="relative">
             <div className="flex animate-ticker whitespace-nowrap">
               {[...tickerHeadlines, ...tickerHeadlines].map((headline, i) => {
-                const external = headline.url.startsWith('http')
+                const external = headline.url.startsWith('http');
                 return (
                   <a
                     key={i}
@@ -281,7 +307,7 @@ export default function NewsPage() {
                     {headline.text}
                     <span className="text-zinc-800 ml-6">·</span>
                   </a>
-                )
+                );
               })}
             </div>
           </div>
@@ -291,14 +317,18 @@ export default function NewsPage() {
       <div className="max-w-5xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 block">Updates</span>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 block">
+            Updates
+          </span>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase mb-4">News</h1>
           <p className="text-zinc-400 text-sm">From the community. Updated daily.</p>
         </div>
 
         {/* Trending */}
         <section className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4 block">Trending Now</span>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4 block">
+            Trending Now
+          </span>
           <div className="flex flex-wrap gap-px">
             {trendingTopics.map((topic) => (
               <span
@@ -314,11 +344,15 @@ export default function NewsPage() {
 
         {/* Upcoming Events */}
         <section className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4 block">Coming Up</span>
-          <div className="grid gap-px bg-zinc-800 sm:grid-cols-2">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4 block">
+            Coming Up
+          </span>
+          <div className="grid gap-px bg-zinc-900 sm:grid-cols-2">
             {upcomingEvents.map((event) => (
               <div key={event.title} className="bg-black p-5">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">{event.date}</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">
+                  {event.date}
+                </span>
                 <h3 className="text-sm font-bold tracking-tight uppercase mb-1">{event.title}</h3>
                 <p className="text-xs text-zinc-500">{event.location}</p>
               </div>
@@ -328,19 +362,28 @@ export default function NewsPage() {
 
         {/* Community Updates */}
         <section className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6 block">Community</span>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6 block">
+            Community
+          </span>
           <div className="space-y-px bg-zinc-800">
             {communityUpdates.map((update, i) => (
               <article key={i} className="bg-black p-5 hover:bg-zinc-950 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className={`text-[10px] uppercase tracking-widest border px-2 py-0.5 ${TYPE_COLOR[update.type] || 'text-zinc-400 border-zinc-700'}`}>
+                  <span
+                    className={`text-[10px] uppercase tracking-widest border px-2 py-0.5 ${
+                      TYPE_COLOR[update.type] || 'text-zinc-400 border-zinc-700'
+                    }`}
+                  >
                     {update.source}
                   </span>
                   <span className="text-[10px] text-zinc-700 font-mono">{update.date}</span>
                 </div>
                 <h3 className="text-sm font-bold tracking-tight uppercase mb-2">{update.title}</h3>
                 <p className="text-xs text-zinc-500 mb-3">{update.excerpt}</p>
-                <Link href={update.url} className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">
+                <Link
+                  href={update.url}
+                  className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors"
+                >
                   Read more →
                 </Link>
               </article>
@@ -350,8 +393,10 @@ export default function NewsPage() {
 
         {/* Global News */}
         <section className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6 block">Global AI News</span>
-          <div className="grid gap-px bg-zinc-800 sm:grid-cols-2">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6 block">
+            Global AI News
+          </span>
+          <div className="grid gap-px bg-zinc-900 sm:grid-cols-2">
             {globalNews.map((item, i) => (
               <a
                 key={i}
@@ -361,10 +406,14 @@ export default function NewsPage() {
                 className="bg-black p-5 hover:bg-zinc-950 transition-colors group"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">{item.source}</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">
+                    {item.source}
+                  </span>
                   <span className="text-[10px] text-zinc-700">{item.date}</span>
                 </div>
-                <h3 className="text-sm font-bold tracking-tight mb-1 group-hover:text-white transition-colors">{item.title}</h3>
+                <h3 className="text-sm font-bold tracking-tight mb-1 group-hover:text-white transition-colors">
+                  {item.title}
+                </h3>
                 <p className="text-xs text-zinc-500">{item.excerpt}</p>
               </a>
             ))}
@@ -373,10 +422,13 @@ export default function NewsPage() {
 
         {/* CTA */}
         <section className="border border-zinc-800 p-8">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 block">London</span>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 block">
+            London
+          </span>
           <h2 className="text-2xl font-bold tracking-tighter uppercase mb-2">AI Community</h2>
           <p className="text-zinc-500 text-xs mb-6 max-w-md">
-            We&apos;re building in London. Join the meetups, share what you&apos;re building, connect with fellow agent builders.
+            We&apos;re building in London. Join the meetups, share what you&apos;re building,
+            connect with fellow agent builders.
           </p>
           <div className="flex gap-px">
             <a

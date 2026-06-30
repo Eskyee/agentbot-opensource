@@ -191,7 +191,7 @@ function buildOpenClawConfig(tailscaleOptions?: TailscaleProvisionOptions | null
 function getAgentEnvVars(agentId: string, plan: string, tailscaleOptions?: TailscaleProvisionOptions | null): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
-    OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || 'https://openclaw-production-a09d.up.railway.app',
+    OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || 'https://YOUR_SERVICE_URL',
     AGENTBOT_USER_ID: agentId,
     AGENTBOT_PLAN: plan,
     AGENTBOT_API_URL: process.env.BACKEND_API_URL || '',
@@ -383,7 +383,7 @@ export async function provisionOnRailway(
   log.info('[RailwayProvision] Env vars set', { varsSet, serviceId })
 
   // 4. Generate public domain
-  let url = `https://${serviceName}.up.railway.app`
+  let url = `https://${serviceName}YOUR_SERVICE_URL`
   try {
     const domainResult = await railwayGql<{ serviceDomainCreate: { domain: string } }>(`
       mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {

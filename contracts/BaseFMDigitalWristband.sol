@@ -32,11 +32,19 @@ contract BaseFMDigitalWristband is ERC721, ERC721URIStorage, Ownable, Reentrancy
 
     string private _baseTokenURI;
 
+    // Allowlist for gasless mints. A signature/Paymaster only sponsors gas; it
+    // does NOT authorize who may mint. Without this, gaslessMint was a public,
+    // free, unlimited mint that bypassed mintPrice and could exhaust supply /
+    // drain the Paymaster. Only owner-allowlisted recipients may claim, once.
+    mapping(address => bool) public gaslessAllowed;
+    mapping(address => bool) public gaslessClaimed;
+
     // Events
     event WristbandMinted(address indexed to, uint256 indexed tokenId, string tokenURI);
     event BaseURIUpdated(string newBaseURI);
     event MintPriceUpdated(uint256 newPrice);
     event Withdrawn(address indexed to, uint256 amount);
+    event GaslessAllowlistUpdated(address indexed account, bool allowed);
 
     constructor(
         string memory name_,
@@ -74,8 +82,10 @@ contract BaseFMDigitalWristband is ERC721, ERC721URIStorage, Ownable, Reentrancy
 
     /**
      * @notice Gasless mint for allowlisted addresses (sponsored by CDP Paymaster)
-     * @dev No payment required — gas is sponsored by the Paymaster
-     * @param to Recipient address
+     * @dev No ETH payment required — gas is sponsored by the Paymaster. Gating
+     *      is enforced ON-CHAIN: `to` must be on the owner-managed allowlist and
+     *      may only claim once. The Paymaster sponsoring gas is NOT authorization.
+     * @param to Recipient address (must be allowlisted)
      * @param tokenURI Metadata URI for the token
      * @return tokenId The minted token ID
      */
@@ -84,7 +94,13 @@ contract BaseFMDigitalWristband is ERC721, ERC721URIStorage, Ownable, Reentrancy
         string calldata tokenURI
     ) external nonReentrant returns (uint256) {
         require(to != address(0), "Invalid recipient");
+        require(gaslessAllowed[to], "Not allowlisted for gasless mint");
+        require(!gaslessClaimed[to], "Gasless wristband already claimed");
         require(_nextTokenId < MAX_SUPPLY, "Max supply reached");
+
+        // Mark claimed before minting (checks-effects-interactions; _safeMint
+        // can call back into an ERC721Receiver).
+        gaslessClaimed[to] = true;
 
         uint256 tokenId = _nextTokenId++;
         _safeMint(to, tokenId);
@@ -95,6 +111,30 @@ contract BaseFMDigitalWristband is ERC721, ERC721URIStorage, Ownable, Reentrancy
 
         emit WristbandMinted(to, tokenId, tokenURI);
         return tokenId;
+    }
+
+    /**
+     * @notice Add or remove an address from the gasless-mint allowlist
+     * @param account Address to update
+     * @param allowed True to allow a (one-time) gasless mint, false to revoke
+     */
+    function setGaslessAllowed(address account, bool allowed) external onlyOwner {
+        require(account != address(0), "Invalid account");
+        gaslessAllowed[account] = allowed;
+        emit GaslessAllowlistUpdated(account, allowed);
+    }
+
+    /**
+     * @notice Batch update the gasless-mint allowlist
+     * @param accounts Addresses to update
+     * @param allowed True to allow, false to revoke (applied to all accounts)
+     */
+    function setGaslessAllowedBatch(address[] calldata accounts, bool allowed) external onlyOwner {
+        for (uint256 i = 0; i < accounts.length; i++) {
+            require(accounts[i] != address(0), "Invalid account");
+            gaslessAllowed[accounts[i]] = allowed;
+            emit GaslessAllowlistUpdated(accounts[i], allowed);
+        }
     }
 
     /**

@@ -233,7 +233,7 @@ export default function XAgentPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600">Mentions</span>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-500">Mentions</span>
               <h2 className="text-sm font-bold text-white uppercase tracking-tight mt-1">
                 Recent Mentions
               </h2>
@@ -268,7 +268,7 @@ export default function XAgentPage() {
                           <span className="text-xs font-bold text-white">
                             @{mention.authorUsername}
                           </span>
-                          <span className="text-[10px] text-zinc-600">
+                          <span className="text-[10px] text-zinc-500">
                             {new Date(mention.createdAt).toLocaleDateString('en-GB', {
                               day: 'numeric',
                               month: 'short',
@@ -288,7 +288,7 @@ export default function XAgentPage() {
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {hasDraft ? (
-                          <span className="text-[10px] text-zinc-600 uppercase tracking-widest px-3 py-1.5 border border-zinc-800">
+                          <span className="text-[10px] text-zinc-500 uppercase tracking-widest px-3 py-1.5 border border-zinc-800">
                             Drafted
                           </span>
                         ) : (
@@ -313,7 +313,7 @@ export default function XAgentPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600">Draft Queue</span>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-500">Draft Queue</span>
               <h2 className="text-sm font-bold text-white uppercase tracking-tight mt-1">
                 Awaiting Approval
               </h2>
@@ -336,7 +336,7 @@ export default function XAgentPage() {
                 >
                   {/* Source mention */}
                   <div className="mb-3">
-                    <span className="text-[10px] uppercase tracking-widest text-zinc-600">
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-500">
                       Replying to
                     </span>
                     <p className="text-xs text-zinc-500 mt-1 line-clamp-2">
@@ -355,7 +355,7 @@ export default function XAgentPage() {
                         rows={3}
                       />
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-[10px] text-zinc-600 font-mono">
+                        <span className="text-[10px] text-zinc-500 font-mono">
                           {editText.length}/280
                         </span>
                         <div className="flex gap-2">
@@ -395,7 +395,7 @@ export default function XAgentPage() {
                       >
                         {draft.status}
                       </span>
-                      <span className="text-[10px] text-zinc-600 font-mono">
+                      <span className="text-[10px] text-zinc-500 font-mono">
                         {draft.draftText.length} chars
                       </span>
                     </div>
@@ -435,7 +435,7 @@ export default function XAgentPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600">Published</span>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-500">Published</span>
               <h2 className="text-sm font-bold text-white uppercase tracking-tight mt-1">
                 Live on X
               </h2>
@@ -475,7 +475,7 @@ export default function XAgentPage() {
                             View on X →
                           </a>
                         )}
-                        <span className="text-[10px] text-zinc-600">
+                        <span className="text-[10px] text-zinc-500">
                           {new Date(draft.updatedAt).toLocaleDateString('en-GB', {
                             day: 'numeric',
                             month: 'short',

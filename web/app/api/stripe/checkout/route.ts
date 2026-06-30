@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { protectAiEndpoint } from '@/app/lib/botid'
 import { isAdminEmail } from '@/app/lib/admin'
 import Stripe from 'stripe'
 
@@ -13,6 +14,12 @@ const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
 // No fallback prices - always create dynamically to avoid stale IDs
 
 export async function GET(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const protection = await protectAiEndpoint(ip)
+  if (protection.blocked) {
+    return NextResponse.json({ error: protection.reason }, { status: protection.status })
+  }
+
   const plan = (request.nextUrl.searchParams.get('plan') || '').toLowerCase()
 
   const validPlans = ['solo', 'collective', 'label', 'network']

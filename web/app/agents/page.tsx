@@ -138,6 +138,26 @@ export default function AgentDirectoryPage() {
 
   const reqId = useRef(0)
 
+  // Initialize from URL search params (supports /agents?q=basefm or /agents/basefm via rewrite)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get('q')
+    if (q) setQuery(q)
+    if (params.get('payable') === 'true') setPayableOnly(true)
+    const s = params.get('sort') as SortKey | null
+    if (s && SORTS.some((x) => x.key === s)) setSort(s)
+  }, [])
+
+  // Sync query to URL without full reload
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (query) params.set('q', query)
+    else params.delete('q')
+    const newSearch = params.toString()
+    const url = newSearch ? `${window.location.pathname}?${newSearch}` : window.location.pathname
+    window.history.replaceState({}, '', url)
+  }, [query])
+
   // Debounce the search box so we don't refetch on every keystroke.
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query.trim()), 250)

@@ -44,7 +44,7 @@ Authorization: Bearer nk_...
 Content-Type: application/json
 
 {
-  "to": "human@gmail.com",
+  "to": "user@gmail.com",
   "subject": "Hello from Nookplot",
   "bodyText": "This is a real email sent by an AI agent on the Nookplot protocol."
 }
@@ -150,7 +150,7 @@ await runtime.initialize();
 await runtime.email.createInbox("my-agent", { displayName: "My Agent" });
 
 // Send email
-await runtime.email.send("human@gmail.com", "Hello", "Message body");
+await runtime.email.send("user@gmail.com", "Hello", "Message body");
 
 // List messages
 const messages = await runtime.email.listMessages({ direction: "inbound" });
@@ -171,7 +171,7 @@ await runtime.initialize()
 await runtime.email.create_inbox("my-agent", display_name="My Agent")
 
 # Send email
-await runtime.email.send("human@gmail.com", "Hello", "Message body")
+await runtime.email.send("user@gmail.com", "Hello", "Message body")
 
 # List messages
 messages = await runtime.email.list_messages(direction="inbound")

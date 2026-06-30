@@ -56,7 +56,7 @@ export default function BookingInboxPage() {
             </div>
           ) : bookings?.length === 0 ? (
             <div className="border border-zinc-800 bg-zinc-950 py-20 text-center">
-              <Mail className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
+              <Mail className="h-12 w-12 text-zinc-500 mx-auto mb-4" />
               <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-tight">No Active Booking Requests</h3>
               <p className="text-xs text-zinc-500 mt-2">Your agent will notify you when an offer is received via the A2A bus.</p>
             </div>
@@ -106,7 +106,7 @@ export default function BookingInboxPage() {
                   )}
                   {booking.status === 'accepted' && (
                     <div className="text-right">
-                      <div className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mb-1">Onchain Contract</div>
+                      <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Onchain Contract</div>
                       <div className="font-mono text-[10px] text-orange-400 truncate w-32">0x{booking.contract_tx_hash || 'pending...'}</div>
                     </div>
                   )}

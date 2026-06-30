@@ -250,7 +250,7 @@ export default function FilesPage() {
         <DashboardContent className="max-w-6xl space-y-6">
           <div className="border border-zinc-800 bg-zinc-950 py-16 text-center">
             <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">No agents</p>
-            <p className="text-zinc-600 text-xs mt-2 uppercase tracking-widest">Deploy one first to manage files</p>
+            <p className="text-zinc-500 text-xs mt-2 uppercase tracking-widest">Deploy one first to manage files</p>
             <Link
               href="/marketplace"
               className="inline-block mt-6 bg-white text-black py-3 px-6 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
@@ -316,11 +316,11 @@ export default function FilesPage() {
         <div className="border border-zinc-800 bg-zinc-950 p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Storage Used</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">Storage Used</div>
               <div className="text-2xl font-bold tracking-tight mt-1">{usedGB} GB / {storageLimit} GB</div>
             </div>
             <div className="text-right">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">{storageLimit === 10 ? 'Free Tier' : 'Pro Plan'}</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">{storageLimit === 10 ? 'Free Tier' : 'Pro Plan'}</div>
               {storageLimit === 10 && (
                 <button
                   onClick={upgradeStorage}
@@ -371,7 +371,7 @@ export default function FilesPage() {
                       <div className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest">
                         {(file.size / 1024).toFixed(2)} KB
                         {file.agentId && (
-                          <span className="ml-3 text-zinc-600">Agent: {file.agentId}</span>
+                          <span className="ml-3 text-zinc-500">Agent: {file.agentId}</span>
                         )}
                       </div>
                     </div>

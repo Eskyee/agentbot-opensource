@@ -24,57 +24,72 @@ export const navSections = [
     ],
   },
   {
-    label: 'Configure',
+    label: 'Everyday',
+    items: [
+      { label: 'Fleet', href: '/dashboard/fleet', icon: '🤖' },
+      { label: 'Tasks', href: '/dashboard/tasks', icon: '📋' },
+      { label: 'Workflows', href: '/dashboard/workflows', icon: '⊞' },
+      { label: 'Signals', href: '/dashboard/signals', icon: '📡' },
+    ],
+  },
+  {
+    label: 'Agent Brain',
+    items: [
+      { label: 'Memory', href: '/dashboard/memory', icon: '🧠' },
+      { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
+      { label: 'Knowledge Base', href: '/dashboard/knowledge', icon: '📚' },
+      { label: 'Personality', href: '/dashboard/personality', icon: '🎭' },
+    ],
+  },
+  {
+    label: 'Channels',
     items: [
       { label: 'Channels', href: '/dashboard/channels', icon: '◎' },
-      { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
-      { label: 'Workflows', href: '/dashboard/workflows', icon: '⊞' },
-      { label: 'Permissions', href: '/dashboard/rbac', icon: '🛡' },
-    ],
-  },
-  {
-    label: 'Monitor',
-    items: [
-      { label: 'Health', href: '/dashboard/health', icon: '💓' },
-      { label: 'Observability', href: '/dashboard/observability', icon: '👁' },
-      { label: 'News', href: '/news', icon: '📰' },
-      { label: 'DJ Dashboard', href: '/dashboard/dj-stream', icon: '🎵' },
-      { label: 'Changelog', href: '/dashboard/changelog', icon: '📋' },
-    ],
-  },
-  {
-    label: 'Data & Integrations',
-    items: [
-      { label: 'Knowledge Base', href: '/dashboard/knowledge', icon: '📚' },
+      { label: 'MCP Integrations', href: '/dashboard/mcp', icon: '🔌' },
       { label: 'Webhooks', href: '/dashboard/webhooks', icon: '🔗' },
       { label: 'Approvals', href: '/dashboard/approvals', icon: '✅' },
     ],
   },
   {
-    label: 'Wallets & Trading',
+    label: 'Watch',
     items: [
-      { label: 'Agentic Wallet', href: '/dashboard/wallet', icon: '🪙' },
-      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
-      { label: 'Bankr', href: '/bankr', icon: '🏦' },
-      { label: 'Robinhood', href: '/dashboard/robinhood', icon: '🏹' },
+      { label: 'Health', href: '/dashboard/health', icon: '💓' },
+      { label: 'Observability', href: '/dashboard/observability', icon: '👁' },
+      { label: 'Analytics', href: '/dashboard/analytics', icon: '📊' },
+      { label: 'Evals', href: '/dashboard/evals', icon: '🧪' },
+      { label: 'Changelog', href: '/dashboard/changelog', icon: '📋' },
     ],
   },
   {
     label: 'Finance',
     items: [
+      { label: 'Wallet', href: '/dashboard/wallet', icon: '🪙' },
+      { label: 'Trading', href: '/dashboard/trading', icon: '📈' },
+      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
+      { label: 'Robinhood', href: '/dashboard/robinhood', icon: '🏹' },
+      { label: 'Stablecoins', href: '/dashboard/stablecoins', icon: '💰' },
+      { label: 'Swap', href: '/dashboard/swap', icon: '🔄' },
+      { label: 'Tempo DEX', href: '/dashboard/tempo-dex', icon: '⏱' },
+      { label: 'ClawBank', href: '/dashboard/clawbank', icon: '🏦' },
       { label: 'Invoices', href: '/dashboard/invoice', icon: '🧾' },
-      { label: 'Time Tracking', href: '/dashboard/time', icon: '⏱' },
       { label: 'Vault', href: '/dashboard/vault', icon: '🗄' },
-      { label: 'Export', href: '/dashboard/export', icon: '📤' },
+      { label: 'Cost', href: '/dashboard/cost', icon: '💲' },
+      { label: 'Usage', href: '/dashboard/usage', icon: '📊' },
+      { label: 'Pricing Models', href: '/dashboard/pricing-model', icon: '📋' },
+      { label: 'x402 Gateway', href: '/dashboard/x402', icon: '⚡' },
+      { label: 'Paid Tools', href: '/dashboard/tools', icon: '🔧' },
     ],
   },
   {
     label: 'Platform',
     items: [
+      { label: 'Browser', href: '/dashboard/browser', icon: '🌐' },
       { label: 'Voice & TTS', href: '/dashboard/voice', icon: '🎙' },
-      { label: 'Stablecoins', href: '/dashboard/stablecoins', icon: '💰' },
+      { label: 'Streaming', href: '/dashboard/streaming', icon: '📻' },
+      { label: 'Domains', href: '/dashboard/domains', icon: '🔗' },
+      { label: 'Files', href: '/dashboard/files', icon: '📁' },
       { label: 'Mobile', href: '/dashboard/mobile', icon: '📱' },
-      { label: 'Pricing Models', href: '/dashboard/pricing-model', icon: '📊' },
+      { label: 'Swarms', href: '/dashboard/swarms', icon: '🐝' },
     ],
   },
   {
@@ -82,15 +97,15 @@ export const navSections = [
     items: [
       { label: 'Billing', href: '/billing', icon: '☆' },
       { label: 'Settings', href: '/settings', icon: '⚙' },
+      { label: 'Permissions', href: '/dashboard/rbac', icon: '🛡' },
+      { label: 'Export', href: '/dashboard/export', icon: '📤' },
     ],
   },
 ];
 
 export const adminNavSection = {
   label: 'Admin',
-  items: [
-    { label: 'Admin', href: '/dashboard/admin', icon: '▣' },
-  ],
+  items: [{ label: 'Admin', href: '/dashboard/admin', icon: '▣' }],
 };
 
 export const allNavItems = [...navSections, adminNavSection].flatMap((s) => s.items);
@@ -136,7 +151,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   const handleNavigate = useCallback(() => {
     if (isOpen) onToggle();
   }, [isOpen, onToggle]);
-  
+
   const { plan: contextPlan, openclawUrl, gatewayToken } = dashboardData;
   const effectiveOpenclawUrl = runtimeUrl || openclawUrl;
   const effectiveGatewayToken = runtimeGatewayToken || gatewayToken;
@@ -169,7 +184,11 @@ export const DashboardSidebar = memo(function DashboardSidebar({
     });
   }, []);
 
-  const runtimeStatus = effectiveOpenclawUrl ? (effectiveGatewayToken ? 'paired' : 'live') : 'undeployed';
+  const runtimeStatus = effectiveOpenclawUrl
+    ? effectiveGatewayToken
+      ? 'paired'
+      : 'live'
+    : 'undeployed';
   const runtimeTone =
     runtimeStatus === 'paired'
       ? 'text-green-400'
@@ -205,27 +224,47 @@ export const DashboardSidebar = memo(function DashboardSidebar({
           aria-label="Close sidebar"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
-        <nav aria-label="Dashboard navigation" className="flex-1 overflow-y-auto pt-16 md:pt-4 pb-4">
+        <nav
+          aria-label="Dashboard navigation"
+          className="flex-1 overflow-y-auto pt-16 md:pt-4 pb-4"
+        >
           {/* Agent status */}
           <div className="mx-4 mb-5 border border-zinc-800 bg-zinc-950 p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-[10px] uppercase tracking-widest text-zinc-500">Status</div>
                 <div className={`mt-1 text-xs font-bold uppercase tracking-widest ${runtimeTone}`}>
-                  {runtimeStatus === 'paired' ? 'Online' : runtimeStatus === 'live' ? 'Unpaired' : 'No Agent'}
+                  {runtimeStatus === 'paired'
+                    ? 'Online'
+                    : runtimeStatus === 'live'
+                      ? 'Unpaired'
+                      : 'No Agent'}
                 </div>
               </div>
               <StatusDot
-                state={runtimeStatus === 'paired' ? 'online' : runtimeStatus === 'live' ? 'error' : 'idle'}
+                state={
+                  runtimeStatus === 'paired'
+                    ? 'online'
+                    : runtimeStatus === 'live'
+                      ? 'error'
+                      : 'idle'
+                }
                 pulse={runtimeStatus === 'paired'}
               />
             </div>
             {runtimeHost && (
-              <div className="mt-2 text-[10px] font-mono text-zinc-500/90 break-all">{runtimeHost}</div>
+              <div className="mt-2 text-[10px] font-mono text-zinc-500/90 break-all">
+                {runtimeHost}
+              </div>
             )}
           </div>
 
@@ -243,10 +282,14 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                     className="w-full flex items-center justify-between pl-4 pr-4 py-1 group"
                     aria-expanded={!isCollapsed}
                   >
-                    <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-600 group-hover:text-zinc-300 transition-colors">
+                    <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-500 group-hover:text-zinc-300 transition-colors">
                       {section.label}
                     </span>
-                    <span className={`text-[8px] text-zinc-700 group-hover:text-zinc-300 transition-all duration-200 ${isCollapsed ? '' : 'rotate-180'}`}>
+                    <span
+                      className={`text-[8px] text-zinc-500 group-hover:text-zinc-300 transition-all duration-200 ${
+                        isCollapsed ? '' : 'rotate-180'
+                      }`}
+                    >
                       ▲
                     </span>
                   </button>
@@ -269,7 +312,11 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                               : 'text-zinc-500 hover:bg-white/5 hover:text-white'
                           }`}
                         >
-                          <span className={`text-[10px] w-4 text-center ${isActive ? 'text-orange-400 opacity-100' : 'opacity-60'}`}>
+                          <span
+                            className={`text-[10px] w-4 text-center ${
+                              isActive ? 'text-orange-400 opacity-100' : 'opacity-60'
+                            }`}
+                          >
                             {item.icon}
                           </span>
                           <span>{item.label}</span>
@@ -284,7 +331,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
         </nav>
 
         {/* User footer */}
-        <div className="p-4 border-t border-zinc-800">
+        <div className="p-4 border-t border-zinc-900">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-white">
               {(userName || 'U').charAt(0).toUpperCase()}

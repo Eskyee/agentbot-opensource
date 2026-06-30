@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Proxy to Playwright backend
-    const BROWSER_URL = process.env.AGENTBOT_BROWSER_URL || 'https://agentbot-browser-production.up.railway.app'
+    const BROWSER_URL = process.env.AGENTBOT_BROWSER_URL || 'https://YOUR_SERVICE_URL'
 
     try {
       const res = await fetch(`${BROWSER_URL}/${action === 'fill-form' ? 'fill-form' : action}`, {

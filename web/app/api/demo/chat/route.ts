@@ -1,22 +1,23 @@
-import { NextRequest } from 'next/server'
-import { streamText } from 'ai'
-import { createOpenRouter } from '@openrouter/ai-sdk-provider'
-import { logUsage } from '@/lib/usage-logger'
+import { NextRequest } from 'next/server';
+import { streamText } from 'ai';
+import { gatewayModel, DEMO_MODEL } from '@/app/lib/ai-gateway';
+import { logUsage } from '@/lib/usage-logger';
+import { protectAiEndpoint } from '@/app/lib/botid';
 
-const MAX_DEMO_MESSAGES = 10
+const MAX_DEMO_MESSAGES = 10;
 
-const rateLimit = new Map<string, { count: number; resetAt: number }>()
+const rateLimit = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimit.get(ip)
+  const now = Date.now();
+  const entry = rateLimit.get(ip);
   if (!entry || now > entry.resetAt) {
-    rateLimit.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 })
-    return true
+    rateLimit.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
+    return true;
   }
-  if (entry.count >= MAX_DEMO_MESSAGES) return false
-  entry.count++
-  return true
+  if (entry.count >= MAX_DEMO_MESSAGES) return false;
+  entry.count++;
+  return true;
 }
 
 const SYSTEM_PROMPT = `You are Agentbot — an AI assistant made by Agentbot.sh, a platform for deploying autonomous AI agents on Base.
@@ -31,69 +32,77 @@ Key facts about Agentbot:
 - Pricing: Free (BYOK), Solo £29/mo, Collective £69/mo, Label £149/mo, Network £499/mo
 
 Be helpful, concise, and show what an Agentbot agent can do. Keep responses under 200 words.
-If someone asks how to get started, point them to agentbot.sh/signup or agentbot.sh/pricing.`
-
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY || '',
-  headers: {
-    'HTTP-Referer': 'https://agentbot.sh',
-    'X-OpenRouter-Title': 'Agentbot',
-    'X-OpenRouter-Categories': 'personal-agent,cloud-agent,general-chat',
-  },
-})
+If someone asks how to get started, point them to agentbot.sh/signup or agentbot.sh/pricing.`;
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
+
+  // BotID protection — prevent inference theft
+  const protection = await protectAiEndpoint(ip);
+  if (protection.blocked) {
+    return new Response(JSON.stringify({ error: protection.reason }), {
+      status: protection.status || 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   if (!checkRateLimit(ip)) {
     return new Response(
-      JSON.stringify({ error: 'Rate limit exceeded. Try again in an hour, or sign up at agentbot.sh/signup for unlimited access.' }),
+      JSON.stringify({
+        error:
+          'Rate limit exceeded. Try again in an hour, or sign up at agentbot.sh/signup for unlimited access.',
+      }),
       { status: 429, headers: { 'Content-Type': 'application/json' } }
-    )
+    );
   }
 
-  const body = await request.json().catch(() => ({}))
-  const messages = body.messages as { role: string; content: string }[] | undefined
+  const body = await request.json().catch(() => ({}));
+  const messages = body.messages as { role: string; content: string }[] | undefined;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return new Response(JSON.stringify({ error: 'Messages array required' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: 'Messages array required' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const sanitized = messages
-    .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+    .filter((m) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
     .slice(-20)
-    .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content.slice(0, 2000) }))
+    .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content.slice(0, 2000) }));
 
   if (sanitized.length === 0) {
-    return new Response(JSON.stringify({ error: 'No valid messages' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: 'No valid messages' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    return new Response(JSON.stringify({ error: 'AI is temporarily unavailable.' }), { status: 503, headers: { 'Content-Type': 'application/json' } })
-  }
-
-  const startTime = Date.now()
+  const startTime = Date.now();
 
   const result = streamText({
-    model: openrouter.chat('nex-agi/nex-n2-pro:free'),
-    system: SYSTEM_PROMPT,
+    model: gatewayModel(DEMO_MODEL),
+    instructions: SYSTEM_PROMPT,
     messages: sanitized,
     maxOutputTokens: 500,
     temperature: 0.7,
-    onFinish: async ({ text, usage }) => {
+    onEnd: async ({ text, usage }) => {
       logUsage({
         userId: 'demo',
         agentId: 'demo',
-        model: 'nex-agi/nex-n2-pro:free',
+        model: DEMO_MODEL,
         inputTokens: usage.inputTokens ?? 0,
         outputTokens: usage.outputTokens ?? 0,
         endpoint: '/api/demo/chat',
         latencyMs: Date.now() - startTime,
         success: true,
-      })
+      });
     },
-  })
+  });
 
-  return result.toTextStreamResponse()
+  return result.toTextStreamResponse();
 }
 // redeploy

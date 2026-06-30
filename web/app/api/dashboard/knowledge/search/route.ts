@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { readFile } from 'fs/promises'
-import path from 'path'
-
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'knowledge')
 
 export async function GET(req: NextRequest) {
   const session = await getAuthSession()
@@ -28,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     const docs = await prisma.knowledgeDocument.findMany({
       where,
-      select: { id: true, name: true, path: true, type: true },
+      select: { id: true, name: true, content: true, type: true },
     })
 
     // Simple text-based search across document contents
@@ -37,10 +33,9 @@ export async function GET(req: NextRequest) {
     const queryLower = query.toLowerCase()
 
     for (const doc of docs) {
-      if (!doc.path) continue
+      if (!doc.content) continue
       try {
-        const fullPath = path.join(UPLOAD_DIR, doc.path)
-        const content = await readFile(fullPath, 'utf-8')
+        const content = Buffer.from(doc.content).toString('utf-8')
 
         // Split into chunks (paragraphs or ~500 char segments)
         const chunks = content.split(/\n\n+/).filter((c) => c.trim().length > 50)

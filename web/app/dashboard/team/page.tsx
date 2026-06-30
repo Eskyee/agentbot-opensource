@@ -1,77 +1,74 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Users, Play } from 'lucide-react'
-import { toast } from 'sonner'
+import { useState, useEffect } from 'react';
+import { Users, Play } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   DashboardShell,
   DashboardHeader,
   DashboardContent,
-} from '@/app/components/shared/DashboardShell'
+} from '@/app/components/shared/DashboardShell';
 
 interface Template {
-  key: string
-  name: string
-  description: string
-  agent_count: number
-  agents: { name: string; role: string }[]
+  key: string;
+  name: string;
+  description: string;
+  agent_count: number;
+  agents: { name: string; role: string }[];
 }
 
 interface Category {
-  key: string
-  label: string
-  templates: string[]
+  key: string;
+  label: string;
+  templates: string[];
 }
 
 export default function TeamPage() {
-  const [templates, setTemplates] = useState<Template[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [selectedCategory, setSelectedCategory] = useState<string>('developer')
-  const [loading, setLoading] = useState(true)
-  const [provisioning, setProvisioning] = useState(false)
-  const [plan, setPlan] = useState<string>('collective')
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('developer');
+  const [loading, setLoading] = useState(true);
+  const [provisioning, setProvisioning] = useState(false);
+  const [plan, setPlan] = useState<string>('collective');
 
   useEffect(() => {
     fetch('/api/provision/team/templates')
-      .then(r => r.json())
-      .then(data => {
-        setTemplates(data.templates || [])
-        setCategories(data.categories || [])
-        setLoading(false)
+      .then((r) => r.json())
+      .then((data) => {
+        setTemplates(data.templates || []);
+        setCategories(data.categories || []);
+        setLoading(false);
       })
-      .catch(() => setLoading(false))
-  }, [])
+      .catch(() => setLoading(false));
+  }, []);
 
   const provisionTeam = async (templateKey: string) => {
-    setProvisioning(true)
+    setProvisioning(true);
     try {
       const res = await fetch('/api/provision/team', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan, templateKey }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (data.success) {
-        toast.success(`Team provisioned! ID: ${data.teamId}`)
+        toast.success(`Team provisioned! ID: ${data.teamId}`);
       } else {
-        toast.error(data.error || 'Provisioning failed')
+        toast.error(data.error || 'Provisioning failed');
       }
     } catch (err: any) {
-      toast.error(err.message || 'Network error')
+      toast.error(err.message || 'Network error');
     }
-    setProvisioning(false)
-  }
+    setProvisioning(false);
+  };
 
-  const categoryTemplates = templates.filter(t =>
-    categories.find(c => c.key === selectedCategory)?.templates.includes(t.key)
-  )
+  const categoryTemplates = templates.filter(
+    (t) => categories.find((c) => c.key === selectedCategory)?.templates.includes(t.key)
+  );
 
   return (
     <DashboardShell>
-      <DashboardHeader
-        title="Team Mode"
-        icon={<Users className="h-5 w-5 text-orange-500" />}
-      />
+      <DashboardHeader title="Team Mode" icon={<Users className="h-5 w-5 text-orange-500" />} />
 
       <DashboardContent className="space-y-6">
         {/* Description */}
@@ -80,15 +77,15 @@ export default function TeamPage() {
         </p>
 
         {/* Plan selector */}
-        <div className="flex gap-px bg-zinc-800">
-          {['collective', 'label'].map(p => (
+        <div className="flex gap-px bg-zinc-900">
+          {['collective', 'label'].map((p) => (
             <button
               key={p}
               onClick={() => setPlan(p)}
               className={`flex-1 py-3 text-[10px] uppercase tracking-widest font-bold border transition-colors ${
                 plan === p
                   ? 'bg-zinc-950 border-zinc-700 text-white'
-                  : 'bg-zinc-950 border-zinc-800 text-zinc-600 hover:text-zinc-300 hover:border-zinc-600'
+                  : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600'
               }`}
             >
               {p} {p === 'collective' ? '(3 agents)' : '(10 agents)'}
@@ -98,14 +95,14 @@ export default function TeamPage() {
 
         {/* Category tabs */}
         <div className="flex gap-2 border-b border-zinc-800 pb-3 overflow-x-auto">
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat.key}
               onClick={() => setSelectedCategory(cat.key)}
               className={`px-3 py-1.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${
                 selectedCategory === cat.key
                   ? 'text-white border-b border-white'
-                  : 'text-zinc-600 hover:text-zinc-300'
+                  : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
               {cat.label}
@@ -115,32 +112,31 @@ export default function TeamPage() {
 
         {/* Template grid */}
         {loading ? (
-          <div className="text-zinc-600 py-16 text-center text-xs uppercase tracking-widest">Loading templates...</div>
+          <div className="text-zinc-500 py-16 text-center text-xs uppercase tracking-widest">
+            Loading templates...
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-800">
-            {categoryTemplates.map(template => (
-              <div
-                key={template.key}
-                className="bg-zinc-950 border border-zinc-800 p-5"
-              >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
+            {categoryTemplates.map((template) => (
+              <div key={template.key} className="bg-zinc-950 border border-zinc-800 p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="text-sm font-bold uppercase tracking-tight">{template.name}</h3>
                     <p className="text-xs text-zinc-500 mt-1">{template.description}</p>
                   </div>
-                  <span className="text-[10px] text-zinc-600 border border-zinc-800 px-2 py-0.5 uppercase tracking-widest">
+                  <span className="text-[10px] text-zinc-500 border border-zinc-800 px-2 py-0.5 uppercase tracking-widest">
                     {template.agent_count} agents
                   </span>
                 </div>
 
                 {/* Agent list */}
                 <div className="space-y-2 mb-4">
-                  {template.agents.map(agent => (
+                  {template.agents.map((agent) => (
                     <div key={agent.name} className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 bg-green-500" />
                       <span className="text-xs text-zinc-400">
                         <span className="text-zinc-300 font-bold uppercase">{agent.role}</span>
-                        <span className="text-zinc-600 ml-1 font-mono">({agent.name})</span>
+                        <span className="text-zinc-500 ml-1 font-mono">({agent.name})</span>
                       </span>
                     </div>
                   ))}
@@ -161,7 +157,9 @@ export default function TeamPage() {
         {/* Custom YAML (Label only) */}
         {plan === 'label' && (
           <div className="border border-zinc-800 bg-zinc-950 p-6">
-            <h3 className="text-sm font-bold uppercase tracking-tight mb-3">Custom Configuration</h3>
+            <h3 className="text-sm font-bold uppercase tracking-tight mb-3">
+              Custom Configuration
+            </h3>
             <p className="text-xs text-zinc-500 mb-4">
               Define your own team with custom YAML. Label plan supports up to 10 agents.
             </p>
@@ -180,14 +178,12 @@ agents:
     model: xiaomi/mimo-v2.5-pro
     tools: [filesystem, shell, think]`}
             />
-            <button
-              className="mt-4 bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 px-6"
-            >
+            <button className="mt-4 bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 px-6">
               Deploy Custom Team
             </button>
           </div>
         )}
       </DashboardContent>
     </DashboardShell>
-  )
+  );
 }

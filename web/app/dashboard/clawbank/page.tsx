@@ -150,7 +150,7 @@ export default function ClawBankPage() {
           {/* Header */}
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-1">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 mb-1">
                 Financial Infrastructure
               </div>
               <h1 className="text-2xl font-bold uppercase tracking-wider">ClawBank</h1>
@@ -171,7 +171,7 @@ export default function ClawBankPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                 {/* Balance */}
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5 sm:col-span-2">
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-1">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 mb-1">
                     Balance
                   </div>
                   <div className="text-4xl font-bold font-mono text-white">
@@ -180,7 +180,7 @@ export default function ClawBankPage() {
                   <div className="text-[10px] text-zinc-500 mt-1">
                     {status.balance?.currency || 'USD'}
                     {status.balance?.amountCents !== undefined && (
-                      <span className="ml-2 text-zinc-600">
+                      <span className="ml-2 text-zinc-500">
                         ({status.balance.amountCents} cents)
                       </span>
                     )}
@@ -189,7 +189,7 @@ export default function ClawBankPage() {
 
                 {/* Account */}
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-1">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 mb-1">
                     Account
                   </div>
                   <div className="text-sm text-zinc-200 font-mono truncate">
@@ -217,7 +217,7 @@ export default function ClawBankPage() {
               {/* Wallets */}
               {status.wallets && status.wallets.length > 0 && (
                 <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-3">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 mb-3">
                     Wallets
                   </div>
                   <div className="space-y-2">
@@ -235,7 +235,7 @@ export default function ClawBankPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] uppercase tracking-wider text-zinc-600">
+                          <span className="text-[10px] uppercase tracking-wider text-zinc-500">
                             {w.chain}
                           </span>
                           <button
@@ -253,7 +253,7 @@ export default function ClawBankPage() {
 
               {/* Agent Tools Status */}
               <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-3">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 mb-3">
                   Agent Banking Tools
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -284,7 +284,7 @@ export default function ClawBankPage() {
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-zinc-600 mt-3">
+                <p className="text-[10px] text-zinc-500 mt-3">
                   Click any tool to run it live. 19 tools total — some require parameters and run via your agent.
                   {status.mcp?.ok
                     ? ' Agent tools active.'
@@ -296,12 +296,12 @@ export default function ClawBankPage() {
               {activeTool && (
                 <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
                       {activeTool.replace(/_/g, ' ')} — Result
                     </div>
                     <button
                       onClick={closeTool}
-                      className="text-zinc-600 hover:text-white text-xs"
+                      className="text-zinc-500 hover:text-white text-xs"
                     >
                       ✕
                     </button>
@@ -347,7 +347,7 @@ export default function ClawBankPage() {
 
               {/* Last refresh */}
               {status.lastRefresh && (
-                <div className="text-[10px] text-zinc-700">
+                <div className="text-[10px] text-zinc-500">
                   Last refreshed: {new Date(status.lastRefresh).toLocaleTimeString()}
                   <span className="ml-2 text-zinc-800">· auto-refreshes every 30s</span>
                 </div>
@@ -357,7 +357,7 @@ export default function ClawBankPage() {
             <>
               {/* Not connected — What you get + sign up */}
               <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-3">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 mb-3">
                   What your agent gets
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -380,7 +380,7 @@ export default function ClawBankPage() {
 
               {/* API Key Input */}
               <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-4">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 mb-4">
                   Connect Your Account
                 </div>
 
@@ -412,7 +412,7 @@ export default function ClawBankPage() {
                 )}
 
                 <div>
-                  <label className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-1.5 block">
+                  <label className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 mb-1.5 block">
                     ClawBank API Key
                   </label>
                   <input
@@ -420,7 +420,7 @@ export default function ClawBankPage() {
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="sk-cb-…"
-                    className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none font-mono"
+                    className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-zinc-600 focus:outline-none font-mono"
                   />
                 </div>
 

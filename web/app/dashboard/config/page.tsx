@@ -263,7 +263,7 @@ export default function ConfigEditorPage() {
           <div className="flex-1 min-w-0">
             <div className="border border-zinc-800 bg-zinc-950">
               <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800">
-                <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600">
+                <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
                   <Settings className="h-3.5 w-3.5" />
                   Configuration — {lineCount} lines
                 </div>
@@ -273,7 +273,7 @@ export default function ConfigEditorPage() {
                     className={`flex items-center gap-1 text-[10px] uppercase tracking-widest px-2 py-1 transition-colors ${
                       showDiff
                         ? 'text-orange-500 bg-red-950/30 border border-red-900/50'
-                        : 'text-zinc-600 hover:text-white'
+                        : 'text-zinc-500 hover:text-white'
                     }`}
                   >
                     <Eye className="h-3 w-3" />
@@ -292,13 +292,13 @@ export default function ConfigEditorPage() {
                           ? 'bg-emerald-950/30 text-emerald-400'
                           : line.type === 'removed'
                           ? 'bg-red-950/30 text-red-400'
-                          : 'text-zinc-600'
+                          : 'text-zinc-500'
                       }`}
                     >
-                      <span className="inline-block w-10 text-right pr-3 text-zinc-700 select-none">
+                      <span className="inline-block w-10 text-right pr-3 text-zinc-500 select-none">
                         {line.type !== 'added' ? line.lineNum : ''}
                       </span>
-                      <span className="inline-block w-4 text-zinc-700 select-none">
+                      <span className="inline-block w-4 text-zinc-500 select-none">
                         {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : ' '}
                       </span>
                       {line.content}
@@ -312,7 +312,7 @@ export default function ConfigEditorPage() {
                     {Array.from({ length: lineCount }, (_, i) => (
                       <div
                         key={i}
-                        className="text-right pr-3 text-[11px] leading-[1.6] text-zinc-700 font-mono"
+                        className="text-right pr-3 text-[11px] leading-[1.6] text-zinc-500 font-mono"
                       >
                         {i + 1}
                       </div>
@@ -334,14 +334,14 @@ export default function ConfigEditorPage() {
           {/* Version history sidebar */}
           <div className="w-full lg:w-72 flex-shrink-0">
             <div className="border border-zinc-800 bg-zinc-950">
-              <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-800 text-[10px] uppercase tracking-widest text-zinc-600">
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-800 text-[10px] uppercase tracking-widest text-zinc-500">
                 <Clock className="h-3.5 w-3.5" />
                 Version History
               </div>
               {loading ? (
-                <div className="p-4 text-xs text-zinc-600 font-mono">Loading...</div>
+                <div className="p-4 text-xs text-zinc-500 font-mono">Loading...</div>
               ) : backups.length === 0 ? (
-                <div className="p-4 text-xs text-zinc-600 font-mono">No backups yet</div>
+                <div className="p-4 text-xs text-zinc-500 font-mono">No backups yet</div>
               ) : (
                 <div className="divide-y divide-zinc-800/50">
                   {backups.map(backup => (

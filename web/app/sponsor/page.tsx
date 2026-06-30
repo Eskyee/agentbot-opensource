@@ -1,13 +1,24 @@
-'use client'
+'use client';
 
-import { Heart, Coffee, Pizza, Code, Rocket, Building, Star, ExternalLink, Check, Bitcoin } from 'lucide-react'
-import Link from 'next/link'
-import Image from 'next/image'
+import {
+  Heart,
+  Coffee,
+  Pizza,
+  Code,
+  Rocket,
+  Building,
+  Star,
+  ExternalLink,
+  Check,
+  Bitcoin,
+} from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
 import {
   DashboardShell,
   DashboardHeader,
   DashboardContent,
-} from '@/app/components/shared/DashboardShell'
+} from '@/app/components/shared/DashboardShell';
 
 const tiers = [
   {
@@ -52,7 +63,7 @@ const tiers = [
     icon: Rocket,
     color: 'pink',
   },
-]
+];
 
 export default function SponsorPage() {
   return (
@@ -66,10 +77,12 @@ export default function SponsorPage() {
         <div className="max-w-4xl mx-auto">
           {/* Solana Claim Banner */}
           <div className="border border-orange-900 bg-orange-900/20 p-6 mb-12 text-center">
-            <h3 className="text-white font-bold text-lg mb-2">🐋 Solana Agentbot Holders — Claim Free Credits</h3>
+            <h3 className="text-white font-bold text-lg mb-2">
+              🐋 Solana Agentbot Holders — Claim Free Credits
+            </h3>
             <p className="text-zinc-400 text-sm mb-4">
-              Hold Solana Agentbot tokens? Claim free agent credits every month.
-              Three tiers based on your holdings — up to 500 credits/mo for Whales.
+              Hold Solana Agentbot tokens? Claim free agent credits every month. Three tiers based
+              on your holdings — up to 500 credits/mo for Whales.
             </p>
             <Link
               href="/claim"
@@ -83,8 +96,8 @@ export default function SponsorPage() {
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-white mb-4">Support Open Source Development</h2>
             <p className="text-zinc-400 max-w-xl mx-auto">
-              Your sponsorship helps me build the future of AI agents. Every dollar goes directly to infrastructure costs, 
-              development time, and keeping agentbot running 24/7.
+              Your sponsorship helps me build the future of AI agents. Every dollar goes directly to
+              infrastructure costs, development time, and keeping agentbot running 24/7.
             </p>
             <div className="mt-4 text-green-400 font-bold">
               🎯 Goal: 5 monthly sponsors ($500/mo)
@@ -101,7 +114,7 @@ export default function SponsorPage() {
               priority
               unoptimized
             />
-            <figcaption className="border-t border-zinc-800 px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+            <figcaption className="border-t border-zinc-900 px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
               Community support keeps Agentbot shipping
             </figcaption>
           </figure>
@@ -137,8 +150,8 @@ export default function SponsorPage() {
               href="#bitcoin"
               className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-red-600 transition-all text-center"
               onClick={(e) => {
-                e.preventDefault()
-                document.getElementById('bitcoin-section')?.scrollIntoView({ behavior: 'smooth' })
+                e.preventDefault();
+                document.getElementById('bitcoin-section')?.scrollIntoView({ behavior: 'smooth' });
               }}
             >
               <Bitcoin className="h-8 w-8 text-orange-500 mx-auto mb-3" />
@@ -154,8 +167,8 @@ export default function SponsorPage() {
               <h3 className="text-white font-bold text-lg">Self-Hosted is the Only Way</h3>
             </div>
             <p className="text-zinc-400 text-sm mb-4">
-              Agentbot is open source for a reason. We believe in self-hosted, permissionless infrastructure. 
-              Run your own instance, own your data, control your agents.
+              Agentbot is open source for a reason. We believe in self-hosted, permissionless
+              infrastructure. Run your own instance, own your data, control your agents.
             </p>
             <div className="flex flex-wrap gap-4">
               <a
@@ -188,11 +201,14 @@ export default function SponsorPage() {
               <h3 className="text-white font-bold text-lg">Use Your Blockstream Green Wallet</h3>
             </div>
             <p className="text-zinc-400 text-sm mb-4">
-              Connect your Blockstream Green wallet (GreenAddress) to agentbot for BTC/Liquid operations. 
-              Your keys, your bitcoin - non-custodial. Hardware wallet compatible (Jade).
+              Connect your Blockstream Green wallet (GreenAddress) to agentbot for BTC/Liquid
+              operations. Your keys, your bitcoin - non-custodial. Hardware wallet compatible
+              (Jade).
             </p>
             <div className="bg-black p-4 border border-zinc-800">
-              <p className="text-zinc-500 text-xs mb-2">Integration via Blockstream GDK (Green Development Kit)</p>
+              <p className="text-zinc-500 text-xs mb-2">
+                Integration via Blockstream GDK (Green Development Kit)
+              </p>
               <ul className="text-zinc-400 text-xs space-y-1">
                 <li>• Send/receive BTC on-chain</li>
                 <li>• Liquid assets support (L-BTC, USDt)</li>
@@ -245,7 +261,9 @@ export default function SponsorPage() {
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
               <div className="bg-black p-4 border border-zinc-800">
                 <p className="text-zinc-500 text-xs uppercase mb-2">On-chain BTC</p>
-                <code className="text-orange-500 text-sm break-all">bc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr</code>
+                <code className="text-orange-500 text-sm break-all">
+                  bc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr
+                </code>
               </div>
               <div className="bg-black p-4 border border-zinc-800 flex flex-col items-center justify-center">
                 <p className="text-zinc-500 text-xs uppercase mb-3">Scan To Donate</p>
@@ -259,13 +277,14 @@ export default function SponsorPage() {
             </div>
             <div className="mt-4 bg-black p-4 border border-zinc-800">
               <p className="text-zinc-500 text-xs uppercase mb-2">Lightning (LNURL)</p>
-              <code className="text-orange-500 text-sm break-all">LNURL1DP68GURN8GHJ7MR9VAJKUEPWD9XZ7PHVEFNVEMN6RPJCMN8DDKGDR3A8K6T</code>
+              <code className="text-orange-500 text-sm break-all">
+                LNURL1DP68GURN8GHJ7MR9VAJKUEPWD9XZ7PHVEFNVEMN6RPJCMN8DDKGDR3A8K6T
+              </code>
             </div>
             <p className="text-zinc-500 text-xs mt-4">
               ⚡ For larger amounts, ask for an invoice via esky33@proton.me
             </p>
           </div>
-
 
           <div className="flex justify-center mb-12">
             <a
@@ -321,14 +340,21 @@ export default function SponsorPage() {
           <div className="text-center text-zinc-500 text-sm">
             <p>Questions? Email esky33@proton.me</p>
             <div className="flex justify-center gap-4 mt-4">
-              <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-white">
+              <a
+                href="https://github.com/Eskyee/agentbot-opensource"
+                target="_blank"
+                rel="noopener"
+                className="flex items-center gap-1 hover:text-white"
+              >
                 <ExternalLink className="h-3 w-3" /> GitHub
               </a>
-              <Link href="/dashboard" className="hover:text-white">Dashboard</Link>
+              <Link href="/dashboard" className="hover:text-white">
+                Dashboard
+              </Link>
             </div>
           </div>
         </div>
       </DashboardContent>
     </DashboardShell>
-  )
+  );
 }

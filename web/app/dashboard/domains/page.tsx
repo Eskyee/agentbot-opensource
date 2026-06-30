@@ -121,7 +121,7 @@ export default function DomainsPage() {
         {/* Subdomain */}
         {subdomainUrl && (
           <div className="border border-zinc-800 bg-zinc-950 p-5">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Your Subdomain</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2 font-bold">Your Subdomain</div>
             <div className="flex items-center gap-3">
               <code className="text-orange-400 font-mono text-sm flex-1">{subdomainUrl}</code>
               <button
@@ -139,7 +139,7 @@ export default function DomainsPage() {
         <div className="border border-zinc-800 bg-zinc-950 p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold">Custom Domain</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Custom Domain</div>
               <p className="text-xs text-zinc-500 mt-1">
                 Point your own domain to your agent. {maxDomains > 0 && `${domains.length}/${maxDomains} used.`}
               </p>
@@ -157,7 +157,7 @@ export default function DomainsPage() {
               value={newDomain}
               onChange={e => setNewDomain(e.target.value)}
               placeholder="agent.yourdomain.com"
-              className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2.5 text-sm text-white font-mono placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600"
+              className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2.5 text-sm text-white font-mono placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600"
               disabled={domains.length >= maxDomains}
             />
             <button
@@ -189,16 +189,16 @@ export default function DomainsPage() {
 
         {/* Domain List */}
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 font-bold">Your Domains</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3 font-bold">Your Domains</div>
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
             </div>
           ) : domains.length === 0 ? (
             <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
-              <Shield className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
-              <p className="text-sm text-zinc-600 font-mono">No custom domains</p>
-              <p className="text-[10px] text-zinc-700 font-mono mt-1">Add a domain above to get started</p>
+              <Shield className="h-8 w-8 text-zinc-500 mx-auto mb-3" />
+              <p className="text-sm text-zinc-500 font-mono">No custom domains</p>
+              <p className="text-[10px] text-zinc-500 font-mono mt-1">Add a domain above to get started</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -219,7 +219,7 @@ export default function DomainsPage() {
                   </div>
                   <button
                     onClick={() => removeDomain(d.domain)}
-                    className="p-1.5 text-zinc-600 hover:text-orange-400 transition-colors"
+                    className="p-1.5 text-zinc-500 hover:text-orange-400 transition-colors"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>

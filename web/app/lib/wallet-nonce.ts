@@ -22,17 +22,17 @@ export async function issueWalletNonce() {
 export async function consumeWalletNonce(token: string) {
   if (!token) return false
 
-  const record = await prisma.verificationToken.findUnique({
-    where: { token },
+  // Atomic consume: delete-and-count in a single statement so two concurrent
+  // requests carrying the same nonce cannot both pass (no read-then-delete
+  // TOCTOU replay window). Matches the atomic-consumption pattern used for
+  // invite codes.
+  const { count } = await prisma.verificationToken.deleteMany({
+    where: {
+      token,
+      identifier: WALLET_NONCE_IDENTIFIER,
+      expires: { gt: new Date() },
+    },
   })
 
-  if (!record || record.identifier !== WALLET_NONCE_IDENTIFIER || record.expires < new Date()) {
-    return false
-  }
-
-  await prisma.verificationToken.delete({
-    where: { token },
-  })
-
-  return true
+  return count === 1
 }

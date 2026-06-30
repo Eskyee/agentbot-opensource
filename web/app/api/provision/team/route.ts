@@ -86,8 +86,6 @@ export async function POST(req: NextRequest) {
         signedFetch('/api/provision', {
           method: 'POST',
           headers: {
-            'X-User-Email': session.user?.email ?? '',
-            'X-User-Id': session.user?.id ?? '',
             'X-User-Plan': plan || 'collective',
             'X-Stripe-Subscription-Id': stripeSubscriptionId || '',
           },
@@ -102,6 +100,10 @@ export async function POST(req: NextRequest) {
             templateKey,
           }),
           signal: AbortSignal.timeout(15_000),
+        }, {
+          id: session.user?.id ?? '',
+          email: session.user?.email ?? '',
+          role: session.user?.isAdmin ? 'admin' : 'user',
         }).catch(err =>
           console.error(`[Provision/Team] Agent ${i + 1} provision error:`, err)
         )

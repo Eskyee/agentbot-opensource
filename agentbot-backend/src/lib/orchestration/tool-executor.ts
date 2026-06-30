@@ -210,9 +210,18 @@ async function executeBash(
     let errorOutput = ''
     let truncated = false
 
+    // Do NOT leak the backend's secrets (API keys, DB URL, wallet/CDP keys)
+    // into tool subprocesses. Pass only a minimal, non-sensitive environment.
+    const safeEnv: NodeJS.ProcessEnv = {
+      PATH: process.env.PATH,
+      HOME: process.env.HOME,
+      LANG: 'en_US.UTF-8',
+    }
+    if (process.env.TMPDIR) safeEnv.TMPDIR = process.env.TMPDIR
+
     const proc = spawn('bash', ['-c', command], {
       cwd: getWorkspaceRoot(),
-      env: { ...process.env, LANG: 'en_US.UTF-8' },
+      env: safeEnv,
       timeout: timeoutMs,
     })
 

@@ -34,7 +34,7 @@ export default function UsagePage() {
     return (
       <main className="min-h-screen bg-black text-white font-mono">
         <div className="max-w-4xl mx-auto px-6 py-24">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600">Loading…</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500">Loading…</div>
         </div>
       </main>
     )
@@ -44,7 +44,7 @@ export default function UsagePage() {
     return (
       <main className="min-h-screen bg-black text-white font-mono">
         <div className="max-w-4xl mx-auto px-6 py-24">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600">Sign in to view usage</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500">Sign in to view usage</div>
         </div>
       </main>
     )
@@ -57,12 +57,12 @@ export default function UsagePage() {
   return (
     <main className="min-h-screen bg-black text-white font-mono">
       <div className="max-w-4xl mx-auto px-6 py-24">
-        <Link href="/playground" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white mb-8">
+        <Link href="/playground" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white mb-8">
           <ArrowLeft className="h-3 w-3" />
           Back to Playground
         </Link>
 
-        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Dashboard / Usage</div>
+        <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Dashboard / Usage</div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter uppercase leading-[0.9]">
           Your usage
         </h1>
@@ -72,13 +72,13 @@ export default function UsagePage() {
 
         <div className="mt-12 grid gap-px bg-zinc-900 sm:grid-cols-3">
           <div className="bg-black p-6">
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
               <Zap className="h-3 w-3" />
               Generations today
             </div>
             <div className="mt-3 text-3xl font-bold tracking-tighter">
               {data.usage.generationsToday}
-              <span className="text-sm font-normal text-zinc-600">
+              <span className="text-sm font-normal text-zinc-500">
                 / {data.usage.dailyLimit}
               </span>
             </div>
@@ -90,7 +90,7 @@ export default function UsagePage() {
                 />
               </div>
             )}
-            <div className="mt-2 text-[10px] text-zinc-600">
+            <div className="mt-2 text-[10px] text-zinc-500">
               {typeof data.usage.remaining === 'number'
                 ? `${data.usage.remaining} remaining today`
                 : 'Unlimited'}
@@ -98,26 +98,26 @@ export default function UsagePage() {
           </div>
 
           <div className="bg-black p-6">
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
               <BarChart3 className="h-3 w-3" />
               Projects
             </div>
             <div className="mt-3 text-3xl font-bold tracking-tighter">{data.projects}</div>
-            <div className="mt-2 text-[10px] text-zinc-600">Total saved projects</div>
+            <div className="mt-2 text-[10px] text-zinc-500">Total saved projects</div>
           </div>
 
           <div className="bg-black p-6">
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
               <Globe2 className="h-3 w-3" />
               Published
             </div>
             <div className="mt-3 text-3xl font-bold tracking-tighter">{data.published}</div>
-            <div className="mt-2 text-[10px] text-zinc-600">Deployed to production</div>
+            <div className="mt-2 text-[10px] text-zinc-500">Deployed to production</div>
           </div>
         </div>
 
         <div className="mt-8 border border-zinc-900 p-6">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Plan details</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Plan details</div>
           <div className="grid gap-4 sm:grid-cols-2 text-sm">
             <div className="flex justify-between">
               <span className="text-zinc-500">Current plan</span>

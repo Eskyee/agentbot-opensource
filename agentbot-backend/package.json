@@ -14,11 +14,18 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@base-org/account": "0.0.0",
+    "@codesandbox/sdk": "1.1.6",
     "@coinbase/agentkit": "^0.10.4",
     "@coinbase/agentkit-vercel-ai-sdk": "^0.1.0",
     "@coinbase/cdp-sdk": "^1.49.2",
+    "@gitlawb/openclaude": "^0.20.1",
     "@openrouter/sdk": "^0.10.2",
     "@sentry/node": "^10.51.0",
+    "@worldcoin/agentkit": "0.1.6",
+    "@x402/express": "2.2.0",
+    "@x402/extensions": "2.2.0",
+    "@x402/next": "2.2.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
@@ -27,9 +34,11 @@
     "express": "^4.18.2",
     "express-rate-limit": "^8.5.2",
     "http-proxy": "^1.18.1",
+    "jest-environment-jsdom": "29.7.0",
     "jsonwebtoken": "^9.0.0",
     "pg": "^8.11.0",
-    "shell-quote": "^1.8.4"
+    "shell-quote": "^1.8.4",
+    "wagmi": "2.15.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

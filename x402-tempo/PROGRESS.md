@@ -17,7 +17,7 @@ Tempo Network (pathUSD)
 | Service | URL | Status |
 |---------|-----|--------|
 | Agentbot API | agentbot.sh/api/x402 | ✅ healthy |
-| x402-gateway | x402-gateway-production-005f.up.railway.app | ✅ healthy |
+| x402-gateway | YOUR_SERVICE_URL | ✅ healthy |
 | Dashboard | agentbot.sh/dashboard/x402 | ✅ live |
 
 ### Endpoints (all working)
@@ -36,7 +36,7 @@ Tempo Network (pathUSD)
 - Survives restarts
 
 ### Borg-0 Integration
-- Connected to https://borg-0-production-7139.up.railway.app
+- Connected to https://YOUR_SERVICE_URL
 - Designation: borg-0
 - Fitness: 32.6%
 - Wallet: 999,998 pathUSD

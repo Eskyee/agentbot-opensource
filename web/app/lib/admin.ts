@@ -5,12 +5,11 @@ function parseEmails(value: string | undefined) {
     .filter(Boolean)
 }
 
+// Admin grants are env-driven so they can be added/revoked without a redeploy
+// and so personal addresses are not baked into source control.
+// Set ADMIN_EMAILS (and/or OPERATOR_ADMIN_EMAILS) to a comma-separated list.
 const ADMIN_EMAILS = Array.from(
   new Set([
-    'eskyjunglelab@gmail.com',
-    'admin@agentbot.sh',
-    'rbasefm@icloud.com',
-    'djescaba@icloud.com',
     ...parseEmails(process.env.ADMIN_EMAILS),
     ...parseEmails(process.env.OPERATOR_ADMIN_EMAILS),
   ])

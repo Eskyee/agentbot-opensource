@@ -1,73 +1,67 @@
-import { NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
-import { prisma } from '@/app/lib/prisma'
+import { NextRequest } from 'next/server';
+import { getOrchestrator } from '@/app/lib/agents/orchestrator';
+import { getSubAgentTypes, getSubAgentConfig } from '@/app/lib/agents/subagents';
+import { SubAgentType } from '@/app/lib/agents/types';
 
-export async function GET() {
-  try {
-    const session = await getAuthSession()
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({
-        agents: [],
-        count: 0,
-        status: 'ok',
-      })
-    }
+export const maxDuration = 300;
 
-    const targetUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        id: true,
-        openclawInstanceId: true,
-        openclawUrl: true,
-      },
-    })
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url);
+  const action = url.searchParams.get('action');
 
-    const agents = await prisma.agent.findMany({
-      where: { userId: session.user.id },
-      select: {
-        id: true,
-        userId: true,
-        name: true,
-        model: true,
-        status: true,
-        websocketUrl: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+  const orchestrator = getOrchestrator();
 
-    const hasRuntimeBackedAgent = Boolean(
-      targetUser?.openclawInstanceId &&
-      agents.some((agent) => agent.id === targetUser.openclawInstanceId)
-    )
-
-    if (targetUser?.openclawInstanceId && !hasRuntimeBackedAgent) {
-      agents.unshift({
-        id: targetUser.openclawInstanceId,
-        userId: targetUser.id,
-        name: 'Managed OpenClaw Runtime',
-        model: 'openclaw',
-        status: 'running',
-        websocketUrl: targetUser.openclawUrl,
-        createdAt: new Date(0),
-        updatedAt: new Date(),
-      })
-    }
-    
-    return NextResponse.json({
-      agents: agents || [],
-      count: (agents || []).length,
-      status: 'ok',
-    })
-  } catch (error) {
-    console.error('Failed to fetch agents:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch agents', agents: [], count: 0 },
-      { status: 500 }
-    )
+  if (action === 'list') {
+    return Response.json({
+      agents: orchestrator.getAvailableAgents(),
+    });
   }
+
+  if (action === 'types') {
+    return Response.json({
+      types: getSubAgentTypes(),
+    });
+  }
+
+  if (action === 'config') {
+    const type = url.searchParams.get('type') as SubAgentType;
+    if (!type) {
+      return Response.json({ error: 'type parameter required' }, { status: 400 });
+    }
+    return Response.json({
+      config: getSubAgentConfig(type),
+    });
+  }
+
+  return Response.json({
+    message: 'Agent Orchestrator API',
+    actions: ['list', 'types', 'config', 'route'],
+  });
 }
 
+export async function POST(request: NextRequest) {
+  const body = await request.json().catch(() => ({}));
+  const { action, type, prompt, context } = body as {
+    action?: string;
+    type?: SubAgentType;
+    prompt?: string;
+    context?: Record<string, unknown>;
+  };
 
+  const orchestrator = getOrchestrator();
+
+  if (action === 'route' && prompt) {
+    const result = await orchestrator.orchestrate(prompt, context);
+    return Response.json(result);
+  }
+
+  if (action === 'execute' && type && prompt) {
+    const result = await orchestrator.routeToSubAgent(type, prompt, context);
+    return Response.json(result);
+  }
+
+  return Response.json(
+    { error: 'Invalid action. Use "route" or "execute" with prompt.' },
+    { status: 400 }
+  );
+}

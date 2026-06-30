@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { writeFile, mkdir, unlink } from 'fs/promises'
 import path from 'path'
-import crypto from 'crypto'
 
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'knowledge')
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
 
 const MIME_TO_TYPE: Record<string, string> = {
@@ -72,14 +69,8 @@ export async function POST(req: NextRequest) {
     const ext = path.extname(file.name).toLowerCase().slice(1)
     const docType = MIME_TO_TYPE[file.type] || ext || 'txt'
 
-    // Save file to disk
-    const fileId = crypto.randomUUID()
-    const uploadPath = path.join(session.user.id, `${fileId}.${docType}`)
-    const fullPath = path.join(UPLOAD_DIR, uploadPath)
-    await mkdir(path.dirname(fullPath), { recursive: true })
-
+    // Store file bytes in the DB — the serverless filesystem is read-only.
     const buffer = Buffer.from(await file.arrayBuffer())
-    await writeFile(fullPath, buffer)
 
     // Create DB record
     const doc = await prisma.knowledgeDocument.create({
@@ -89,7 +80,7 @@ export async function POST(req: NextRequest) {
         name: file.name,
         type: docType,
         size: file.size,
-        path: uploadPath,
+        content: buffer,
         status: 'processing',
         chunks: 0,
       },
@@ -152,12 +143,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
     }
 
-    // Delete file from disk
-    if (doc.path) {
-      const fullPath = path.join(UPLOAD_DIR, doc.path)
-      await unlink(fullPath).catch(() => {})
-    }
-
+    // Content lives in the row, so it's removed by the delete below.
     await prisma.knowledgeDocument.delete({ where: { id } })
 
     // Log to audit

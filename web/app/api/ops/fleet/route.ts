@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
-const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://openclaw-production-a09d.up.railway.app'
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://agentbot-backend-production.up.railway.app'
+const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://YOUR_SERVICE_URL'
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://YOUR_SERVICE_URL'
 
 interface FleetNode {
   id: string

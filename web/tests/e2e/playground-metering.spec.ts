@@ -101,7 +101,7 @@ test.describe('Playground metering', () => {
     // The admin limit (50/day) is set in playground-usage.ts ADMIN_DAILY_LIMIT.
     //
     // To test admin flow end-to-end:
-    // 1. Log in as admin (eskyjunglelab@gmail.com)
+    // 1. Log in as admin (YOUR_ADMIN_EMAIL_1)
     // 2. Generate 4+ times
     // 3. Verify no paywall appears
     //

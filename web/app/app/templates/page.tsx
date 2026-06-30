@@ -1,50 +1,93 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-const CATEGORIES = ['all', 'music', 'community', 'creative', 'business'] as const
+const CATEGORIES = ['all', 'music', 'community', 'creative', 'business'] as const;
 
 const TEMPLATES = [
-  { key: 'music-promoter', name: 'Music Promoter', icon: '🎵', desc: 'Promote tracks across social channels. Auto-posts, schedules drops, tracks engagement.', category: 'music', time: '2 min' },
-  { key: 'community-manager', name: 'Community Manager', icon: '👥', desc: 'Monitor and engage your Telegram community. Auto-responds, moderates, summarises.', category: 'community', time: '3 min' },
-  { key: 'content-creator', name: 'Content Creator', icon: '✍️', desc: 'Generate blog posts, social content, and newsletters in your brand voice.', category: 'creative', time: '2 min' },
-  { key: 'crypto-analyst', name: 'Crypto Analyst', icon: '📊', desc: 'Track token prices, monitor wallets, alert on market movements. Base and Solana.', category: 'business', time: '3 min' },
-  { key: 'dj-radio', name: 'DJ Radio Host', icon: '📻', desc: 'AI-powered radio on baseFM. Curates playlists, takes requests, mixes live.', category: 'music', time: '5 min' },
-  { key: 'event-scout', name: 'Event Scout', icon: '🎪', desc: 'Find and curate music events, festivals, and gigs. Auto-posts listings.', category: 'community', time: '2 min' },
-]
+  {
+    key: 'music-promoter',
+    name: 'Music Promoter',
+    icon: '🎵',
+    desc: 'Promote tracks across social channels. Auto-posts, schedules drops, tracks engagement.',
+    category: 'music',
+    time: '2 min',
+  },
+  {
+    key: 'community-manager',
+    name: 'Community Manager',
+    icon: '👥',
+    desc: 'Monitor and engage your Telegram community. Auto-responds, moderates, summarises.',
+    category: 'community',
+    time: '3 min',
+  },
+  {
+    key: 'content-creator',
+    name: 'Content Creator',
+    icon: '✍️',
+    desc: 'Generate blog posts, social content, and newsletters in your brand voice.',
+    category: 'creative',
+    time: '2 min',
+  },
+  {
+    key: 'crypto-analyst',
+    name: 'Crypto Analyst',
+    icon: '📊',
+    desc: 'Track token prices, monitor wallets, alert on market movements. Base and Solana.',
+    category: 'business',
+    time: '3 min',
+  },
+  {
+    key: 'dj-radio',
+    name: 'DJ Radio Host',
+    icon: '📻',
+    desc: 'AI-powered radio on baseFM. Curates playlists, takes requests, mixes live.',
+    category: 'music',
+    time: '5 min',
+  },
+  {
+    key: 'event-scout',
+    name: 'Event Scout',
+    icon: '🎪',
+    desc: 'Find and curate music events, festivals, and gigs. Auto-posts listings.',
+    category: 'community',
+    time: '2 min',
+  },
+];
 
 export default function TemplatesPage() {
-  const router = useRouter()
-  const [category, setCategory] = useState<string>('all')
-  const [launching, setLaunching] = useState<string | null>(null)
-  const [error, setError] = useState('')
+  const router = useRouter();
+  const [category, setCategory] = useState<string>('all');
+  const [launching, setLaunching] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
-  const filtered = category === 'all' ? TEMPLATES : TEMPLATES.filter(t => t.category === category)
+  const filtered =
+    category === 'all' ? TEMPLATES : TEMPLATES.filter((t) => t.category === category);
 
   async function handleLaunch(key: string) {
-    setLaunching(key)
-    setError('')
+    setLaunching(key);
+    setError('');
 
     try {
       const res = await fetch(`/api/operator/templates/${key}/launch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Launch failed')
-        setLaunching(null)
-        return
+        setError(data.error || 'Launch failed');
+        setLaunching(null);
+        return;
       }
 
-      router.push('/dashboard')
+      router.push('/dashboard');
     } catch {
-      setError('Something went wrong')
-      setLaunching(null)
+      setError('Something went wrong');
+      setLaunching(null);
     }
   }
 
@@ -99,7 +142,7 @@ export default function TemplatesPage() {
               <div className="text-3xl mb-3">{t.icon}</div>
               <h3 className="font-medium text-lg">{t.name}</h3>
               <p className="text-sm text-zinc-400 mt-2 leading-relaxed">{t.desc}</p>
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-900">
                 <span className="text-xs text-zinc-500">~{t.time} setup</span>
                 <button
                   onClick={() => handleLaunch(t.key)}
@@ -121,15 +164,23 @@ export default function TemplatesPage() {
         </div>
 
         {/* Bottom nav */}
-        <div className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-800 px-6 py-3">
+        <div className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-900 px-6 py-3">
           <div className="max-w-3xl mx-auto flex justify-around text-xs text-zinc-500">
-            <Link href="/app/activity" className="hover:text-white transition-colors">Activity</Link>
-            <Link href="/app/templates" className="text-white font-medium">Templates</Link>
-            <Link href="/app/tutorials" className="hover:text-white transition-colors">Learn</Link>
-            <Link href="/app/advanced" className="hover:text-white transition-colors">Advanced</Link>
+            <Link href="/app/activity" className="hover:text-white transition-colors">
+              Activity
+            </Link>
+            <Link href="/app/templates" className="text-white font-medium">
+              Templates
+            </Link>
+            <Link href="/app/tutorials" className="hover:text-white transition-colors">
+              Learn
+            </Link>
+            <Link href="/app/advanced" className="hover:text-white transition-colors">
+              Advanced
+            </Link>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

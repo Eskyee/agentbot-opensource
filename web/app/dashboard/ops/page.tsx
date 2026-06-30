@@ -133,9 +133,9 @@ export default function OpsPage() {
 
         {/* Keyboard hint */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600">Press</span>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-500">Press</span>
           <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded-none text-[10px] text-zinc-500 font-mono">⌘K</kbd>
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600">for command palette</span>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-500">for command palette</span>
         </div>
 
         {/* Stats Bar */}

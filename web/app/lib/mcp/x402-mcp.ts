@@ -17,7 +17,7 @@ import type { Handler, HandlerMap } from './handlers'
 // ---------------------------------------------------------------------------
 
 const AGENTIC_MARKET_BASE = 'https://api.agentic.market/v1'
-const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL ?? 'https://x402-gateway-production.up.railway.app'
+const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL ?? 'https://YOUR_SERVICE_URL'
 
 interface AgenticService {
   id: string

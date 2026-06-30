@@ -5,7 +5,13 @@ import { createPublicClient, http, parseEther } from 'viem';
 import { base } from 'viem/chains';
 import dynamic from 'next/dynamic';
 import { WRISTBAND_ABI } from '@/app/lib/wristband-abi';
-import { useMintWristband, useGaslessMint, useTotalMinted, useRemainingSupply, useMintPrice } from '@/app/lib/use-wristband';
+import {
+  useMintWristband,
+  useGaslessMint,
+  useTotalMinted,
+  useRemainingSupply,
+  useMintPrice,
+} from '@/app/lib/use-wristband';
 
 const SignInWithBase = dynamic(() => import('@/app/components/SignInWithBase'), { ssr: false });
 
@@ -101,12 +107,14 @@ export default function DigitalWristband() {
       } else if ((window as any).ethereum) {
         const hash = await (window as any).ethereum.request({
           method: 'eth_sendTransaction',
-          params: [{
-            from: walletAddress,
-            to: data.contract,
-            data: data.calldata,
-            chainId: '0x2105',
-          }],
+          params: [
+            {
+              from: walletAddress,
+              to: data.contract,
+              data: data.calldata,
+              chainId: '0x2105',
+            },
+          ],
         });
         setTxHash(hash);
         const receipt = await publicClient.waitForTransactionReceipt({ hash: hash });
@@ -126,7 +134,6 @@ export default function DigitalWristband() {
       setMinting(false);
     }
   };
-
 
   // Not connected
   if (!userConnected) {
@@ -188,7 +195,7 @@ export default function DigitalWristband() {
             <span className="text-white font-mono">BASE</span>
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-zinc-800 flex gap-3">
+        <div className="mt-4 pt-4 border-t border-zinc-900 flex gap-3">
           <a
             href={`https://basescan.org/token/0x66519FCAee1Ed65bc9e0aCc25cCD900668D3eD49?a=${walletAddress}`}
             target="_blank"
@@ -269,9 +276,7 @@ export default function DigitalWristband() {
           'Mint Wristband — Free'
         )}
       </button>
-      <p className="text-xs text-zinc-600 text-center mt-3">
-        ERC-721 • Base • Gas ~$0.001
-      </p>
+      <p className="text-xs text-zinc-600 text-center mt-3">ERC-721 • Base • Gas ~$0.001</p>
       <button
         onClick={() => disconnect()}
         className="w-full mt-3 py-2 text-zinc-600 hover:text-zinc-400 text-xs font-mono transition-colors"

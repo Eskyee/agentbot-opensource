@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { projectName, tokenAddress, description, twitter } = body;
+    const { projectName, tokenAddress, description, website, teamMembers, products, revenueSources } = body;
 
     if (!projectName || !tokenAddress) {
       return NextResponse.json({ error: 'projectName and tokenAddress required' }, { status: 400 });
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         'X-API-Key': apiKey,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ projectName, tokenAddress, description, twitter }),
+      body: JSON.stringify({ projectName, tokenAddress, description, website, teamMembers, products, revenueSources }),
     });
 
     const data = await res.json();

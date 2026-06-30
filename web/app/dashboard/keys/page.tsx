@@ -61,7 +61,7 @@ export default function KeysPage() {
       })
 
       if (!response.ok) throw new Error('Failed to create key')
-      
+
       const data = await response.json()
       setKeys([...keys, data.key])
       setNewKeyName('')
@@ -81,7 +81,7 @@ export default function KeysPage() {
       })
 
       if (!response.ok) throw new Error('Failed to revoke key')
-      
+
       setKeys(keys.filter((k) => k.id !== keyId))
       setError(null)
     } catch (err) {
@@ -185,7 +185,7 @@ export default function KeysPage() {
           <div className="border border-zinc-800 bg-zinc-950 p-6 space-y-4">
             <h2 className="text-sm font-bold tracking-tight uppercase">Create New API Key</h2>
             <div>
-              <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Key Name</label>
+              <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Key Name</label>
               <input
                 type="text"
                 value={newKeyName}
@@ -259,13 +259,13 @@ export default function KeysPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-px bg-zinc-800 text-[10px] mb-4">
+                <div className="grid grid-cols-2 gap-px bg-zinc-900 text-[10px] mb-4">
                   <div className="bg-zinc-950 p-3">
-                    <div className="text-zinc-600 uppercase tracking-widest mb-1">Created</div>
+                    <div className="text-zinc-500 uppercase tracking-widest mb-1">Created</div>
                     <div className="text-white">{new Date(key.createdAt).toLocaleDateString()}</div>
                   </div>
                   <div className="bg-zinc-950 p-3">
-                    <div className="text-zinc-600 uppercase tracking-widest mb-1">Last Used</div>
+                    <div className="text-zinc-500 uppercase tracking-widest mb-1">Last Used</div>
                     <div className="text-white">{key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : 'Never'}</div>
                   </div>
                 </div>

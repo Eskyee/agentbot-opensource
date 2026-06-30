@@ -86,7 +86,7 @@ function MetricCard({ label, value, sub, trend }: { label: string; value: string
   return (
     <div className="group relative overflow-hidden rounded-xl border border-zinc-800/50 bg-zinc-950 p-5 card-hover">
       <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 mb-2">{label}</p>
+      <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2">{label}</p>
       <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
       {sub && <p className="text-[11px] text-zinc-500 mt-1">{sub}</p>}
       {trend && (
@@ -368,7 +368,7 @@ function DashboardContent() {
             </button>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Dashboard</span>
-              <span className="text-zinc-700">·</span>
+              <span className="text-zinc-500">·</span>
               <StatusDot status={instance.status === 'running' ? 'ok' : instance.status === 'stopped' ? 'down' : 'degraded'} />
             </div>
           </div>
@@ -390,16 +390,16 @@ function DashboardContent() {
                 { label: 'Plan', value: instance.plan || 'Solo', sub: instanceName },
               ].map((stat) => (
                 <div key={stat.label} className="border border-zinc-800 p-3">
-                  <div className="text-[9px] uppercase tracking-widest text-zinc-600 mb-1">{stat.label}</div>
+                  <div className="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">{stat.label}</div>
                   <div className="text-lg font-bold text-white font-mono">{stat.value}</div>
-                  {stat.sub && <div className="text-[8px] text-zinc-700">{stat.sub}</div>}
+                  {stat.sub && <div className="text-[8px] text-zinc-500">{stat.sub}</div>}
                 </div>
               ))}
             </section>
 
             {/* Recent Activity */}
             <section className="border border-zinc-800 p-4 mb-6">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Recent Activity</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3">Recent Activity</div>
               {stats?.messages ? (
                 <div className="text-[9px] text-zinc-500 font-mono py-2">Agent is active — {stats.messages} messages today</div>
               ) : (
@@ -428,7 +428,7 @@ function DashboardContent() {
 
             {/* Platform Features */}
             <section className="mb-6">
-              <h3 className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 mb-3 font-bold">Platform</h3>
+              <h3 className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-3 font-bold">Platform</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 <QuickAction icon="💓" label="Health" href="/dashboard/health" />
                 <QuickAction icon="👁" label="Observability" href="/dashboard/observability" />

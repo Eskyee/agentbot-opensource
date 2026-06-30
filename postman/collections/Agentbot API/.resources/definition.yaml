@@ -37,9 +37,9 @@ description: |-
   | `bridgeSecret` | Shared secret for Bridge service authentication |
 variables:
   baseUrl: https://agentbot.sh
-  backendUrl: https://agentbot-backend-production.up.railway.app
-  gatewayUrl: https://openclaw-production-a09d.up.railway.app
-  x402Url: https://x402-gateway-production.up.railway.app
+  backendUrl: https://YOUR_SERVICE_URL
+  gatewayUrl: https://YOUR_SERVICE_URL
+  x402Url: https://YOUR_SERVICE_URL
   sessionToken: ""
   internalApiKey: ""
   bridgeSecret: ""

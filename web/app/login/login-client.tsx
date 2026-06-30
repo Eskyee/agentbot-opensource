@@ -1,88 +1,88 @@
-"use client";
-import React, { useState, useEffect, Suspense } from "react";
-import dynamic from "next/dynamic";
-import { useCustomSession } from '@/app/lib/useCustomSession'
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Authentication } from "@/lib/webauthx/client";
+'use client';
+import React, { useState, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
+import { useCustomSession } from '@/app/lib/useCustomSession';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Authentication } from '@/lib/webauthx/client';
 
-const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), {
+const SignInWithBase = dynamic(() => import('@/app/components/SignInWithBase'), {
   ssr: false,
   loading: () => <div className="h-11 w-44 bg-zinc-800 animate-pulse" />,
 });
 
-const SignInWithTempo = dynamic(() => import("@/app/components/SignInWithTempo"), {
+const SignInWithTempo = dynamic(() => import('@/app/components/SignInWithTempo'), {
   ssr: false,
   loading: () => <div className="h-11 w-44 bg-zinc-800 animate-pulse" />,
 });
 
 function LoginForm() {
-  const { data: session, status } = useCustomSession()
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const error = searchParams.get('error')
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
+  const { data: session, status } = useCustomSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const error = searchParams.get('error');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
-  const [passkeyError, setPasskeyError] = useState("");
+  const [passkeyError, setPasskeyError] = useState('');
   const [csrfHeader, setCsrfHeader] = useState<string | null>(null);
 
   useEffect(() => {
     if (error) {
       if (error === 'OAuthCallback') {
-        setLoginError('Authentication failed. Please try again.')
+        setLoginError('Authentication failed. Please try again.');
       } else if (error === 'OAuthAccountNotLinked') {
-        setLoginError('This email is already associated with another account.')
+        setLoginError('This email is already associated with another account.');
       } else if (error === 'AccessDenied') {
-        setLoginError('Access denied. Please try again.')
+        setLoginError('Access denied. Please try again.');
       } else {
-        setLoginError(decodeURIComponent(error))
+        setLoginError(decodeURIComponent(error));
       }
     }
-  }, [error])
+  }, [error]);
 
   useEffect(() => {
     if (session && status === 'authenticated') {
-      router.replace('/dashboard')
+      router.replace('/dashboard');
     }
-  }, [session, status, router])
+  }, [session, status, router]);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     async function loadCsrf() {
       try {
-        const res = await fetch('/api/auth/csrf', { cache: 'no-store' })
-        const data = await res.json()
+        const res = await fetch('/api/auth/csrf', { cache: 'no-store' });
+        const data = await res.json();
         if (!cancelled && data?.header) {
-          setCsrfHeader(data.header)
+          setCsrfHeader(data.header);
         }
       } catch {
         if (!cancelled) {
-          setCsrfHeader(null)
+          setCsrfHeader(null);
         }
       }
     }
 
-    loadCsrf()
+    loadCsrf();
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setLoginError("");
+    setLoginError('');
 
     if (!csrfHeader) {
       setLoading(false);
-      setLoginError("Security token unavailable. Refresh and try again.");
+      setLoginError('Security token unavailable. Refresh and try again.');
       return;
     }
-    
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -97,20 +97,20 @@ function LoginForm() {
       if (data?.error) {
         setLoginError(data.error);
       } else if (data?.ok) {
-        window.location.href = "/dashboard";
+        window.location.href = '/dashboard';
       }
     } catch {
       setLoading(false);
-      setLoginError("Login failed. Please try again.");
+      setLoginError('Login failed. Please try again.');
     }
   };
 
   const handlePasskeySignIn = async () => {
-    setPasskeyError("");
+    setPasskeyError('');
 
     const identifier = email.trim().toLowerCase();
     if (!identifier) {
-      setPasskeyError("Enter your email first to locate a passkey.");
+      setPasskeyError('Enter your email first to locate a passkey.');
       return;
     }
 
@@ -143,11 +143,9 @@ function LoginForm() {
         throw new Error(verifyData.error || 'Passkey verification failed.');
       }
 
-      window.location.href = "/dashboard";
+      window.location.href = '/dashboard';
     } catch (error) {
-      setPasskeyError(
-        error instanceof Error ? error.message : "Passkey sign-in failed."
-      );
+      setPasskeyError(error instanceof Error ? error.message : 'Passkey sign-in failed.');
     } finally {
       setPasskeyLoading(false);
     }
@@ -156,12 +154,16 @@ function LoginForm() {
   return (
     <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
       <div className="mb-8">
-        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Authentication</div>
+        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">
+          Authentication
+        </div>
         <h1 className="text-2xl font-bold tracking-tighter uppercase">Welcome to Agentbot</h1>
         <p className="text-zinc-500 text-xs mt-2">One click to sign in</p>
         <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-green-950/30 border border-green-800/30">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-          <span className="text-[10px] uppercase tracking-widest text-green-400">Free — 5 AI messages/day with Base wallet</span>
+          <span className="text-[10px] uppercase tracking-widest text-green-400">
+            Free — 5 AI messages/day with Base wallet
+          </span>
         </div>
       </div>
 
@@ -174,9 +176,22 @@ function LoginForm() {
         <button
           type="button"
           className="w-full border border-zinc-800 text-white text-xs font-bold uppercase tracking-widest py-3 px-4 flex items-center justify-center gap-2 transition-colors hover:border-zinc-600"
-          onClick={() => window.location.href = '/api/auth/google'}
+          onClick={() => (window.location.href = '/api/auth/google')}
         >
-          <svg width="18" height="18" viewBox="0 0 48 48"><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#4285F4"/><path d="M6.3 14.7l6.6 4.8C14.5 16.1 18.8 13 24 13c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4c-7.2 0-13.3 4.1-16.2 10.7z" fill="#34A853"/><path d="M24 44c5.1 0 9.8-1.7 13.4-4.7l-6.2-5.1C29.2 35.7 26.7 36 24 36c-6.1 0-10.7-2.8-11.7-7.5H6.3C9.2 39.9 15.3 44 24 44z" fill="#FBBC05"/></svg>
+          <svg width="18" height="18" viewBox="0 0 48 48">
+            <path
+              d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"
+              fill="#4285F4"
+            />
+            <path
+              d="M6.3 14.7l6.6 4.8C14.5 16.1 18.8 13 24 13c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4c-7.2 0-13.3 4.1-16.2 10.7z"
+              fill="#34A853"
+            />
+            <path
+              d="M24 44c5.1 0 9.8-1.7 13.4-4.7l-6.2-5.1C29.2 35.7 26.7 36 24 36c-6.1 0-10.7-2.8-11.7-7.5H6.3C9.2 39.9 15.3 44 24 44z"
+              fill="#FBBC05"
+            />
+          </svg>
           Continue with Google
         </button>
       </div>
@@ -205,7 +220,10 @@ function LoginForm() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
             />
             <div className="mt-2">
-              <Link href="/forgot-password" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors">
+              <Link
+                href="/forgot-password"
+                className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -226,8 +244,8 @@ function LoginForm() {
           <span className="text-[10px] text-green-300">Fast & secure</span>
         </div>
         <p className="text-zinc-400 text-xs">
-          Enter your email in the field above, then tap the button below and follow the
-          browser prompt to sign in with your passkey.
+          Enter your email in the field above, then tap the button below and follow the browser
+          prompt to sign in with your passkey.
         </p>
         <button
           type="button"
@@ -235,14 +253,12 @@ function LoginForm() {
           onClick={handlePasskeySignIn}
           disabled={passkeyLoading}
         >
-          {passkeyLoading ? "Waiting for passkey..." : "Sign in with passkey"}
+          {passkeyLoading ? 'Waiting for passkey...' : 'Sign in with passkey'}
         </button>
-        {passkeyError && (
-          <div className="text-xs text-red-400">{passkeyError}</div>
-        )}
+        {passkeyError && <div className="text-xs text-red-400">{passkeyError}</div>}
         <p className="text-[10px] text-zinc-600">
-          Need to register a passkey? Sign in normally and visit your dashboard security
-          settings after.
+          Need to register a passkey? Sign in normally and visit your dashboard security settings
+          after.
         </p>
       </div>
 

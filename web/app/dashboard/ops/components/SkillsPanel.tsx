@@ -25,7 +25,7 @@ export function SkillsPanel({ skills, agentId }: SkillsPanelProps) {
     return (
       <div className="bg-zinc-950 border border-zinc-800 p-3">
         <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Skills</div>
-        <div className="text-xs text-zinc-600 text-center py-4">Select an agent</div>
+        <div className="text-xs text-zinc-500 text-center py-4">Select an agent</div>
       </div>
     )
   }
@@ -47,7 +47,7 @@ export function SkillsPanel({ skills, agentId }: SkillsPanelProps) {
       </div>
 
       {skills.length === 0 ? (
-        <div className="text-xs text-zinc-600 text-center py-4">No skills installed</div>
+        <div className="text-xs text-zinc-500 text-center py-4">No skills installed</div>
       ) : (
         <div className="grid grid-cols-2 gap-1.5">
           {skills.map((skill) => (
@@ -56,7 +56,7 @@ export function SkillsPanel({ skills, agentId }: SkillsPanelProps) {
               className="flex items-center gap-2 px-2 py-1.5 bg-zinc-900/50 hover:bg-zinc-900 transition-colors"
             >
               <span className="text-[10px] font-mono text-zinc-300 truncate flex-1">{skill.name}</span>
-              <span className="text-[10px] font-mono text-zinc-600 shrink-0">{skill.version}</span>
+              <span className="text-[10px] font-mono text-zinc-500 shrink-0">{skill.version}</span>
               <span
                 className={`px-1 py-0 text-[9px] uppercase tracking-wider font-mono ${
                   TYPE_COLORS[skill.type] || 'bg-zinc-800 text-zinc-500'

@@ -1,51 +1,51 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface ActivityItem {
-  id: string
-  type: 'notification' | 'agent' | 'template' | 'workflow'
-  title: string
-  description: string
-  timestamp: string
-  icon: string
-  href?: string
+  id: string;
+  type: 'notification' | 'agent' | 'template' | 'workflow';
+  title: string;
+  description: string;
+  timestamp: string;
+  icon: string;
+  href?: string;
 }
 
 function ActivityContent() {
-  const [items, setItems] = useState<ActivityItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [items, setItems] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     async function fetchActivity() {
       try {
-        const res = await fetch('/api/operator/activity')
-        const data = await res.json()
+        const res = await fetch('/api/operator/activity');
+        const data = await res.json();
         if (res.ok) {
-          setItems(data.items)
+          setItems(data.items);
         } else {
-          setError(data.error || 'Failed to load activity')
+          setError(data.error || 'Failed to load activity');
         }
       } catch {
-        setError('Failed to load activity')
+        setError('Failed to load activity');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    fetchActivity()
-  }, [])
+    fetchActivity();
+  }, []);
 
   function timeAgo(iso: string): string {
-    const diff = Date.now() - new Date(iso).getTime()
-    const mins = Math.floor(diff / 60000)
-    if (mins < 1) return 'just now'
-    if (mins < 60) return `${mins}m ago`
-    const hrs = Math.floor(mins / 60)
-    if (hrs < 24) return `${hrs}h ago`
-    const days = Math.floor(hrs / 24)
-    return `${days}d ago`
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
   }
 
   return (
@@ -118,35 +118,47 @@ function ActivityContent() {
       )}
 
       {/* Bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-800 px-6 py-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-900 px-6 py-3">
         <div className="max-w-3xl mx-auto flex justify-around text-xs text-zinc-500">
-          <Link href="/app/activity" className="text-white font-medium">Activity</Link>
-          <Link href="/app/templates" className="hover:text-white transition-colors">Templates</Link>
-          <Link href="/app/tutorials" className="hover:text-white transition-colors">Learn</Link>
-          <Link href="/app/advanced" className="hover:text-white transition-colors">Advanced</Link>
+          <Link href="/app/activity" className="text-white font-medium">
+            Activity
+          </Link>
+          <Link href="/app/templates" className="hover:text-white transition-colors">
+            Templates
+          </Link>
+          <Link href="/app/tutorials" className="hover:text-white transition-colors">
+            Learn
+          </Link>
+          <Link href="/app/advanced" className="hover:text-white transition-colors">
+            Advanced
+          </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-import { Suspense } from 'react'
+import { Suspense } from 'react';
 
 export default function ActivityPage() {
   return (
     <div className="min-h-screen bg-black text-white font-mono">
-      <Suspense fallback={
-        <div className="max-w-3xl mx-auto px-6 py-12 animate-pulse">
-           <div className="h-8 bg-zinc-800 rounded w-48 mb-8" />
-           <div className="space-y-4">
-             {[1,2,3].map(i => <div key={i} className="h-24 bg-zinc-900/50 rounded-xl" />)}
-           </div>
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="max-w-3xl mx-auto px-6 py-12 animate-pulse">
+            <div className="h-8 bg-zinc-800 rounded w-48 mb-8" />
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-24 bg-zinc-900/50 rounded-xl" />
+              ))}
+            </div>
+          </div>
+        }
+      >
         <ActivityContent />
       </Suspense>
     </div>
-  )
+  );
 }
 
 function ActivityRow({ item, timeAgo }: { item: ActivityItem; timeAgo: (iso: string) => string }) {
@@ -157,9 +169,7 @@ function ActivityRow({ item, timeAgo }: { item: ActivityItem; timeAgo: (iso: str
         <div className="font-medium text-sm">{item.title}</div>
         <div className="text-xs text-zinc-400 mt-0.5">{item.description}</div>
       </div>
-      <span className="text-xs text-zinc-600 whitespace-nowrap">
-        {timeAgo(item.timestamp)}
-      </span>
+      <span className="text-xs text-zinc-600 whitespace-nowrap">{timeAgo(item.timestamp)}</span>
     </div>
-  )
+  );
 }

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { del } from '@vercel/blob'
 import { prisma } from '@/app/lib/prisma'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 
@@ -49,6 +48,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const blobUrl = (row.metadata as Record<string, unknown>)?.blobUrl as string | undefined
   if (blobUrl && process.env.BLOB_READ_WRITE_TOKEN) {
     try {
+      // Lazy import: @vercel/blob -> @vercel/oidc reads an OIDC token path at
+      // module load that is undefined during the build. Defer to runtime.
+      const { del } = await import('@vercel/blob')
       await del(blobUrl)
     } catch (err) {
       console.error('[Vault] blob delete failed:', err)

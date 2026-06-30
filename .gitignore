@@ -90,7 +90,8 @@ playwright-results/
 .trae/
 .claude/skills/
 .claude/worktrees/
-.agents/skills/
+.agents/skills/*
+!.agents/skills/product-design/
 skills-lock.json
 
 # Local env files (never commit)

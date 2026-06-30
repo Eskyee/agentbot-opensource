@@ -549,7 +549,7 @@ function VerifyContent() {
     <div className="space-y-4">
       {/* Agent ID */}
       <div className="border border-zinc-800 bg-zinc-950 px-4 py-3">
-        <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Agent ID</p>
+        <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Agent ID</p>
         <code className="text-[11px] text-zinc-400 font-mono break-all">{agent.agentId}</code>
       </div>
 
@@ -619,7 +619,7 @@ function VerifyContent() {
           </div>
         ) : null}
 
-        <p className="text-[10px] text-zinc-600 mt-4 leading-relaxed">
+        <p className="text-[10px] text-zinc-500 mt-4 leading-relaxed">
           You&apos;ll need the <strong className="text-zinc-400">Self app</strong> on your phone.
           Your passport NFC chip is read locally — raw data never leaves your device.
         </p>
@@ -641,14 +641,14 @@ function VerifyContent() {
           </p>
 
           <div className="space-y-2">
-            <p className="text-[10px] uppercase tracking-widest text-zinc-600">Register</p>
+            <p className="text-[10px] uppercase tracking-widest text-zinc-500">Register</p>
             <code className="block border border-zinc-800 bg-black px-3 py-2 text-[11px] text-zinc-300 break-all">
               npx @worldcoin/agentkit-cli register &lt;agent-address&gt;
             </code>
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] uppercase tracking-widest text-zinc-600">Install agent skill</p>
+            <p className="text-[10px] uppercase tracking-widest text-zinc-500">Install agent skill</p>
             <code className="block border border-zinc-800 bg-black px-3 py-2 text-[11px] text-zinc-300 break-all">
               npx skills add worldcoin/agentkit agentkit-x402
             </code>
@@ -656,7 +656,7 @@ function VerifyContent() {
         </div>
 
         <label className="mt-4 block">
-          <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Agent wallet</span>
+          <span className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Agent wallet</span>
           <input
             value={agentkitAddress}
             onChange={(event) => {
@@ -692,7 +692,7 @@ function VerifyContent() {
               Open World App link
               <ExternalLink className="w-3 h-3" />
             </a>
-            <p className="mt-3 text-[10px] text-zinc-600">
+            <p className="mt-3 text-[10px] text-zinc-500">
               Status: {agentkitRegistration.complete ? 'registered' : agentkitRegistration.state || 'waiting'}.
             </p>
             {agentkitRegistration.txHash ? (

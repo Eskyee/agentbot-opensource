@@ -1,95 +1,97 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 
 interface Agent {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 interface Thread {
-  id: string
-  agentA: Agent
-  agentB: Agent
-  messages: Array<{ body: string; createdAt: string }>
-  updatedAt: string
+  id: string;
+  agentA: Agent;
+  agentB: Agent;
+  messages: Array<{ body: string; createdAt: string }>;
+  updatedAt: string;
 }
 
 interface Message {
-  id: string
-  body: string
-  senderAgentId: string
-  sender: Agent
-  createdAt: string
+  id: string;
+  body: string;
+  senderAgentId: string;
+  sender: Agent;
+  createdAt: string;
 }
 
 export default function DMsPage() {
-  const [threads, setThreads] = useState<Thread[]>([])
-  const [myAgents, setMyAgents] = useState<Agent[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [newMessage, setNewMessage] = useState('')
-  const [sending, setSending] = useState(false)
-  const [fromAgentId, setFromAgentId] = useState('')
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [myAgents, setMyAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [fromAgentId, setFromAgentId] = useState('');
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/social/dms').then(r => r.json()),
-      fetch('/api/social/agents/mine').then(r => r.json()),
-    ]).then(([threadsData, agentsData]) => {
-      setThreads(threadsData.threads ?? [])
-      const agents = agentsData.agents ?? agentsData ?? []
-      setMyAgents(agents)
-      if (agents.length > 0) setFromAgentId(agents[0].id)
-      setLoading(false)
-    }).catch(() => setLoading(false))
-  }, [])
+      fetch('/api/social/dms').then((r) => r.json()),
+      fetch('/api/social/agents/mine').then((r) => r.json()),
+    ])
+      .then(([threadsData, agentsData]) => {
+        setThreads(threadsData.threads ?? []);
+        const agents = agentsData.agents ?? agentsData ?? [];
+        setMyAgents(agents);
+        if (agents.length > 0) setFromAgentId(agents[0].id);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
-    if (!selectedThreadId) return
+    if (!selectedThreadId) return;
     fetch(`/api/social/dms/${selectedThreadId}`)
-      .then(r => r.json())
-      .then(data => setMessages(data.thread?.messages ?? []))
-      .catch(() => {})
-  }, [selectedThreadId])
+      .then((r) => r.json())
+      .then((data) => setMessages(data.thread?.messages ?? []))
+      .catch(() => {});
+  }, [selectedThreadId]);
 
-  const myAgentIds = new Set(myAgents.map(a => a.id))
+  const myAgentIds = new Set(myAgents.map((a) => a.id));
 
   function getOtherAgent(thread: Thread): Agent {
-    return myAgentIds.has(thread.agentA.id) ? thread.agentB : thread.agentA
+    return myAgentIds.has(thread.agentA.id) ? thread.agentB : thread.agentA;
   }
 
   function getSelectedThread(): Thread | undefined {
-    return threads.find(t => t.id === selectedThreadId)
+    return threads.find((t) => t.id === selectedThreadId);
   }
 
   async function handleSend() {
-    if (!newMessage.trim() || !selectedThreadId || !fromAgentId) return
-    const thread = getSelectedThread()
-    if (!thread) return
-    const otherAgent = getOtherAgent(thread)
-    setSending(true)
+    if (!newMessage.trim() || !selectedThreadId || !fromAgentId) return;
+    const thread = getSelectedThread();
+    if (!thread) return;
+    const otherAgent = getOtherAgent(thread);
+    setSending(true);
     try {
       await fetch('/api/social/dms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromAgentId, toAgentId: otherAgent.id, body: newMessage }),
-      })
-      setNewMessage('')
-      const updated = await fetch(`/api/social/dms/${selectedThreadId}`).then(r => r.json())
-      setMessages(updated.thread?.messages ?? [])
+      });
+      setNewMessage('');
+      const updated = await fetch(`/api/social/dms/${selectedThreadId}`).then((r) => r.json());
+      setMessages(updated.thread?.messages ?? []);
     } finally {
-      setSending(false)
+      setSending(false);
     }
   }
 
   function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+    return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
   }
 
   function formatTime(iso: string) {
-    return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   }
 
   return (
@@ -104,14 +106,16 @@ export default function DMsPage() {
           {loading ? (
             <div className="p-4 text-xs text-zinc-600 uppercase tracking-widest">Loading…</div>
           ) : threads.length === 0 ? (
-            <div className="p-4 text-xs text-zinc-600 uppercase tracking-widest">No conversations</div>
+            <div className="p-4 text-xs text-zinc-600 uppercase tracking-widest">
+              No conversations
+            </div>
           ) : (
             <div className="flex-1 overflow-y-auto">
-              {threads.map(thread => {
-                const other = getOtherAgent(thread)
-                const lastMsg = thread.messages?.[0]
-                const preview = lastMsg?.body?.slice(0, 60) ?? ''
-                const date = lastMsg?.createdAt ?? thread.updatedAt
+              {threads.map((thread) => {
+                const other = getOtherAgent(thread);
+                const lastMsg = thread.messages?.[0];
+                const preview = lastMsg?.body?.slice(0, 60) ?? '';
+                const date = lastMsg?.createdAt ?? thread.updatedAt;
                 return (
                   <button
                     key={thread.id}
@@ -121,14 +125,16 @@ export default function DMsPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-bold uppercase tracking-widest text-white truncate">{other.name}</span>
-                      <span className="text-xs text-zinc-600 ml-2 shrink-0">{formatDate(date)}</span>
+                      <span className="text-xs font-bold uppercase tracking-widest text-white truncate">
+                        {other.name}
+                      </span>
+                      <span className="text-xs text-zinc-600 ml-2 shrink-0">
+                        {formatDate(date)}
+                      </span>
                     </div>
-                    {preview && (
-                      <p className="text-xs text-zinc-500 truncate">{preview}</p>
-                    )}
+                    {preview && <p className="text-xs text-zinc-500 truncate">{preview}</p>}
                   </button>
-                )
+                );
               })}
             </div>
           )}
@@ -138,28 +144,35 @@ export default function DMsPage() {
         <div className="hidden lg:flex flex-1 flex-col">
           {!selectedThreadId ? (
             <div className="flex-1 flex items-center justify-center">
-              <span className="text-xs text-zinc-600 uppercase tracking-widest">Select a conversation</span>
+              <span className="text-xs text-zinc-600 uppercase tracking-widest">
+                Select a conversation
+              </span>
             </div>
           ) : (
             <>
               {/* Thread header */}
               {(() => {
-                const thread = getSelectedThread()
-                if (!thread) return null
-                const other = getOtherAgent(thread)
+                const thread = getSelectedThread();
+                if (!thread) return null;
+                const other = getOtherAgent(thread);
                 return (
                   <div className="border-b border-zinc-800 p-4">
-                    <span className="text-xs font-bold uppercase tracking-widest text-white">{other.name}</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-white">
+                      {other.name}
+                    </span>
                   </div>
-                )
+                );
               })()}
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {messages.map(msg => {
-                  const isOwn = myAgentIds.has(msg.senderAgentId)
+                {messages.map((msg) => {
+                  const isOwn = myAgentIds.has(msg.senderAgentId);
                   return (
-                    <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                    <div
+                      key={msg.id}
+                      className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}
+                    >
                       <div
                         className={`max-w-xs px-3 py-2 border ${
                           isOwn
@@ -174,22 +187,24 @@ export default function DMsPage() {
                         <span className="text-xs text-zinc-700">{formatTime(msg.createdAt)}</span>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
 
               {/* Compose */}
-              <div className="border-t border-zinc-800 p-4 space-y-2">
+              <div className="border-t border-zinc-900 p-4 space-y-2">
                 {myAgents.length > 1 && (
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-zinc-600 uppercase tracking-widest">Send as</span>
                     <select
                       value={fromAgentId}
-                      onChange={e => setFromAgentId(e.target.value)}
+                      onChange={(e) => setFromAgentId(e.target.value)}
                       className="bg-black border border-zinc-800 text-white text-xs font-mono px-2 py-1 uppercase tracking-widest focus:outline-none focus:border-amber-400"
                     >
-                      {myAgents.map(a => (
-                        <option key={a.id} value={a.id}>{a.name}</option>
+                      {myAgents.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -197,11 +212,11 @@ export default function DMsPage() {
                 <div className="flex gap-2">
                   <textarea
                     value={newMessage}
-                    onChange={e => setNewMessage(e.target.value)}
-                    onKeyDown={e => {
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        handleSend()
+                        e.preventDefault();
+                        handleSend();
                       }
                     }}
                     placeholder="Type a message…"
@@ -222,5 +237,5 @@ export default function DMsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

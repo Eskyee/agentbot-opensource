@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
 const activities = [
   { channel: 'telegram', action: 'Found 3 urgent messages in your group', time: '2s ago' },
@@ -8,10 +8,18 @@ const activities = [
   { channel: 'discord', action: 'Posted your daily update in #announcements', time: '28s ago' },
   { channel: 'email', action: 'Drafted a reply to the venue about Saturday', time: '1m ago' },
   { channel: 'telegram', action: 'Sent you a summary of overnight messages', time: '2m ago' },
-  { channel: 'whatsapp', action: 'Reminded your team about the deadline in 2 hours', time: '3m ago' },
+  {
+    channel: 'whatsapp',
+    action: 'Reminded your team about the deadline in 2 hours',
+    time: '3m ago',
+  },
   { channel: 'discord', action: 'Removed spam from #general', time: '4m ago' },
-  { channel: 'agent', action: 'Finished your morning briefing — 4 things need attention', time: '5m ago' },
-]
+  {
+    channel: 'agent',
+    action: 'Finished your morning briefing — 4 things need attention',
+    time: '5m ago',
+  },
+];
 
 const channelColors: Record<string, string> = {
   telegram: 'text-blue-400',
@@ -19,23 +27,25 @@ const channelColors: Record<string, string> = {
   whatsapp: 'text-green-400',
   email: 'text-yellow-400',
   agent: 'text-orange-400',
-}
+};
 
 export function HeroActivity() {
-  const [visible, setVisible] = useState(0)
+  const [visible, setVisible] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setVisible(v => (v < activities.length ? v + 1 : v))
-    }, 800)
-    return () => clearInterval(timer)
-  }, [])
+      setVisible((v) => (v < activities.length ? v + 1 : v));
+    }, 800);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="mt-10 border border-zinc-800 bg-zinc-950 p-4 sm:p-5 max-w-lg">
       <div className="flex items-center gap-2 mb-4">
         <span className="h-2 w-2 rounded-full bg-green-500 status-breathe" />
-        <span className="text-[10px] uppercase tracking-widest text-zinc-500">Live — your agent is working</span>
+        <span className="text-[10px] uppercase tracking-widest text-zinc-500">
+          Live — your agent is working
+        </span>
       </div>
       <div className="space-y-1 font-mono text-xs">
         {activities.slice(0, visible).map((a, i) => (
@@ -54,10 +64,10 @@ export function HeroActivity() {
         ))}
       </div>
       {visible >= activities.length && (
-        <div className="mt-3 pt-3 border-t border-zinc-800 text-[10px] text-zinc-600 uppercase tracking-widest">
+        <div className="mt-3 pt-3 border-t border-zinc-900 text-[10px] text-zinc-600 uppercase tracking-widest">
           Your agent never stops.
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="760" viewBox="0 0 1120 760" font-family="ui-sans-serif, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#a1a1aa"/>
+    </marker>
+    <marker id="arrowG" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#22c55e"/>
+    </marker>
+    <marker id="arrowO" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#f97316"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1120" height="760" fill="#0a0a0a"/>
+
+  <!-- Title -->
+  <text x="40" y="46" fill="#fafafa" font-size="24" font-weight="700">agentbot.sh — /eve &amp; /open-agents</text>
+  <text x="40" y="70" fill="#71717a" font-size="13">Two landing pages in the `web` Next.js app that funnel to separate, independently-deployed agent services</text>
+
+  <!-- User / Browser -->
+  <rect x="465" y="92" width="190" height="48" rx="8" fill="#18181b" stroke="#3f3f46"/>
+  <text x="560" y="116" fill="#fafafa" font-size="14" font-weight="600" text-anchor="middle">User · Browser</text>
+  <text x="560" y="132" fill="#71717a" font-size="11" text-anchor="middle">visits agentbot.sh</text>
+
+  <line x1="560" y1="140" x2="560" y2="172" stroke="#a1a1aa" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- web app container -->
+  <rect x="60" y="176" width="1000" height="300" rx="12" fill="#0f0f11" stroke="#27272a"/>
+  <text x="80" y="204" fill="#fafafa" font-size="15" font-weight="700">web · Next.js 16 (App Router)</text>
+  <text x="270" y="204" fill="#52525b" font-size="12">· Vercel project “agentbot” · domain agentbot.sh · both routes export dynamic = 'force-dynamic'</text>
+
+  <!-- /eve card -->
+  <rect x="92" y="226" width="440" height="220" rx="10" fill="#0c1410" stroke="#14532d"/>
+  <rect x="92" y="226" width="440" height="6" rx="3" fill="#22c55e"/>
+  <text x="116" y="262" fill="#22c55e" font-size="18" font-weight="700">/eve</text>
+  <text x="116" y="284" fill="#a1a1aa" font-size="12">PageHero (green) · “Meet Eve”</text>
+  <text x="116" y="312" fill="#d4d4d8" font-size="12" font-weight="600">Feature cards:</text>
+  <text x="116" y="332" fill="#a1a1aa" font-size="12">• Filesystem-first — agent is just a directory</text>
+  <text x="116" y="350" fill="#a1a1aa" font-size="12">• Durable by default — survives restarts/deploys</text>
+  <text x="116" y="368" fill="#a1a1aa" font-size="12">• Real tools — typed lookups, never guesses</text>
+  <rect x="116" y="386" width="180" height="34" rx="6" fill="#fafafa"/>
+  <text x="206" y="408" fill="#0a0a0a" font-size="12" font-weight="700" text-anchor="middle">Launch Eve →</text>
+
+  <!-- /open-agents card -->
+  <rect x="588" y="226" width="440" height="220" rx="10" fill="#140f0a" stroke="#7c2d12"/>
+  <rect x="588" y="226" width="440" height="6" rx="3" fill="#f97316"/>
+  <text x="612" y="262" fill="#f97316" font-size="18" font-weight="700">/open-agents</text>
+  <text x="612" y="284" fill="#a1a1aa" font-size="12">PageHero (blue) · “Meet Open Agents”</text>
+  <text x="612" y="312" fill="#d4d4d8" font-size="12" font-weight="600">Feature cards:</text>
+  <text x="612" y="332" fill="#a1a1aa" font-size="12">• Open Source — study, modify, self-host</text>
+  <text x="612" y="350" fill="#a1a1aa" font-size="12">• Multi-Agent — many specialized agents</text>
+  <text x="612" y="368" fill="#a1a1aa" font-size="12">• Always On — 24/7 durable workflows</text>
+  <rect x="612" y="386" width="220" height="34" rx="6" fill="#fafafa"/>
+  <text x="722" y="408" fill="#0a0a0a" font-size="12" font-weight="700" text-anchor="middle">Launch Open Agents →</text>
+
+  <!-- arrows to services -->
+  <line x1="206" y1="446" x2="206" y2="560" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrowG)"/>
+  <text x="216" y="510" fill="#22c55e" font-size="11">href → eve.agentbot.sh</text>
+  <line x1="722" y1="446" x2="722" y2="560" stroke="#f97316" stroke-width="1.5" marker-end="url(#arrowO)"/>
+  <text x="732" y="510" fill="#f97316" font-size="11">href → open.agentbot.sh</text>
+
+  <!-- Eve service -->
+  <rect x="60" y="564" width="472" height="160" rx="12" fill="#0c1410" stroke="#14532d"/>
+  <text x="84" y="592" fill="#22c55e" font-size="15" font-weight="700">eve.agentbot.sh — Eve (own service)</text>
+  <text x="84" y="616" fill="#a1a1aa" font-size="12">Vercel’s open-source “eve” framework · deployed separately</text>
+  <text x="84" y="636" fill="#a1a1aa" font-size="12">(NOT bundled into web — own nitro/rolldown build)</text>
+  <text x="84" y="662" fill="#d4d4d8" font-size="12" font-weight="600">Directory of files → durable Workflow DevKit agent</text>
+  <text x="84" y="682" fill="#a1a1aa" font-size="12">• markdown instructions · TypeScript tools · skills</text>
+  <text x="84" y="700" fill="#a1a1aa" font-size="12">• typed tools fetch live Agentbot plans &amp; channels</text>
+
+  <!-- Open Agents service -->
+  <rect x="588" y="564" width="472" height="160" rx="12" fill="#140f0a" stroke="#7c2d12"/>
+  <text x="612" y="592" fill="#f97316" font-size="15" font-weight="700">open.agentbot.sh — Open Agents (own service)</text>
+  <text x="612" y="616" fill="#a1a1aa" font-size="12">Open-source multi-agent platform · deployed separately</text>
+  <text x="612" y="642" fill="#d4d4d8" font-size="12" font-weight="600">Sign in: Vercel · GitHub · wallet</text>
+  <text x="612" y="666" fill="#a1a1aa" font-size="12">• multiple specialized agents (own tools/knowledge)</text>
+  <text x="612" y="684" fill="#a1a1aa" font-size="12">• always-on 24/7 durable workflows on Vercel</text>
+  <text x="612" y="702" fill="#a1a1aa" font-size="12">• chat live · deploy workflows · build with community</text>
+</svg>

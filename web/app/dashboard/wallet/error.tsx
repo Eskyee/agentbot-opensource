@@ -12,7 +12,7 @@ export default function WalletError({
   return (
     <div className="min-h-screen bg-black text-white font-mono flex items-center justify-center px-6">
       <div className="max-w-md text-center">
-        <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 block">Wallet Error</span>
+        <span className="text-[10px] uppercase tracking-widest text-zinc-500 mb-3 block">Wallet Error</span>
         <h1 className="text-2xl font-bold tracking-tighter uppercase mb-4">Wallet unavailable</h1>
         <p className="text-zinc-400 text-sm mb-6">
           Couldn&apos;t load your wallet data. The Base RPC or wallet API might be temporarily down.

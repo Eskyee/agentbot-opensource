@@ -85,8 +85,8 @@ export async function GET(req: NextRequest) {
 
     // Resolve instance data
     const instanceId = userData?.openclawInstanceId || agentData?.id || userId
-    const persistedUrl = userData?.openclawUrl || agentData?.websocketUrl || `https://agentbot-agent-${instanceId}-production.up.railway.app`
-    const runtimeHost = getRuntimeHost(persistedUrl, `agentbot-agent-${instanceId}-production.up.railway.app`)
+    const persistedUrl = userData?.openclawUrl || agentData?.websocketUrl || `https://agentbot-agent-${instanceId}YOUR_SERVICE_URL`
+    const runtimeHost = getRuntimeHost(persistedUrl, `agentbot-agent-${instanceId}YOUR_SERVICE_URL`)
     
     // Probe runtime status
     const runtime = await probeOpenClawRuntime(persistedUrl)

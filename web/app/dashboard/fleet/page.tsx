@@ -10,15 +10,30 @@ import {
   DashboardShell,
   DashboardHeader,
   DashboardContent,
-} from '@/app/components/shared/DashboardShell'
-import StatusPill from '@/app/components/shared/StatusPill'
+} from '@/app/components/shared/DashboardShell';
+import StatusPill from '@/app/components/shared/StatusPill';
 
 const OrganismCanvas = dynamic(
-  () => import('@/components/dashboard/constellation/OrganismCanvas').then(m => ({ default: m.OrganismCanvas })),
-  { ssr: false, loading: () => <div className="absolute inset-0 flex items-center justify-center"><div className="animate-pulse text-xs text-zinc-500 uppercase tracking-widest">Loading fleet...</div></div> }
+  () =>
+    import('@/components/dashboard/constellation/OrganismCanvas').then((m) => ({
+      default: m.OrganismCanvas,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="animate-pulse text-xs text-zinc-500 uppercase tracking-widest">
+          Loading fleet...
+        </div>
+      </div>
+    ),
+  }
 );
 const ExecutionTrace = dynamic(
-  () => import('@/components/dashboard/fleet/ExecutionTrace').then(m => ({ default: m.ExecutionTrace })),
+  () =>
+    import('@/components/dashboard/fleet/ExecutionTrace').then((m) => ({
+      default: m.ExecutionTrace,
+    })),
   { ssr: false }
 );
 
@@ -33,7 +48,7 @@ export default function FleetPage() {
       const res = await fetch('/api/mission-control/fleet/graph');
       return res.json();
     },
-    refetchInterval: 5000 // Real-time pulse
+    refetchInterval: 5000, // Real-time pulse
   });
 
   // Fetch execution traces
@@ -43,25 +58,37 @@ export default function FleetPage() {
       const res = await fetch('/api/mission-control/fleet/traces');
       return res.json();
     },
-    refetchInterval: 2000
+    refetchInterval: 2000,
   });
 
   const agents = graph?.nodes ?? [];
   const selectedAgent = agents.find((a: any) => a.id === selectedAgentId);
   const totalAgents = graph?.stats?.totalAgents ?? agents.length;
-  const activeAgents = graph?.stats?.activeAgents ?? agents.filter((a: any) => a.status === 'active').length;
-  const idleAgents = graph?.stats?.idleAgents ?? agents.filter((a: any) => a.status === 'idle').length;
-  const operationalStatus = activeAgents > 0 ? 'active' : idleAgents > 0 || graphLoading ? 'idle' : 'offline';
+  const activeAgents =
+    graph?.stats?.activeAgents ?? agents.filter((a: any) => a.status === 'active').length;
+  const idleAgents =
+    graph?.stats?.idleAgents ?? agents.filter((a: any) => a.status === 'idle').length;
+  const operationalStatus =
+    activeAgents > 0 ? 'active' : idleAgents > 0 || graphLoading ? 'idle' : 'offline';
   const dashboardUrl = graph?.dashboardUrl;
   const serviceUrl = graph?.serviceUrl;
   const graphDetail = graph?.detail;
   const graphSourceLabel = graph?.degraded ? 'Fallback feed' : 'Live feed';
 
   const FleetIcon = () => (
-    <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="square" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    <svg
+      className="h-5 w-5 text-orange-400"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="square"
+        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+      />
     </svg>
-  )
+  );
 
   return (
     <DashboardShell className="flex flex-col h-screen overflow-hidden">
@@ -72,34 +99,55 @@ export default function FleetPage() {
         action={
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             {/* Tab toggle */}
-            <div className="flex items-center gap-px bg-zinc-800 border border-zinc-700">
+            <div className="flex items-center gap-px bg-zinc-900 border border-zinc-700">
               <button
                 onClick={() => setActiveTab('organism')}
                 className={cn(
                   'flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors',
-                  activeTab === 'organism' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'
+                  activeTab === 'organism'
+                    ? 'bg-white text-black'
+                    : 'text-zinc-500 hover:text-white'
                 )}
               >
-                <Dna className="h-3 w-3" /> <span className="hidden sm:inline">Constellation</span><span className="sm:hidden">Map</span>
+                <Dna className="h-3 w-3" /> <span className="hidden sm:inline">Constellation</span>
+                <span className="sm:hidden">Map</span>
               </button>
               <button
                 onClick={() => setActiveTab('hierarchy')}
                 className={cn(
                   'flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors',
-                  activeTab === 'hierarchy' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'
+                  activeTab === 'hierarchy'
+                    ? 'bg-white text-black'
+                    : 'text-zinc-500 hover:text-white'
                 )}
               >
-                <LayoutGrid className="h-3 w-3" /> <span className="hidden sm:inline">Hierarchy</span><span className="sm:hidden">List</span>
+                <LayoutGrid className="h-3 w-3" />{' '}
+                <span className="hidden sm:inline">Hierarchy</span>
+                <span className="sm:hidden">List</span>
               </button>
             </div>
 
             {/* Stats */}
             <div className="hidden md:flex items-center gap-4">
               <div className="text-right">
-                <span className="text-[10px] text-zinc-600 uppercase tracking-widest">Active Agents</span>
-                <div className="text-xs font-mono">{activeAgents} / {Math.max(totalAgents, 1)}</div>
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                  Active Agents
+                </span>
+                <div className="text-xs font-mono">
+                  {activeAgents} / {Math.max(totalAgents, 1)}
+                </div>
               </div>
-              <StatusPill status={operationalStatus} label={operationalStatus === 'active' ? 'Operational' : operationalStatus === 'idle' ? 'Warming' : 'Offline'} size="sm" />
+              <StatusPill
+                status={operationalStatus}
+                label={
+                  operationalStatus === 'active'
+                    ? 'Operational'
+                    : operationalStatus === 'idle'
+                      ? 'Warming'
+                      : 'Offline'
+                }
+                size="sm"
+              />
             </div>
           </div>
         }
@@ -111,7 +159,9 @@ export default function FleetPage() {
         <div className="flex-1 min-w-0 relative bg-[#050505]">
           {serviceUrl && (
             <div className="absolute left-4 top-4 z-10 max-w-[420px] border border-zinc-800 bg-black/70 px-3 py-2 backdrop-blur">
-              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">{graphSourceLabel}</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">
+                {graphSourceLabel}
+              </div>
               <div className="mt-1 truncate text-[11px] font-mono text-zinc-300">{serviceUrl}</div>
               {graphDetail && <div className="mt-1 text-[10px] text-amber-400">{graphDetail}</div>}
             </div>
@@ -122,14 +172,18 @@ export default function FleetPage() {
                 <div className="relative mx-auto mb-4">
                   <div className="w-12 h-12 border-2 border-zinc-800 border-t-orange-500 rounded-full animate-spin" />
                 </div>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 animate-pulse">Loading fleet...</p>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 animate-pulse">
+                  Loading fleet...
+                </p>
               </div>
             </div>
           ) : agents.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center max-w-sm px-6">
                 <p className="text-4xl mb-4">🤖</p>
-                <h3 className="text-sm font-bold uppercase tracking-tight text-white mb-2">No agents in fleet</h3>
+                <h3 className="text-sm font-bold uppercase tracking-tight text-white mb-2">
+                  No agents in fleet
+                </h3>
                 <p className="text-xs text-zinc-500 mb-6">
                   Deploy your first agent to see it appear in the fleet constellation.
                 </p>
@@ -142,9 +196,9 @@ export default function FleetPage() {
               </div>
             </div>
           ) : (
-            <OrganismCanvas 
-              nodes={graph?.nodes ?? []} 
-              edges={graph?.edges ?? []} 
+            <OrganismCanvas
+              nodes={graph?.nodes ?? []}
+              edges={graph?.edges ?? []}
               onNodeClick={(node: any) => setSelectedAgentId(node.id)}
               isLive={true}
             />
@@ -157,9 +211,11 @@ export default function FleetPage() {
           <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Radio className="h-4 w-4 text-orange-400" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Live Traces</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                Live Traces
+              </span>
             </div>
-            <span className="text-[10px] font-mono text-zinc-600">v2.0</span>
+            <span className="text-[10px] font-mono text-zinc-500">v2.0</span>
           </div>
 
           {/* Execution Trace Feed */}
@@ -169,14 +225,18 @@ export default function FleetPage() {
 
           {/* Selected Agent Quick View */}
           {selectedAgent && (
-            <div className="p-4 border-t border-zinc-800 bg-zinc-950">
+            <div className="p-4 border-t border-zinc-900 bg-zinc-950">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-zinc-800 flex items-center justify-center border border-zinc-700">
                   <Bot className="h-5 w-5 text-zinc-400" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold tracking-tight uppercase">{selectedAgent.name}</div>
-                  <div className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{selectedAgent.role ?? selectedAgent.type}</div>
+                  <div className="text-sm font-bold tracking-tight uppercase">
+                    {selectedAgent.name}
+                  </div>
+                  <div className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">
+                    {selectedAgent.role ?? selectedAgent.type}
+                  </div>
                 </div>
               </div>
               {selectedAgent.url && (
@@ -189,21 +249,25 @@ export default function FleetPage() {
                   {selectedAgent.url}
                 </a>
               )}
-              <div className="grid grid-cols-2 gap-px bg-zinc-800 text-[10px]">
+              <div className="grid grid-cols-2 gap-px bg-zinc-900 text-[10px]">
                 <div className="bg-zinc-950 p-3">
-                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Status</div>
-                  <div className="font-bold uppercase text-white">{selectedAgent.status ?? 'unknown'}</div>
+                  <div className="text-zinc-500 uppercase tracking-widest mb-1">Status</div>
+                  <div className="font-bold uppercase text-white">
+                    {selectedAgent.status ?? 'unknown'}
+                  </div>
                 </div>
                 <div className="bg-zinc-950 p-3">
-                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Fitness</div>
-                  <div className="font-bold text-white">{selectedAgent.fitness != null ? `${selectedAgent.fitness}%` : '—'}</div>
+                  <div className="text-zinc-500 uppercase tracking-widest mb-1">Fitness</div>
+                  <div className="font-bold text-white">
+                    {selectedAgent.fitness != null ? `${selectedAgent.fitness}%` : '—'}
+                  </div>
                 </div>
                 <div className="bg-zinc-950 p-3">
-                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Cycles</div>
+                  <div className="text-zinc-500 uppercase tracking-widest mb-1">Cycles</div>
                   <div className="font-bold text-white">{selectedAgent.cycles ?? '—'}</div>
                 </div>
                 <div className="bg-zinc-950 p-3">
-                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Endpoints</div>
+                  <div className="text-zinc-500 uppercase tracking-widest mb-1">Endpoints</div>
                   <div className="font-bold text-white">{selectedAgent.endpoints ?? '—'}</div>
                 </div>
               </div>
@@ -226,7 +290,8 @@ export default function FleetPage() {
                     generation: selectedAgent.generation || 1,
                     fitness: selectedAgent.fitness || 0,
                     children: selectedAgent.children || 0,
-                    walletAddress: selectedAgent.walletAddress || '0x0000000000000000000000000000000000000000',
+                    walletAddress:
+                      selectedAgent.walletAddress || '0x0000000000000000000000000000000000000000',
                   }}
                   onSuccess={(newAgent: any) => {
                     console.log('Clone created:', newAgent);

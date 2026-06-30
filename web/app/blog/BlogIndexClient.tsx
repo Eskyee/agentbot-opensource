@@ -1,50 +1,51 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useMemo, useState } from 'react'
-import type { BlogPostSummary } from './blogPosts'
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import type { BlogPostSummary } from './blogPosts';
 
 const trackPalette: Record<BlogPostSummary['track'], string> = {
   Shipping: 'text-orange-500 border-red-900/60 bg-red-950/30',
   Release: 'text-green-400 border-green-900/60 bg-green-950/30',
   'Field Notes': 'text-amber-300 border-amber-900/60 bg-amber-950/20',
   'Build Log': 'text-fuchsia-300 border-fuchsia-900/60 bg-fuchsia-950/20',
-}
+};
 
 export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
-  const [activeTag, setActiveTag] = useState('All')
+  const [activeTag, setActiveTag] = useState('All');
 
   const allTags = useMemo(
     () => ['All', ...Array.from(new Set(posts.flatMap((post) => [post.track, ...post.tags])))],
-    [posts],
-  )
+    [posts]
+  );
 
   const filtered = useMemo(() => {
-    if (activeTag === 'All') return posts
-    return posts.filter((post) => post.track === activeTag || post.tags.includes(activeTag))
-  }, [activeTag, posts])
+    if (activeTag === 'All') return posts;
+    return posts.filter((post) => post.track === activeTag || post.tags.includes(activeTag));
+  }, [activeTag, posts]);
 
-  const featured = filtered[0]
-  const releases = filtered.filter((post) => post.track === 'Release').slice(0, 4)
-  const fieldNotes = filtered.filter((post) => post.track === 'Field Notes').slice(0, 3)
-  const gridPosts = filtered.slice(1)
-  const hrefFor = (post: BlogPostSummary) => post.href || `/blog/posts/${post.slug}`
+  const featured = filtered[0];
+  const releases = filtered.filter((post) => post.track === 'Release').slice(0, 4);
+  const fieldNotes = filtered.filter((post) => post.track === 'Field Notes').slice(0, 3);
+  const gridPosts = filtered.slice(1);
+  const hrefFor = (post: BlogPostSummary) => post.href || `/blog/posts/${post.slug}`;
 
   return (
     <main className="min-h-screen bg-black text-white font-mono overflow-x-hidden pt-14">
-
       {/* Hero */}
       <section className="border-b border-zinc-900">
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6 sm:py-24">
           <div className="grid gap-12 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
             <div>
-              <p className="mb-5 text-[10px] uppercase tracking-[0.35em] text-zinc-600">Agentbot Journal</p>
+              <p className="mb-5 text-[10px] uppercase tracking-[0.35em] text-zinc-600">
+                Agentbot Journal
+              </p>
               <h1 className="max-w-4xl text-5xl font-bold uppercase tracking-[-0.08em] text-white sm:text-7xl md:text-8xl">
-                Shipping the OpenClaw stack in public.
+                Shipping the OpenClaw stack <span className="text-orange-500">in public.</span>
               </h1>
               <p className="mt-6 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-base">
-                Product updates, release notes, launch logs, and operator field reports from Agentbot.
-                This is where we publish what changed, what broke, and what shipped.
+                Product updates, release notes, launch logs, and operator field reports from
+                Agentbot. This is where we publish what changed, what broke, and what shipped.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
@@ -62,11 +63,15 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
               </div>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2 px-3 py-1.5 border border-zinc-800 bg-zinc-900/50">
-                  <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-500">Join 13+ builders</span>
+                  <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-500">
+                    Join 13+ builders
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 border border-zinc-800 bg-zinc-900/50">
                   <span className="text-yellow-500 text-xs">★★★★★</span>
-                  <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-500">4.9/5 from early adopters</span>
+                  <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-500">
+                    4.9/5 from early adopters
+                  </span>
                 </div>
               </div>
             </div>
@@ -74,12 +79,28 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
             <div className="grid gap-px bg-zinc-900">
               {[
                 { label: 'Stories live', value: String(posts.length).padStart(2, '0') },
-                { label: 'Release notes', value: String(posts.filter((post) => post.track === 'Release').length).padStart(2, '0') },
-                { label: 'Build logs', value: String(posts.filter((post) => post.track === 'Build Log').length).padStart(2, '0') },
+                {
+                  label: 'Release notes',
+                  value: String(posts.filter((post) => post.track === 'Release').length).padStart(
+                    2,
+                    '0'
+                  ),
+                },
+                {
+                  label: 'Build logs',
+                  value: String(posts.filter((post) => post.track === 'Build Log').length).padStart(
+                    2,
+                    '0'
+                  ),
+                },
               ].map((stat) => (
                 <div key={stat.label} className="bg-black p-5">
-                  <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">{stat.label}</div>
-                  <div className="mt-2 text-3xl font-bold uppercase tracking-[-0.06em]">{stat.value}</div>
+                  <div className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">
+                    {stat.label}
+                  </div>
+                  <div className="mt-2 text-3xl font-bold uppercase tracking-[-0.06em]">
+                    {stat.value}
+                  </div>
                 </div>
               ))}
             </div>
@@ -112,8 +133,14 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
         <section className="border-b border-zinc-900">
           <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 sm:py-16">
             <div className="mb-5 flex flex-wrap items-center gap-3">
-              <span className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">{featured.dateLabel}</span>
-              <span className={`border px-2 py-1 text-[10px] uppercase tracking-[0.22em] ${trackPalette[featured.track]}`}>
+              <span className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">
+                {featured.dateLabel}
+              </span>
+              <span
+                className={`border px-2 py-1 text-[10px] uppercase tracking-[0.22em] ${
+                  trackPalette[featured.track]
+                }`}
+              >
                 {featured.track}
               </span>
               {featured.tags.map((tag) => (
@@ -155,8 +182,14 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
                     className="group bg-black p-6 transition-colors hover:bg-zinc-950"
                   >
                     <div className="mb-4 flex flex-wrap items-center gap-3">
-                      <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-600">{post.dateLabel}</span>
-                      <span className={`border px-2 py-1 text-[10px] uppercase tracking-[0.22em] ${trackPalette[post.track]}`}>
+                      <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-600">
+                        {post.dateLabel}
+                      </span>
+                      <span
+                        className={`border px-2 py-1 text-[10px] uppercase tracking-[0.22em] ${
+                          trackPalette[post.track]
+                        }`}
+                      >
                         {post.track}
                       </span>
                     </div>
@@ -171,12 +204,22 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
 
             <aside className="space-y-8">
               <div className="border border-zinc-800 p-6">
-                <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Release track</p>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">
+                  Release track
+                </p>
                 <div className="mt-5 space-y-4">
                   {releases.map((post) => (
-                    <Link key={post.slug} href={hrefFor(post)} className="block border-b border-zinc-900 pb-4 last:border-b-0 last:pb-0">
-                      <div className="text-[10px] uppercase tracking-[0.22em] text-zinc-600">{post.dateLabel}</div>
-                      <div className="mt-1 text-sm font-bold uppercase tracking-[-0.04em]">{post.title}</div>
+                    <Link
+                      key={post.slug}
+                      href={hrefFor(post)}
+                      className="block border-b border-zinc-900 pb-4 last:border-b-0 last:pb-0"
+                    >
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-zinc-600">
+                        {post.dateLabel}
+                      </div>
+                      <div className="mt-1 text-sm font-bold uppercase tracking-[-0.04em]">
+                        {post.title}
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -187,7 +230,9 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
                 <div className="mt-5 space-y-4">
                   {fieldNotes.map((post) => (
                     <Link key={post.slug} href={hrefFor(post)} className="block">
-                      <div className="text-sm font-bold uppercase tracking-[-0.04em]">{post.title}</div>
+                      <div className="text-sm font-bold uppercase tracking-[-0.04em]">
+                        {post.title}
+                      </div>
                       <div className="mt-2 text-xs leading-6 text-zinc-500">{post.excerpt}</div>
                     </Link>
                   ))}
@@ -195,18 +240,30 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
               </div>
 
               <div className="border border-zinc-800 p-6">
-                <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Follow the shipping log</p>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">
+                  Follow the shipping log
+                </p>
                 <p className="mt-4 text-sm leading-7 text-zinc-400">
-                  Use the blog as the public changelog, then jump into docs and showcase when you want the operator view.
+                  Use the blog as the public changelog, then jump into docs and showcase when you
+                  want the operator view.
                 </p>
                 <div className="mt-6 flex flex-col gap-3">
-                  <Link href="/documentation" className="text-[10px] uppercase tracking-[0.24em] text-zinc-300 hover:text-white">
+                  <Link
+                    href="/documentation"
+                    className="text-[10px] uppercase tracking-[0.24em] text-zinc-300 hover:text-white"
+                  >
                     Open docs
                   </Link>
-                  <Link href="/showcase" className="text-[10px] uppercase tracking-[0.24em] text-zinc-300 hover:text-white">
+                  <Link
+                    href="/showcase"
+                    className="text-[10px] uppercase tracking-[0.24em] text-zinc-300 hover:text-white"
+                  >
                     See live agents
                   </Link>
-                  <Link href="/register" className="text-[10px] uppercase tracking-[0.24em] text-zinc-300 hover:text-white">
+                  <Link
+                    href="/register"
+                    className="text-[10px] uppercase tracking-[0.24em] text-zinc-300 hover:text-white"
+                  >
                     Start a free trial
                   </Link>
                 </div>
@@ -216,5 +273,5 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
         </div>
       </section>
     </main>
-  )
+  );
 }

@@ -1,127 +1,127 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect, memo } from 'react'
+import { useState, useRef, useEffect, memo } from 'react';
 
 interface Message {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 export default memo(function AgentChat({ agentName }: { agentName?: string }) {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-  const activeJobRef = useRef<string | null>(null)
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const activeJobRef = useRef<string | null>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     return () => {
-      activeJobRef.current = null
-    }
-  }, [])
+      activeJobRef.current = null;
+    };
+  }, []);
 
   const pollQueuedReply = async (jobId: string) => {
-    activeJobRef.current = jobId
+    activeJobRef.current = jobId;
 
     for (let attempt = 0; attempt < 45; attempt += 1) {
-      if (activeJobRef.current !== jobId) return
+      if (activeJobRef.current !== jobId) return;
 
-      const res = await fetch(`/api/jobs/${jobId}`, { cache: 'no-store' })
-      const data = await res.json()
+      const res = await fetch(`/api/jobs/${jobId}`, { cache: 'no-store' });
+      const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Queued chat failed')
+        throw new Error(data.error || 'Queued chat failed');
       }
 
-      const job = data.job
+      const job = data.job;
       if (job?.status === 'failed') {
-        throw new Error(job.error || 'Queued chat failed')
+        throw new Error(job.error || 'Queued chat failed');
       }
 
       if (job?.status === 'completed' && job?.result?.reply) {
-        setMessages(prev => [
+        setMessages((prev) => [
           ...prev,
           {
             id: Date.now().toString(),
             role: 'assistant',
             content: String(job.result.reply),
           },
-        ])
-        return
+        ]);
+        return;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
-    throw new Error('Queued chat timed out')
-  }
+    throw new Error('Queued chat timed out');
+  };
 
   const sendMessage = async () => {
-    if (!input.trim() || loading) return
+    if (!input.trim() || loading) return;
 
     const userMsg: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: input.trim(),
-    }
+    };
 
-    setMessages(prev => [...prev, userMsg])
-    setInput('')
-    setLoading(true)
-    setError(null)
+    setMessages((prev) => [...prev, userMsg]);
+    setInput('');
+    setLoading(true);
+    setError(null);
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMsg.content }),
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
       if (res.status === 202 && data?.queued && data?.jobId) {
-        await pollQueuedReply(String(data.jobId))
-        return
+        await pollQueuedReply(String(data.jobId));
+        return;
       }
 
       if (!res.ok) {
-        setError(data.error || 'Failed to send message')
-        return
+        setError(data.error || 'Failed to send message');
+        return;
       }
 
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
         {
           id: Date.now().toString(),
           role: 'assistant',
           content: data.reply || 'No response',
         },
-      ])
+      ]);
     } catch (e: any) {
-      setError(e.message || 'Connection error')
+      setError(e.message || 'Connection error');
     } finally {
-      setLoading(false)
-      inputRef.current?.focus()
+      setLoading(false);
+      inputRef.current?.focus();
     }
-  }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
+      e.preventDefault();
+      sendMessage();
     }
-  }
+  };
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 flex flex-col" style={{ height: '400px' }}>
@@ -129,9 +129,7 @@ export default memo(function AgentChat({ agentName }: { agentName?: string }) {
       <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600">Agent Chat</span>
-          {agentName && (
-            <span className="text-[10px] text-zinc-500">— {agentName}</span>
-          )}
+          {agentName && <span className="text-[10px] text-zinc-500">— {agentName}</span>}
         </div>
         <button
           onClick={() => setMessages([])}
@@ -150,16 +148,14 @@ export default memo(function AgentChat({ agentName }: { agentName?: string }) {
           </div>
         )}
 
-        {messages.map(msg => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
               className={`max-w-[80%] px-3 py-2 text-sm ${
-                msg.role === 'user'
-                  ? 'bg-white text-black'
-                  : 'bg-zinc-800 text-zinc-200'
+                msg.role === 'user' ? 'bg-white text-black' : 'bg-zinc-800 text-zinc-200'
               }`}
             >
               <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -185,12 +181,12 @@ export default memo(function AgentChat({ agentName }: { agentName?: string }) {
       </div>
 
       {/* Input */}
-      <div className="px-4 py-3 border-t border-zinc-800 shrink-0">
+      <div className="px-4 py-3 border-t border-zinc-900 shrink-0">
         <div className="flex gap-2">
           <textarea
             ref={inputRef}
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             rows={1}
@@ -206,5 +202,5 @@ export default memo(function AgentChat({ agentName }: { agentName?: string }) {
         </div>
       </div>
     </div>
-  )
-})
+  );
+});

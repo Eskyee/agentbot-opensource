@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
@@ -12,15 +12,15 @@ import {
   Bar,
   ComposedChart,
   CartesianGrid,
-} from 'recharts'
+} from 'recharts';
 
 interface Candle {
-  time: number
-  open: number
-  high: number
-  low: number
-  close: number
-  volume: number
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
 }
 
 const TIMEFRAMES = [
@@ -29,35 +29,35 @@ const TIMEFRAMES = [
   { label: '1h', value: '1h' },
   { label: '4h', value: '4h' },
   { label: '1d', value: '1d' },
-]
+];
 
 function formatTime(timestamp: number, timeframe: string): string {
-  const d = new Date(timestamp * 1000)
+  const d = new Date(timestamp * 1000);
   if (timeframe === '1d') {
-    return `${d.getMonth() + 1}/${d.getDate()}`
+    return `${d.getMonth() + 1}/${d.getDate()}`;
   }
-  return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`
+  return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 function formatPrice(price: number): string {
   if (price < 0.000001) {
-    return price.toExponential(2)
+    return price.toExponential(2);
   }
   if (price < 0.01) {
-    return `$${price.toFixed(8)}`
+    return `$${price.toFixed(8)}`;
   }
-  return `$${price.toFixed(4)}`
+  return `$${price.toFixed(4)}`;
 }
 
 function formatVolume(vol: number): string {
-  if (vol >= 1000) return `$${(vol / 1000).toFixed(1)}K`
-  return `$${vol.toFixed(0)}`
+  if (vol >= 1000) return `$${(vol / 1000).toFixed(1)}K`;
+  return `$${vol.toFixed(0)}`;
 }
 
 function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null
-  const d = payload[0]?.payload
-  if (!d) return null
+  if (!active || !payload?.length) return null;
+  const d = payload[0]?.payload;
+  if (!d) return null;
 
   return (
     <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-xs font-mono shadow-xl">
@@ -79,30 +79,30 @@ function CustomTooltip({ active, payload, label }: any) {
           <span className="text-zinc-500">C</span>
           <span className="text-white">{formatPrice(d.close)}</span>
         </div>
-        <div className="flex justify-between gap-4 border-t border-zinc-800 pt-1 mt-1">
+        <div className="flex justify-between gap-4 border-t border-zinc-900 pt-1 mt-1">
           <span className="text-zinc-500">Vol</span>
           <span className="text-zinc-400">{formatVolume(d.volume)}</span>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function BasefmChart() {
-  const [timeframe, setTimeframe] = useState('1h')
-  const [candles, setCandles] = useState<Candle[]>([])
-  const [loading, setLoading] = useState(true)
+  const [timeframe, setTimeframe] = useState('1h');
+  const [candles, setCandles] = useState<Candle[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     fetch(`/api/basefm/ohlcv?timeframe=${timeframe}&limit=100`)
       .then((r) => r.json())
       .then((data) => {
-        setCandles(data.candles || [])
-        setLoading(false)
+        setCandles(data.candles || []);
+        setLoading(false);
       })
-      .catch(() => setLoading(false))
-  }, [timeframe])
+      .catch(() => setLoading(false));
+  }, [timeframe]);
 
   const chartData = candles
     .slice()
@@ -111,11 +111,11 @@ export default function BasefmChart() {
       ...c,
       label: formatTime(c.time, timeframe),
       isUp: c.close >= c.open,
-    }))
+    }));
 
-  const priceMin = Math.min(...candles.map((c) => c.low))
-  const priceMax = Math.max(...candles.map((c) => c.high))
-  const pricePadding = (priceMax - priceMin) * 0.1
+  const priceMin = Math.min(...candles.map((c) => c.low));
+  const priceMax = Math.max(...candles.map((c) => c.high));
+  const pricePadding = (priceMax - priceMin) * 0.1;
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-black overflow-hidden">
@@ -206,25 +206,21 @@ export default function BasefmChart() {
               />
               <Tooltip
                 content={({ active, payload }: any) => {
-                  if (!active || !payload?.length) return null
-                  const d = payload[0]?.payload
+                  if (!active || !payload?.length) return null;
+                  const d = payload[0]?.payload;
                   return (
                     <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-xs font-mono">
                       <span className="text-zinc-500">Vol </span>
                       <span className="text-white">{formatVolume(d?.volume || 0)}</span>
                     </div>
-                  )
+                  );
                 }}
               />
-              <Bar
-                dataKey="volume"
-                fill="#27272a"
-                radius={[2, 2, 0, 0]}
-              />
+              <Bar dataKey="volume" fill="#27272a" radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       )}
     </div>
-  )
+  );
 }

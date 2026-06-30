@@ -1,26 +1,26 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Users, Plus, Bot } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { useState, useEffect } from 'react';
+import { Users, Plus, Bot } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DashboardShell,
   DashboardHeader,
   DashboardContent,
-} from '@/app/components/shared/DashboardShell'
-import { EmptyState } from '@/app/components/shared/EmptyState'
-import StatusPill from '@/app/components/shared/StatusPill'
+} from '@/app/components/shared/DashboardShell';
+import { EmptyState } from '@/app/components/shared/EmptyState';
+import StatusPill from '@/app/components/shared/StatusPill';
 
 export default function SwarmsPage() {
-  const [swarms, setSwarms] = useState<any[]>([])
-  const [showCreate, setShowCreate] = useState(false)
+  const [swarms, setSwarms] = useState<any[]>([]);
+  const [showCreate, setShowCreate] = useState(false);
 
   useEffect(() => {
     fetch('/api/swarms')
       .then((r) => r.json())
-      .then((d) => setSwarms(d.swarms || []))
-  }, [])
+      .then((d) => setSwarms(d.swarms || []));
+  }, []);
 
   return (
     <DashboardShell>
@@ -41,7 +41,7 @@ export default function SwarmsPage() {
       <DashboardContent>
         {swarms.length === 0 ? (
           <EmptyState
-            icon={<Users className="h-8 w-8 text-zinc-600" />}
+            icon={<Users className="h-8 w-8 text-zinc-500" />}
             title="No swarms created yet"
             description="Deploy multiple agents that work together"
             action={
@@ -65,20 +65,19 @@ export default function SwarmsPage() {
                   </div>
                   <StatusPill status="active" label={`${swarm.agents.length} agents`} size="sm" />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
                   {swarm.agents.map((agent: any, i: number) => (
-                    <div
-                      key={i}
-                      className="bg-zinc-950 border border-zinc-800 p-4"
-                    >
+                    <div key={i} className="bg-zinc-950 border border-zinc-800 p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <Bot className="h-4 w-4 text-zinc-600" />
-                        <span className="text-xs font-bold uppercase tracking-tight">{agent.role}</span>
+                        <Bot className="h-4 w-4 text-zinc-500" />
+                        <span className="text-xs font-bold uppercase tracking-tight">
+                          {agent.role}
+                        </span>
                       </div>
-                      <div className="text-[10px] text-zinc-600 uppercase tracking-widest">{agent.model}</div>
-                      <div className="text-xs text-zinc-500 mt-2 font-mono">
-                        {agent.prompt}
+                      <div className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                        {agent.model}
                       </div>
+                      <div className="text-xs text-zinc-500 mt-2 font-mono">{agent.prompt}</div>
                     </div>
                   ))}
                 </div>
@@ -88,5 +87,5 @@ export default function SwarmsPage() {
         )}
       </DashboardContent>
     </DashboardShell>
-  )
+  );
 }

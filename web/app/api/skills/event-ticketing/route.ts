@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       tickets.set(id, ticket);
 
       // x402 USDC payment on Base
-      const paymentAddress = '0xd8fd0e1dce89beaab924ac68098ddb17613db56f';
+      const paymentAddress = '0xYOUR_WALLET_ADDRESS_HERE';
       
       return NextResponse.json({
         success: true,

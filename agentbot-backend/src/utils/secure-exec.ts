@@ -80,16 +80,27 @@ export const runCommand = async (
  * @param template The shell command template with placeholders for arguments
  * @param args The arguments to be quoted and interpolated
  * 
- * Example: safeShellExec('docker run --rm -v :ro alpine sh -lc : > :', [volume, cmd, backupFile])
+ * Placeholders are the literal token `{}`. Each is replaced, left to right,
+ * with the shell-quoted form of the corresponding argument.
+ *
+ * Example: safeShellExec('docker run --rm -v {}:/data:ro alpine sh -lc "..." > {}', [volume, backupFile])
  */
 export const safeShellExec = (template: string, args: (string | number)[]): Promise<{ stdout: string; stderr: string }> => {
-  let finalCommand = template;
-  
-  // Very basic placeholder replacement - in a real-world scenario, we'd use a more robust template engine
-  // but for our internal Docker commands, this is safer than raw interpolation.
-  args.forEach(arg => {
-    const quoted = quote([String(arg)]);
-    finalCommand = finalCommand.replace(':', quoted);
+  // Split on the literal placeholder and interleave quoted args. This avoids
+  // String.replace (which both stops at the first match and interprets `$&`
+  // patterns in the replacement) and the previous `:` placeholder, which
+  // collided with the colons that are part of Docker's own mount syntax —
+  // a substituted value containing `:` would shift every later argument into
+  // the wrong slot.
+  const parts = template.split('{}');
+  const slots = parts.length - 1;
+  if (slots !== args.length) {
+    throw new Error(`safeShellExec: template expects ${slots} argument(s) but received ${args.length}`);
+  }
+
+  let finalCommand = parts[0];
+  args.forEach((arg, i) => {
+    finalCommand += quote([String(arg)]) + parts[i + 1];
   });
 
   return runCommand('sh', ['-c', finalCommand]);
@@ -104,7 +115,7 @@ export const SecureExec = {
    */
   dockerBackup: (volumeName: string, backupFile: string) => {
     return safeShellExec(
-      'docker run --rm -v :/:data:ro alpine sh -lc "tar czf - -C /data ." > :',
+      'docker run --rm -v {}:/data:ro alpine sh -lc "tar czf - -C /data ." > {}',
       [volumeName, backupFile]
     );
   },
@@ -114,7 +125,7 @@ export const SecureExec = {
    */
   provisionConfig: (volumeName: string, configBase64: string) => {
     return safeShellExec(
-      'docker run --rm -e OPENCLAW_CONFIG_B64=: -v :/:target alpine sh -lc "mkdir -p /target/agents /target/workspace /target/logs /target/canvas /target/cron && echo \\$OPENCLAW_CONFIG_B64 | base64 -d > /target/openclaw.json && chmod -R 777 /target"',
+      'docker run --rm -e OPENCLAW_CONFIG_B64={} -v {}:/target alpine sh -lc "mkdir -p /target/agents /target/workspace /target/logs /target/canvas /target/cron && echo \\$OPENCLAW_CONFIG_B64 | base64 -d > /target/openclaw.json && chmod -R 777 /target"',
       [configBase64, volumeName]
     );
   }

@@ -11,7 +11,7 @@
 
 ## Active Services
 
-- `agentbot-agent-{userId}-production.up.railway.app` (per-user gateways)
+- `agentbot-agent-{userId}YOUR_SERVICE_URL` (per-user gateways)
 - Each user gets unique token (not shared platform token)
 - OpenClaw Control UI accessible via dashboard
 

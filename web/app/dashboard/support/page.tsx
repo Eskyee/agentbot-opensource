@@ -87,7 +87,7 @@ export default function SupportPlaybook() {
         )}
 
         <section className="mb-8">
-          <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-600">Service health</p>
+          <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-500">Service health</p>
           <div className="mt-3 grid gap-4 md:grid-cols-3">
             {summary?.serviceHealth.map((service) => (
               <div key={service.name} className="border border-zinc-800 bg-zinc-950 p-4 rounded-lg">
@@ -135,7 +135,7 @@ export default function SupportPlaybook() {
         </section>
 
         {loading && (
-          <div className="mt-6 text-xs uppercase tracking-[0.3em] text-zinc-600">Running diagnostics...</div>
+          <div className="mt-6 text-xs uppercase tracking-[0.3em] text-zinc-500">Running diagnostics...</div>
         )}
 
 

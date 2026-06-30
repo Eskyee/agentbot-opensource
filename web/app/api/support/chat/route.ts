@@ -1,22 +1,23 @@
-import { NextRequest } from 'next/server'
-import { streamText } from 'ai'
-import { createOpenRouter } from '@openrouter/ai-sdk-provider'
-import { logUsage } from '@/lib/usage-logger'
+import { NextRequest } from 'next/server';
+import { streamText } from 'ai';
+import { gatewayModel, DEFAULT_MODEL } from '@/app/lib/ai-gateway';
+import { protectAiEndpoint } from '@/app/lib/botid';
+import { logUsage } from '@/lib/usage-logger';
 
-const MAX_MESSAGES = 20
+const MAX_MESSAGES = 20;
 
-const rateLimit = new Map<string, { count: number; resetAt: number }>()
+const rateLimit = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimit.get(ip)
+  const now = Date.now();
+  const entry = rateLimit.get(ip);
   if (!entry || now > entry.resetAt) {
-    rateLimit.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 })
-    return true
+    rateLimit.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
+    return true;
   }
-  if (entry.count >= 30) return false
-  entry.count++
-  return true
+  if (entry.count >= 30) return false;
+  entry.count++;
+  return true;
 }
 
 const SUPPORT_PROMPT = `You are Atlas, the AI support agent for Agentbot (agentbot.sh). You help users with setup, troubleshooting, billing, and platform questions. You are powered by MiMo V2.5 Pro.
@@ -81,84 +82,97 @@ Agentbot is built on OpenClaw — the open-source personal AI runtime. OpenClaw 
 - GitHub: github.com/Eskyee/agentbot-opensource
 - X: @Esky33junglist
 
-If someone asks about something not covered here, be honest that you don't have that specific info and suggest they check the docs or email support@agentbot.sh.`
-
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY || '',
-  headers: {
-    'HTTP-Referer': 'https://agentbot.sh',
-    'X-OpenRouter-Title': 'Agentbot',
-    'X-OpenRouter-Categories': 'personal-agent,cloud-agent,general-chat',
-  },
-})
+If someone asks about something not covered here, be honest that you don't have that specific info and suggest they check the docs or email support@agentbot.sh.`;
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
+
+  // BotID protection — prevent inference theft
+  const protection = await protectAiEndpoint(ip);
+  if (protection.blocked) {
+    return new Response(JSON.stringify({ error: protection.reason }), {
+      status: protection.status || 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   if (!checkRateLimit(ip)) {
     return new Response(
-      JSON.stringify({ error: 'Too many questions. Please wait a bit or email support@agentbot.sh for help.' }),
+      JSON.stringify({
+        error: 'Too many questions. Please wait a bit or email support@agentbot.sh for help.',
+      }),
       { status: 429, headers: { 'Content-Type': 'application/json' } }
-    )
+    );
   }
 
-  const body = await request.json().catch(() => ({}))
-  const messages = body.messages as { role: string; content?: string; parts?: Array<{ type: string; text?: string }> }[] | undefined
+  const body = await request.json().catch(() => ({}));
+  const messages = body.messages as
+    | { role: string; content?: string; parts?: Array<{ type: string; text?: string }> }[]
+    | undefined;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return new Response(JSON.stringify({ error: 'Messages array required' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: 'Messages array required' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // Handle both v5 { role, content } and v6 { role, parts } formats
-  function extractContent(m: { role: string; content?: string; parts?: Array<{ type: string; text?: string }> }): string {
-    if (typeof m.content === 'string') return m.content
+  function extractContent(m: {
+    role: string;
+    content?: string;
+    parts?: Array<{ type: string; text?: string }>;
+  }): string {
+    if (typeof m.content === 'string') return m.content;
     if (Array.isArray(m.parts)) {
       return m.parts
         .filter((p) => p.type === 'text' && typeof p.text === 'string')
         .map((p) => p.text!)
-        .join('')
+        .join('');
     }
-    return ''
+    return '';
   }
 
   const sanitized = messages
-    .filter(m => m.role === 'user' || m.role === 'assistant')
+    .filter((m) => m.role === 'user' || m.role === 'assistant')
     .slice(-MAX_MESSAGES)
-    .map(m => ({ role: m.role as 'user' | 'assistant', content: extractContent(m).slice(0, 3000) }))
-    .filter(m => m.content.length > 0)
+    .map((m) => ({
+      role: m.role as 'user' | 'assistant',
+      content: extractContent(m).slice(0, 3000),
+    }))
+    .filter((m) => m.content.length > 0);
 
   if (sanitized.length === 0) {
-    return new Response(JSON.stringify({ error: 'No valid messages' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: 'No valid messages' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    return new Response(
-      JSON.stringify({ error: 'Support AI is temporarily unavailable. Please email support@agentbot.sh' }),
-      { status: 503, headers: { 'Content-Type': 'application/json' } }
-    )
-  }
-
-  const startTime = Date.now()
+  const startTime = Date.now();
 
   const result = streamText({
-    model: openrouter.chat('xiaomi/mimo-v2.5-pro'),
-    system: SUPPORT_PROMPT,
+    model: gatewayModel(DEFAULT_MODEL),
+    instructions: SUPPORT_PROMPT,
     messages: sanitized,
     maxOutputTokens: 800,
     temperature: 0.7,
-    onFinish: async ({ text, usage }) => {
+    onEnd: async ({ text, usage }) => {
       logUsage({
         userId: 'support',
         agentId: 'atlas',
-        model: 'xiaomi/mimo-v2.5-pro',
+        model: DEFAULT_MODEL,
         inputTokens: usage.inputTokens ?? 0,
         outputTokens: usage.outputTokens ?? 0,
         endpoint: '/api/support/chat',
         latencyMs: Date.now() - startTime,
         success: true,
-      })
+      });
     },
-  })
+  });
 
-  return result.toTextStreamResponse()
+  return result.toTextStreamResponse();
 }

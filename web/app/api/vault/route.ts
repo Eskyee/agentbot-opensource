@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
 import { prisma } from '@/app/lib/prisma'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 
@@ -80,6 +79,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Store under a per-user prefix with a random suffix (unguessable URL).
+    // Imported lazily: @vercel/blob pulls @vercel/oidc, which reads an OIDC
+    // token path at module load that is undefined during Next's build-time
+    // page-data collection. Deferring keeps it out of the route's static graph.
+    const { put } = await import('@vercel/blob')
     const blob = await put(`vault/${session.user.id}/${file.name}`, file, {
       access: 'public',
       addRandomSuffix: true,

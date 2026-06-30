@@ -5,6 +5,25 @@ import { canonicalJsonStringify } from '../utils/canonical-json';
 import { log } from '../lib/logger';
 
 /**
+ * A valid signature proves control of a key, NOT that the key is authorized.
+ * `AUTHORIZED_SIGNER_ADDRESSES` is a comma-separated allowlist of trusted
+ * signer addresses (e.g. the frontend's APP wallet), read per-request so
+ * addresses can be rotated without a restart.
+ *
+ * Default-deny: when the list is unset/empty, no signature is promoted to an
+ * agent identity. This is safe because every legitimate caller (the frontend)
+ * also sends its Bearer token alongside the signature — unknown signers simply
+ * fall through to the Bearer gate instead of being handed `role: 'agent'`.
+ */
+function isAuthorizedSigner(address: string): boolean {
+  const allow = (process.env.AUTHORIZED_SIGNER_ADDRESSES || '')
+    .split(',')
+    .map((a) => a.trim().toLowerCase())
+    .filter(Boolean);
+  return allow.includes(address.toLowerCase());
+}
+
+/**
  * SignatureGuard — Verifies cryptographic signatures from agents or users.
  *
  * This middleware promotes "Identity as a Fact". Instead of relying on
@@ -66,7 +85,20 @@ export async function signatureGuard(req: Request, res: Response, next: NextFunc
       });
     }
 
-    // 5. Attach verified identity to the request.
+    // 5. A valid signature proves control of the key, not authorization.
+    // Without an allowlist, any self-generated keypair would be promoted to
+    // `role: 'agent'` and — via the Bearer gate's agent short-circuit — bypass
+    // INTERNAL_API_KEY on every protected route (including /api/orchestration,
+    // which executes tools). Only promote allowlisted signers; otherwise fall
+    // through and let the Bearer gate decide.
+    if (!isAuthorizedSigner(address)) {
+      log.warn('[SignatureGuard] Valid signature from non-authorized signer — not granting agent identity', {
+        details: { address: address.toLowerCase() },
+      })
+      return next();
+    }
+
+    // 6. Attach verified identity to the request.
     req.userId = address.toLowerCase();
     req.userRole = 'agent'; // Address-based identities are treated as agent-class
 

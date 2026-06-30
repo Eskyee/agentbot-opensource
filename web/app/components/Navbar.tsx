@@ -1,21 +1,29 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { useCustomSession, customSignOut } from "@/app/lib/useCustomSession";
-import { useState, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
-import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
+'use client';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useCustomSession, customSignOut } from '@/app/lib/useCustomSession';
+import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
+import { useBasename, getWalletAddress } from '@/app/hooks/useBasename';
 
-// ─── Focused nav ─────────────────────────────────────────────────────────────
-// LOGGED-OUT: Docs | Pricing → Sign In | Deploy Your Agent
-// LOGGED-IN:  Dashboard → user menu (Settings, Sign Out)
-// ─────────────────────────────────────────────────────────────────────────────
-
-const PRODUCT_LINKS = [
+const PRODUCT_LINKS: { href: string; label: string; desc: string; external?: boolean }[] = [
+  { href: '/eve', label: 'Eve', desc: 'Durable agent on the eve framework' },
+  { href: '/open-agents', label: 'Open Agents', desc: 'Open-source AI agents' },
   { href: '/playground', label: 'Playground', desc: 'Flagship AI app builder' },
-  { href: '/coding-agent', label: 'Coding Agent', desc: 'Agent that ships code' },
-  { href: '/vercel-gateway', label: 'Gateway', desc: 'OpenAI-compatible LLM API' },
   { href: '/openclaw', label: 'OpenClaw', desc: 'The 24/7 agent runtime' },
+  { href: '/chat', label: 'Chat', desc: 'Talk to Atlas anywhere' },
+  { href: '/vercel-gateway', label: 'Gateway', desc: 'OpenAI-compatible LLM API' },
+  { href: '/dashboard/dj-stream', label: 'DJ Stream', desc: 'Live DJ streaming platform' },
+];
+
+const MORE_LINKS: { href: string; label: string; external?: boolean }[] = [
+  { href: '/documentation/products', label: 'Docs' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/agents', label: 'Agents' },
+  { href: '/social', label: 'Social' },
+  { href: '/partner/openrouter', label: 'OpenRouter' },
+  { href: '/partner/mimo', label: 'MiMo' },
+  { href: 'https://basefm.space', label: 'baseFM', external: true },
 ];
 
 export default function Navbar() {
@@ -25,77 +33,185 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    setMounted(true);
+  }, []);
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [menuOpen]);
-
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false)
-      if (productsRef.current && !productsRef.current.contains(e.target as Node)) setProductsOpen(false)
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node))
+        setUserMenuOpen(false);
+      if (productsRef.current && !productsRef.current.contains(e.target as Node))
+        setProductsOpen(false);
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
-
-  // Close dropdowns on route change
-  useEffect(() => { setProductsOpen(false); setUserMenuOpen(false); setMenuOpen(false); }, [pathname])
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+  useEffect(() => {
+    setProductsOpen(false);
+    setUserMenuOpen(false);
+    setMoreOpen(false);
+    setMenuOpen(false);
+  }, [pathname]);
 
   const isAdmin = session?.user?.isAdmin === true;
   const walletAddress = getWalletAddress(session?.user?.email);
   const { basename } = useBasename(walletAddress);
-  const displayName = basename
-    ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : null)
-    ?? session?.user?.name
-    ?? session?.user?.email?.split('@')[0]
-    ?? null;
-
+  const displayName =
+    basename ??
+    (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : null) ??
+    session?.user?.name ??
+    session?.user?.email?.split('@')[0] ??
+    null;
   const closeMenu = () => setMenuOpen(false);
   const isLoggedIn = mounted && session;
 
   return (
     <>
-      <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-[linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.94))] border-b border-zinc-800/50 font-mono backdrop-blur-sm">
-
-        {/* Logo */}
+      <nav className="w-full flex items-center justify-between px-4 sm:px-6 h-14 fixed top-0 z-50 bg-[linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.94))] border-b border-zinc-800/50 font-mono backdrop-blur-sm">
         <Link href="/" className="flex items-center gap-2 shrink-0" onClick={closeMenu}>
           <span className="text-xl leading-none">🦞</span>
           <span className="text-xs font-bold uppercase tracking-widest text-white">Agentbot</span>
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-7">
-          {!mounted || status === "loading" ? (
+        <div className="hidden lg:flex items-center gap-6">
+          {!mounted || status === 'loading' ? (
             <div className="flex gap-6" aria-hidden>
-              {/* invisible spacers — hold layout without a pulsing flash */}
-              {[1,2,3].map(i => <div key={i} className="w-14 h-3" />)}
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="w-14 h-3" />
+              ))}
             </div>
           ) : isLoggedIn ? (
             <>
-              <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <ProductsDropdown open={productsOpen} setOpen={setProductsOpen} dropdownRef={productsRef} current={pathname} />
+              <NavLink href="/dashboard" current={pathname}>
+                Dashboard
+              </NavLink>
+              <ProductsDropdown
+                open={productsOpen}
+                setOpen={setProductsOpen}
+                dropdownRef={productsRef}
+                current={pathname}
+              />
+              <div className="relative" ref={moreRef}>
+                <button
+                  onClick={() => setMoreOpen(!moreOpen)}
+                  className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider"
+                >
+                  More
+                  <svg
+                    className={`w-2.5 h-2.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`}
+                    viewBox="0 0 12 12"
+                    fill="none"
+                  >
+                    <path
+                      d="M2.5 4.5L6 8l3.5-3.5"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                {moreOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-40 bg-zinc-950 border border-zinc-800 rounded-lg py-2 shadow-xl z-50">
+                    {MORE_LINKS.map((link) =>
+                      link.external ? (
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block px-4 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className="block px-4 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                        >
+                          {link.label}
+                        </Link>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <>
-              <ProductsDropdown open={productsOpen} setOpen={setProductsOpen} dropdownRef={productsRef} current={pathname} />
-              <NavLink href="/documentation" current={pathname}>Docs</NavLink>
-              <NavLink href="/blog" current={pathname}>Blog</NavLink>
-              <NavLink href="/agents" current={pathname}>Agents</NavLink>
-              <NavLink href="/social" current={pathname}>Social</NavLink>
-              <NavLink href="/partner/openrouter" current={pathname}>OpenRouter</NavLink>
-              <NavLink href="/partner/mimo" current={pathname}>MiMo</NavLink>
+              <ProductsDropdown
+                open={productsOpen}
+                setOpen={setProductsOpen}
+                dropdownRef={productsRef}
+                current={pathname}
+              />
+              <div className="relative" ref={moreRef}>
+                <button
+                  onClick={() => setMoreOpen(!moreOpen)}
+                  className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider"
+                >
+                  More
+                  <svg
+                    className={`w-2.5 h-2.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`}
+                    viewBox="0 0 12 12"
+                    fill="none"
+                  >
+                    <path
+                      d="M2.5 4.5L6 8l3.5-3.5"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                {moreOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-40 bg-zinc-950 border border-zinc-800 rounded-lg py-2 shadow-xl z-50">
+                    {MORE_LINKS.map((link) =>
+                      link.external ? (
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block px-4 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className="block px-4 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                        >
+                          {link.label}
+                        </Link>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>
 
         {/* Desktop right */}
         <div className="hidden lg:flex items-center gap-4 shrink-0">
-          {!mounted || status === "loading" ? (
+          {!mounted || status === 'loading' ? (
             <div className="w-24 h-8" />
           ) : isLoggedIn ? (
             <div ref={userMenuRef} className="relative">
@@ -104,107 +220,189 @@ export default function Navbar() {
                 className="flex items-center gap-2 text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider"
               >
                 <span className="truncate max-w-[100px]">{displayName}</span>
-                <svg className={`w-3 h-3 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none">
-                  <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                <svg
+                  className={`w-3 h-3 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
+                  viewBox="0 0 12 12"
+                  fill="none"
+                >
+                  <path
+                    d="M2.5 4.5L6 8l3.5-3.5"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
-
               {userMenuOpen && (
-                <div className="absolute top-full right-0 mt-3 w-48 rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl z-50 overflow-hidden">
-                  <div className="py-2">
-                    <div className="px-4 py-2.5 border-b border-zinc-800/50">
-                      <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{displayName}</span>
-                    </div>
-                    <UserMenuLink href="/dashboard" onClick={() => setUserMenuOpen(false)}>Dashboard</UserMenuLink>
-                    <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
-                    <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
-                    {isAdmin && (
-                      <UserMenuLink href="/dashboard/admin" onClick={() => setUserMenuOpen(false)}>
-                        <span className="text-orange-500">Admin</span>
-                      </UserMenuLink>
-                    )}
-                    <div className="border-t border-zinc-800/50 mt-1 pt-1">
-                      <button
-                        onClick={() => { setUserMenuOpen(false); customSignOut(); }}
-                        className="block w-full text-left px-4 py-2.5 text-[11px] text-zinc-500 hover:text-white uppercase tracking-widest transition-colors"
-                      >
-                        Sign out
-                      </button>
-                    </div>
-                  </div>
+                <div className="absolute top-full right-0 mt-2 w-48 bg-zinc-950 border border-zinc-800 rounded-lg py-2 shadow-xl z-50">
+                  <Link
+                    href="/dashboard"
+                    className="block px-4 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="block px-4 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                  >
+                    Settings
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="block px-4 py-2 text-[11px] text-orange-500 hover:bg-zinc-900 transition-colors"
+                    >
+                      Admin
+                    </Link>
+                  )}
+                  <hr className="border-zinc-800 my-1" />
+                  <button
+                    onClick={() => customSignOut()}
+                    className="w-full text-left px-4 py-2 text-[11px] text-zinc-400 hover:text-red-400 hover:bg-zinc-900 transition-colors"
+                  >
+                    Sign Out
+                  </button>
                 </div>
               )}
             </div>
           ) : (
-            <>
-              <Link href="/login" className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider"
+              >
                 Sign In
               </Link>
-              <Link href="/signup" className="text-[11px] bg-white text-black px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+              <Link
+                href="/signup"
+                className="bg-white text-black px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              >
                 Deploy Agent
               </Link>
-            </>
+            </div>
           )}
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Mobile menu button */}
         <button
-          className="lg:hidden p-2 -mr-2"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
+          className="lg:hidden p-2 -mr-2"
+          aria-label="Open menu"
         >
-          <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {menuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-            )}
+          <svg
+            className="w-4 h-4 text-orange-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+              d={menuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
+            />
           </svg>
         </button>
       </nav>
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(24,24,27,0.98),rgba(12,10,9,1))] z-[60] overflow-y-auto font-mono" style={{ top: 56 }}>
-          <div className="flex flex-col p-6 gap-1 pb-12">
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-black/80" onClick={closeMenu} />
+          <div className="absolute top-14 left-0 right-0 bg-zinc-950 border-b border-zinc-800 p-4 space-y-1 max-h-[calc(100vh-56px)] overflow-y-auto">
             {isLoggedIn ? (
               <>
-                <MobileSection>Workspace</MobileSection>
-                <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
-                <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
-                <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
-                {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
+                <MobileLink href="/dashboard" onClick={closeMenu}>
+                  Dashboard
+                </MobileLink>
+                <MobileLink href="/settings" onClick={closeMenu}>
+                  Settings
+                </MobileLink>
+                {isAdmin && (
+                  <MobileLink href="/admin" onClick={closeMenu}>
+                    Admin
+                  </MobileLink>
+                )}
+                <hr className="border-zinc-800 my-2" />
                 <MobileSection>Products</MobileSection>
-                {PRODUCT_LINKS.map((p) => (
-                  <MobileLink key={p.href} href={p.href} onClick={closeMenu}>{p.label}</MobileLink>
-                ))}
+                {PRODUCT_LINKS.map((l) =>
+                  l.external ? (
+                    <a
+                      key={l.href}
+                      href={l.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={closeMenu}
+                      className="block px-3 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 rounded transition-colors"
+                    >
+                      {l.label}
+                    </a>
+                  ) : (
+                    <MobileLink key={l.href} href={l.href} onClick={closeMenu}>
+                      {l.label}
+                    </MobileLink>
+                  )
+                )}
+                <hr className="border-zinc-800 my-2" />
                 <button
-                  onClick={() => { closeMenu(); customSignOut(); }}
-                  className="text-left text-xs py-2.5 px-3 mt-2 text-zinc-500 hover:text-white w-full uppercase tracking-wider"
+                  onClick={() => {
+                    customSignOut();
+                    closeMenu();
+                  }}
+                  className="block w-full text-left px-3 py-2 text-[11px] text-red-400 hover:bg-zinc-900 rounded transition-colors"
                 >
-                  Sign out
+                  Sign Out
                 </button>
               </>
             ) : (
               <>
                 <MobileSection>Products</MobileSection>
-                {PRODUCT_LINKS.map((p) => (
-                  <MobileLink key={p.href} href={p.href} onClick={closeMenu}>{p.label}</MobileLink>
-                ))}
-                <MobileSection>Resources</MobileSection>
-                <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
-                <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
-                <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
-                <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
-                <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
-                  <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">
-                    Sign In
-                  </Link>
-                  <Link href="/signup" onClick={closeMenu} className="block text-center py-3 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
-                    Deploy Agent
-                  </Link>
-                </div>
+                {PRODUCT_LINKS.map((l) =>
+                  l.external ? (
+                    <a
+                      key={l.href}
+                      href={l.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={closeMenu}
+                      className="block px-3 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 rounded transition-colors"
+                    >
+                      {l.label}
+                    </a>
+                  ) : (
+                    <MobileLink key={l.href} href={l.href} onClick={closeMenu}>
+                      {l.label}
+                    </MobileLink>
+                  )
+                )}
+                <hr className="border-zinc-800 my-2" />
+                <MobileSection>More</MobileSection>
+                {MORE_LINKS.map((l) =>
+                  l.external ? (
+                    <a
+                      key={l.href}
+                      href={l.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={closeMenu}
+                      className="block px-3 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 rounded transition-colors"
+                    >
+                      {l.label}
+                    </a>
+                  ) : (
+                    <MobileLink key={l.href} href={l.href} onClick={closeMenu}>
+                      {l.label}
+                    </MobileLink>
+                  )
+                )}
+                <hr className="border-zinc-800 my-2" />
+                <MobileLink href="/login" onClick={closeMenu}>
+                  Sign In
+                </MobileLink>
+                <MobileLink href="/signup" onClick={closeMenu}>
+                  Deploy Agent
+                </MobileLink>
               </>
             )}
           </div>
@@ -214,59 +412,20 @@ export default function Navbar() {
   );
 }
 
-function ProductsDropdown({ open, setOpen, dropdownRef, current }: {
-  open: boolean;
-  setOpen: (v: boolean) => void;
-  dropdownRef: React.RefObject<HTMLDivElement>;
+function NavLink({
+  href,
+  current,
+  children,
+}: {
+  href: string;
   current: string;
+  children: React.ReactNode;
 }) {
-  const isActive = PRODUCT_LINKS.some(p => current === p.href || current.startsWith(p.href + '/'));
-  return (
-    <div ref={dropdownRef} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        className={`flex items-center gap-1.5 text-[11px] uppercase tracking-widest transition-colors ${
-          isActive || open ? 'text-white' : 'text-zinc-500 hover:text-white'
-        }`}
-      >
-        Products
-        <svg className={`w-2.5 h-2.5 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none">
-          <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
-      {open && (
-        <div role="menu" className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl z-50 overflow-hidden">
-          <div className="py-2">
-            {PRODUCT_LINKS.map((p) => (
-              <Link
-                key={p.href}
-                href={p.href}
-                role="menuitem"
-                onClick={() => setOpen(false)}
-                className="block px-4 py-2.5 hover:bg-zinc-900 transition-colors"
-              >
-                <span className={`block text-[11px] uppercase tracking-widest ${current.startsWith(p.href) ? 'text-orange-500' : 'text-zinc-200'}`}>
-                  {p.label}
-                </span>
-                <span className="block mt-0.5 text-[10px] text-zinc-600 normal-case tracking-normal">{p.desc}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function NavLink({ href, current, children }: { href: string; current: string; children: React.ReactNode }) {
-  const isActive = current === href || current.startsWith(href + '/');
   return (
     <Link
       href={href}
-      className={`text-[11px] uppercase tracking-widest transition-colors ${
-        isActive ? 'text-white' : 'text-zinc-500 hover:text-white'
+      className={`text-[11px] uppercase tracking-wider transition-colors ${
+        current.startsWith(href) ? 'text-white' : 'text-zinc-500 hover:text-white'
       }`}
     >
       {children}
@@ -274,12 +433,20 @@ function NavLink({ href, current, children }: { href: string; current: string; c
   );
 }
 
-function UserMenuLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
+function MobileLink({
+  href,
+  onClick,
+  children,
+}: {
+  href: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
       onClick={onClick}
-      className="block px-4 py-2.5 text-[11px] text-zinc-400 hover:text-white uppercase tracking-widest transition-colors"
+      className="block px-3 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 rounded transition-colors"
     >
       {children}
     </Link>
@@ -288,20 +455,69 @@ function UserMenuLink({ href, onClick, children }: { href: string; onClick: () =
 
 function MobileSection({ children }: { children: React.ReactNode }) {
   return (
-    <div className="px-3 pt-5 pb-1.5 text-[9px] uppercase tracking-[0.24em] text-zinc-700 first:pt-1">
-      {children}
-    </div>
+    <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-500">{children}</div>
   );
 }
 
-function MobileLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
+function ProductsDropdown({
+  open,
+  setOpen,
+  dropdownRef,
+  current,
+}: {
+  open: boolean;
+  setOpen: (v: boolean) => void;
+  dropdownRef: React.RefObject<HTMLDivElement | null>;
+  current: string;
+}) {
   return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="block text-xs py-2.5 px-3 text-zinc-400 hover:text-white uppercase tracking-wider transition-colors"
-    >
-      {children}
-    </Link>
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider"
+      >
+        Products
+        <svg
+          className={`w-2.5 h-2.5 transition-transform ${open ? 'rotate-180' : ''}`}
+          viewBox="0 0 12 12"
+          fill="none"
+        >
+          <path
+            d="M2.5 4.5L6 8l3.5-3.5"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-zinc-950 border border-zinc-800 rounded-lg py-2 shadow-xl z-50">
+          {PRODUCT_LINKS.map((link) =>
+            link.external ? (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+              >
+                {link.label}
+                <span className="block text-[9px] text-zinc-500 mt-0.5">{link.desc}</span>
+              </a>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="block px-4 py-2 text-[11px] text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+              >
+                {link.label}
+                <span className="block text-[9px] text-zinc-500 mt-0.5">{link.desc}</span>
+              </Link>
+            )
+          )}
+        </div>
+      )}
+    </div>
   );
 }

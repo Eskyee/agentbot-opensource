@@ -398,3 +398,8 @@ a {
 .popular-glow {
   animation: popular-glow 4s ease-in-out infinite;
 }
+
+/* AI Elements — Tailwind 4 compat */
+.field-sizing-content {
+  field-sizing: content;
+}

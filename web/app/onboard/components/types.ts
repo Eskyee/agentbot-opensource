@@ -3,7 +3,7 @@ export type Step = 'telegram' | 'token' | 'userid' | 'agenttype' | 'ai' | 'model
 export const FLOW_STEPS: Step[] = ['telegram', 'token', 'userid', 'agenttype', 'ai', 'model', 'skills', 'deploy', 'done']
 export const DEPLOY_FLOW_STEPS: Step[] = ['ai', 'deploy', 'done']
 
-export const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.sh', 'rbasefm@icloud.com']
+export const ADMIN_EMAILS = ['YOUR_ADMIN_EMAIL_1', 'admin@agentbot.sh', 'YOUR_ADMIN_EMAIL_2']
 
 export interface DeployResult {
   userId: string

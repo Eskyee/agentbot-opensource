@@ -30,7 +30,7 @@ function TeamDetailContent() {
       <div className="max-w-6xl mx-auto px-6 py-6">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600">Team</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-500">Team</span>
             <h1 className="text-3xl font-bold tracking-tighter uppercase mt-1 font-mono">{teamId}</h1>
           </div>
           <div className="flex gap-2">
@@ -111,7 +111,7 @@ function TeamDetailContent() {
             <div className="text-center py-16 text-zinc-500">
               <div className="text-4xl mb-4">◈</div>
               <p>Activity feed will appear here once agents are running.</p>
-              <p className="text-xs text-zinc-600 mt-2">Real-time agent actions, task delegation, and coordination logs.</p>
+              <p className="text-xs text-zinc-500 mt-2">Real-time agent actions, task delegation, and coordination logs.</p>
             </div>
           </div>
         )}

@@ -1,22 +1,32 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { buildAppUrl } from '@/app/lib/app-url'
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { buildAppUrl } from '@/app/lib/app-url';
+import { Pillars } from '@/app/components/landing/Pillars';
 
 export const metadata: Metadata = {
   title: 'Why Agentbot? — Cloud AI Agents vs Local Setup',
-  description: 'Discover why Agentbot beats running OpenClaw locally. 24/7 uptime, instant skills, Telegram/Discord/WhatsApp channels — no terminal commands, no server costs. From £29/mo.',
-  keywords: ['why Agentbot', 'AI agent cloud hosting', 'OpenClaw cloud', 'deploy AI agent', 'BYOK AI agent', 'AI agent vs local'],
+  description:
+    'Discover why Agentbot beats running OpenClaw locally. 24/7 uptime, instant skills, Telegram/Discord/WhatsApp channels — no terminal commands, no server costs. From £29/mo.',
+  keywords: [
+    'why Agentbot',
+    'AI agent cloud hosting',
+    'OpenClaw cloud',
+    'deploy AI agent',
+    'BYOK AI agent',
+    'AI agent vs local',
+  ],
   openGraph: {
     title: 'Why Agentbot? Cloud AI Agents vs Local Setup',
-    description: 'No hardware. No terminal. 24/7 AI agents with persistent memory, skills, and multi-channel deployment.',
+    description:
+      'No hardware. No terminal. 24/7 AI agents with persistent memory, skills, and multi-channel deployment.',
     url: buildAppUrl('/why'),
   },
   alternates: {
     canonical: buildAppUrl('/why'),
   },
-}
+};
 
-const PRICE_START = "£29/mo";
+const PRICE_START = '£29/mo';
 
 const faqSchema = {
   '@context': 'https://schema.org',
@@ -63,7 +73,7 @@ const faqSchema = {
       },
     },
   ],
-}
+};
 
 export default function WhyAgentbotPage() {
   return (
@@ -73,59 +83,141 @@ export default function WhyAgentbotPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <div className="max-w-5xl mx-auto px-6 py-16">
-        <Link href="/" className="text-orange-500 hover:underline mb-8 inline-block text-xs uppercase tracking-widest">
+        <Link
+          href="/"
+          className="text-orange-500 hover:underline mb-8 inline-block text-xs uppercase tracking-widest"
+        >
           Back to Home
         </Link>
 
         <header className="mb-12">
-          <h1 className="text-5xl font-bold uppercase tracking-tighter mb-6">
-            Why Agentbot?
-          </h1>
+          <h1 className="text-5xl font-bold uppercase tracking-tighter mb-6">Why Agentbot?</h1>
           <p className="text-sm text-zinc-400 leading-relaxed">
-            Local OpenClaw agents are powerful, but they come with real friction. You need to install dependencies, configure API keys, and keep your machine running constantly. Your agent stops when you close your laptop. Adding new skills means searching ClawHub, downloading files, and troubleshooting errors. If you want 24/7 uptime, you&apos;ll need to buy a VPS or leave a Mac Mini running at home.
+            Local OpenClaw agents are powerful, but they come with real friction. You need to
+            install dependencies, configure API keys, and keep your machine running constantly. Your
+            agent stops when you close your laptop. Adding new skills means searching ClawHub,
+            downloading files, and troubleshooting errors. If you want 24/7 uptime, you&apos;ll need
+            to buy a VPS or leave a Mac Mini running at home.
           </p>
           <p className="text-sm text-zinc-400 mt-4 leading-relaxed">
-            <strong className="text-white">Agentbot removes all of this.</strong> It deploys OpenClaw to the cloud in one click, runs 24/7 without hardware, and gives you instant access to ready-to-use skills through Telegram, Discord, and WhatsApp. No terminal commands, no server costs, no installation headaches.
+            <strong className="text-white">Agentbot removes all of this.</strong> It deploys
+            OpenClaw to the cloud in one click, runs 24/7 without hardware, and gives you instant
+            access to ready-to-use skills through Telegram, Discord, and WhatsApp. No terminal
+            commands, no server costs, no installation headaches.
           </p>
         </header>
+
+        <Pillars
+          eyebrow="The short version"
+          pillars={[
+            {
+              index: '01',
+              title: 'Isolated by design',
+              body: 'A four-layer runtime: isolated container, persistent memory, onchain identity, and an agent-to-agent bridge.',
+            },
+            {
+              index: '02',
+              title: 'Fail-closed security',
+              body: 'No passwords, no raw keys in the DB, no shell-injection surface. Every layer assumes hostile input.',
+            },
+            {
+              index: '03',
+              title: 'Onchain native',
+              body: 'Coinbase CDP wallets give every agent a real identity — hold, send and receive USDC across Base, Solana and Bitcoin.',
+            },
+          ]}
+        />
 
         <nav className="border border-zinc-800 bg-black p-5 mb-12">
           <h2 className="text-lg font-bold uppercase tracking-tighter mb-4">Table of Contents</h2>
           <ul className="space-y-2 text-zinc-400 text-sm">
-            <li><a href="#comparison" className="hover:text-white">&mdash; Quick comparison: Agentbot vs. Local OpenClaw</a></li>
-            <li><a href="#architecture" className="hover:text-white">&mdash; Architecture</a></li>
-            <li><a href="#security" className="hover:text-white">&mdash; Security</a></li>
-            <li><a href="#payments" className="hover:text-white">&mdash; Payments &amp; onchain autonomy</a></li>
-            <li><a href="#a2a" className="hover:text-white">&mdash; Agent-to-Agent Protocol</a></li>
-            <li><a href="#basefm" className="hover:text-white">&mdash; baseFM: The proof of concept</a></li>
-            <li><a href="#features" className="hover:text-white">&mdash; Features that actually matter</a></li>
-            <li><a href="#how-to" className="hover:text-white">&mdash; How to use Agentbot?</a></li>
-            <li><a href="#use-cases" className="hover:text-white">&mdash; Real-world use cases</a></li>
-            <li><a href="#conclusion" className="hover:text-white">&mdash; Conclusion</a></li>
+            <li>
+              <a href="#comparison" className="hover:text-white">
+                &mdash; Quick comparison: Agentbot vs. Local OpenClaw
+              </a>
+            </li>
+            <li>
+              <a href="#architecture" className="hover:text-white">
+                &mdash; Architecture
+              </a>
+            </li>
+            <li>
+              <a href="#security" className="hover:text-white">
+                &mdash; Security
+              </a>
+            </li>
+            <li>
+              <a href="#payments" className="hover:text-white">
+                &mdash; Payments &amp; onchain autonomy
+              </a>
+            </li>
+            <li>
+              <a href="#a2a" className="hover:text-white">
+                &mdash; Agent-to-Agent Protocol
+              </a>
+            </li>
+            <li>
+              <a href="#basefm" className="hover:text-white">
+                &mdash; baseFM: The proof of concept
+              </a>
+            </li>
+            <li>
+              <a href="#features" className="hover:text-white">
+                &mdash; Features that actually matter
+              </a>
+            </li>
+            <li>
+              <a href="#how-to" className="hover:text-white">
+                &mdash; How to use Agentbot?
+              </a>
+            </li>
+            <li>
+              <a href="#use-cases" className="hover:text-white">
+                &mdash; Real-world use cases
+              </a>
+            </li>
+            <li>
+              <a href="#conclusion" className="hover:text-white">
+                &mdash; Conclusion
+              </a>
+            </li>
           </ul>
         </nav>
 
         <section id="comparison" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Comparison</span>
-          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Quick comparison: Agentbot vs. Local OpenClaw</h2>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Comparison
+          </span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">
+            Quick comparison: Agentbot vs. Local OpenClaw
+          </h2>
           <p className="text-sm text-zinc-400 mb-6">
-            The table below compares Agentbot with traditional local OpenClaw setup to help you understand what changes:
+            The table below compares Agentbot with traditional local OpenClaw setup to help you
+            understand what changes:
           </p>
 
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-zinc-800">
-                  <th className="text-left p-4 bg-zinc-950 text-[10px] uppercase tracking-widest text-zinc-500">Feature</th>
-                  <th className="text-left p-4 bg-zinc-950 text-[10px] uppercase tracking-widest text-zinc-500">Agentbot (Cloud)</th>
-                  <th className="text-left p-4 bg-zinc-950 text-[10px] uppercase tracking-widest text-zinc-500">Local OpenClaw</th>
+                  <th className="text-left p-4 bg-zinc-950 text-[10px] uppercase tracking-widest text-zinc-500">
+                    Feature
+                  </th>
+                  <th className="text-left p-4 bg-zinc-950 text-[10px] uppercase tracking-widest text-zinc-500">
+                    Agentbot (Cloud)
+                  </th>
+                  <th className="text-left p-4 bg-zinc-950 text-[10px] uppercase tracking-widest text-zinc-500">
+                    Local OpenClaw
+                  </th>
                 </tr>
               </thead>
               <tbody className="text-zinc-400 text-sm">
                 <tr className="border-b border-zinc-800">
                   <td className="p-4 font-medium text-white">Setup Complexity</td>
                   <td className="p-4 bg-zinc-950">One-click cloud setup, ready in seconds</td>
-                  <td className="p-4">Manual installation: terminal commands, API configuration, dependency management</td>
+                  <td className="p-4">
+                    Manual installation: terminal commands, API configuration, dependency management
+                  </td>
                 </tr>
                 <tr className="border-b border-zinc-800">
                   <td className="p-4 font-medium text-white">Hardware Requirements</td>
@@ -134,7 +226,9 @@ export default function WhyAgentbotPage() {
                 </tr>
                 <tr className="border-b border-zinc-800">
                   <td className="p-4 font-medium text-white">Skills Access</td>
-                  <td className="p-4 bg-zinc-950">Instant access to pre-built skills, no manual installation</td>
+                  <td className="p-4 bg-zinc-950">
+                    Instant access to pre-built skills, no manual installation
+                  </td>
                   <td className="p-4">Install skills one by one from ClawHub</td>
                 </tr>
                 <tr className="border-b border-zinc-800">
@@ -162,7 +256,10 @@ export default function WhyAgentbotPage() {
           </div>
 
           <div className="mt-6">
-            <Link href="/signup" className="inline-block bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200">
+            <Link
+              href="/signup"
+              className="inline-block bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
+            >
               Try Agentbot
             </Link>
           </div>
@@ -170,25 +267,83 @@ export default function WhyAgentbotPage() {
 
         {/* ── Architecture ── */}
         <section id="architecture" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Architecture</span>
-          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">How the stack works</h2>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Architecture
+          </span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">
+            How the stack works
+          </h2>
           <p className="text-sm text-zinc-400 mb-8">
-            Agentbot is not a wrapper around an LLM. It is a four-layer runtime that gives every agent an isolated container, persistent state, onchain identity, and a bridge to every other agent on the network.
+            Agentbot is not a wrapper around an LLM. It is a four-layer runtime that gives every
+            agent an isolated container, persistent state, onchain identity, and a bridge to every
+            other agent on the network.
           </p>
 
           {/* Four-layer stack diagram */}
           <div className="mb-8 border border-zinc-900 bg-zinc-950/40 p-4 sm:p-6 overflow-x-auto">
-            <svg viewBox="0 0 880 312" className="w-full min-w-[520px]" role="img" aria-label="Agentbot's four-layer stack: the Agent Interface layer (CLI, API, web, chat channels) sits on top of the OpenClaw Agent Runtime (memory, decisions, skills, isolated container), which sits on the Bridge Protocol (agent-to-agent messaging, USDC payments, onchain identity), which rests on the Blockchain layer (Base, Solana, Bitcoin, CDP wallets). Requests flow down, responses flow back up." xmlns="http://www.w3.org/2000/svg">
+            <svg
+              viewBox="0 0 880 312"
+              className="w-full min-w-[520px]"
+              role="img"
+              aria-label="Agentbot's four-layer stack: the Agent Interface layer (CLI, API, web, chat channels) sits on top of the OpenClaw Agent Runtime (memory, decisions, skills, isolated container), which sits on the Bridge Protocol (agent-to-agent messaging, USDC payments, onchain identity), which rests on the Blockchain layer (Base, Solana, Bitcoin, CDP wallets). Requests flow down, responses flow back up."
+              xmlns="http://www.w3.org/2000/svg"
+            >
               {[
-                { y: 8, t: 'AGENT INTERFACE', s: 'CLI · API · Web · Discord · WhatsApp · Telegram', accent: false },
-                { y: 82, t: 'AGENT RUNTIME — OpenClaw', s: 'memory · decisions · skills · isolated Docker container', accent: true },
-                { y: 156, t: 'BRIDGE PROTOCOL', s: 'A2A messaging · USDC payments · onchain identity', accent: false },
-                { y: 230, t: 'BLOCKCHAIN', s: 'Base · Solana · Bitcoin · Coinbase CDP wallets', accent: false },
+                {
+                  y: 8,
+                  t: 'AGENT INTERFACE',
+                  s: 'CLI · API · Web · Discord · WhatsApp · Telegram',
+                  accent: false,
+                },
+                {
+                  y: 82,
+                  t: 'AGENT RUNTIME — OpenClaw',
+                  s: 'memory · decisions · skills · isolated Docker container',
+                  accent: true,
+                },
+                {
+                  y: 156,
+                  t: 'BRIDGE PROTOCOL',
+                  s: 'A2A messaging · USDC payments · onchain identity',
+                  accent: false,
+                },
+                {
+                  y: 230,
+                  t: 'BLOCKCHAIN',
+                  s: 'Base · Solana · Bitcoin · Coinbase CDP wallets',
+                  accent: false,
+                },
               ].map((l) => (
                 <g key={l.t}>
-                  <rect x="40" y={l.y} width="800" height="62" fill="#09090b" stroke={l.accent ? '#f97316' : '#27272a'} strokeWidth={l.accent ? 1.5 : 1} />
-                  <text x="60" y={l.y + 27} fontFamily="ui-monospace,monospace" fontSize="12" fill={l.accent ? '#f97316' : '#ffffff'} letterSpacing="1" fontWeight="bold">{l.t}</text>
-                  <text x="60" y={l.y + 46} fontFamily="ui-monospace,monospace" fontSize="9" fill="#52525b">{l.s}</text>
+                  <rect
+                    x="40"
+                    y={l.y}
+                    width="800"
+                    height="62"
+                    fill="#09090b"
+                    stroke={l.accent ? '#f97316' : '#27272a'}
+                    strokeWidth={l.accent ? 1.5 : 1}
+                  />
+                  <text
+                    x="60"
+                    y={l.y + 27}
+                    fontFamily="ui-monospace,monospace"
+                    fontSize="12"
+                    fill={l.accent ? '#f97316' : '#ffffff'}
+                    letterSpacing="1"
+                    fontWeight="bold"
+                  >
+                    {l.t}
+                  </text>
+                  <text
+                    x="60"
+                    y={l.y + 46}
+                    fontFamily="ui-monospace,monospace"
+                    fontSize="9"
+                    fill="#52525b"
+                  >
+                    {l.s}
+                  </text>
                 </g>
               ))}
               {/* between-layer flow arrows (down = request, up = response) */}
@@ -200,37 +355,58 @@ export default function WhyAgentbotPage() {
                   <polygon points={`856,${y + 4} 860,${y - 2} 864,${y + 4}`} fill="#22c55e" />
                 </g>
               ))}
-              <text x="20" y="304" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">↓ request</text>
-              <text x="860" y="304" textAnchor="end" fontFamily="ui-monospace,monospace" fontSize="8" fill="#22c55e">response ↑</text>
+              <text x="20" y="304" fontFamily="ui-monospace,monospace" fontSize="8" fill="#52525b">
+                ↓ request
+              </text>
+              <text
+                x="860"
+                y="304"
+                textAnchor="end"
+                fontFamily="ui-monospace,monospace"
+                fontSize="8"
+                fill="#22c55e"
+              >
+                response ↑
+              </text>
             </svg>
           </div>
 
           <div className="space-y-4">
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Agent Interface Layer</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Agent Interface Layer
+              </h3>
               <p className="text-sm text-zinc-400">
-                CLI, API, Web UI, Discord, WhatsApp, Telegram. Every surface talks to the same runtime, so your agent behaves identically regardless of channel.
+                CLI, API, Web UI, Discord, WhatsApp, Telegram. Every surface talks to the same
+                runtime, so your agent behaves identically regardless of channel.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Agent Runtime (OpenClaw)</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Agent Runtime (OpenClaw)
+              </h3>
               <p className="text-sm text-zinc-400">
-                Memory, decision engine, state management, and skill registry. Each agent runs in its own isolated Docker container with dedicated resources.
+                Memory, decision engine, state management, and skill registry. Each agent runs in
+                its own isolated Docker container with dedicated resources.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Bridge Protocol</h3>
               <p className="text-sm text-zinc-400">
-                Agent-to-agent messaging, USDC payments, and onchain identity. Agents can discover, negotiate with, and pay each other without human intervention.
+                Agent-to-agent messaging, USDC payments, and onchain identity. Agents can discover,
+                negotiate with, and pay each other without human intervention.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Blockchain Layer</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Blockchain Layer
+              </h3>
               <p className="text-sm text-zinc-400">
-                Base, Solana, Bitcoin. Coinbase CDP wallets give every agent a native onchain identity and the ability to hold, send, and receive USDC.
+                Base, Solana, Bitcoin. Coinbase CDP wallets give every agent a native onchain
+                identity and the ability to hold, send, and receive USDC.
               </p>
             </div>
           </div>
@@ -238,66 +414,92 @@ export default function WhyAgentbotPage() {
 
         {/* ── Security ── */}
         <section id="security" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Security</span>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Security
+          </span>
           <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Security model</h2>
           <p className="text-sm text-zinc-400 mb-8">
-            Agentbot was built with a fail-closed security posture. Every layer assumes hostile input. There are no passwords in the system, no raw keys in the database, and no shell injection surfaces.
+            Agentbot was built with a fail-closed security posture. Every layer assumes hostile
+            input. There are no passwords in the system, no raw keys in the database, and no shell
+            injection surfaces.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">SIWE Authentication</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                SIWE Authentication
+              </h3>
               <p className="text-sm text-zinc-400">
-                No passwords. Sign-In With Ethereum means your wallet is your identity. Nothing to phish, nothing to leak.
+                No passwords. Sign-In With Ethereum means your wallet is your identity. Nothing to
+                phish, nothing to leak.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">SHA-256 Hashed API Keys</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                SHA-256 Hashed API Keys
+              </h3>
               <p className="text-sm text-zinc-400">
-                Raw API keys are never stored. Every key is SHA-256 hashed before it touches the database. Even a full DB dump reveals nothing usable.
+                Raw API keys are never stored. Every key is SHA-256 hashed before it touches the
+                database. Even a full DB dump reveals nothing usable.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">SSRF Blocklist</h3>
               <p className="text-sm text-zinc-400">
-                Private IPs, IPv6 ULA, IPv6-mapped IPv4, and CGN ranges are all blocked. Agents cannot reach internal infrastructure through outbound requests.
+                Private IPs, IPv6 ULA, IPv6-mapped IPv4, and CGN ranges are all blocked. Agents
+                cannot reach internal infrastructure through outbound requests.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Ed25519 Webhook Verification</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Ed25519 Webhook Verification
+              </h3>
               <p className="text-sm text-zinc-400">
-                Discord interactions are verified with Ed25519 signatures. Fail-closed: invalid signatures are rejected before any processing.
+                Discord interactions are verified with Ed25519 signatures. Fail-closed: invalid
+                signatures are rejected before any processing.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">AES-256-GCM Encrypted Secrets</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                AES-256-GCM Encrypted Secrets
+              </h3>
               <p className="text-sm text-zinc-400">
-                Per-user secrets are encrypted at rest with AES-256-GCM. Keys are managed outside the application database.
+                Per-user secrets are encrypted at rest with AES-256-GCM. Keys are managed outside
+                the application database.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Tiered Permissions</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Tiered Permissions
+              </h3>
               <p className="text-sm text-zinc-400">
-                Every agent action is classified as Safe, Dangerous, or Destructive. Escalation requires explicit approval. No silent privilege elevation.
+                Every agent action is classified as Safe, Dangerous, or Destructive. Escalation
+                requires explicit approval. No silent privilege elevation.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">No Shell Injection</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                No Shell Injection
+              </h3>
               <p className="text-sm text-zinc-400">
-                All process execution uses spawn(), never exec(). There is no shell interpretation layer between user input and system calls.
+                All process execution uses spawn(), never exec(). There is no shell interpretation
+                layer between user input and system calls.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Bearer Token Auth</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Bearer Token Auth
+              </h3>
               <p className="text-sm text-zinc-400">
-                All protected routes use bearer token authentication with timingSafeEqual comparison. Timing attacks are not viable.
+                All protected routes use bearer token authentication with timingSafeEqual
+                comparison. Timing attacks are not viable.
               </p>
             </div>
           </div>
@@ -305,38 +507,56 @@ export default function WhyAgentbotPage() {
 
         {/* ── Payments & Onchain Autonomy ── */}
         <section id="payments" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Payments</span>
-          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Payments &amp; onchain autonomy</h2>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Payments
+          </span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">
+            Payments &amp; onchain autonomy
+          </h2>
           <p className="text-sm text-zinc-400 mb-8">
-            Every agent on Agentbot has its own wallet and the ability to transact autonomously. This is not a future roadmap item. It is live.
+            Every agent on Agentbot has its own wallet and the ability to transact autonomously.
+            This is not a future roadmap item. It is live.
           </p>
 
           <div className="space-y-4">
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Coinbase CDP Wallet</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Coinbase CDP Wallet
+              </h3>
               <p className="text-sm text-zinc-400">
-                Each agent gets its own Coinbase Developer Platform wallet on deployment. Hold, send, and receive USDC. Interact with smart contracts. No shared custody.
+                Each agent gets its own Coinbase Developer Platform wallet on deployment. Hold,
+                send, and receive USDC. Interact with smart contracts. No shared custody.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">x402 Micropayment Gateway</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                x402 Micropayment Gateway
+              </h3>
               <p className="text-sm text-zinc-400">
-                Agents pay for APIs, content, and services autonomously using the x402 protocol. No invoices, no billing cycles. The agent evaluates, pays, and consumes in a single request.
+                Agents pay for APIs, content, and services autonomously using the x402 protocol. No
+                invoices, no billing cycles. The agent evaluates, pays, and consumes in a single
+                request.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">First A2A Settlement</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                First A2A Settlement
+              </h3>
               <p className="text-sm text-zinc-400">
-                The first agent-to-agent settlement landed at block 9,556,940 on Base. Two autonomous agents negotiated terms and settled in USDC without any human in the loop.
+                The first agent-to-agent settlement landed at block 9,556,940 on Base. Two
+                autonomous agents negotiated terms and settled in USDC without any human in the
+                loop.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Dynamic Pricing</h3>
               <p className="text-sm text-zinc-400">
-                Pricing adapts to each agent&apos;s fitness score. Score 0&ndash;59: $0.01 per action. Score 60&ndash;79: $0.009. Score 80&ndash;100: $0.008. Better agents pay less.
+                Pricing adapts to each agent&apos;s fitness score. Score 0&ndash;59: $0.01 per
+                action. Score 60&ndash;79: $0.009. Score 80&ndash;100: $0.008. Better agents pay
+                less.
               </p>
             </div>
           </div>
@@ -344,44 +564,67 @@ export default function WhyAgentbotPage() {
 
         {/* ── A2A Protocol ── */}
         <section id="a2a" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Protocol</span>
-          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Agent-to-Agent Protocol</h2>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Protocol
+          </span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">
+            Agent-to-Agent Protocol
+          </h2>
           <p className="text-sm text-zinc-400 mb-8">
-            Agents on Agentbot are not isolated. They can discover each other, negotiate, delegate tasks, and settle payments, all through a structured messaging protocol running between isolated containers.
+            Agents on Agentbot are not isolated. They can discover each other, negotiate, delegate
+            tasks, and settle payments, all through a structured messaging protocol running between
+            isolated containers.
           </p>
 
           <div className="space-y-4">
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">SSRF-Protected Delivery</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                SSRF-Protected Delivery
+              </h3>
               <p className="text-sm text-zinc-400">
-                Messages are delivered via webhook between isolated Docker containers. The SSRF blocklist ensures agents cannot probe internal infrastructure through the messaging layer.
+                Messages are delivered via webhook between isolated Docker containers. The SSRF
+                blocklist ensures agents cannot probe internal infrastructure through the messaging
+                layer.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Negotiation &amp; Delegation</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Negotiation &amp; Delegation
+              </h3>
               <p className="text-sm text-zinc-400">
-                Agents can negotiate bookings, coordinate outreach campaigns, manage content amplification, and delegate subtasks to specialized agents. The protocol supports full task lifecycle: propose, accept, execute, verify, settle.
+                Agents can negotiate bookings, coordinate outreach campaigns, manage content
+                amplification, and delegate subtasks to specialized agents. The protocol supports
+                full task lifecycle: propose, accept, execute, verify, settle.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Real-Time Updates</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Real-Time Updates
+              </h3>
               <p className="text-sm text-zinc-400">
-                Task status flows back to the originating agent in real time. No polling. The bus delivers state changes as they happen.
+                Task status flows back to the originating agent in real time. No polling. The bus
+                delivers state changes as they happen.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Works Alongside MCP</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Works Alongside MCP
+              </h3>
               <p className="text-sm text-zinc-400">
-                A2A handles agent-to-agent communication. MCP handles tool use. Together they give agents the ability to talk to each other and interact with external services in the same workflow.
+                A2A handles agent-to-agent communication. MCP handles tool use. Together they give
+                agents the ability to talk to each other and interact with external services in the
+                same workflow.
               </p>
             </div>
           </div>
 
           <div className="mt-6 border border-zinc-800 bg-zinc-950 p-5">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Example use cases</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">
+              Example use cases
+            </span>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li>&mdash; Agent A negotiates a DJ booking with Agent B, settles in USDC</li>
               <li>&mdash; A marketing agent delegates social posts to a content agent</li>
@@ -393,97 +636,193 @@ export default function WhyAgentbotPage() {
 
         {/* ── baseFM: The Proof of Concept ── */}
         <section id="basefm" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Proof of Concept</span>
-          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">baseFM: The proof of concept</h2>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Proof of Concept
+          </span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">
+            baseFM: The proof of concept
+          </h2>
 
           <div className="border-2 border-zinc-700 bg-zinc-950 p-8">
             <p className="text-lg text-white font-bold mb-4">
               A 24/7 radio station run entirely by an agent.
             </p>
             <p className="text-sm text-zinc-400 mb-4">
-              <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">baseFM</a> broadcasts around the clock with zero human input. The agent selects tracks, manages the stream, engages the community, and operates its own wallet. No one presses play. No one writes the setlists. No one monitors the feed.
+              <a
+                href="https://basefm.space"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-orange-500 hover:underline"
+              >
+                baseFM
+              </a>{' '}
+              broadcasts around the clock with zero human input. The agent selects tracks, manages
+              the stream, engages the community, and operates its own wallet. No one presses play.
+              No one writes the setlists. No one monitors the feed.
             </p>
             <p className="text-sm text-zinc-400">
-              That is what makes everything else on this page believable. The architecture, the security model, the A2A protocol, the payment rails &mdash; they are not diagrams in a pitch deck. They are running in production, keeping a radio station alive.
+              That is what makes everything else on this page believable. The architecture, the
+              security model, the A2A protocol, the payment rails &mdash; they are not diagrams in a
+              pitch deck. They are running in production, keeping a radio station alive.
             </p>
           </div>
         </section>
 
         <section id="features" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Features</span>
-          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Features that actually matter</h2>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Features
+          </span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">
+            Features that actually matter
+          </h2>
           <p className="text-sm text-zinc-400 mb-8">
-            Agentbot combines OpenClaw&apos;s intelligent agent capabilities with cloud infrastructure and instant skill access. Here&apos;s what you can do with it:
+            Agentbot combines OpenClaw&apos;s intelligent agent capabilities with cloud
+            infrastructure and instant skill access. Here&apos;s what you can do with it:
           </p>
 
           <div className="space-y-8">
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Persistent memory & custom personality</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                Persistent memory & custom personality
+              </h3>
               <p className="text-sm text-zinc-400">
-                Agentbot remembers your preferences, work style, and past conversations across sessions. You can also customize its persona—give it a name, set its tone, and define how it responds. Tell it once to &quot;always format reports with three bullet points and one risk note,&quot; and it applies that rule automatically. This transforms a generic chatbot into a personalized assistant that adapts to how you work.
+                Agentbot remembers your preferences, work style, and past conversations across
+                sessions. You can also customize its persona—give it a name, set its tone, and
+                define how it responds. Tell it once to &quot;always format reports with three
+                bullet points and one risk note,&quot; and it applies that rule automatically. This
+                transforms a generic chatbot into a personalized assistant that adapts to how you
+                work.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Proactive scheduled tasks</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                Proactive scheduled tasks
+              </h3>
               <p className="text-sm text-zinc-400">
-                Unlike tools that only respond when prompted, Agentbot can run tasks on a schedule you set. Want market news summarized every morning at 9 AM? A weekly report generated every Friday? Daily reminders at specific times? Set the timing, output format, and constraints once, and Agentbot executes automatically—no manual triggers needed.
+                Unlike tools that only respond when prompted, Agentbot can run tasks on a schedule
+                you set. Want market news summarized every morning at 9 AM? A weekly report
+                generated every Friday? Daily reminders at specific times? Set the timing, output
+                format, and constraints once, and Agentbot executes automatically—no manual triggers
+                needed.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Ready-to-use skills at your fingertips</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                Ready-to-use skills at your fingertips
+              </h3>
               <p className="text-sm text-zinc-400">
-                Agentbot includes pre-built skills for web search, data analysis, image processing, coding assistance, and more. You don&apos;t need to install skills one by one. You can call and chain them instantly within the chat interface. Need to analyze a CSV file, generate charts, and export a PDF? Just describe the workflow, and Agentbot calls the right skills automatically.
+                Agentbot includes pre-built skills for web search, data analysis, image processing,
+                coding assistance, and more. You don&apos;t need to install skills one by one. You
+                can call and chain them instantly within the chat interface. Need to analyze a CSV
+                file, generate charts, and export a PDF? Just describe the workflow, and Agentbot
+                calls the right skills automatically.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Cloud storage included</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                Cloud storage included
+              </h3>
               <p className="text-sm text-zinc-400">
-                Agentbot provides 10GB free (50GB pro) of cloud storage for your files, reports, and outputs. Your agent can save documents, retrieve past work, and maintain file version history—all accessible from any device. No need to manage local folders or worry about losing files when switching machines.
+                Agentbot provides 10GB free (50GB pro) of cloud storage for your files, reports, and
+                outputs. Your agent can save documents, retrieve past work, and maintain file
+                version history—all accessible from any device. No need to manage local folders or
+                worry about losing files when switching machines.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Kimi K2.5 Thinking model</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                Kimi K2.5 Thinking model
+              </h3>
               <p className="text-sm text-zinc-400">
-                Agentbot uses Kimi&apos;s advanced K2.5 Thinking model with 128K context window. It provides advanced reasoning capabilities for complex tasks, financial analysis, competitive research, and real-time data tracking with higher accuracy than generic models.
+                Agentbot uses Kimi&apos;s advanced K2.5 Thinking model with 128K context window. It
+                provides advanced reasoning capabilities for complex tasks, financial analysis,
+                competitive research, and real-time data tracking with higher accuracy than generic
+                models.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Multi-channel deployment</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                Multi-channel deployment
+              </h3>
               <p className="text-sm text-zinc-400">
-                Unlike web-only solutions, Agentbot deploys to Telegram, Discord, and WhatsApp. Chat with your agent wherever you work. One agent, accessible everywhere, with the same memory and capabilities across all channels.
+                Unlike web-only solutions, Agentbot deploys to Telegram, Discord, and WhatsApp. Chat
+                with your agent wherever you work. One agent, accessible everywhere, with the same
+                memory and capabilities across all channels.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Coinbase Agentic Wallet</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                Coinbase Agentic Wallet
+              </h3>
               <p className="text-sm text-zinc-400 mb-3">
-                Agentbot integrates with <a href="https://docs.cdp.coinbase.com/agentic-wallet/welcome" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">Coinbase Agentic Wallet</a>, enabling your agent to execute onchain transactions autonomously. Send payments, interact with smart contracts, and manage crypto assets—all through natural language commands.
+                Agentbot integrates with{' '}
+                <a
+                  href="https://docs.cdp.coinbase.com/agentic-wallet/welcome"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-orange-500 hover:underline"
+                >
+                  Coinbase Agentic Wallet
+                </a>
+                , enabling your agent to execute onchain transactions autonomously. Send payments,
+                interact with smart contracts, and manage crypto assets—all through natural language
+                commands.
               </p>
               <p className="text-sm text-zinc-400">
-                Your agent can handle DeFi operations, NFT minting, token swaps, and more, making it a true autonomous financial assistant.
+                Your agent can handle DeFi operations, NFT minting, token swaps, and more, making it
+                a true autonomous financial assistant.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Deploy from Marketplace</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                Deploy from Marketplace
+              </h3>
               <p className="text-sm text-zinc-400 mb-3">
-                Don&apos;t want to build from scratch? Browse our <Link href="/marketplace" className="text-orange-500 hover:underline">marketplace</Link> of pre-configured agents. Each template comes with personality, skills, and use-case-specific configurations ready to go.
+                Don&apos;t want to build from scratch? Browse our{' '}
+                <Link href="/marketplace" className="text-orange-500 hover:underline">
+                  marketplace
+                </Link>{' '}
+                of pre-configured agents. Each template comes with personality, skills, and
+                use-case-specific configurations ready to go.
               </p>
               <p className="text-sm text-zinc-400 mb-3">
                 <strong className="text-white">Popular templates:</strong>
               </p>
               <ul className="list-disc list-inside text-sm text-zinc-400 space-y-1 mb-3">
-                <li><strong>basefmbot</strong> — Onchain Radio Agent for autonomous communities (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">raveculture</a>)</li>
-                <li><strong>cafe</strong> — Startup Cafe Agent for customer service</li>
-                <li><strong>studio-one</strong> — Dancehall Dub Agent with London roots culture</li>
-                <li><strong>chain</strong> — Crypto Agent with wallet capabilities (USDC, swaps, Base)</li>
-                <li><strong>vault</strong> — DeFi Agent for yield farming and staking</li>
-                <li><strong>pay</strong> — Commerce Agent for crypto payments</li>
+                <li>
+                  <strong>basefmbot</strong> — Onchain Radio Agent for autonomous communities (by{' '}
+                  <a
+                    href="https://basefm.space"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-orange-500 hover:underline"
+                  >
+                    raveculture
+                  </a>
+                  )
+                </li>
+                <li>
+                  <strong>cafe</strong> — Startup Cafe Agent for customer service
+                </li>
+                <li>
+                  <strong>studio-one</strong> — Dancehall Dub Agent with London roots culture
+                </li>
+                <li>
+                  <strong>chain</strong> — Crypto Agent with wallet capabilities (USDC, swaps, Base)
+                </li>
+                <li>
+                  <strong>vault</strong> — DeFi Agent for yield farming and staking
+                </li>
+                <li>
+                  <strong>pay</strong> — Commerce Agent for crypto payments
+                </li>
               </ul>
               <p className="text-sm text-zinc-400">
                 Choose a template, customize it to your needs, and deploy in one click.
@@ -492,39 +831,75 @@ export default function WhyAgentbotPage() {
           </div>
 
           <div className="mt-8">
-            <Link href="/signup" className="inline-block bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200">
+            <Link
+              href="/signup"
+              className="inline-block bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
+            >
               Get Started
             </Link>
           </div>
         </section>
 
         <section id="how-to" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Guide</span>
-          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">How to use Agentbot?</h2>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Guide
+          </span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">
+            How to use Agentbot?
+          </h2>
 
           <div className="space-y-8">
             <div>
-              <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">Step 1: Create or link your OpenClaw</h3>
+              <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">
+                Step 1: Create or link your OpenClaw
+              </h3>
               <p className="text-sm text-zinc-400 mb-4">
                 You have three ways to get started with Agentbot:
               </p>
               <ul className="list-disc list-inside text-sm text-zinc-400 mb-4 space-y-2">
-                <li><strong className="text-white">Create from scratch:</strong> Deploy a fresh OpenClaw instance with custom configuration</li>
-                <li><strong className="text-white">Link existing:</strong> Connect your local OpenClaw to Agentbot&apos;s cloud infrastructure</li>
-                <li><strong className="text-white">Deploy from marketplace:</strong> Choose a pre-configured agent template and deploy instantly</li>
+                <li>
+                  <strong className="text-white">Create from scratch:</strong> Deploy a fresh
+                  OpenClaw instance with custom configuration
+                </li>
+                <li>
+                  <strong className="text-white">Link existing:</strong> Connect your local OpenClaw
+                  to Agentbot&apos;s cloud infrastructure
+                </li>
+                <li>
+                  <strong className="text-white">Deploy from marketplace:</strong> Choose a
+                  pre-configured agent template and deploy instantly
+                </li>
               </ul>
               <p className="text-sm text-zinc-400 mb-4">
-                Visit the <Link href="/onboard" className="text-orange-500 hover:underline">onboard page</Link> or browse the <Link href="/marketplace" className="text-orange-500 hover:underline">marketplace</Link> to get started. Deployment takes about one minute and automatically configures the K2.5 Thinking model.
+                Visit the{' '}
+                <Link href="/onboard" className="text-orange-500 hover:underline">
+                  onboard page
+                </Link>{' '}
+                or browse the{' '}
+                <Link href="/marketplace" className="text-orange-500 hover:underline">
+                  marketplace
+                </Link>{' '}
+                to get started. Deployment takes about one minute and automatically configures the
+                K2.5 Thinking model.
               </p>
               <div className="border border-zinc-800 bg-black p-5">
                 <div className="flex flex-col md:flex-row gap-4">
-                  <Link href="/onboard?mode=create" className="flex-1 bg-white text-black py-3 text-center text-xs font-bold uppercase tracking-widest hover:bg-zinc-200">
+                  <Link
+                    href="/onboard?mode=create"
+                    className="flex-1 bg-white text-black py-3 text-center text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
+                  >
                     Create New
                   </Link>
-                  <Link href="/onboard?mode=link" className="flex-1 border border-zinc-700 py-3 text-center text-xs font-bold uppercase tracking-widest hover:border-zinc-500 text-white">
+                  <Link
+                    href="/onboard?mode=link"
+                    className="flex-1 border border-zinc-700 py-3 text-center text-xs font-bold uppercase tracking-widest hover:border-zinc-500 text-white"
+                  >
                     Link Existing
                   </Link>
-                  <Link href="/marketplace" className="flex-1 border border-zinc-700 py-3 text-center text-xs font-bold uppercase tracking-widest hover:border-zinc-500 text-white">
+                  <Link
+                    href="/marketplace"
+                    className="flex-1 border border-zinc-700 py-3 text-center text-xs font-bold uppercase tracking-widest hover:border-zinc-500 text-white"
+                  >
                     Browse Marketplace
                   </Link>
                 </div>
@@ -532,44 +907,90 @@ export default function WhyAgentbotPage() {
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">Step 2: Customize your AI assistant&apos;s personality</h3>
+              <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">
+                Step 2: Customize your AI assistant&apos;s personality
+              </h3>
               <p className="text-sm text-zinc-400 mb-4">
-                Agentbot&apos;s behavior isn&apos;t fixed. You can set its name, role, speaking style, and output format with a single instruction. Adjust its tone from formal to casual, make responses shorter or more detailed, or add standard opening and closing phrases.
+                Agentbot&apos;s behavior isn&apos;t fixed. You can set its name, role, speaking
+                style, and output format with a single instruction. Adjust its tone from formal to
+                casual, make responses shorter or more detailed, or add standard opening and closing
+                phrases.
               </p>
               <div className="border border-zinc-800 bg-black p-5">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Example customization:</span>
-                <p className="text-sm text-zinc-400 italic">&quot;You are a professional business analyst. Always format reports with three bullet points and one risk note. Use a formal tone and end messages with &apos;Best regards, Your AI Assistant.&apos;&quot;</p>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">
+                  Example customization:
+                </span>
+                <p className="text-sm text-zinc-400 italic">
+                  &quot;You are a professional business analyst. Always format reports with three
+                  bullet points and one risk note. Use a formal tone and end messages with
+                  &apos;Best regards, Your AI Assistant.&apos;&quot;
+                </p>
               </div>
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">Step 3: Use skills</h3>
+              <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">
+                Step 3: Use skills
+              </h3>
               <p className="text-sm text-zinc-400 mb-4">
-                Agentbot includes pre-built skills covering data analysis, web search, image processing, coding, and more. Instead of installing skills manually, simply ask Agentbot to identify and use the most relevant ones for your task. You can also chain multiple skills together within a single workflow.
+                Agentbot includes pre-built skills covering data analysis, web search, image
+                processing, coding, and more. Instead of installing skills manually, simply ask
+                Agentbot to identify and use the most relevant ones for your task. You can also
+                chain multiple skills together within a single workflow.
               </p>
               <div className="border border-zinc-800 bg-black p-5">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Example prompts:</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">
+                  Example prompts:
+                </span>
                 <ul className="space-y-2 text-sm text-zinc-400">
-                  <li>&mdash; &quot;Analyze current stock market opportunities and generate insights.&quot;</li>
-                  <li>&mdash; &quot;Conduct a competitor analysis and ask me for required information step by step.&quot;</li>
-                  <li>&mdash; &quot;Parse this CSV file, create visualizations, and export a PDF report.&quot;</li>
+                  <li>
+                    &mdash; &quot;Analyze current stock market opportunities and generate
+                    insights.&quot;
+                  </li>
+                  <li>
+                    &mdash; &quot;Conduct a competitor analysis and ask me for required information
+                    step by step.&quot;
+                  </li>
+                  <li>
+                    &mdash; &quot;Parse this CSV file, create visualizations, and export a PDF
+                    report.&quot;
+                  </li>
                 </ul>
               </div>
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">Step 4: Set up scheduled tasks</h3>
+              <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">
+                Step 4: Set up scheduled tasks
+              </h3>
               <p className="text-sm text-zinc-400 mb-4">
-                Agentbot can run tasks automatically on a schedule. To configure this reliably, specify three elements: when to run (time or frequency), what to do (task description), and how to deliver the result (output format and constraints).
+                Agentbot can run tasks automatically on a schedule. To configure this reliably,
+                specify three elements: when to run (time or frequency), what to do (task
+                description), and how to deliver the result (output format and constraints).
               </p>
               <div className="border border-zinc-800 bg-black p-5">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Template:</span>
-                <p className="text-sm text-zinc-400 mb-4 italic">At [time], do [task], output [format], and follow [constraints].</p>
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Example prompts:</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">
+                  Template:
+                </span>
+                <p className="text-sm text-zinc-400 mb-4 italic">
+                  At [time], do [task], output [format], and follow [constraints].
+                </p>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">
+                  Example prompts:
+                </span>
                 <ul className="space-y-2 text-sm text-zinc-400">
-                  <li>&mdash; &quot;Every Friday at 5 PM, generate a weekly report using the template I shared earlier.&quot;</li>
-                  <li>&mdash; &quot;Every morning at 8:30, find the top 5 AI news stories and summarize them.&quot;</li>
-                  <li>&mdash; &quot;Remind me in one hour to shut down my computer. Use a gentle tone.&quot;</li>
+                  <li>
+                    &mdash; &quot;Every Friday at 5 PM, generate a weekly report using the template
+                    I shared earlier.&quot;
+                  </li>
+                  <li>
+                    &mdash; &quot;Every morning at 8:30, find the top 5 AI news stories and
+                    summarize them.&quot;
+                  </li>
+                  <li>
+                    &mdash; &quot;Remind me in one hour to shut down my computer. Use a gentle
+                    tone.&quot;
+                  </li>
                 </ul>
               </div>
             </div>
@@ -577,61 +998,111 @@ export default function WhyAgentbotPage() {
         </section>
 
         <section id="use-cases" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Use Cases</span>
-          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Real-world use cases</h2>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Use Cases
+          </span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">
+            Real-world use cases
+          </h2>
           <p className="text-sm text-zinc-400 mb-8">
-            Agentbot handles workflows across content creation, data analysis, automation, and marketing. Below are four practical scenarios showing how different users apply it to save time and reduce manual work.
+            Agentbot handles workflows across content creation, data analysis, automation, and
+            marketing. Below are four practical scenarios showing how different users apply it to
+            save time and reduce manual work.
           </p>
 
           <div className="space-y-6">
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">1. 24/7 Personal Information Radar</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                1. 24/7 Personal Information Radar
+              </h3>
               <p className="text-sm text-zinc-400 mb-3">
-                <strong className="text-white">Scenario:</strong> You want to stay updated on a specific industry (like AI or Finance) without manual searching. You need the AI to fetch news daily, summarize the most impactful trends, and archive a weekly report for long-term tracking.
+                <strong className="text-white">Scenario:</strong> You want to stay updated on a
+                specific industry (like AI or Finance) without manual searching. You need the AI to
+                fetch news daily, summarize the most impactful trends, and archive a weekly report
+                for long-term tracking.
               </p>
               <div className="bg-zinc-950 border border-zinc-800 p-4">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Example prompt:</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">
+                  Example prompt:
+                </span>
                 <p className="text-zinc-400 italic text-sm">
-                  &quot;Every morning at 8:30, use Web Search to find the top 5 most significant news stories about AI Agent developments. Summarize each into 2 concise bullets, and save these daily briefs into my cloud folder &apos;AI Trends.&apos; At the end of each week, compile all briefs into a one-page executive summary PDF.&quot;
+                  &quot;Every morning at 8:30, use Web Search to find the top 5 most significant
+                  news stories about AI Agent developments. Summarize each into 2 concise bullets,
+                  and save these daily briefs into my cloud folder &apos;AI Trends.&apos; At the end
+                  of each week, compile all briefs into a one-page executive summary PDF.&quot;
                 </p>
               </div>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">2. Content creation</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                2. Content creation
+              </h3>
               <p className="text-sm text-zinc-400 mb-3">
-                <strong className="text-white">Scenario:</strong> You want to develop a professional whitepaper from a simple topic, ensure it is polished, and keep it organized in your cloud workspace.
+                <strong className="text-white">Scenario:</strong> You want to develop a professional
+                whitepaper from a simple topic, ensure it is polished, and keep it organized in your
+                cloud workspace.
               </p>
               <div className="bg-zinc-950 border border-zinc-800 p-4">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Example prompt:</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">
+                  Example prompt:
+                </span>
                 <p className="text-sm text-zinc-400 italic">
-                  &quot;Draft a comprehensive whitepaper on &apos;The Future of Remote Work in 2026.&apos; Once finished, proofread it for clarity, add a risk analysis section, and save the final Markdown file to my &apos;Professional Reports&apos; folder.&quot;
+                  &quot;Draft a comprehensive whitepaper on &apos;The Future of Remote Work in
+                  2026.&apos; Once finished, proofread it for clarity, add a risk analysis section,
+                  and save the final Markdown file to my &apos;Professional Reports&apos;
+                  folder.&quot;
                 </p>
               </div>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">3. Intelligent data visualization</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                3. Intelligent data visualization
+              </h3>
               <p className="text-sm text-zinc-400 mb-3">
-                <strong className="text-white">Scenario:</strong> You have raw data that needs professional interpretation, visual charts for a presentation, and an archived PDF for sharing.
+                <strong className="text-white">Scenario:</strong> You have raw data that needs
+                professional interpretation, visual charts for a presentation, and an archived PDF
+                for sharing.
               </p>
               <div className="bg-zinc-950 border border-zinc-800 p-4">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Example prompt:</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">
+                  Example prompt:
+                </span>
                 <p className="text-sm text-zinc-400 italic">
-                  &quot;Examine my &apos;marketing_performance.csv&apos; file to identify the highest-performing channels. Generate a pie chart for budget distribution and a line graph for ROI trends, then compile everything into a PDF report and save it to cloud storage.&quot;
+                  &quot;Examine my &apos;marketing_performance.csv&apos; file to identify the
+                  highest-performing channels. Generate a pie chart for budget distribution and a
+                  line graph for ROI trends, then compile everything into a PDF report and save it
+                  to cloud storage.&quot;
                 </p>
               </div>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">5. Onchain community management</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">
+                5. Onchain community management
+              </h3>
               <p className="text-sm text-zinc-400 mb-3">
-                <strong className="text-white">Scenario:</strong> You&apos;re building an autonomous music community and need an agent that understands the culture, grows engagement organically, and bridges humans with AI agents onchain.
+                <strong className="text-white">Scenario:</strong> You&apos;re building an autonomous
+                music community and need an agent that understands the culture, grows engagement
+                organically, and bridges humans with AI agents onchain.
               </p>
               <div className="bg-zinc-950 border border-zinc-800 p-4">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Example: Deploy basefmbot template</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">
+                  Example: Deploy basefmbot template
+                </span>
                 <p className="text-sm text-zinc-400 mb-3">
-                  The <strong className="text-white">basefmbot</strong> template (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">raveculture</a>) comes pre-configured with deep knowledge of basefm.space, autonomous radio culture, and onchain community building. It knows how to:
+                  The <strong className="text-white">basefmbot</strong> template (by{' '}
+                  <a
+                    href="https://basefm.space"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-orange-500 hover:underline"
+                  >
+                    raveculture
+                  </a>
+                  ) comes pre-configured with deep knowledge of basefm.space, autonomous radio
+                  culture, and onchain community building. It knows how to:
                 </p>
                 <ul className="list-disc list-inside text-sm text-zinc-400 space-y-1">
                   <li>Grow communities organically without spam</li>
@@ -641,7 +1112,12 @@ export default function WhyAgentbotPage() {
                   <li>Build authentic engagement</li>
                 </ul>
                 <p className="text-sm text-zinc-400 mt-3">
-                  Deploy from <Link href="/marketplace" className="text-orange-500 hover:underline">marketplace</Link>, customize the personality, and let it run 24/7 across Telegram, Discord, and WhatsApp.
+                  Deploy from{' '}
+                  <Link href="/marketplace" className="text-orange-500 hover:underline">
+                    marketplace
+                  </Link>
+                  , customize the personality, and let it run 24/7 across Telegram, Discord, and
+                  WhatsApp.
                 </p>
               </div>
             </div>
@@ -649,101 +1125,191 @@ export default function WhyAgentbotPage() {
         </section>
 
         <section id="conclusion" className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Conclusion</span>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            Conclusion
+          </span>
           <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Conclusion</h2>
           <p className="text-sm text-zinc-400 mb-4">
-            Agentbot represents the future of AI agents by combining the personality and memory of OpenClaw with cloud infrastructure and multi-channel deployment. By eliminating hardware barriers and complex terminal setups, it allows you to maintain a professional-grade assistant that is online 24/7 and ready to handle specialized tasks across Telegram, Discord, and WhatsApp.
+            Agentbot represents the future of AI agents by combining the personality and memory of
+            OpenClaw with cloud infrastructure and multi-channel deployment. By eliminating hardware
+            barriers and complex terminal setups, it allows you to maintain a professional-grade
+            assistant that is online 24/7 and ready to handle specialized tasks across Telegram,
+            Discord, and WhatsApp.
           </p>
           <p className="text-sm text-zinc-400 mb-8">
-            Whether you are automating daily research or managing long-term projects, Agentbot provides the reliable, always-on brain you need to stay ahead.
+            Whether you are automating daily research or managing long-term projects, Agentbot
+            provides the reliable, always-on brain you need to stay ahead.
           </p>
 
           <div className="border border-zinc-800 bg-black p-8">
-            <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">Ready to deploy your AI agent?</h3>
+            <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">
+              Ready to deploy your AI agent?
+            </h3>
             <p className="text-sm text-zinc-400 mb-6">Start from {PRICE_START} with full access.</p>
-            <Link href="/signup" className="inline-block bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200">
+            <Link
+              href="/signup"
+              className="inline-block bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
+            >
               Get Started
             </Link>
           </div>
         </section>
 
         <section className="mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">FAQ</span>
-          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Questions & Answers</h2>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">
+            FAQ
+          </span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">
+            Questions & Answers
+          </h2>
 
           <div className="space-y-6">
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Is Agentbot free?</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Is Agentbot free?
+              </h3>
               <p className="text-sm text-zinc-400">
-                Plans start at {PRICE_START} for the Solo plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-orange-500 hover:underline">pricing page</Link> for details.
+                Plans start at {PRICE_START} for the Solo plan. One-click cloud deployment is
+                available on all paid plans. If you already run OpenClaw locally, you can link it to
+                Agentbot for free. See our{' '}
+                <Link href="/pricing" className="text-orange-500 hover:underline">
+                  pricing page
+                </Link>{' '}
+                for details.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Can I use the terminal to control Agentbot?</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Can I use the terminal to control Agentbot?
+              </h3>
               <p className="text-sm text-zinc-400">
-                Agentbot does not currently support direct terminal access. A terminal UI is coming soon. For now, you can send commands via chat (Telegram, Discord, WhatsApp) and let Agentbot execute them for you.
+                Agentbot does not currently support direct terminal access. A terminal UI is coming
+                soon. For now, you can send commands via chat (Telegram, Discord, WhatsApp) and let
+                Agentbot execute them for you.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">What if Agentbot doesn&apos;t respond to messages?</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                What if Agentbot doesn&apos;t respond to messages?
+              </h3>
               <p className="text-sm text-zinc-400">
-                First, try refreshing your chat or reconnecting. If that doesn&apos;t work, go to your <Link href="/dashboard" className="text-orange-500 hover:underline">Dashboard</Link>{' '}and click &quot;Restart Agent.&quot; Wait for it to restart, then message again. If neither solution works, contact support from the dashboard.
+                First, try refreshing your chat or reconnecting. If that doesn&apos;t work, go to
+                your{' '}
+                <Link href="/dashboard" className="text-orange-500 hover:underline">
+                  Dashboard
+                </Link>{' '}
+                and click &quot;Restart Agent.&quot; Wait for it to restart, then message again. If
+                neither solution works, contact support from the dashboard.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Can Agentbot send files back to me?</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Can Agentbot send files back to me?
+              </h3>
               <p className="text-sm text-zinc-400">
-                Yes! Agentbot can send files directly through Telegram, Discord, and WhatsApp. You can also access generated files through the cloud storage dashboard. Files are saved automatically and accessible from any device.
+                Yes! Agentbot can send files directly through Telegram, Discord, and WhatsApp. You
+                can also access generated files through the cloud storage dashboard. Files are saved
+                automatically and accessible from any device.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Can Agentbot handle crypto transactions?</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Can Agentbot handle crypto transactions?
+              </h3>
               <p className="text-sm text-zinc-400">
-                Yes! Agentbot integrates with <a href="https://docs.cdp.coinbase.com/agentic-wallet/welcome" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">Coinbase Agentic Wallet</a>, enabling your agent to execute onchain transactions autonomously. Your agent can send payments, interact with smart contracts, swap tokens, mint NFTs, and manage crypto assets through natural language commands. This makes it a true autonomous financial assistant for DeFi operations.
+                Yes! Agentbot integrates with{' '}
+                <a
+                  href="https://docs.cdp.coinbase.com/agentic-wallet/welcome"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-orange-500 hover:underline"
+                >
+                  Coinbase Agentic Wallet
+                </a>
+                , enabling your agent to execute onchain transactions autonomously. Your agent can
+                send payments, interact with smart contracts, swap tokens, mint NFTs, and manage
+                crypto assets through natural language commands. This makes it a true autonomous
+                financial assistant for DeFi operations.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Can I deploy a pre-configured agent?</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                Can I deploy a pre-configured agent?
+              </h3>
               <p className="text-sm text-zinc-400 mb-3">
-                Absolutely! Visit our <Link href="/marketplace" className="text-orange-500 hover:underline">marketplace</Link> to browse pre-configured agent templates. Each template comes with personality, skills, and use-case-specific configurations.
+                Absolutely! Visit our{' '}
+                <Link href="/marketplace" className="text-orange-500 hover:underline">
+                  marketplace
+                </Link>{' '}
+                to browse pre-configured agent templates. Each template comes with personality,
+                skills, and use-case-specific configurations.
               </p>
               <p className="text-sm text-zinc-400 mb-3">
                 <strong className="text-white">Available templates include:</strong>
               </p>
               <ul className="list-disc list-inside text-zinc-400 text-sm space-y-1">
-                <li><strong className="text-white">basefmbot</strong> — Onchain Radio Agent (by raveculture) for autonomous communities</li>
-                <li><strong className="text-white">cafe</strong> — Customer service agent for startups</li>
-                <li><strong className="text-white">studio-one</strong> — Dancehall Dub Agent with London roots culture</li>
-                <li><strong className="text-white">agentbotdj</strong> — Factory DJ Agent for crate digging</li>
-                <li><strong className="text-white">chain</strong> — Crypto Agent with wallet (USDC, swaps on Base)</li>
-                <li><strong className="text-white">vault</strong> — DeFi Agent for yield farming and staking</li>
-                <li><strong className="text-white">pay</strong> — Commerce Agent for crypto payments and subscriptions</li>
+                <li>
+                  <strong className="text-white">basefmbot</strong> — Onchain Radio Agent (by
+                  raveculture) for autonomous communities
+                </li>
+                <li>
+                  <strong className="text-white">cafe</strong> — Customer service agent for startups
+                </li>
+                <li>
+                  <strong className="text-white">studio-one</strong> — Dancehall Dub Agent with
+                  London roots culture
+                </li>
+                <li>
+                  <strong className="text-white">agentbotdj</strong> — Factory DJ Agent for crate
+                  digging
+                </li>
+                <li>
+                  <strong className="text-white">chain</strong> — Crypto Agent with wallet (USDC,
+                  swaps on Base)
+                </li>
+                <li>
+                  <strong className="text-white">vault</strong> — DeFi Agent for yield farming and
+                  staking
+                </li>
+                <li>
+                  <strong className="text-white">pay</strong> — Commerce Agent for crypto payments
+                  and subscriptions
+                </li>
               </ul>
               <p className="text-sm text-zinc-400 mt-3">
-                Choose one, customize it to your needs, and deploy in one click. No need to build from scratch.
+                Choose one, customize it to your needs, and deploy in one click. No need to build
+                from scratch.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
-              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">What is Agentbot?</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">
+                What is Agentbot?
+              </h3>
               <p className="text-sm text-zinc-400">
-                Agentbot is a cloud-based AI assistant platform that deploys OpenClaw to the cloud in one click. You get a 24/7 personal AI assistant with long-term memory, customizable personality, ready-to-use skills, and multi-channel access (Telegram, Discord, WhatsApp)—all without server setup or terminal commands.
+                Agentbot is a cloud-based AI assistant platform that deploys OpenClaw to the cloud
+                in one click. You get a 24/7 personal AI assistant with long-term memory,
+                customizable personality, ready-to-use skills, and multi-channel access (Telegram,
+                Discord, WhatsApp)—all without server setup or terminal commands.
               </p>
             </div>
           </div>
         </section>
 
-        <div className="text-left py-12 border-t border-zinc-800">
-          <Link href="/onboard" className="inline-block bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200">
+        <div className="text-left py-12 border-t border-zinc-900">
+          <Link
+            href="/onboard"
+            className="inline-block bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
+          >
             Deploy Your Agent Now
           </Link>
         </div>
       </div>
     </main>
-  )
+  );
 }

@@ -565,7 +565,7 @@ export default function SkillsPage() {
         {/* Skills grid */}
         {skills.length === 0 ? (
           <EmptyState
-            icon={<Wrench className="h-8 w-8 text-zinc-600" />}
+            icon={<Wrench className="h-8 w-8 text-zinc-500" />}
             title="No skills found"
             description="Try a different category or check back later"
           />
@@ -611,7 +611,7 @@ export default function SkillsPage() {
                     <span>by {skill.author}</span>
                   </div>
                   <div className="mb-4 flex items-center justify-between gap-3 border border-zinc-800 bg-black px-3 py-2">
-                    <span className="text-[10px] uppercase tracking-widest text-zinc-600">
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-500">
                       {skill.ratingCount > 0
                         ? `${skill.ratingCount} rating${skill.ratingCount === 1 ? '' : 's'}`
                         : 'Be first to rate'}
@@ -626,7 +626,7 @@ export default function SkillsPage() {
                             type="button"
                             onClick={() => rateSkill(skill.id, ratingValue)}
                             disabled={ratingSkillId === skill.id}
-                            className="p-1 text-zinc-600 transition-colors hover:text-orange-400 disabled:cursor-wait disabled:opacity-60"
+                            className="p-1 text-zinc-500 transition-colors hover:text-orange-400 disabled:cursor-wait disabled:opacity-60"
                             aria-label={`Rate ${skill.name} ${ratingValue} star${ratingValue === 1 ? '' : 's'}`}
                           >
                             <Star

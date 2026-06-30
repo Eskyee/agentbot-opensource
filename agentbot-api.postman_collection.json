@@ -11,15 +11,15 @@
     },
     {
       "key": "backendUrl",
-      "value": "https://agentbot-backend-production.up.railway.app"
+      "value": "https://YOUR_SERVICE_URL"
     },
     {
       "key": "gatewayUrl",
-      "value": "https://openclaw-production-a09d.up.railway.app"
+      "value": "https://YOUR_SERVICE_URL"
     },
     {
       "key": "x402Url",
-      "value": "https://x402-gateway-production.up.railway.app"
+      "value": "https://YOUR_SERVICE_URL"
     },
     {
       "key": "sessionToken",

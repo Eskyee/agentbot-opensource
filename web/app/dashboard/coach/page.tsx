@@ -1,37 +1,34 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import {
-  DashboardShell,
-  DashboardHeader,
-} from '@/app/components/shared/DashboardShell'
+import { useState } from 'react';
+import { DashboardShell, DashboardHeader } from '@/app/components/shared/DashboardShell';
 
 /* ── Lesson data ─────────────────────────────────────────────── */
 interface CheckItem {
-  label: string
-  done: boolean
+  label: string;
+  done: boolean;
 }
 
 interface Lesson {
-  id: string
-  num: string
-  title: string
-  estimatedMin: number
-  concept: { heading: string; body: string }
-  terminal: { cmd: string; output: string[] }
-  hint: string
-  checks: CheckItem[]
+  id: string;
+  num: string;
+  title: string;
+  estimatedMin: number;
+  concept: { heading: string; body: string };
+  terminal: { cmd: string; output: string[] };
+  hint: string;
+  checks: CheckItem[];
   practiceNode: {
-    name: string
-    tag: string
-    did: string
-    region: string
-    cpu: number
-    p50: number
-    fitness: number
-    score: { label: string; value: string; accent?: boolean }[]
-    nextUp: string[]
-  }
+    name: string;
+    tag: string;
+    did: string;
+    region: string;
+    cpu: number;
+    p50: number;
+    fitness: number;
+    score: { label: string; value: string; accent?: boolean }[];
+    nextUp: string[];
+  };
 }
 
 const LESSONS: Lesson[] = [
@@ -84,7 +81,7 @@ const LESSONS: Lesson[] = [
     estimatedMin: 6,
     concept: {
       heading: 'Identity anchors',
-      body: 'Every agent is a <b>DID</b> — a cryptographic identifier that can sign, rotate, and verify. <b>SignatureGuard</b> enforces auth at every boundary. There is no middleware you can bypass. Your agent\'s identity is its contract with every system it touches.',
+      body: "Every agent is a <b>DID</b> — a cryptographic identifier that can sign, rotate, and verify. <b>SignatureGuard</b> enforces auth at every boundary. There is no middleware you can bypass. Your agent's identity is its contract with every system it touches.",
     },
     terminal: {
       cmd: 'agentbot did show settler-12',
@@ -212,7 +209,7 @@ const LESSONS: Lesson[] = [
     estimatedMin: 6,
     concept: {
       heading: 'Merkle proofs',
-      body: 'Every fact your agent commits is part of a <b>Merkle tree</b> mirrored to Gitlawb. You can verify any leaf — a transaction, a balance, a policy decision — against the root hash. Verification takes 14ms. Auditing is not an afterthought; it\'s the product.',
+      body: "Every fact your agent commits is part of a <b>Merkle tree</b> mirrored to Gitlawb. You can verify any leaf — a transaction, a balance, a policy decision — against the root hash. Verification takes 14ms. Auditing is not an afterthought; it's the product.",
     },
     terminal: {
       cmd: 'agentbot fact verify tx/L-7f3a…',
@@ -253,7 +250,7 @@ const LESSONS: Lesson[] = [
     estimatedMin: 8,
     concept: {
       heading: 'Fleet operations',
-      body: 'Scaling is not just adding nodes — it\'s <b>distributing policy</b>, <b>syncing fact mirrors</b>, and maintaining sub-100ms identity verification across regions. Agentbot handles region failover automatically. You manage the policies and the budget.',
+      body: "Scaling is not just adding nodes — it's <b>distributing policy</b>, <b>syncing fact mirrors</b>, and maintaining sub-100ms identity verification across regions. Agentbot handles region failover automatically. You manage the policies and the budget.",
     },
     terminal: {
       cmd: 'agentbot fleet scale --region fra-1 --count 3',
@@ -288,44 +285,41 @@ const LESSONS: Lesson[] = [
       nextUp: ['Master complete ✓'],
     },
   },
-]
+];
 
 /* ── Progress tracking in local state ───────────────────────── */
 function useCoachState() {
-  const [currentIdx, setCurrentIdx] = useState(0)
-  const [checkState, setCheckState] = useState<Record<string, boolean[]>>(
-    () =>
-      Object.fromEntries(
-        LESSONS.map((l) => [l.id, l.checks.map((c) => c.done)])
-      )
-  )
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [checkState, setCheckState] = useState<Record<string, boolean[]>>(() =>
+    Object.fromEntries(LESSONS.map((l) => [l.id, l.checks.map((c) => c.done)]))
+  );
 
-  const lesson = LESSONS[currentIdx]
-  const checks = checkState[lesson.id] ?? []
-  const completedCount = checks.filter(Boolean).length
-  const totalChecks = LESSONS.reduce((s, l) => s + l.checks.length, 0)
+  const lesson = LESSONS[currentIdx];
+  const checks = checkState[lesson.id] ?? [];
+  const completedCount = checks.filter(Boolean).length;
+  const totalChecks = LESSONS.reduce((s, l) => s + l.checks.length, 0);
   const completedTotal = Object.entries(checkState).reduce(
     (s, [, arr]) => s + arr.filter(Boolean).length,
     0
-  )
+  );
 
   const toggleCheck = (idx: number) => {
     setCheckState((prev) => {
-      const arr = [...(prev[lesson.id] ?? [])]
-      arr[idx] = !arr[idx]
-      return { ...prev, [lesson.id]: arr }
-    })
-  }
+      const arr = [...(prev[lesson.id] ?? [])];
+      arr[idx] = !arr[idx];
+      return { ...prev, [lesson.id]: arr };
+    });
+  };
 
-  const progressPct = Math.round((completedTotal / totalChecks) * 100)
+  const progressPct = Math.round((completedTotal / totalChecks) * 100);
 
-  return { lesson, currentIdx, setCurrentIdx, checks, completedCount, progressPct, toggleCheck }
+  return { lesson, currentIdx, setCurrentIdx, checks, completedCount, progressPct, toggleCheck };
 }
 
 /* ── Page ────────────────────────────────────────────────────── */
 export default function CoachPage() {
   const { lesson, currentIdx, setCurrentIdx, checks, completedCount, progressPct, toggleCheck } =
-    useCoachState()
+    useCoachState();
 
   return (
     <DashboardShell>
@@ -335,20 +329,17 @@ export default function CoachPage() {
         icon={<span className="text-base">◈</span>}
       />
 
-      <div
-        className="flex overflow-hidden"
-        style={{ height: 'calc(100vh - 112px)', minHeight: 0 }}
-      >
+      <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 112px)', minHeight: 0 }}>
         {/* ── Left rail: lesson list ─────────────────────────── */}
         <aside className="w-[260px] shrink-0 border-r border-zinc-800 bg-zinc-950 flex flex-col overflow-hidden hidden md:flex">
-          <div className="px-4 py-3 text-[9.5px] tracking-[0.18em] uppercase text-zinc-600 border-b border-zinc-800">
+          <div className="px-4 py-3 text-[9.5px] tracking-[0.18em] uppercase text-zinc-500 border-b border-zinc-800">
             Curriculum
           </div>
 
           <ul className="flex-1 overflow-y-auto">
             {LESSONS.map((l, i) => {
-              const isDone = i < currentIdx
-              const isCur = i === currentIdx
+              const isDone = i < currentIdx;
+              const isCur = i === currentIdx;
               return (
                 <li
                   key={l.id}
@@ -357,18 +348,23 @@ export default function CoachPage() {
                     isCur
                       ? 'border-l-[oklch(0.82_0.13_195)] bg-zinc-900'
                       : isDone
-                      ? 'border-l-green-500/40 hover:bg-zinc-900/50'
-                      : 'border-l-transparent hover:bg-zinc-900/30'
+                        ? 'border-l-green-500/40 hover:bg-zinc-900/50'
+                        : 'border-l-transparent hover:bg-zinc-900/30'
                   }`}
-                  style={{ gridTemplateColumns: '32px 1fr auto', gap: '10px', alignItems: 'center', padding: '9px 16px' }}
+                  style={{
+                    gridTemplateColumns: '32px 1fr auto',
+                    gap: '10px',
+                    alignItems: 'center',
+                    padding: '9px 16px',
+                  }}
                 >
                   <span
                     className={`text-[10.5px] font-mono tracking-[0.06em] ${
                       isCur
                         ? 'text-[oklch(0.82_0.13_195)]'
                         : isDone
-                        ? 'text-green-500'
-                        : 'text-zinc-600'
+                          ? 'text-green-500'
+                          : 'text-zinc-500'
                     }`}
                   >
                     {isDone ? '✓' : l.num}
@@ -380,21 +376,23 @@ export default function CoachPage() {
                   >
                     {l.title}
                   </span>
-                  <span className="text-[10px] text-zinc-600 font-mono shrink-0">{l.estimatedMin}m</span>
+                  <span className="text-[10px] text-zinc-500 font-mono shrink-0">
+                    {l.estimatedMin}m
+                  </span>
                 </li>
-              )
+              );
             })}
           </ul>
 
           {/* Progress footer */}
-          <div className="px-4 py-4 border-t border-zinc-800 flex flex-col gap-2">
+          <div className="px-4 py-4 border-t border-zinc-900 flex flex-col gap-2">
             <div className="h-1 bg-zinc-800 w-full overflow-hidden">
               <div
                 className="h-full bg-[oklch(0.82_0.13_195)] transition-all duration-500"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
-            <div className="text-[10.5px] font-mono text-zinc-600">
+            <div className="text-[10.5px] font-mono text-zinc-500">
               {progressPct}% complete · {currentIdx + 1}/{LESSONS.length} lessons
             </div>
           </div>
@@ -405,7 +403,7 @@ export default function CoachPage() {
           {/* Stage head */}
           <div className="flex items-start justify-between px-7 py-5 border-b border-zinc-800 bg-zinc-950/60 shrink-0">
             <div>
-              <div className="text-[10px] tracking-[0.18em] uppercase text-zinc-600">
+              <div className="text-[10px] tracking-[0.18em] uppercase text-zinc-500">
                 {lesson.num} of {LESSONS.length.toString().padStart(2, '0')} · LESSON
               </div>
               <h1 className="mt-1.5 text-[22px] font-mono font-medium tracking-[-0.01em] text-zinc-100">
@@ -434,18 +432,22 @@ export default function CoachPage() {
           <div className="flex-1 overflow-y-auto px-7 py-6 flex flex-col gap-5">
             {/* Concept card */}
             <div className="border border-zinc-800 bg-zinc-950 p-5">
-              <div className="text-[9.5px] tracking-[0.18em] uppercase text-zinc-600 mb-3">
+              <div className="text-[9.5px] tracking-[0.18em] uppercase text-zinc-500 mb-3">
                 {lesson.concept.heading}
               </div>
               <p
                 className="text-[12.5px] leading-[1.65] text-zinc-300 max-w-[72ch]"
-                dangerouslySetInnerHTML={{ __html: lesson.concept.body.replace(/<b>/g, '<span class="text-zinc-100 font-medium">').replace(/<\/b>/g, '</span>') }}
+                dangerouslySetInnerHTML={{
+                  __html: lesson.concept.body
+                    .replace(/<b>/g, '<span class="text-zinc-100 font-medium">')
+                    .replace(/<\/b>/g, '</span>'),
+                }}
               />
             </div>
 
             {/* Terminal card */}
             <div className="border border-zinc-800 bg-zinc-900 overflow-hidden">
-              <div className="px-4 pt-3 pb-2 text-[9.5px] tracking-[0.18em] uppercase text-zinc-600 border-b border-zinc-800">
+              <div className="px-4 pt-3 pb-2 text-[9.5px] tracking-[0.18em] uppercase text-zinc-500 border-b border-zinc-800">
                 Terminal
               </div>
               <div className="px-4 py-3 font-mono text-[11.5px]">
@@ -481,7 +483,10 @@ export default function CoachPage() {
                 background: 'color-mix(in oklab, oklch(0.82 0.13 195) 4%, oklch(0.06 0 0))',
               }}
             >
-              <div className="text-[9.5px] tracking-[0.18em] uppercase mb-2" style={{ color: 'oklch(0.82 0.13 195)' }}>
+              <div
+                className="text-[9.5px] tracking-[0.18em] uppercase mb-2"
+                style={{ color: 'oklch(0.82 0.13 195)' }}
+              >
                 Operator hint
               </div>
               <p className="text-[12px] text-zinc-400 leading-[1.6] max-w-[70ch]">{lesson.hint}</p>
@@ -489,13 +494,13 @@ export default function CoachPage() {
 
             {/* Checklist */}
             <div className="border border-zinc-800 bg-zinc-950 p-5">
-              <div className="text-[9.5px] tracking-[0.18em] uppercase text-zinc-600 mb-4">
+              <div className="text-[9.5px] tracking-[0.18em] uppercase text-zinc-500 mb-4">
                 Completion checklist · {completedCount}/{lesson.checks.length}
               </div>
               <ul className="flex flex-col gap-2.5">
                 {lesson.checks.map((item, idx) => {
-                  const done = checks[idx] ?? false
-                  const isCur = !done && idx === checks.indexOf(false)
+                  const done = checks[idx] ?? false;
+                  const isCur = !done && idx === checks.indexOf(false);
                   return (
                     <li
                       key={idx}
@@ -508,34 +513,38 @@ export default function CoachPage() {
                           borderColor: done
                             ? 'oklch(0.72 0.18 145)'
                             : isCur
-                            ? 'oklch(0.82 0.13 195)'
-                            : 'oklch(0.4 0 0)',
+                              ? 'oklch(0.82 0.13 195)'
+                              : 'oklch(0.4 0 0)',
                           background: done
                             ? 'oklch(0.72 0.18 145)'
                             : isCur
-                            ? 'oklch(0.82 0.13 195 / 0.15)'
-                            : 'transparent',
+                              ? 'oklch(0.82 0.13 195 / 0.15)'
+                              : 'transparent',
                         }}
                       />
                       <span
                         className={`text-[12px] font-mono transition-colors ${
                           done
-                            ? 'text-zinc-600 line-through'
+                            ? 'text-zinc-500 line-through'
                             : isCur
-                            ? 'text-zinc-100'
-                            : 'text-zinc-500 group-hover:text-zinc-400'
+                              ? 'text-zinc-100'
+                              : 'text-zinc-500 group-hover:text-zinc-400'
                         }`}
                       >
                         {item.label}
                       </span>
                     </li>
-                  )
+                  );
                 })}
               </ul>
               {completedCount === lesson.checks.length && (
                 <div
                   className="mt-4 px-3 py-2 text-[10px] tracking-[0.18em] uppercase font-mono"
-                  style={{ color: 'oklch(0.72 0.18 145)', background: 'oklch(0.72 0.18 145 / 0.08)', border: '1px solid oklch(0.72 0.18 145 / 0.3)' }}
+                  style={{
+                    color: 'oklch(0.72 0.18 145)',
+                    background: 'oklch(0.72 0.18 145 / 0.08)',
+                    border: '1px solid oklch(0.72 0.18 145 / 0.3)',
+                  }}
                 >
                   ✓ Lesson complete — advance to next module
                 </div>
@@ -546,7 +555,7 @@ export default function CoachPage() {
 
         {/* ── Right practice rail ─────────────────────────────── */}
         <aside className="w-[260px] shrink-0 border-l border-zinc-800 bg-zinc-950 overflow-y-auto hidden lg:block">
-          <div className="px-4 py-3 text-[9.5px] tracking-[0.18em] uppercase text-zinc-600 border-b border-zinc-800">
+          <div className="px-4 py-3 text-[9.5px] tracking-[0.18em] uppercase text-zinc-500 border-b border-zinc-800">
             Live agent
           </div>
 
@@ -560,18 +569,18 @@ export default function CoachPage() {
                 {lesson.practiceNode.tag}
               </span>
             </div>
-            <div className="text-[10.5px] font-mono text-zinc-600 truncate">
+            <div className="text-[10.5px] font-mono text-zinc-500 truncate">
               {lesson.practiceNode.did}
             </div>
             <div
               className="grid text-[11px] gap-x-3 gap-y-1"
               style={{ gridTemplateColumns: '1fr 1fr' }}
             >
-              <span className="text-zinc-600">region</span>
+              <span className="text-zinc-500">region</span>
               <span className="text-zinc-300 font-mono">{lesson.practiceNode.region}</span>
-              <span className="text-zinc-600">cpu</span>
+              <span className="text-zinc-500">cpu</span>
               <span className="text-zinc-300 font-mono">{lesson.practiceNode.cpu}%</span>
-              <span className="text-zinc-600">p50</span>
+              <span className="text-zinc-500">p50</span>
               <span className="text-zinc-300 font-mono">{lesson.practiceNode.p50}ms</span>
             </div>
             <div className="h-0.5 bg-zinc-800 w-full overflow-hidden">
@@ -580,13 +589,13 @@ export default function CoachPage() {
                 style={{ width: `${lesson.practiceNode.fitness}%` }}
               />
             </div>
-            <div className="text-[10.5px] font-mono text-zinc-600">
+            <div className="text-[10.5px] font-mono text-zinc-500">
               fitness {lesson.practiceNode.fitness}%
             </div>
           </div>
 
           {/* Score breakdown */}
-          <div className="px-4 py-2 text-[9.5px] tracking-[0.18em] uppercase text-zinc-600 border-t border-zinc-800 mt-2">
+          <div className="px-4 py-2 text-[9.5px] tracking-[0.18em] uppercase text-zinc-500 border-t border-zinc-900 mt-2">
             Score
           </div>
           <div className="px-4 flex flex-col gap-0">
@@ -609,7 +618,7 @@ export default function CoachPage() {
           </div>
 
           {/* Next up */}
-          <div className="px-4 py-3 text-[9.5px] tracking-[0.18em] uppercase text-zinc-600 border-t border-zinc-800 mt-3">
+          <div className="px-4 py-3 text-[9.5px] tracking-[0.18em] uppercase text-zinc-500 border-t border-zinc-900 mt-3">
             Next up
           </div>
           <div className="px-4 flex flex-col gap-0">
@@ -617,7 +626,7 @@ export default function CoachPage() {
               <div
                 key={i}
                 className={`py-1.5 text-[11.5px] font-mono border-b border-dashed border-zinc-800/60 ${
-                  i === 0 ? 'text-zinc-400' : 'text-zinc-600'
+                  i === 0 ? 'text-zinc-400' : 'text-zinc-500'
                 }`}
               >
                 {n}
@@ -631,5 +640,5 @@ export default function CoachPage() {
         @keyframes coachBlink { 50% { opacity: 0; } }
       `}</style>
     </DashboardShell>
-  )
+  );
 }

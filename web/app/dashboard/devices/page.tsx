@@ -127,7 +127,7 @@ export default function DevicesPage() {
         count={pending.length + approved.length}
         action={
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-zinc-600 font-mono">
+            <span className="text-[10px] text-zinc-500 font-mono">
               Auto-refresh 30s
             </span>
             <button
@@ -216,9 +216,9 @@ export default function DevicesPage() {
 
           {pending.length === 0 ? (
             <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
-              <Shield className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
-              <p className="text-sm text-zinc-600 font-mono">No pending requests</p>
-              <p className="text-[10px] text-zinc-700 font-mono mt-1">
+              <Shield className="h-8 w-8 text-zinc-500 mx-auto mb-3" />
+              <p className="text-sm text-zinc-500 font-mono">No pending requests</p>
+              <p className="text-[10px] text-zinc-500 font-mono mt-1">
                 New device connections will appear here
               </p>
             </div>
@@ -233,7 +233,7 @@ export default function DevicesPage() {
                     <div className="text-sm font-mono font-bold text-white mb-1 truncate">
                       {device.name}
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-600">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-500">
                       <span className="flex items-center gap-1">
                         <Globe className="h-3 w-3" />
                         {device.ip}
@@ -290,9 +290,9 @@ export default function DevicesPage() {
 
           {approved.length === 0 ? (
             <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
-              <ShieldOff className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
-              <p className="text-sm text-zinc-600 font-mono">No paired devices</p>
-              <p className="text-[10px] text-zinc-700 font-mono mt-1">
+              <ShieldOff className="h-8 w-8 text-zinc-500 mx-auto mb-3" />
+              <p className="text-sm text-zinc-500 font-mono">No paired devices</p>
+              <p className="text-[10px] text-zinc-500 font-mono mt-1">
                 Click &quot;Pair My iPhone&quot; above to get started
               </p>
             </div>
@@ -317,7 +317,7 @@ export default function DevicesPage() {
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-600">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-500">
                         <span className="flex items-center gap-1">
                           <Globe className="h-3 w-3" />
                           {device.ip}

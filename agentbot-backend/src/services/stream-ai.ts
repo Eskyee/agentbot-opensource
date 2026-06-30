@@ -1,4 +1,4 @@
-import { log } from "../lib/logger";
+import { log } from '../lib/logger';
 /**
  * OpenRouter Streaming Service
  *
@@ -78,10 +78,12 @@ export async function streamChat(
         stream: true,
         temperature: options.temperature ?? 0.7,
         maxTokens: options.max_tokens,
-        provider: options.provider ? {
-          sort: options.provider.sort,
-          zdr: options.provider.zdr,
-        } : undefined,
+        provider: options.provider
+          ? {
+              sort: options.provider.sort,
+              zdr: options.provider.zdr,
+            }
+          : undefined,
       },
     });
 
@@ -112,7 +114,8 @@ export async function streamChat(
           promptTokens: chunk.usage.promptTokens,
           completionTokens: chunk.usage.completionTokens,
           totalTokens: chunk.usage.totalTokens,
-          reasoningTokens: (chunk.usage as Record<string, unknown>).reasoningTokens as number,
+          reasoningTokens: (chunk.usage as Record<string, unknown>).outputTokenDetails
+            .reasoningTokens as number,
         };
       }
     }
@@ -140,7 +143,7 @@ export async function streamChat(
             0, // latency tracked client-side for streaming
           ]
         )
-        .catch((err) => log.error('[StreamAI] Usage logging failed:', { error: err.message }))
+        .catch((err) => log.error('[StreamAI] Usage logging failed:', { error: err.message }));
     }
   } catch (error: any) {
     res.write(

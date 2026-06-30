@@ -1,43 +1,105 @@
-import { AuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/app/lib/prisma";
-import { SiweMessage } from "siwe";
-import { createPublicClient, http } from "viem";
-import { base } from "viem/chains";
-import { consumeWalletNonce } from "@/app/lib/wallet-nonce";
-import { isAdminEmail } from "@/app/lib/admin";
+import { AuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import GitHubProvider from 'next-auth/providers/github';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import bcrypt from 'bcryptjs';
+import { prisma } from '@/app/lib/prisma';
+import { SiweMessage } from 'siwe';
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+import { consumeWalletNonce } from '@/app/lib/wallet-nonce';
+import { isAdminEmail } from '@/app/lib/admin';
+
+const VercelProvider = {
+  id: 'vercel',
+  name: 'Vercel',
+  type: 'oauth' as const,
+  authorization: {
+    url: 'https://vercel.com/oauth/authorize',
+    params: {
+      response_type: 'code',
+      scope: 'openid email profile offline_access',
+    },
+  },
+  token: {
+    url: 'https://api.vercel.com/v2/oauth/access_token',
+    async request(ctx: any) {
+      const params = new URLSearchParams({
+        client_id: process.env.NEXT_PUBLIC_VERCEL_APP_CLIENT_ID!,
+        client_secret: process.env.VERCEL_APP_CLIENT_SECRET!,
+        code: ctx.params.code,
+        grant_type: 'authorization_code',
+        redirect_uri: ctx.provider.callbackUrl,
+      });
+      const res = await fetch('https://api.vercel.com/v2/oauth/access_token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString(),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(
+          `Vercel token exchange failed (${res.status}): ${
+            data?.error_description || data?.error || 'unknown error'
+          }`
+        );
+      }
+      return { tokens: data };
+    },
+  },
+  userinfo: {
+    url: 'https://api.vercel.com/v2/user',
+  },
+  // NextAuth v4 expects `checks` as an array of strings, not an object.
+  // Vercel's integration OAuth does not support PKCE, so we use `state` only.
+  checks: ['state'] as const,
+  profile(profile: any) {
+    return {
+      id: profile.user?.id || profile.id,
+      name: profile.user?.name || profile.name,
+      email: profile.user?.email || profile.email,
+      image: profile.user?.avatar || profile.avatar,
+    };
+  },
+  clientId: process.env.NEXT_PUBLIC_VERCEL_APP_CLIENT_ID,
+  clientSecret: process.env.VERCEL_APP_CLIENT_SECRET,
+};
 
 function getNextAuthSecret(): string {
-  const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET
-  if (secret) return secret
+  const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET;
+  if (secret) return secret;
 
-  const isPreviewLikeBuild =
-    process.env.NEXT_PHASE === 'phase-production-build' ||
-    process.env.VERCEL_ENV === 'preview' ||
-    process.env.CI === 'true' ||
-    process.env.GITHUB_ACTIONS === 'true'
-
-  if (isPreviewLikeBuild) {
-    return 'build-placeholder'
+  // Only fall back to the placeholder during a genuine build step (compiling
+  // pages, no requests served). VERCEL_ENV / CI persist at runtime on a live
+  // preview deployment, so they must NOT relax the secret requirement there —
+  // otherwise previews would serve real traffic signing session JWTs with a
+  // public, hardcoded value (forgeable sessions, account impersonation).
+  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+  if (isBuildTime) {
+    return 'build-placeholder';
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('NEXTAUTH_SECRET must be set in production')
-  }
-
-  return 'build-placeholder'
+  // Any environment that actually serves requests must have a real secret.
+  throw new Error('NEXTAUTH_SECRET must be set');
 }
 
-const coinbaseRpcUrl = process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY
-  ? `https://api.developer.coinbase.com/rpc/v1/base/${process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY}`
-  : undefined;
+// NOTE: COINBASE_RPC_URL / COINBASE_API_KEY are treated as the RPC *path id*
+// appended to the Coinbase Developer Platform base URL, not a full URL.
+const coinbaseRpcUrl =
+  process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY
+    ? `https://api.developer.coinbase.com/rpc/v1/base/${
+        process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY
+      }`
+    : undefined;
 const viemClient = coinbaseRpcUrl
   ? createPublicClient({ chain: base, transport: http(coinbaseRpcUrl) })
   : createPublicClient({ chain: base, transport: http() });
+
+// Pre-computed bcrypt hash used to equalize response time on the
+// user-not-found / no-password paths, so an attacker cannot enumerate which
+// emails have accounts by measuring login latency.
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync('timing-equalizer-not-a-secret', 10);
 
 const providers: ReturnType<typeof CredentialsProvider>[] = [];
 
@@ -62,31 +124,26 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 providers.push(
   CredentialsProvider({
-    name: "Credentials",
+    name: 'Credentials',
     credentials: {
-      email: { label: "Email", type: "email", placeholder: "email@example.com" },
-      password: { label: "Password", type: "password" },
+      email: { label: 'Email', type: 'email', placeholder: 'email@example.com' },
+      password: { label: 'Password', type: 'password' },
     },
     async authorize(credentials) {
       if (!credentials) return null;
-      console.log(`[Auth] Attempting credentials login for: ${credentials.email}`);
       const user = await prisma.user.findUnique({
         where: { email: credentials.email },
       });
-      if (!user) {
-        console.log(`[Auth] User not found: ${credentials.email}`);
-        return null;
-      }
-      if (!user.password) {
-        console.log(`[Auth] User has no password (likely OAuth-only): ${credentials.email}`);
-        return null;
-      }
-      const isValid = await bcrypt.compare(credentials.password, user.password);
-      if (isValid) {
-        console.log(`[Auth] Successful credentials login: ${credentials.email}`);
+
+      // Always run a bcrypt compare so the response time does not reveal
+      // whether the email exists or has a password set (user enumeration).
+      const hashToCompare = user?.password || DUMMY_PASSWORD_HASH;
+      const passwordMatches = await bcrypt.compare(credentials.password, hashToCompare);
+
+      if (user?.password && passwordMatches) {
+        console.log(`[Auth] Successful credentials login: ${user.email}`);
         return { id: user.id, name: user.name, email: user.email };
       }
-      console.log(`[Auth] Invalid password for: ${credentials.email}`);
       return null;
     },
   })
@@ -95,16 +152,18 @@ providers.push(
 // Wallet (SIWE - Sign-In with Ethereum) login
 providers.push(
   CredentialsProvider({
-    id: "wallet",
-    name: "Ethereum Wallet",
+    id: 'wallet',
+    name: 'Ethereum Wallet',
     credentials: {
-      message: { label: "Message", type: "text" },
-      signature: { label: "Signature", type: "text" },
+      message: { label: 'Message', type: 'text' },
+      signature: { label: 'Signature', type: 'text' },
     },
     async authorize(credentials) {
       console.log(`[Auth] Wallet authorize starting...`);
       if (!credentials?.message || !credentials?.signature) {
-        console.log(`[Auth] Missing credentials: message=${!!credentials?.message}, signature=${!!credentials?.signature}`);
+        console.log(
+          `[Auth] Missing credentials: message=${!!credentials?.message}, signature=${!!credentials?.signature}`
+        );
         return null;
       }
 
@@ -159,11 +218,8 @@ providers.push(
         // Find or create user by wallet address
         let user = await prisma.user.findFirst({
           where: {
-            OR: [
-              { email: walletEmail },
-              { name: typedAddress },
-            ]
-          }
+            OR: [{ email: walletEmail }, { name: typedAddress }],
+          },
         });
 
         if (!user) {
@@ -198,21 +254,24 @@ export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers,
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: getNextAuthSecret(),
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NODE_ENV === 'development',
   pages: {
-    signIn: "/login",
-    signOut: "/logout",
-    error: "/login",
-    verifyRequest: "/verify-request",
-    newUser: "/onboard",
+    signIn: '/login',
+    signOut: '/logout',
+    error: '/login',
+    verifyRequest: '/verify-request',
+    newUser: '/onboard',
   },
   cookies: {
     sessionToken: {
-      name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
+      name:
+        process.env.NODE_ENV === 'production'
+          ? `__Secure-next-auth.session-token`
+          : `next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -221,7 +280,10 @@ export const authOptions: AuthOptions = {
       },
     },
     callbackUrl: {
-      name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.callback-url` : `next-auth.callback-url`,
+      name:
+        process.env.NODE_ENV === 'production'
+          ? `__Secure-next-auth.callback-url`
+          : `next-auth.callback-url`,
       options: {
         sameSite: 'lax',
         path: '/',
@@ -229,7 +291,10 @@ export const authOptions: AuthOptions = {
       },
     },
     csrfToken: {
-      name: process.env.NODE_ENV === 'production' ? `__Host-next-auth.csrf-token` : `next-auth.csrf-token`,
+      name:
+        process.env.NODE_ENV === 'production'
+          ? `__Host-next-auth.csrf-token`
+          : `next-auth.csrf-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -240,11 +305,29 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log(`[Auth] signIn callback: provider=${account?.provider}, userEmail=${user.email}`);
+      console.log(`[Auth] signIn callback: provider=${account?.provider}`);
 
       // Handle OAuth and Wallet providers
-      if (account?.provider === "google" || account?.provider === "github" || account?.provider === "wallet") {
-        if (user.email) {
+      if (
+        account?.provider === 'google' ||
+        account?.provider === 'github' ||
+        account?.provider === 'vercel' ||
+        account?.provider === 'wallet'
+      ) {
+        // Only reconcile/link to an existing account by email when the email
+        // is provably verified. Linking by an unverified email is an account
+        // takeover primitive (attacker registers a victim's email at an OAuth
+        // provider, then inherits the victim's account).
+        // - wallet: synthetic email is bound to a verified signature
+        // - google: provider returns email_verified
+        // - github: NextAuth uses the account's primary *verified* email
+        // - vercel: no verification signal exposed → never auto-links
+        const emailVerified =
+          account.provider === 'wallet' ||
+          account.provider === 'github' ||
+          (profile as any)?.email_verified === true;
+
+        if (user.email && emailVerified) {
           try {
             const existingUser = await prisma.user.findUnique({
               where: { email: user.email },
@@ -257,13 +340,14 @@ export const authOptions: AuthOptions = {
               );
 
               // For CredentialsProvider (wallet), we may need to get providerAccountId from user object
-              const providerAccountId = account.providerAccountId || (user as any).providerAccountId;
+              const providerAccountId =
+                account.providerAccountId || (user as any).providerAccountId;
 
               if (!existingAccount && providerAccountId) {
                 await prisma.account.create({
                   data: {
                     userId: existingUser.id,
-                    type: account.type || (account.provider === "wallet" ? "credentials" : "oauth"),
+                    type: account.type || (account.provider === 'wallet' ? 'credentials' : 'oauth'),
                     provider: account.provider,
                     providerAccountId: providerAccountId,
                     access_token: account.access_token ?? undefined,
@@ -275,7 +359,9 @@ export const authOptions: AuthOptions = {
                     session_state: account.session_state as string | undefined,
                   },
                 });
-                console.log(`[Auth] Linked ${account.provider} to existing user ${existingUser.email}`);
+                console.log(
+                  `[Auth] Linked ${account.provider} to existing user ${existingUser.email}`
+                );
               }
               // Override the user id so JWT gets the existing user, not a new one
               user.id = existingUser.id;
@@ -301,7 +387,7 @@ export const authOptions: AuthOptions = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.sub || "";
+        session.user.id = token.sub || '';
         session.user.email = token.email;
         session.user.isAdmin = token.isAdmin ?? false;
       }
@@ -310,15 +396,19 @@ export const authOptions: AuthOptions = {
   },
   events: {
     async signIn({ user, account, isNewUser }) {
-      console.log(`[Auth] User ${user.email} signed in via ${account?.provider || 'credentials'} (new=${isNewUser})`);
+      console.log(
+        `[Auth] User ${user.email} signed in via ${
+          account?.provider || 'credentials'
+        } (new=${isNewUser})`
+      );
       if (isNewUser && user.email) {
         try {
-          const { sendWelcomeEmail } = await import('@/app/lib/email')
-          const name = user.name || user.email.split('@')[0]
-          await sendWelcomeEmail(user.email, name)
-          console.log(`[Auth] Welcome email sent to ${user.email}`)
+          const { sendWelcomeEmail } = await import('@/app/lib/email');
+          const name = user.name || user.email.split('@')[0];
+          await sendWelcomeEmail(user.email, name);
+          console.log(`[Auth] Welcome email sent to ${user.email}`);
         } catch (err) {
-          console.error(`[Auth] Failed to send welcome email:`, err)
+          console.error(`[Auth] Failed to send welcome email:`, err);
         }
       }
     },
