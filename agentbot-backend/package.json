@@ -20,7 +20,7 @@
     "@coinbase/agentkit-vercel-ai-sdk": "^0.1.0",
     "@coinbase/cdp-sdk": "^1.49.2",
     "@gitlawb/openclaude": "^0.20.1",
-    "@openrouter/sdk": "^0.10.2",
+    "@openrouter/sdk": "^0.13.22",
     "@sentry/node": "^10.51.0",
     "@worldcoin/agentkit": "0.1.6",
     "@x402/express": "2.2.0",
