@@ -68,7 +68,7 @@
     "cmdk": "^1.0.0",
     "ethers": "^6.16.0",
     "geist": "^1.7.0",
-    "lucide-react": "^0.577.0",
+    "lucide-react": "^1.22.0",
     "mppx": "^0.4.12",
     "next": "^16.2.6",
     "next-auth": "4.24.12",
