@@ -37,7 +37,7 @@
     "jest-environment-jsdom": "29.7.0",
     "jsonwebtoken": "^9.0.0",
     "pg": "^8.11.0",
-    "shell-quote": "^1.8.4",
+    "shell-quote": "^1.9.0",
     "wagmi": "2.15.7"
   },
   "devDependencies": {
