@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.0-beta.110",
-    "@ai-sdk/react": "^4.0.0-beta.186",
+    "@ai-sdk/react": "^4.0.9",
     "@auth0/nextjs-auth0": "^4.22.0",
     "@base-org/account": "^2.5.6",
     "@base-org/account-ui": "^1.0.1",
