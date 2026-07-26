@@ -12,7 +12,7 @@
     "typecheck": "tsgo"
   },
   "dependencies": {
-    "@auth/core": "0.41.2",
+    "@auth/core": "0.41.3",
     "@vercel/connect": "catalog:",
     "@vercel/oidc": "3.4.1",
     "ai": "catalog:",
