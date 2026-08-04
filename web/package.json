@@ -131,7 +131,7 @@
     "fast-uri": "^3.1.2",
     "fast-xml-builder": "^1.2.0",
     "hono": "^4.12.21",
-    "ip-address": "^10.2.0",
+    "ip-address": "^10.4.0",
     "ws": "^8.21.0",
     "braces": "^3.0.3",
     "micromatch": "^4.0.8",
