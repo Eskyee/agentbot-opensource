@@ -59,7 +59,7 @@
     "undici": "^7.24.5",
     "devalue": "5.8.1",
     "express-rate-limit": "^8.5.2",
-    "ip-address": "^10.2.0",
+    "ip-address": "^10.4.0",
     "viem": "^2.50.4",
     "bs58": "^6.0.0",
     "rpc-websockets": {
