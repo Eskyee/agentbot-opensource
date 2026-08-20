@@ -14,7 +14,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@base-org/account": "0.0.0",
+    "@base-org/account": "2.5.10",
     "@codesandbox/sdk": "1.1.6",
     "@coinbase/agentkit": "^0.10.4",
     "@coinbase/agentkit-vercel-ai-sdk": "^0.1.0",
