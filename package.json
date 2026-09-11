@@ -18,7 +18,7 @@
     "openclaude:agentbot": "node scripts/openclaude-agentbot.js"
   },
   "devDependencies": {
-    "@gitlawb/openclaude": "^0.20.1",
+    "@gitlawb/openclaude": "^0.30.0",
     "bs58": "^6.0.0",
     "turbo": "^2.9.14"
   },
